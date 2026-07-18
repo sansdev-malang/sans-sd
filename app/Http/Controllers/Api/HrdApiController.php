@@ -1,0 +1,428 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Employee;
+use App\Models\Attendance;
+use App\Models\WorkingShift;
+use App\Models\WorkingShiftDetail;
+use App\Models\EmployeeWorkingShift;
+use App\Models\Holiday;
+use App\Models\HolidayAdjustment;
+use App\Models\BonusSchema;
+use App\Models\BonusTier;
+use App\Models\LeaveRequest;
+use Illuminate\Http\Request;
+use Carbon\Carbon;
+
+class HrdApiController extends Controller
+{
+    /**
+     * Get all employees for the active school unit.
+     */
+    public function employees()
+    {
+        $schoolUnit = config('app.school_unit');
+        
+        $query = Employee::with('employeeType');
+        
+        if ($schoolUnit) {
+            $query->where('unit', $schoolUnit);
+        }
+        
+        $employees = $query->get();
+        
+        return response()->json([
+            'success' => true,
+            'unit' => $schoolUnit ?? 'all',
+            'data' => $employees
+        ]);
+    }
+
+    /**
+     * Get all attendances for the active school unit on a specific date.
+     */
+    public function attendances(Request $request)
+    {
+        $date = $request->input('date', Carbon::today()->toDateString());
+        $schoolUnit = config('app.school_unit');
+        
+        $query = Attendance::where('date', $date)->with(['employee.employeeType']);
+        
+        if ($schoolUnit) {
+            $query->whereHas('employee', function ($q) use ($schoolUnit) {
+                $q->where('unit', $schoolUnit);
+            });
+        }
+        
+        $attendances = $query->get();
+        
+        return response()->json([
+            'success' => true,
+            'unit' => $schoolUnit ?? 'all',
+            'date' => $date,
+            'data' => $attendances
+        ]);
+    }
+
+    /**
+     * Store a newly created employee in the school unit.
+     */
+    public function store(Request $request)
+    {
+        $messages = [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'email.unique' => 'Alamat email sudah digunakan oleh pegawai lain.',
+            'nuptk_nip_nik.unique' => 'NIP / NUPTK / NIK sudah digunakan oleh pegawai lain.',
+            'employee_type_code.required' => 'Tipe pegawai wajib dipilih.',
+            'unit.required' => 'Unit sekolah wajib ditentukan.',
+            'gender.required' => 'Jenis kelamin wajib dipilih.',
+            'employment_status.required' => 'Status kepegawaian wajib dipilih.',
+            'zkteco_uid.unique' => 'ID ZKTeco / PIN Fingerprint sudah digunakan oleh pegawai lain.',
+            'status.required' => 'Status keaktifan wajib dipilih.',
+        ];
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:employees,email',
+            'nuptk_nip_nik' => 'nullable|string|unique:employees,nuptk_nip_nik',
+            'employee_type_code' => 'required|string|in:teacher,employee,management',
+            'unit' => 'required|string|max:255',
+            'subject_position' => 'nullable|string|max:255',
+            'gender' => 'required|string|in:Male,Female',
+            'employment_status' => 'required|string|max:255',
+            'zkteco_uid' => 'nullable|string|unique:employees,zkteco_uid',
+            'status' => 'required|string|in:Active,Inactive',
+            'photo' => 'nullable|image|max:2048',
+        ], $messages);
+
+        $type = \App\Models\EmployeeType::where('code', $validated['employee_type_code'])->first();
+        if (!$type) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid employee type code.'
+            ], 400);
+        }
+
+        $validated['employee_type_id'] = $type->id;
+        unset($validated['employee_type_code']);
+
+        if ($request->hasFile('photo')) {
+            $path = $request->file('photo')->store('photos', 'public');
+            $validated['photo'] = $path;
+        }
+
+        $employee = Employee::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Employee created successfully.',
+            'data' => $employee
+        ], 201);
+    }
+
+    /**
+     * Update the specified employee in the school unit.
+     */
+    public function update(Request $request, $id)
+    {
+        $employee = Employee::find($id);
+        if (!$employee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Employee not found.'
+            ], 404);
+        }
+
+        $messages = [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'email.unique' => 'Alamat email sudah digunakan oleh pegawai lain.',
+            'nuptk_nip_nik.unique' => 'NIP / NUPTK / NIK sudah digunakan oleh pegawai lain.',
+            'employee_type_code.required' => 'Tipe pegawai wajib dipilih.',
+            'unit.required' => 'Unit sekolah wajib ditentukan.',
+            'gender.required' => 'Jenis kelamin wajib dipilih.',
+            'employment_status.required' => 'Status kepegawaian wajib dipilih.',
+            'zkteco_uid.unique' => 'ID ZKTeco / PIN Fingerprint sudah digunakan oleh pegawai lain.',
+            'status.required' => 'Status keaktifan wajib dipilih.',
+        ];
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:employees,email,' . $id,
+            'nuptk_nip_nik' => 'nullable|string|unique:employees,nuptk_nip_nik,' . $id,
+            'employee_type_code' => 'required|string|in:teacher,employee,management',
+            'unit' => 'required|string|max:255',
+            'subject_position' => 'nullable|string|max:255',
+            'gender' => 'required|string|in:Male,Female',
+            'employment_status' => 'required|string|max:255',
+            'zkteco_uid' => 'nullable|string|unique:employees,zkteco_uid,' . $id,
+            'status' => 'required|string|in:Active,Inactive',
+            'photo' => 'nullable|image|max:2048',
+        ], $messages);
+
+        $type = \App\Models\EmployeeType::where('code', $validated['employee_type_code'])->first();
+        if (!$type) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid employee type code.'
+            ], 400);
+        }
+
+        $validated['employee_type_id'] = $type->id;
+        unset($validated['employee_type_code']);
+
+        if ($request->hasFile('photo')) {
+            if ($employee->photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($employee->photo);
+            }
+            $path = $request->file('photo')->store('photos', 'public');
+            $validated['photo'] = $path;
+        }
+
+        $employee->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Employee updated successfully.',
+            'data' => $employee
+        ]);
+    }
+
+    /**
+     * Remove the specified employee from the school unit.
+     */
+    public function destroy($id)
+    {
+        $employee = Employee::find($id);
+        if (!$employee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Employee not found.'
+            ], 404);
+        }
+
+        $employee->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Employee deleted successfully.'
+        ]);
+    }
+
+    /**
+     * Get all employee types in the database.
+     */
+    public function employeeTypes()
+    {
+        $types = \App\Models\EmployeeType::all(['id', 'code', 'name']);
+        return response()->json($types);
+    }
+
+    /**
+     * Sync working shifts from central HRD.
+     */
+    public function syncShifts(Request $request)
+    {
+        $shifts = $request->input('shifts', []);
+
+        foreach ($shifts as $sData) {
+            $shift = WorkingShift::updateOrCreate(
+                ['code' => $sData['code']],
+                [
+                    'name' => $sData['name'],
+                    'is_shift' => $sData['is_shift'],
+                    'description' => $sData['description'] ?? null
+                ]
+            );
+
+            // Sync shift details (clear old ones and insert new ones)
+            $shift->details()->delete();
+            if (isset($sData['details']) && is_array($sData['details'])) {
+                foreach ($sData['details'] as $dData) {
+                    $shift->details()->create([
+                        'day_of_week' => $dData['day_of_week'],
+                        'start_time' => $dData['start_time'] ?? null,
+                        'end_time' => $dData['end_time'] ?? null,
+                        'is_off' => $dData['is_off'] ?? false,
+                    ]);
+                }
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Shifts synced successfully.']);
+    }
+
+    /**
+     * Sync employee shift schedules from central HRD.
+     */
+    public function syncSchedules(Request $request)
+    {
+        $schedules = $request->input('schedules', []);
+
+        foreach ($schedules as $sData) {
+            $employee = Employee::where('id', $sData['employee_id'])
+                ->orWhere('nuptk_nip_nik', $sData['nuptk_nip_nik'] ?? null)
+                ->first();
+
+            if (!$employee) {
+                continue;
+            }
+
+            $shift = WorkingShift::where('code', $sData['working_shift_code'])->first();
+            if (!$shift) {
+                continue;
+            }
+
+            EmployeeWorkingShift::updateOrCreate(
+                [
+                    'employee_id' => $employee->id,
+                    'working_shift_id' => $shift->id,
+                    'start_date' => $sData['start_date'],
+                ],
+                [
+                    'end_date' => $sData['end_date'] ?? null
+                ]
+            );
+        }
+
+        return response()->json(['success' => true, 'message' => 'Schedules synced successfully.']);
+    }
+
+    /**
+     * Sync holidays and adjustments from central HRD.
+     */
+    public function syncHolidays(Request $request)
+    {
+        $holidays = $request->input('holidays', []);
+
+        foreach ($holidays as $hData) {
+            $holiday = Holiday::updateOrCreate(
+                ['original_date' => $hData['original_date']],
+                [
+                    'name' => $hData['name'],
+                    'is_global' => $hData['is_global'] ?? true
+                ]
+            );
+
+            // Sync adjustments (clear old and insert new)
+            $holiday->adjustments()->delete();
+            if (isset($hData['adjustments']) && is_array($hData['adjustments'])) {
+                foreach ($hData['adjustments'] as $aData) {
+                    $holiday->adjustments()->create([
+                        'original_date' => $aData['original_date'],
+                        'adjusted_date' => $aData['adjusted_date'],
+                        'school_unit_id' => $aData['school_unit_id'] ?? null,
+                        'reason' => $aData['reason'] ?? null,
+                    ]);
+                }
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Holidays synced successfully.']);
+    }
+
+    /**
+     * Sync bonus schemas and tiers from central HRD.
+     */
+    public function syncBonusSchemas(Request $request)
+    {
+        $schemas = $request->input('schemas', []);
+
+        foreach ($schemas as $sData) {
+            $schema = BonusSchema::updateOrCreate(
+                ['name' => $sData['name']],
+                [
+                    'is_active' => $sData['is_active'] ?? true
+                ]
+            );
+
+            // Sync tiers (clear old and insert new)
+            $schema->tiers()->delete();
+            if (isset($sData['tiers']) && is_array($sData['tiers'])) {
+                foreach ($sData['tiers'] as $tData) {
+                    $schema->tiers()->create([
+                        'tier_level' => $tData['tier_level'],
+                        'nominal' => $tData['nominal'],
+                        'max_late_minutes' => $tData['max_late_minutes'],
+                        'max_absent_days' => $tData['max_absent_days'] ?? 0,
+                    ]);
+                }
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Bonus schemas synced successfully.']);
+    }
+
+    /**
+     * Get all leave requests for HRD Central.
+     */
+    public function leaveRequests()
+    {
+        $requests = LeaveRequest::with('employee')->get()->map(function ($req) {
+            return [
+                'id' => $req->id,
+                'employee_id' => $req->employee_id,
+                'employee_name' => $req->employee ? $req->employee->name : null,
+                'nuptk_nip_nik' => $req->employee ? $req->employee->nuptk_nip_nik : null,
+                'type' => $req->type,
+                'start_date' => $req->start_date ? $req->start_date->format('Y-m-d') : null,
+                'end_date' => $req->end_date ? $req->end_date->format('Y-m-d') : null,
+                'reason' => $req->reason,
+                'status' => $req->status,
+                'notes' => $req->notes,
+                'attachment' => $req->attachment ? asset('storage/' . $req->attachment) : null,
+            ];
+        });
+
+        return response()->json($requests);
+    }
+
+    /**
+     * Receive approval decision from HRD Central.
+     */
+    public function leaveDecision(Request $request)
+    {
+        $request->validate([
+            'leave_id' => 'required|integer',
+            'status' => 'required|string|in:Approved,Rejected',
+            'notes' => 'nullable|string',
+        ]);
+
+        $leave = LeaveRequest::find($request->input('leave_id'));
+        if (!$leave) {
+            return response()->json(['success' => false, 'message' => 'Leave request not found.'], 404);
+        }
+
+        $leave->status = $request->input('status');
+        $leave->notes = $request->input('notes');
+        $leave->save();
+
+        // If approved, update attendance table automatically for those days
+        if ($leave->status === 'Approved') {
+            $startDate = Carbon::parse($leave->start_date);
+            $endDate = Carbon::parse($leave->end_date);
+            
+            for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                Attendance::updateOrCreate(
+                    [
+                        'employee_id' => $leave->employee_id,
+                        'date' => $date->format('Y-m-d')
+                    ],
+                    [
+                        'clock_in' => null,
+                        'clock_out' => null,
+                        'status' => $leave->type === 'Sakit' ? 'Sick' : 'Leave',
+                        'calculated_bonus' => 0.00
+                    ]
+                );
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Decision processed successfully.']);
+    }
+}
