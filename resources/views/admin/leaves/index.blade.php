@@ -1,5 +1,5 @@
 <x-admin-layout>
-    <div class="p-6 space-y-6" x-data="{ showAddModal: false }">
+    <div class="p-6 space-y-6" x-data="{ showAddModal: false, showEmpDetailModal: false, selectedEmp: null }">
 
         <!-- SUCCESS/ERROR ALERTS -->
         @if(session('success'))
@@ -59,8 +59,28 @@
                         @forelse($leaves as $leave)
                             <tr>
                                 <td class="px-6 py-4 text-left">
-                                    <div class="font-bold text-slate-900 dark:text-slate-50">{{ $leave->employee ? $leave->employee->name : '-' }}</div>
-                                    <div class="text-[10px] text-slate-400 dark:text-slate-550 font-mono">NIP: {{ $leave->employee ? $leave->employee->nuptk_nip_nik : '-' }}</div>
+                                    <div class="flex items-center gap-3">
+                                        @if($leave->employee && $leave->employee->photo)
+                                            <img src="{{ str_contains($leave->employee->photo, 'photos/') ? asset('storage/' . $leave->employee->photo) : asset('storage/photos/' . $leave->employee->photo) }}" class="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-200/50 dark:border-slate-800/40">
+                                        @else
+                                            <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-355 shrink-0">
+                                                {{ strtoupper(substr($leave->employee ? $leave->employee->name : 'P', 0, 2)) }}
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <span @click="selectedEmp = {
+                                                name: '{{ addslashes($leave->employee ? $leave->employee->name : "-") }}',
+                                                nuptk_nip_nik: '{{ addslashes($leave->employee ? $leave->employee->nuptk_nip_nik : "-") }}',
+                                                subject_position: '{{ addslashes($leave->employee ? $leave->employee->subject_position : "-") }}',
+                                                unit: '{{ addslashes($leave->employee ? strtoupper($leave->employee->unit) : "-") }}',
+                                                email: '{{ addslashes($leave->employee ? $leave->employee->email : "-") }}',
+                                                gender: '{{ addslashes($leave->employee ? $leave->employee->gender : "-") }}',
+                                                employment_status: '{{ addslashes($leave->employee ? $leave->employee->employment_status : "-") }}',
+                                                photo_url: '{{ $leave->employee && $leave->employee->photo ? (str_contains($leave->employee->photo, 'photos/') ? asset('storage/' . $leave->employee->photo) : asset('storage/photos/' . $leave->employee->photo)) : '' }}'
+                                            }; showEmpDetailModal = true" class="text-slate-900 dark:text-slate-50 font-bold tracking-tight block cursor-pointer hover:underline hover:text-indigo-650 dark:hover:text-indigo-400">{{ $leave->employee ? $leave->employee->name : '-' }}</span>
+                                            <span class="text-[10px] text-slate-405 dark:text-slate-550 font-mono block">NIP: {{ $leave->employee ? $leave->employee->nuptk_nip_nik : '-' }}</span>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 border border-slate-200/45 dark:border-slate-800 uppercase">
@@ -135,12 +155,62 @@
                     
                     <div>
                         <label class="block font-semibold text-slate-700 dark:text-slate-350 mb-1.5">Pilih Pegawai</label>
-                        <select name="employee_id" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-880 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
-                            <option value="">-- Pilih Pegawai --</option>
-                            @foreach($employees as $emp)
-                                <option value="{{ $emp->id }}">{{ $emp->name }} ({{ $emp->nuptk_nip_nik ?? '-' }})</option>
-                            @endforeach
-                        </select>
+                        <div x-data="{
+                            open: false,
+                            search: '',
+                            selectedId: '',
+                            selectedName: '',
+                            employees: [
+                                @foreach($employees as $emp)
+                                { id: '{{ $emp->id }}', name: '{{ addslashes($emp->name) }}', nip: '{{ $emp->nuptk_nip_nik ?? '-' }}' },
+                                @endforeach
+                            ],
+                            get filteredEmployees() {
+                                if (this.search === '') return this.employees;
+                                return this.employees.filter(emp => emp.name.toLowerCase().includes(this.search.toLowerCase()) || emp.nip.includes(this.search));
+                            },
+                            select(emp) {
+                                this.selectedId = emp.id;
+                                this.selectedName = emp.name + ' (' + emp.nip + ')';
+                                this.open = false;
+                                this.search = '';
+                            }
+                        }" class="relative">
+                            <!-- Hidden input for form submission -->
+                            <input type="hidden" name="employee_id" :value="selectedId" required>
+
+                            <!-- Toggle button -->
+                            <div @click="open = !open" 
+                                 class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 cursor-pointer flex justify-between items-center focus:outline-none">
+                                <span x-text="selectedName || '-- Pilih Pegawai --'"></span>
+                                <i data-lucide="chevrons-up-down" class="w-4 h-4 text-slate-400"></i>
+                            </div>
+
+                            <!-- Dropdown panel -->
+                            <div x-show="open" @click.outside="open = false" 
+                                 class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg overflow-hidden text-left"
+                                 x-transition style="display: none;">
+                                <!-- Search input inside dropdown -->
+                                <div class="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                                    <input type="text" x-model="search" placeholder="Ketik nama/NIP untuk mencari..." 
+                                           class="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md focus:outline-none focus:border-indigo-500 text-slate-900 dark:text-slate-100">
+                                </div>
+                                
+                                <!-- List items -->
+                                <ul class="max-h-48 overflow-y-auto py-1 divide-y divide-slate-150 dark:divide-slate-800/40">
+                                    <template x-for="emp in filteredEmployees" :key="emp.id">
+                                        <li @click="select(emp)" 
+                                            class="px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer text-slate-850 dark:text-slate-200 text-xs flex justify-between items-center transition-colors">
+                                            <span x-text="emp.name" class="font-semibold uppercase"></span>
+                                            <span x-text="emp.nip" class="text-[10px] text-slate-400 dark:text-slate-500 font-mono"></span>
+                                        </li>
+                                    </template>
+                                    <li x-show="filteredEmployees.length === 0" class="px-3 py-3 text-slate-455 dark:text-slate-500 italic text-center text-xs">
+                                        Pegawai tidak ditemukan
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
 
                     <div>
@@ -187,5 +257,60 @@
             </div>
         </div>
 
+        <!-- MODAL DETAIL PEGAWAI -->
+        <div x-show="showEmpDetailModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-955/60 backdrop-blur-xs text-left" style="display: none;">
+            <div @click.outside="showEmpDetailModal = false" class="bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-w-md w-full overflow-hidden text-xs">
+                <div class="p-5 border-b border-slate-150 dark:border-slate-850 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-55 font-nasalization flex items-center gap-2">
+                        <i data-lucide="user" class="w-4 h-4 text-indigo-650 dark:text-indigo-400"></i>
+                        Profil Pegawai
+                    </h3>
+                    <button @click="showEmpDetailModal = false" class="text-slate-455 hover:text-slate-700 dark:hover:text-slate-355">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-6">
+                    <div class="flex items-center gap-4">
+                        <!-- Photo / Initials -->
+                        <div class="shrink-0">
+                            <template x-if="selectedEmp && selectedEmp.photo_url">
+                                <img :src="selectedEmp.photo_url" class="w-16 h-16 rounded-xl object-cover border border-slate-200 dark:border-slate-800 shadow-sm">
+                            </template>
+                            <template x-if="!selectedEmp || !selectedEmp.photo_url">
+                                <div class="w-16 h-16 rounded-xl bg-indigo-50 dark:bg-indigo-955/40 text-indigo-650 dark:text-indigo-400 font-bold flex items-center justify-center text-2xl uppercase shadow-sm">
+                                    <span x-text="selectedEmp ? selectedEmp.name.substring(0,2) : ''"></span>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-slate-50 font-nasalization" x-text="selectedEmp ? selectedEmp.name : ''"></h4>
+                            <p class="text-slate-450 dark:text-slate-500 font-mono" x-text="selectedEmp ? 'NIP/NUPTK: ' + (selectedEmp.nuptk_nip_nik || '-') : ''"></p>
+                            <span class="inline-flex px-2 py-0.5 rounded text-[9px] font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-455 border border-indigo-200 dark:border-indigo-800 uppercase" x-text="selectedEmp ? selectedEmp.subject_position : ''"></span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-[11px] pt-4 border-t border-slate-100 dark:border-slate-800">
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Unit Kerja</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200 uppercase" x-text="selectedEmp ? selectedEmp.unit : ''"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Email</span>
+                            <span class="font-medium text-slate-700 dark:text-slate-200" x-text="selectedEmp ? selectedEmp.email : ''"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Jenis Kelamin</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.gender === 'Male' ? 'Laki-laki' : 'Perempuan') : ''"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Status Pegawai</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200" x-text="selectedEmp ? selectedEmp.employment_status : ''"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 border-t border-slate-150 dark:border-slate-850 flex justify-end">
+                    <button @click="showEmpDetailModal = false" class="h-9 px-4 bg-slate-900 dark:bg-slate-100 hover:bg-slate-850 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-semibold rounded-lg shadow-sm transition-colors cursor-pointer">Tutup</button>
+                </div>
+            </div>
+        </div>
     </div>
 </x-admin-layout>

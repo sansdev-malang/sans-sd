@@ -1,5 +1,5 @@
 <x-admin-layout>
-    <div class="p-6 space-y-6">
+    <div class="p-6 space-y-6" x-data="{ showEmpDetailModal: false, selectedEmp: null }">
 
         <!-- HEADER -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left">
@@ -117,14 +117,23 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         @if($employee->photo)
-                                            <img src="{{ asset('storage/' . $employee->photo) }}" class="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-200/50 dark:border-slate-800/40">
+                                            <img src="{{ str_contains($employee->photo, 'photos/') ? asset('storage/' . $employee->photo) : asset('storage/photos/' . $employee->photo) }}" class="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-200/50 dark:border-slate-800/40">
                                         @else
                                             <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-350 shrink-0">
                                                 {{ strtoupper(substr($employee->name, 0, 2)) }}
                                             </div>
                                         @endif
                                         <div>
-                                            <span class="text-slate-900 dark:text-slate-50 font-bold tracking-tight block">{{ $employee->name }}</span>
+                                            <span @click="selectedEmp = {
+                                                name: '{{ addslashes($employee->name) }}',
+                                                nuptk_nip_nik: '{{ addslashes($employee->nuptk_nip_nik ?? "-") }}',
+                                                subject_position: '{{ addslashes($employee->subject_position ?? "-") }}',
+                                                unit: '{{ addslashes(strtoupper($employee->unit ?? "-")) }}',
+                                                email: '{{ addslashes($employee->email ?? "-") }}',
+                                                gender: '{{ addslashes($employee->gender ?? "-") }}',
+                                                employment_status: '{{ addslashes($employee->employment_status ?? "-") }}',
+                                                photo_url: '{{ $employee->photo ? (str_contains($employee->photo, 'photos/') ? asset('storage/' . $employee->photo) : asset('storage/photos/' . $employee->photo)) : '' }}'
+                                            }; showEmpDetailModal = true" class="text-slate-900 dark:text-slate-50 font-bold tracking-tight block cursor-pointer hover:underline hover:text-indigo-650 dark:hover:text-indigo-400">{{ $employee->name }}</span>
                                             <span class="text-[10px] text-slate-500 dark:text-slate-400 block">{{ $employee->email ?? 'Tidak ada email' }}</span>
                                         </div>
                                     </div>
@@ -406,8 +415,6 @@
             @method('DELETE')
         </form>
 
-    </div>
-
     <!-- SCRIPT MODALS -->
     <script>
         function toggleModal(modalId) {
@@ -460,9 +467,9 @@
             const previewContainer = document.getElementById('edit-photo-preview-container');
             const previewImg = document.getElementById('edit-photo-preview');
             if (employee.photo) {
-                previewImg.src = '/storage/' + employee.photo;
-                previewContainer.classList.remove('hidden');
-            } else {
+                                previewImg.src = employee.photo.includes('photos/') ? '/storage/' + employee.photo : '/storage/photos/' + employee.photo;
+                                previewContainer.classList.remove('hidden');
+                            } else {
                 previewImg.src = '';
                 previewContainer.classList.add('hidden');
             }
@@ -503,4 +510,60 @@
             });
         </script>
     @endif
+        <!-- MODAL DETAIL PEGAWAI -->
+        <div x-show="showEmpDetailModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-955/60 backdrop-blur-xs text-left" style="display: none;">
+            <div @click.outside="showEmpDetailModal = false" class="bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-w-md w-full overflow-hidden text-xs">
+                <div class="p-5 border-b border-slate-150 dark:border-slate-850 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-55 font-nasalization flex items-center gap-2">
+                        <i data-lucide="user" class="w-4 h-4 text-indigo-650 dark:text-indigo-400"></i>
+                        Profil Pegawai
+                    </h3>
+                    <button @click="showEmpDetailModal = false" class="text-slate-455 hover:text-slate-700 dark:hover:text-slate-355">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-6">
+                    <div class="flex items-center gap-4">
+                        <!-- Photo / Initials -->
+                        <div class="shrink-0">
+                            <template x-if="selectedEmp && selectedEmp.photo_url">
+                                <img :src="selectedEmp.photo_url" class="w-16 h-16 rounded-xl object-cover border border-slate-200 dark:border-slate-800 shadow-sm">
+                            </template>
+                            <template x-if="!selectedEmp || !selectedEmp.photo_url">
+                                <div class="w-16 h-16 rounded-xl bg-indigo-50 dark:bg-indigo-955/40 text-indigo-650 dark:text-indigo-400 font-bold flex items-center justify-center text-2xl uppercase shadow-sm">
+                                    <span x-text="selectedEmp ? selectedEmp.name.substring(0,2) : ''"></span>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-slate-50 font-nasalization" x-text="selectedEmp ? selectedEmp.name : ''"></h4>
+                            <p class="text-slate-450 dark:text-slate-500 font-mono" x-text="selectedEmp ? 'NIP/NUPTK: ' + (selectedEmp.nuptk_nip_nik || '-') : ''"></p>
+                            <span class="inline-flex px-2 py-0.5 rounded text-[9px] font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-455 border border-indigo-200 dark:border-indigo-800 uppercase" x-text="selectedEmp ? selectedEmp.subject_position : ''"></span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-[11px] pt-4 border-t border-slate-100 dark:border-slate-800">
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Unit Kerja</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200 uppercase" x-text="selectedEmp ? selectedEmp.unit : ''"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Email</span>
+                            <span class="font-medium text-slate-700 dark:text-slate-200" x-text="selectedEmp ? selectedEmp.email : ''"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Jenis Kelamin</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.gender === 'Male' ? 'Laki-laki' : 'Perempuan') : ''"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Status Pegawai</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200" x-text="selectedEmp ? selectedEmp.employment_status : ''"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5 border-t border-slate-150 dark:border-slate-850 flex justify-end">
+                    <button @click="showEmpDetailModal = false" class="h-9 px-4 bg-slate-900 dark:bg-slate-100 hover:bg-slate-855 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-semibold rounded-lg shadow-sm transition-colors cursor-pointer">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </x-admin-layout>

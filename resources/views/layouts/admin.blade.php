@@ -23,6 +23,9 @@
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
             <script src="https://cdn.tailwindcss.com"></script>
+            <!-- Alpine.js + Collapse CDN Fallback -->
+            <script src="https://unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js" defer></script>
+            <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
         @endif
 
         <script>
@@ -145,12 +148,12 @@
 
         <!-- TOAST NOTIFICATION CONTAINER -->
         <div id="toast-notification" class="fixed bottom-5 right-5 z-50 hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 px-4 py-3 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 flex items-center gap-3 max-w-sm">
-            <div class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center shrink-0">
-                <i data-lucide="check" class="w-4 h-4"></i>
+            <div id="toast-icon-bg" class="w-8 h-8 rounded-full flex items-center justify-center shrink-0">
+                <i id="toast-icon" data-lucide="check" class="w-4 h-4"></i>
             </div>
-            <div>
-                <h5 class="text-xs font-bold">Notifikasi</h5>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Pesan simulasi berhasil terkirim.</p>
+            <div class="text-left">
+                <h5 id="toast-title" class="text-xs font-bold">Notifikasi</h5>
+                <p id="toast-message" class="text-xs text-slate-500 dark:text-slate-400"></p>
             </div>
         </div>
 
@@ -162,7 +165,78 @@
         <script>
             // Initialize Lucide Icons
             lucide.createIcons();
+
+            // Global Toast helper function
+            function showToast(title, message, type = 'success') {
+                const toast = document.getElementById('toast-notification');
+                const titleEl = document.getElementById('toast-title');
+                const messageEl = document.getElementById('toast-message');
+                const iconBg = document.getElementById('toast-icon-bg');
+                const icon = document.getElementById('toast-icon');
+                
+                if (!toast) return;
+
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+
+                if (type === 'success') {
+                    iconBg.className = 'w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0';
+                    icon.setAttribute('data-lucide', 'check');
+                } else {
+                    iconBg.className = 'w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-955/20 text-rose-600 dark:text-rose-455 flex items-center justify-center shrink-0';
+                    icon.setAttribute('data-lucide', 'alert-circle');
+                }
+
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+
+                toast.classList.remove('hidden');
+                
+                if (window.anime) {
+                    window.anime({
+                        targets: toast,
+                        translateX: [300, 0],
+                        opacity: [0, 1],
+                        duration: 400,
+                        easing: 'easeOutExpo'
+                    });
+
+                    setTimeout(() => {
+                        window.anime({
+                            targets: toast,
+                            translateX: [0, 300],
+                            opacity: [1, 0],
+                            duration: 400,
+                            easing: 'easeInExpo',
+                            complete: () => {
+                                toast.classList.add('hidden');
+                            }
+                        });
+                    }, 4000);
+                } else {
+                    setTimeout(() => {
+                        toast.classList.add('hidden');
+                    }, 4000);
+                }
+            }
         </script>
+
+        <!-- Session Message Trigger Script -->
+        @if(session('success'))
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    showToast('Sukses!', "{{ session('success') }}", 'success');
+                });
+            </script>
+        @endif
+        @if(session('error'))
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    showToast('Perhatian!', "{{ session('error') }}", 'error');
+                });
+            </script>
+        @endif
 
         <!-- Custom Isolated Dashboard Animations Script -->
         <script src="{{ asset('js/dashboard.js') }}?v={{ time() }}"></script>

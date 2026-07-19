@@ -60,4 +60,40 @@ class LeaveRequestController extends Controller
         return redirect()->route('leaves.index')
             ->with('success', 'Pengajuan izin berhasil dibatalkan.');
     }
+
+    /**
+     * Display the history of leave requests.
+     */
+    public function history(Request $request)
+    {
+        $schoolUnit = config('app.school_unit');
+        
+        $query = LeaveRequest::with('employee')->orderBy('start_date', 'desc');
+
+        if ($schoolUnit) {
+            $query->whereHas('employee', function ($q) use ($schoolUnit) {
+                $q->where('unit', $schoolUnit);
+            });
+        }
+
+        // Add search filters
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->whereHas('employee', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->input('type'));
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        $leaves = $query->get();
+
+        return view('admin.leaves.history', compact('leaves'));
+    }
 }

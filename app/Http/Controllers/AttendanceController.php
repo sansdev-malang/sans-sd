@@ -59,7 +59,7 @@ class AttendanceController extends Controller
     public function recap(Request $request)
     {
         $date = $request->input('date', Carbon::today()->toDateString());
-        $unit = $request->input('unit'); // 'paud', 'sd', 'smp'
+        $search = $request->input('search');
 
         $query = Attendance::where('date', $date)->with('employee');
 
@@ -68,9 +68,11 @@ class AttendanceController extends Controller
             $query->whereHas('employee', function ($q) use ($schoolUnit) {
                 $q->where('unit', $schoolUnit);
             });
-        } elseif ($request->filled('unit')) {
-            $query->whereHas('employee', function ($q) use ($unit) {
-                $q->where('unit', $unit);
+        }
+
+        if ($request->filled('search')) {
+            $query->whereHas('employee', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
             });
         }
 
@@ -80,12 +82,11 @@ class AttendanceController extends Controller
             return response()->json([
                 'success' => true,
                 'date' => $date,
-                'unit_requested' => $unit,
                 'data' => $attendances,
             ]);
         }
 
-        return view('admin.attendances.recap', compact('attendances', 'date', 'unit'));
+        return view('admin.attendances.recap', compact('attendances', 'date', 'search'));
     }
 
     /**

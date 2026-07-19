@@ -112,8 +112,8 @@ class TeacherController extends Controller
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('photos', $filename, 'public');
-            $validated['photo'] = $filename;
+            $path = $file->storeAs('photos', $filename, 'public');
+            $validated['photo'] = $path;
         }
 
         $teacherType = $this->getTeacherType();
@@ -171,13 +171,14 @@ class TeacherController extends Controller
         if ($request->hasFile('photo')) {
             // Delete old photo if exists
             if ($teacher->photo) {
-                Storage::disk('public')->delete('photos/' . $teacher->photo);
+                $oldPath = str_contains($teacher->photo, 'photos/') ? $teacher->photo : 'photos/' . $teacher->photo;
+                Storage::disk('public')->delete($oldPath);
             }
 
             $file = $request->file('photo');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('photos', $filename, 'public');
-            $validated['photo'] = $filename;
+            $path = $file->storeAs('photos', $filename, 'public');
+            $validated['photo'] = $path;
         }
 
         $teacher->update($validated);
@@ -195,7 +196,8 @@ class TeacherController extends Controller
 
         // Delete photo file if exists
         if ($teacher->photo) {
-            Storage::disk('public')->delete('photos/' . $teacher->photo);
+            $oldPath = str_contains($teacher->photo, 'photos/') ? $teacher->photo : 'photos/' . $teacher->photo;
+            Storage::disk('public')->delete($oldPath);
         }
 
         $teacher->delete();

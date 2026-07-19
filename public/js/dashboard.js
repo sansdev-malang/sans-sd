@@ -141,37 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. Quick Notification Toast
     const setupNotifications = () => {
-        const notifyBtn = document.getElementById('notify-btn');
-        const toast = document.getElementById('toast-notification');
-        
-        if (notifyBtn && toast) {
-            notifyBtn.addEventListener('click', () => {
-                toast.classList.remove('hidden');
-                
-                // Slide in toast
-                anime({
-                    targets: toast,
-                    translateX: [300, 0],
-                    opacity: [0, 1],
-                    duration: 500,
-                    easing: 'easeOutExpo'
-                });
-
-                // Auto hide after 4 seconds
-                setTimeout(() => {
-                    anime({
-                        targets: toast,
-                        translateX: [0, 300],
-                        opacity: [1, 0],
-                        duration: 500,
-                        easing: 'easeInExpo',
-                        complete: () => {
-                            toast.classList.add('hidden');
-                        }
-                    });
-                }, 4000);
-            });
-        }
+        // Handled by Alpine in header component
     };
 
     // 5. Mini Interactive Performance Chart Animation (SVG path)

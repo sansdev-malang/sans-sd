@@ -30,6 +30,28 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        User::firstOrCreate(
+            ['email' => 'superadmin1@sans.dev'],
+            [
+                'name' => 'Super Admin 1',
+                'password' => Hash::make('password'),
+                'role' => 'super_admin',
+                'employee_id' => null,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        User::firstOrCreate(
+            ['email' => 'superadmin2@sans.dev'],
+            [
+                'name' => 'Super Admin 2',
+                'password' => Hash::make('password'),
+                'role' => 'super_admin',
+                'employee_id' => null,
+                'email_verified_at' => now(),
+            ]
+        );
+
                 \App\Models\Setting::set('app_name', 'SANS SD');
         \App\Models\Setting::set('unit_name', 'SANS SD Malang');
         \App\Models\Setting::set('app_copyright', '© 2026 SANS.dev SD School Information System. All rights reserved.');

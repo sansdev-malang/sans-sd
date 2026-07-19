@@ -21,7 +21,7 @@
                 <!-- Photo Preview Section -->
                 <div class="flex items-center gap-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-150 dark:border-slate-850">
                     @if($teacher->photo)
-                        <img id="photo-preview" src="{{ asset('storage/photos/' . $teacher->photo) }}" class="w-16 h-16 rounded-full object-cover border-2 border-white dark:border-slate-800 shadow-sm" alt="{{ $teacher->name }}">
+                        <img id="photo-preview" src="{{ str_contains($teacher->photo, 'photos/') ? asset('storage/' . $teacher->photo) : asset('storage/photos/' . $teacher->photo) }}" class="w-16 h-16 rounded-full object-cover border-2 border-white dark:border-slate-800 shadow-sm" alt="{{ $teacher->name }}">
                     @else
                         <div id="photo-fallback" class="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-lg font-bold text-slate-700 dark:text-slate-300 border-2 border-white dark:border-slate-800 uppercase">
                             {{ substr($teacher->name, 0, 2) }}

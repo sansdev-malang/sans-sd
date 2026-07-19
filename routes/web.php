@@ -49,17 +49,17 @@ Route::get('/absensi_izin_cuti', function () {
     return view('admin.absensi_izin_cuti');
 })->middleware(['auth', 'verified'])->name('absensi_izin_cuti');
 
-Route::get('/absensi_approval', function () {
-    return view('admin.absensi_approval');
-})->middleware(['auth', 'verified'])->name('absensi_approval');
+Route::get('/leave-approvals', [\App\Http\Controllers\LeaveApprovalController::class, 'index'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leave-approvals.index');
+Route::post('/leave-approvals/{id}/approve', [\App\Http\Controllers\LeaveApprovalController::class, 'approve'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leave-approvals.approve');
+Route::post('/leave-approvals/{id}/reject', [\App\Http\Controllers\LeaveApprovalController::class, 'reject'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leave-approvals.reject');
 
 Route::get('/absensi_mesin', function () {
     return view('admin.absensi_mesin');
-})->middleware(['auth', 'verified'])->name('absensi_mesin');
+})->middleware(['auth', 'verified', 'role:super_admin'])->name('absensi_mesin');
 
 Route::get('/absensi_log_penarikan', function () {
     return view('admin.absensi_log_penarikan');
-})->middleware(['auth', 'verified'])->name('absensi_log_penarikan');
+})->middleware(['auth', 'verified', 'role:super_admin'])->name('absensi_log_penarikan');
 
 Route::get('/absensi_shift', function () {
     return view('admin.absensi_shift');
@@ -108,9 +108,13 @@ Route::get('/form_homebase', function () {
     return view('admin.form_homebase');
 })->middleware(['auth', 'verified'])->name('form_homebase');
 
-Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:super_admin'])->group(function () {
     Route::get('/settings', [SettingController::class, 'index'])->name('settings');
     Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::resource('users', \App\Http\Controllers\UserController::class);
+});
+
+Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->group(function () {
 
     // New English singular based routes
     Route::get('teachers/download-template', [\App\Http\Controllers\TeacherController::class, 'downloadTemplate'])->name('teachers.download-template');
@@ -124,9 +128,10 @@ Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp'])->g
     Route::resource('employee-types', EmployeeTypeController::class);
     Route::resource('attendances', AttendanceController::class);
     Route::resource('leaves', \App\Http\Controllers\LeaveRequestController::class);
+    Route::get('leave-history', [\App\Http\Controllers\LeaveRequestController::class, 'history'])->name('leave-history.index');
 });
 
-Route::middleware(['auth', 'verified', 'role:employee,admin_sd,admin_paud,admin_smp'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:employee,admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->group(function () {
     Route::get('my-attendance', [\App\Http\Controllers\MyAttendanceController::class, 'index'])->name('my-attendance');
     Route::resource('my-leaves', \App\Http\Controllers\MyLeaveRequestController::class);
 });
@@ -149,13 +154,15 @@ Route::middleware('hrd.api')->prefix('api/v1/hrd')->group(function () {
     Route::post('leave-requests/decision', [\App\Http\Controllers\Api\HrdApiController::class, 'leaveDecision']);
 });
 
+Route::middleware(['auth', 'role:super_admin'])->group(function () {
+    Route::post('zkteco-devices/{zktecoDevice}/ping', [ZktecoDeviceController::class, 'ping'])->name('zkteco-devices.ping');
+    Route::resource('zkteco-devices', ZktecoDeviceController::class);
+});
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    Route::post('zkteco-devices/{zktecoDevice}/ping', [ZktecoDeviceController::class, 'ping'])->name('zkteco-devices.ping');
-    Route::resource('zkteco-devices', ZktecoDeviceController::class);
 });
 
 require __DIR__.'/auth.php';

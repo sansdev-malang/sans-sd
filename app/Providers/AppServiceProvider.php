@@ -40,6 +40,35 @@ class AppServiceProvider extends ServiceProvider
         Blade::if('norole', function (array $roles) {
             return Auth::check() && ! in_array(Auth::user()->role, $roles);
         });
+
+        // Share pending leaves & user notifications with header component
+        view()->composer('partials.admin.header', function ($view) {
+            if (Auth::check()) {
+                $user = Auth::user();
+                $schoolUnit = config('app.school_unit');
+                
+                if (in_array($user->role, ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp', 'kepala_sekolah', 'waka'])) {
+                    $pendingLeavesQuery = \App\Models\LeaveRequest::with('employee')->where('status', 'Pending');
+                    if ($schoolUnit) {
+                        $pendingLeavesQuery->whereHas('employee', function ($q) use ($schoolUnit) {
+                            $q->where('unit', $schoolUnit);
+                        });
+                    }
+                    $pendingLeavesCount = (clone $pendingLeavesQuery)->count();
+                    $pendingLeaves = $pendingLeavesQuery->latest()->limit(5)->get();
+                    
+                    $view->with(compact('pendingLeaves', 'pendingLeavesCount'));
+                } else {
+                    $myNotifications = \App\Models\LeaveRequest::where('employee_id', $user->employee_id)
+                        ->whereIn('status', ['Approved', 'Rejected'])
+                        ->latest()
+                        ->limit(5)
+                        ->get();
+                    
+                    $view->with(compact('myNotifications'));
+                }
+            }
+        });
     }
 }
 
