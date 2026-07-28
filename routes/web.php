@@ -41,9 +41,7 @@ Route::get('/absensi_laporan', function () {
     return view('admin.absensi_laporan');
 })->middleware(['auth', 'verified'])->name('absensi_laporan');
 
-Route::get('/absensi_riwayat', function () {
-    return view('admin.absensi_riwayat');
-})->middleware(['auth', 'verified'])->name('absensi_riwayat');
+
 
 Route::get('/absensi_izin_cuti', function () {
     return view('admin.absensi_izin_cuti');
@@ -123,15 +121,20 @@ Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepal
 
     Route::get('employees/download-template', [EmployeeController::class, 'downloadTemplate'])->name('employees.download-template');
     Route::post('employees/import', [EmployeeController::class, 'import'])->name('employees.import');
-    Route::get('attendances/recap', [AttendanceController::class, 'recap'])->name('attendances.recap');
+    Route::post('employees/generate-accounts', [EmployeeController::class, 'generateAccounts'])->name('employees.generate-accounts');
+    Route::post('employees/{employee}/generate-account', [EmployeeController::class, 'generateSingleAccount'])->name('employees.generate-account');
     Route::resource('employees', EmployeeController::class);
     Route::resource('employee-types', EmployeeTypeController::class);
-    Route::resource('attendances', AttendanceController::class);
+    Route::resource('attendances', AttendanceController::class)->except(['index', 'show']);
     Route::resource('leaves', \App\Http\Controllers\LeaveRequestController::class);
     Route::get('leave-history', [\App\Http\Controllers\LeaveRequestController::class, 'history'])->name('leave-history.index');
 });
 
 Route::middleware(['auth', 'verified', 'role:employee,admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->group(function () {
+    Route::get('attendances', [\App\Http\Controllers\AttendanceController::class, 'index'])->name('attendances.index');
+    Route::get('attendances/export', [\App\Http\Controllers\AttendanceController::class, 'export'])->name('attendances.export');
+    Route::get('bonus-reports', [\App\Http\Controllers\BonusReportController::class, 'index'])->name('bonus-reports.index');
+    Route::get('bonus-reports/export', [\App\Http\Controllers\BonusReportController::class, 'export'])->name('bonus-reports.export');
     Route::get('my-attendance', [\App\Http\Controllers\MyAttendanceController::class, 'index'])->name('my-attendance');
     Route::resource('my-leaves', \App\Http\Controllers\MyLeaveRequestController::class);
 });
@@ -166,3 +169,12 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Slip Gaji
+Route::middleware(['auth', 'verified', 'role:employee,kepala_sekolah,waka,admin_sd,super_admin'])->group(function () {
+    Route::get('attendances', [\App\Http\Controllers\AttendanceController::class, 'index'])->name('attendances.index');
+    Route::get('attendances/export', [\App\Http\Controllers\AttendanceController::class, 'export'])->name('attendances.export');
+    Route::get('bonus-reports', [\App\Http\Controllers\BonusReportController::class, 'index'])->name('bonus-reports.index');
+    Route::get('bonus-reports/export', [\App\Http\Controllers\BonusReportController::class, 'export'])->name('bonus-reports.export');
+    Route::get('payslips', [\App\Http\Controllers\PayslipController::class, 'index'])->name('payslips.index');
+});

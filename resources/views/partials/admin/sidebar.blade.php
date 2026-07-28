@@ -6,19 +6,17 @@
         class="workspace-selector flex items-center justify-between p-2 mb-4 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg cursor-pointer transition-colors relative group">
         <div class="flex items-center gap-2.5">
             @if (setting('app_logo'))
-                <img src="{{ asset('storage/' . setting('app_logo')) }}" alt="Logo" class="w-8 h-8 rounded-lg object-cover shrink-0">
+                <img src="{{ asset('storage/' . setting('app_logo')) }}" alt="Logo" class="w-8 h-8 rounded-lg object-cover shrink-0 shadow-sm">
             @else
-                <div class="w-8 h-8 rounded-lg logo-gradient-bg flex items-center justify-center shrink-0">
-                    <span class="text-white text-lg font-bold"
-                        style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">
-                        {{ substr(setting('app_name', 'SANS.dev'), 0, 1) }}
+                <div class="w-8 h-8 rounded-lg logo-gradient-bg flex items-center justify-center shrink-0 shadow-sm">
+                    <span class="text-white text-lg font-bold" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">
+                        {{ substr(setting('app_name', 'SANS SD'), 0, 1) }}
                     </span>
                 </div>
             @endif
             <div class="school-info overflow-hidden">
-                <h1 class="text-lg text-slate-900 dark:text-slate-50 truncate leading-normal tracking-wide"
-                    style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">
-                    {{ setting('app_name', 'SANS.dev') }}
+                <h1 class="text-lg text-slate-900 dark:text-slate-50 truncate leading-normal tracking-wide" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">
+                    {{ setting('app_name', 'SANS SD') }}
                 </h1>
             </div>
         </div>
@@ -61,6 +59,7 @@
                         Data Siswa
                     </span>
                 </a>
+                @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin_sd') || auth()->user()->hasRole('admin_paud') || auth()->user()->hasRole('admin_smp') || auth()->user()->hasRole('kepala_sekolah') || auth()->user()->hasRole('waka'))
                 <a href="{{ route('teachers.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg
                     {{ Request::routeIs('teachers.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
                     text-xs relative group">
@@ -71,6 +70,7 @@
                         Data Guru
                     </span>
                 </a>
+                @endif
                 <a href="{{ route('rombel') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg 
                     {{ Request::routeIs('rombel') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
                     text-xs font-medium relative group">
@@ -154,75 +154,67 @@
             </div>
         </div>
 
-        <!-- Group 3: ZK-Absensi (Dropdown style) -->
+                        <!-- Group: Layanan Pegawai -->
         <div>
-            <h3
-                class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
-                Manajemen Absensi</h3>
-            <nav class="space-y-1"></nav>
-            <div x-data="{ 
-                open1: {{ Request::routeIs('attendances.recap', 'absensi_laporan', 'absensi_riwayat') ? 'true' : 'false' }}, 
-                open2: {{ Request::routeIs('leaves.*', 'leave-approvals.*', 'leave-history.*') ? 'true' : 'false' }} 
-            }">
-                
-                <!-- Data Kehadiran -->
-                <button @click="open1 = !open1"
-                    class="menu-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors text-xs font-medium relative group cursor-pointer">
-                    <div class="flex items-center gap-3">
-                        <i data-lucide="scan-face" class="menu-icon w-4 h-4"></i>
-                        <span class="menu-text">Data Kehadiran</span>
-                    </div>
-                    <i data-lucide="chevron-right" class="w-3.5 h-3.5 transition-transform duration-200"
-                        :style="open1 ? 'transform: rotate(90deg);' : ''"></i>
-                </button>
-
-                <div x-show="open1" x-collapse
-                    class="mt-1 ml-5 pl-4 border-l border-slate-200 dark:border-slate-800 space-y-1"
-                    style="margin-left:20px">
-                    <a href="{{ route('attendances.recap') }}" class="block py-1.5 text-xs font-medium {{ Request::routeIs('attendances.recap') ? 'text-indigo-650 dark:text-indigo-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
+            <h3 class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-4">
+                Layanan Pegawai
+            </h3>
+            <nav class="space-y-1 mb-2">
+                <a href="{{ route('attendances.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('attendances.index') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} text-xs relative group">
+                    <i data-lucide="scan-face" class="menu-icon w-4 h-4"></i>
+                    <span class="menu-text">Data Absensi</span>
+                    <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-950 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
                         Data Absensi
-                    </a>
-                    <a href="{{ route('absensi_laporan') }}" class="block py-1.5 text-xs font-medium {{ Request::routeIs('absensi_laporan') ? 'text-indigo-650 dark:text-indigo-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
-                        Laporan / Rekap
-                    </a>
-                    <a href="{{ route('absensi_riwayat') }}" class="block py-1.5 text-xs font-medium {{ Request::routeIs('absensi_riwayat') ? 'text-indigo-650 dark:text-indigo-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
-                        Riwayat Absensi
-                    </a>
-                </div>
-
-                <!-- Izin & Cuti -->
-                <button @click="open2 = !open2"
-                    class="menu-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors text-xs font-medium relative group cursor-pointer">
-                    <div class="flex items-center gap-3">
-                        <i data-lucide="calendar-clock" class="menu-icon w-4 h-4"></i>
-                        <span class="menu-text">Izin & Cuti</span>
-                    </div>
-                    <i data-lucide="chevron-right" class="w-3.5 h-3.5 transition-transform duration-200"
-                        :style="open2 ? 'transform: rotate(90deg);' : ''"></i>
-                </button>
-
-                <div x-show="open2" x-collapse
-                    class="mt-1 ml-5 pl-4 border-l border-slate-200 dark:border-slate-800 space-y-1"
-                    style="margin-left:20px">
-                    <a href="{{ route('leaves.index') }}" class="block py-1.5 text-xs font-medium {{ Request::routeIs('leaves.*') ? 'text-indigo-650 dark:text-indigo-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
-                        Pengajuan Izin/Cuti
-                    </a>
-                    <a href="{{ route('leave-approvals.index') }}" class="block py-1.5 text-xs font-medium {{ Request::routeIs('leave-approvals.*') ? 'text-indigo-650 dark:text-indigo-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
-                        Approval (Persetujuan)
-                    </a>
-                    <a href="{{ route('leave-history.index') }}" class="block py-1.5 text-xs font-medium {{ Request::routeIs('leave-history.*') ? 'text-indigo-650 dark:text-indigo-400 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
-                        Riwayat Izin/Cuti
-                    </a>
-                </div>
-
-            </div>
+                    </span>
+                </a>
+                <a href="{{ route('bonus-reports.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('bonus-reports.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} text-xs relative group">
+                    <i data-lucide="gift" class="menu-icon w-4 h-4"></i>
+                    <span class="menu-text">Rekap Bonus</span>
+                    <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-950 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
+                        Rekap Bonus
+                    </span>
+                </a>
+                <a href="{{ route('my-leaves.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('my-leaves.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} text-xs relative group">
+                    <i data-lucide="file-signature" class="menu-icon w-4 h-4"></i>
+                    <span class="menu-text">Izin & Cuti Saya</span>
+                    <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-950 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
+                        Izin & Cuti Saya
+                    </span>
+                </a>
+                <a href="{{ route('payslips.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('payslips.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} text-xs relative group">
+                    <i data-lucide="file-text" class="menu-icon w-4 h-4"></i>
+                    <span class="menu-text">Slip Gaji</span>
+                    <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-950 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
+                        Slip Gaji
+                    </span>
+                </a>
+            </nav>
         </div>
 
-        @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin_sd') || auth()->user()->hasRole('admin_paud') || auth()->user()->hasRole('admin_smp'))
+        @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin_sd') || auth()->user()->hasRole('admin_paud') || auth()->user()->hasRole('admin_smp') || auth()->user()->hasRole('kepala_sekolah'))
+        <!-- Group: Admin Absensi & Cuti -->
+        <div>
+            <h3 class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-4">
+                Admin Absensi & Cuti
+            </h3>
+            
+            <nav class="space-y-1 mb-2">
+                <a href="{{ route('leaves.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('leaves.*', 'leave-approvals.*', 'leave-history.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} text-xs relative group">
+                    <i data-lucide="calendar-clock" class="menu-icon w-4 h-4"></i>
+                    <span class="menu-text">Persetujuan Izin / Cuti</span>
+                    <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-950 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
+                        Persetujuan Izin / Cuti
+                    </span>
+                </a>
+            </nav>
+        </div>
+        @endif
+
+                @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin_sd') || auth()->user()->hasRole('admin_paud') || auth()->user()->hasRole('admin_smp') || auth()->user()->hasRole('kepala_sekolah'))
         <!-- Group: Manajemen Pegawai -->
         <div>
             <h3
-                class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-550 uppercase tracking-wider mb-2">
+                class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-555 uppercase tracking-wider mb-2">
                 Manajemen Pegawai</h3>
             <nav class="space-y-1">
                 <!-- Data Pegawai -->
@@ -242,39 +234,6 @@
                     <span
                         class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-950 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
                         Tipe Pegawai
-                    </span>
-                </a>
-            </nav>
-        </div>
-        @endif
-
-        @if(auth()->user()->hasRole('employee'))
-        <!-- Group: Portal Pegawai -->
-        <div>
-            <h3
-                class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
-                Portal Pegawai</h3>
-            <nav class="space-y-1">
-                <a href="{{ route('my-attendance') }}"
-                    class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg
-                    {{ Request::routeIs('my-attendance') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
-                    text-xs relative group">
-                    <i data-lucide="calendar-days" class="menu-icon w-4 h-4"></i>
-                    <span class="menu-text">Absensi Saya</span>
-                    <span
-                        class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-950 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
-                        Absensi Saya
-                    </span>
-                </a>
-                <a href="{{ route('my-leaves.index') }}"
-                    class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg
-                    {{ Request::routeIs('my-leaves.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
-                    text-xs relative group">
-                    <i data-lucide="file-signature" class="menu-icon w-4 h-4"></i>
-                    <span class="menu-text">Izin / Cuti Saya</span>
-                    <span
-                        class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-950 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
-                        Izin / Cuti Saya
                     </span>
                 </a>
             </nav>

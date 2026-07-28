@@ -26,7 +26,9 @@ class UserController extends Controller
             $query->where('role', $request->input('role'));
         }
 
-        $users = $query->latest()->get();
+                $perPage = $request->input('per_page', 10);
+        $perPageNum = $perPage === 'all' ? 1000000 : (int)$perPage;
+        $users = $query->latest()->paginate($perPageNum)->appends($request->query());
         
         // Fetch all employees in this unit to link to accounts
         $schoolUnit = config('app.school_unit');
@@ -54,7 +56,7 @@ class UserController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
-            'employee_id' => $validated['role'] === 'employee' ? $validated['employee_id'] : null,
+            'employee_id' => $validated['employee_id'] ?? null,
         ]);
 
         return redirect()->route('users.index')
@@ -77,7 +79,7 @@ class UserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'role' => $validated['role'],
-            'employee_id' => $validated['role'] === 'employee' ? $validated['employee_id'] : null,
+            'employee_id' => $validated['employee_id'] ?? null,
         ];
 
         if ($request->filled('password')) {

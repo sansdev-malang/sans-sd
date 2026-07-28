@@ -3,8 +3,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/x-icon" href="{{ setting('app_favicon') ? asset('storage/' . setting('app_favicon')) : asset('favicon.ico') }}">
-    <title>{{ setting('app_name', 'SANS.dev') }} SIS - Portal Pendidikan</title>
+    @if(setting('app_favicon'))
+        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . setting('app_favicon')) }}">
+    @else
+        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%236366f1'/><stop offset='100%' stop-color='%23a855f7'/></linearGradient></defs><rect width='100' height='100' rx='25' fill='url(%23g)'/><text x='50' y='75' font-family='Arial, sans-serif' font-size='65' font-weight='bold' fill='white' text-anchor='middle'>{{ substr(setting('app_name', 'SANS'), 0, 1) }}</text></svg>">
+    @endif
+    <title>SANS School System SIS - Portal Pendidikan</title>
 
     <!-- Google Fonts: Inter & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -89,7 +93,7 @@
                     </span>
                 </div>
             @endif
-            <span class="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">{{ setting('app_name', 'SANS.dev') }}</span>
+            <span class="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">SANS School System</span>
         </div>
 
         <div class="flex items-center gap-4">
@@ -138,7 +142,7 @@
                 
                 <div class="flex items-center justify-between pt-6 mt-4 border-t border-slate-100 dark:border-slate-900/60">
                     <span class="text-[10px] font-bold text-teal-650 dark:text-teal-400 uppercase tracking-widest">Login ke Dashboard PAUD & TK</span>
-                    <a href="/admin" class="w-8 h-8 rounded-full bg-[#eff6ff] hover:bg-[#dbeafe] text-blue-650 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-blue-400 flex items-center justify-center transition-colors">
+                    <a href="http://sans-paud.test/login" class="w-8 h-8 rounded-full bg-[#eff6ff] hover:bg-[#dbeafe] text-blue-650 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-blue-400 flex items-center justify-center transition-colors">
                         <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </a>
                 </div>
@@ -161,7 +165,7 @@
                 
                 <div class="flex items-center justify-between pt-6 mt-4 border-t border-slate-100 dark:border-slate-900/60">
                     <span class="text-[10px] font-bold text-slate-800 dark:text-slate-400 uppercase tracking-widest">Login ke Dashboard SD</span>
-                    <a href="{{ route('login') }}" class="w-8 h-8 rounded-full bg-[#eff6ff] hover:bg-[#dbeafe] text-blue-655 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-blue-400 flex items-center justify-center transition-colors">
+                    <a href="http://sans-sd.test/login" class="w-8 h-8 rounded-full bg-[#eff6ff] hover:bg-[#dbeafe] text-blue-655 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-blue-400 flex items-center justify-center transition-colors">
                         <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </a>
                 </div>
@@ -184,7 +188,7 @@
                 
                 <div class="flex items-center justify-between pt-6 mt-4 border-t border-slate-100 dark:border-slate-900/60">
                     <span class="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">Login ke Dashboard SMP</span>
-                    <a href="/admin" class="w-8 h-8 rounded-full bg-[#eff6ff] hover:bg-[#dbeafe] text-blue-655 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-blue-400 flex items-center justify-center transition-colors">
+                    <a href="http://sans-smp.test/login" class="w-8 h-8 rounded-full bg-[#eff6ff] hover:bg-[#dbeafe] text-blue-655 dark:bg-slate-900 dark:hover:bg-slate-800 dark:text-blue-400 flex items-center justify-center transition-colors">
                         <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </a>
                 </div>
@@ -203,7 +207,7 @@
     <footer class="w-full border-t border-slate-200 dark:border-slate-800 bg-[#e6f0fa]/40 dark:bg-slate-950/40 transition-colors duration-200 py-8">
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="space-y-1 text-center md:text-left">
-                <p class="text-[10px] text-slate-500 dark:text-slate-400">{{ setting('app_copyright', '© 2026 SANS.dev School Information System. All rights reserved.') }}</p>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400">&copy; 2026 SANS School Information System. All rights reserved.</p>
             </div>
             <div class="flex flex-wrap gap-x-6 gap-y-2 justify-center text-[10px] font-semibold text-slate-500 dark:text-slate-400">
                 <a href="#" class="hover:text-slate-900 dark:hover:text-slate-50 transition-colors">Privacy Policy</a>

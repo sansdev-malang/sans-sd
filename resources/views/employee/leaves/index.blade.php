@@ -161,7 +161,7 @@
                     <div>
                         <label class="block font-semibold text-slate-700 dark:text-slate-350 mb-1.5">File Lampiran (Surat Dokter / Bukti Pendukung)</label>
                         <input type="file" name="attachment" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-880 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
-                        <span class="text-[10px] text-slate-400 block mt-1">Format: PDF, PNG, JPG, JPEG, DOC, DOCX. Maksimal 2MB.</span>
+                        <span class="text-[10px] text-slate-400 block mt-1">Format: PDF, PNG, JPG, JPEG, DOC, DOCX. Maksimal 1MB.</span>
                     </div>
 
                     <div class="flex gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-900 justify-end">

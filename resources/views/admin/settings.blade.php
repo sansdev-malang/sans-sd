@@ -84,7 +84,31 @@
                     </div>
                 </div>
 
-                <!-- RIGHT SIDE: BRANDING (LOGO & FAVICON) -->
+                <!-- Integrasi API HRD Card -->
+                <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden mt-6">
+                    <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <h3 class="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-50">Integrasi API HRD</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pengaturan koneksi API untuk tersambung ke aplikasi pusat HRD.</p>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <!-- API URL -->
+                        <div>
+                            <label for="hrd_api_url" class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1.5">URL Aplikasi HRD</label>
+                            <input type="url" name="hrd_api_url" id="hrd_api_url" value="{{ old('hrd_api_url', setting('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'))) }}" placeholder="contoh: https://hrd.sekolahanaksaleh.sch.id"
+                                class="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700 transition-colors">
+                        </div>
+
+                        <!-- API Token -->
+                        <div>
+                            <label for="hrd_api_token" class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1.5">Token API HRD</label>
+                            <input type="text" name="hrd_api_token" id="hrd_api_token" value="{{ old('hrd_api_token', setting('hrd_api_token', config('app.hrd_api_token'))) }}"
+                                class="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700 transition-colors">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE: BRANDING (LOGO & FAVICON) -->
                 <div class="space-y-6">
                     <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
                         <div class="p-6 border-b border-slate-200 dark:border-slate-800">
@@ -103,7 +127,7 @@
                                             <img id="logo-preview" src="{{ asset('storage/' . setting('app_logo')) }}" alt="Logo Preview" class="w-full h-full object-cover">
                                         @else
                                             <div id="logo-placeholder" class="w-10 h-10 rounded-lg logo-gradient-bg flex items-center justify-center">
-                                                <span class="text-white text-base font-bold">A</span>
+                                                <span class="text-white text-base font-bold" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">{{ substr(setting('app_name', 'SANS'), 0, 1) }}</span>
                                             </div>
                                             <img id="logo-preview" src="" alt="Logo Preview" class="w-full h-full object-cover hidden">
                                         @endif
@@ -114,7 +138,7 @@
                                             class="px-3 py-1.5 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-350 text-[10px] font-bold rounded-lg cursor-pointer transition-colors flex items-center gap-1.5">
                                             <i data-lucide="upload" class="w-3.5 h-3.5"></i> Unggah Logo
                                         </button>
-                                        <p class="text-[10px] text-slate-500 dark:text-slate-400">Format: PNG, JPG, atau SVG. Maks 2MB.</p>
+                                        <p class="text-[10px] text-slate-500 dark:text-slate-400">Format: PNG, JPG, atau SVG. Maks 1MB.</p>
                                     </div>
                                 </div>
                             </div>
@@ -128,8 +152,8 @@
                                         @if (setting('app_favicon'))
                                             <img id="favicon-preview" src="{{ asset('storage/' . setting('app_favicon')) }}" alt="Favicon Preview" class="w-6 h-6 object-contain">
                                         @else
-                                            <div id="favicon-placeholder" class="p-1 rounded bg-slate-100 dark:bg-slate-800">
-                                                <i data-lucide="globe" class="w-5 h-5 text-slate-400"></i>
+                                            <div id="favicon-placeholder" class="w-8 h-8 rounded bg-slate-100 dark:bg-slate-800 logo-gradient-bg flex items-center justify-center shrink-0 shadow-sm">
+                                                <span class="text-white text-xs font-bold" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">{{ substr(setting('app_name', 'SANS'), 0, 1) }}</span>
                                             </div>
                                             <img id="favicon-preview" src="" alt="Favicon Preview" class="w-6 h-6 object-contain hidden">
                                         @endif

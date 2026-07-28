@@ -69,35 +69,39 @@ class HrdApiController extends Controller
     /**
      * Store a newly created employee in the school unit.
      */
-    public function store(Request $request)
+        public function store(Request $request)
     {
-        $messages = [
-            'name.required' => 'Nama lengkap wajib diisi.',
-            'email.required' => 'Alamat email wajib diisi.',
-            'email.email' => 'Format alamat email tidak valid.',
-            'email.unique' => 'Alamat email sudah digunakan oleh pegawai lain.',
-            'nuptk_nip_nik.unique' => 'NIP / NUPTK / NIK sudah digunakan oleh pegawai lain.',
-            'employee_type_code.required' => 'Tipe pegawai wajib dipilih.',
-            'unit.required' => 'Unit sekolah wajib ditentukan.',
-            'gender.required' => 'Jenis kelamin wajib dipilih.',
-            'employment_status.required' => 'Status kepegawaian wajib dipilih.',
-            'zkteco_uid.unique' => 'ID ZKTeco / PIN Fingerprint sudah digunakan oleh pegawai lain.',
-            'status.required' => 'Status keaktifan wajib dipilih.',
-        ];
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:employees,email',
-            'nuptk_nip_nik' => 'nullable|string|unique:employees,nuptk_nip_nik',
+            'email' => 'nullable|email|max:255',
+            'gender' => 'required|in:Male,Female,L,P',
+            'birth_place' => 'nullable|string|max:255',
+            'birth_date' => 'nullable|date',
+            'nik' => 'nullable|string|max:255',
+            'niy' => 'nullable|string|max:255',
+            'nuptk' => 'nullable|string|max:255',
+            'no_ukg' => 'nullable|string|max:255',
+            'nrg' => 'nullable|string|max:255',
+            'pangkat_golongan' => 'nullable|string|max:255',
+            'last_education' => 'nullable|string|max:255',
+            'major' => 'nullable|string|max:255',
+            'position' => 'nullable|string|max:255',
+            'additional_position' => 'nullable|string|max:255',
+            'task_start_date' => 'nullable|date',
+            'employment_status' => 'nullable|string|max:255',
+            'appointment_date' => 'nullable|date',
+            'last_sk_date' => 'nullable|date',
+            'last_sk_number' => 'nullable|string|max:255',
+            'work_period' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'phone' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
+            'zkteco_uid' => 'nullable|string|max:255',
+            'photo' => 'nullable|image|max:2048',
+            'status' => 'required|in:Active,Leave,Inactive',
             'employee_type_code' => 'required|string|in:teacher,employee,management',
             'unit' => 'required|string|max:255',
-            'subject_position' => 'nullable|string|max:255',
-            'gender' => 'required|string|in:Male,Female',
-            'employment_status' => 'required|string|max:255',
-            'zkteco_uid' => 'nullable|string|unique:employees,zkteco_uid',
-            'status' => 'required|string|in:Active,Inactive',
-            'photo' => 'nullable|image|max:2048',
-        ], $messages);
+        ]);
 
         $type = \App\Models\EmployeeType::where('code', $validated['employee_type_code'])->first();
         if (!$type) {
@@ -127,7 +131,7 @@ class HrdApiController extends Controller
     /**
      * Update the specified employee in the school unit.
      */
-    public function update(Request $request, $id)
+        public function update(Request $request, $id)
     {
         $employee = Employee::find($id);
         if (!$employee) {
@@ -137,33 +141,37 @@ class HrdApiController extends Controller
             ], 404);
         }
 
-        $messages = [
-            'name.required' => 'Nama lengkap wajib diisi.',
-            'email.required' => 'Alamat email wajib diisi.',
-            'email.email' => 'Format alamat email tidak valid.',
-            'email.unique' => 'Alamat email sudah digunakan oleh pegawai lain.',
-            'nuptk_nip_nik.unique' => 'NIP / NUPTK / NIK sudah digunakan oleh pegawai lain.',
-            'employee_type_code.required' => 'Tipe pegawai wajib dipilih.',
-            'unit.required' => 'Unit sekolah wajib ditentukan.',
-            'gender.required' => 'Jenis kelamin wajib dipilih.',
-            'employment_status.required' => 'Status kepegawaian wajib dipilih.',
-            'zkteco_uid.unique' => 'ID ZKTeco / PIN Fingerprint sudah digunakan oleh pegawai lain.',
-            'status.required' => 'Status keaktifan wajib dipilih.',
-        ];
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:employees,email,' . $id,
-            'nuptk_nip_nik' => 'nullable|string|unique:employees,nuptk_nip_nik,' . $id,
+            'email' => 'nullable|email|max:255',
+            'gender' => 'required|in:Male,Female,L,P',
+            'birth_place' => 'nullable|string|max:255',
+            'birth_date' => 'nullable|date',
+            'nik' => 'nullable|string|max:255',
+            'niy' => 'nullable|string|max:255',
+            'nuptk' => 'nullable|string|max:255',
+            'no_ukg' => 'nullable|string|max:255',
+            'nrg' => 'nullable|string|max:255',
+            'pangkat_golongan' => 'nullable|string|max:255',
+            'last_education' => 'nullable|string|max:255',
+            'major' => 'nullable|string|max:255',
+            'position' => 'nullable|string|max:255',
+            'additional_position' => 'nullable|string|max:255',
+            'task_start_date' => 'nullable|date',
+            'employment_status' => 'nullable|string|max:255',
+            'appointment_date' => 'nullable|date',
+            'last_sk_date' => 'nullable|date',
+            'last_sk_number' => 'nullable|string|max:255',
+            'work_period' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'phone' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
+            'zkteco_uid' => 'nullable|string|max:255',
+            'photo' => 'nullable|image|max:2048',
+            'status' => 'required|in:Active,Leave,Inactive',
             'employee_type_code' => 'required|string|in:teacher,employee,management',
             'unit' => 'required|string|max:255',
-            'subject_position' => 'nullable|string|max:255',
-            'gender' => 'required|string|in:Male,Female',
-            'employment_status' => 'required|string|max:255',
-            'zkteco_uid' => 'nullable|string|unique:employees,zkteco_uid,' . $id,
-            'status' => 'required|string|in:Active,Inactive',
-            'photo' => 'nullable|image|max:2048',
-        ], $messages);
+        ]);
 
         $type = \App\Models\EmployeeType::where('code', $validated['employee_type_code'])->first();
         if (!$type) {
@@ -178,7 +186,8 @@ class HrdApiController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($employee->photo) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($employee->photo);
+                $oldPath = str_contains($employee->photo, 'photos/') ? $employee->photo : 'photos/' . $employee->photo;
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
             }
             $path = $request->file('photo')->store('photos', 'public');
             $validated['photo'] = $path;
@@ -190,7 +199,7 @@ class HrdApiController extends Controller
             'success' => true,
             'message' => 'Employee updated successfully.',
             'data' => $employee
-        ]);
+        ], 200);
     }
 
     /**

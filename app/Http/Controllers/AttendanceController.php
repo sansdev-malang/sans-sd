@@ -14,81 +14,221 @@ class AttendanceController extends Controller
      */
     public function index(Request $request)
     {
-        $date = $request->input('date', Carbon::today()->toDateString());
-        $query = Attendance::where('date', $date)->with('employee');
-
-        $schoolUnit = config('app.school_unit');
-        if ($schoolUnit) {
-            $query->whereHas('employee', function ($q) use ($schoolUnit) {
-                $q->where('unit', $schoolUnit);
-            });
-        } elseif ($request->filled('unit')) {
-            $unit = $request->input('unit');
-            $query->whereHas('employee', function ($q) use ($unit) {
-                $q->where('unit', $unit);
-            });
-        }
-
-        if ($request->filled('type')) {
-            $type = $request->input('type');
-            $query->whereHas('employee.employeeType', function ($q) use ($type) {
-                if (is_numeric($type)) {
-                    $q->where('id', $type);
-                } else {
-                    $q->where('code', $type)->orWhere('name', $type);
-                }
-            });
-        }
-
-        $attendances = $query->get();
-
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'date' => $date,
-                'data' => $attendances,
-            ]);
-        }
-
-        return view('admin.attendances.index', compact('attendances', 'date'));
-    }
-
-    /**
-     * Fetch attendance recap. SD & SMP records are combined/shared.
-     */
-    public function recap(Request $request)
-    {
-        $date = $request->input('date', Carbon::today()->toDateString());
+        $month = $request->query('month', date('Y-m'));
         $search = $request->input('search');
+        $perPage = $request->input('per_page', 15);
+        $schoolUnit = config('app.school_unit', 'smp');
 
-        $query = Attendance::where('date', $date)->with('employee');
+        $hrdUrl = \App\Models\Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
 
-        $schoolUnit = config('app.school_unit');
-        if ($schoolUnit) {
-            $query->whereHas('employee', function ($q) use ($schoolUnit) {
-                $q->where('unit', $schoolUnit);
-            });
-        }
-
-        if ($request->filled('search')) {
-            $query->whereHas('employee', function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%');
-            });
-        }
-
-        $attendances = $query->get();
-
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'date' => $date,
-                'data' => $attendances,
+        try {
+            $response = \Illuminate\Support\Facades\Http::get("{$hrdUrl}/api/attendance-matrix", [
+                'month' => $month,
+                'unit_id' => strtolower($schoolUnit)
             ]);
+            
+            $json = $response->json();
+            $reports = collect($json['data'] ?? []);
+            $startDate = \Carbon\Carbon::parse($json['start_date'] ?? date('Y-m-d'));
+            $endDate = \Carbon\Carbon::parse($json['end_date'] ?? date('Y-m-d'));
+
+                        // Apply Role-based filtering
+            $user = auth()->user();
+            if ($user && $user->role === 'employee' && $user->employee_id) {
+                // If it's a regular employee, only show their own report
+                $reports = $reports->filter(function ($item) use ($user) {
+                    return ($item['employee']['id'] ?? 0) == $user->employee_id;
+                });
+            } else {
+                // Filter Search
+                if (!empty($search)) {
+                    $reports = $reports->filter(function ($item) use ($search) {
+                        $name = $item['employee']['name'] ?? '';
+                        $nip = $item['employee']['nuptk_nip_nik'] ?? '';
+                        return stripos($name, $search) !== false || stripos($nip, $search) !== false;
+                    });
+                }
+            }
+
+            // Pagination
+            if ($perPage !== 'all') {
+                $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
+                $currentItems = $reports->slice(($currentPage - 1) * $perPage, $perPage)->values();
+                $paginatedReports = new \Illuminate\Pagination\LengthAwarePaginator(
+                    $currentItems,
+                    $reports->count(),
+                    $perPage,
+                    $currentPage,
+                    ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
+                );
+                $reports = $paginatedReports;
+            } else {
+                $reports = $reports->values();
+            }
+
+        } catch (\Exception $e) {
+            $reports = collect([]);
+            $startDate = \Carbon\Carbon::now();
+            $endDate = \Carbon\Carbon::now();
+            session()->flash('error', 'Gagal memuat matriks absensi dari HRD: ' . $e->getMessage());
         }
 
-        return view('admin.attendances.recap', compact('attendances', 'date', 'search'));
+        return view('admin.attendances.index', compact('reports', 'month', 'search', 'perPage', 'startDate', 'endDate'));
     }
 
+    public function export(Request $request)
+    {
+        ini_set('memory_limit', '512M');
+        set_time_limit(300);
+
+        $month = $request->query('month', date('Y-m'));
+        $search = $request->input('search');
+        $format = $request->input('format', 'excel');
+        $schoolUnit = config('app.school_unit', 'smp');
+
+        $hrdUrl = \App\Models\Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::get("{$hrdUrl}/api/attendance-matrix", [
+                'month' => $month,
+                'unit_id' => strtolower($schoolUnit)
+            ]);
+            $json = $response->json();
+            $reportsData = $json['data'] ?? [];
+            $startDate = \Carbon\Carbon::parse($json['start_date'] ?? date('Y-m-d'));
+            $endDate = \Carbon\Carbon::parse($json['end_date'] ?? date('Y-m-d'));
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memuat data dari HRD: ' . $e->getMessage());
+        }
+
+                $reports = collect($reportsData);
+        
+        // Apply Role-based filtering
+        $user = auth()->user();
+        if ($user && $user->role === 'employee' && $user->employee_id) {
+            // If it's a regular employee, only show their own report
+            $reports = $reports->filter(function ($item) use ($user) {
+                return ($item['employee']['id'] ?? 0) == $user->employee_id;
+            });
+        } else {
+            if (!empty($search)) {
+                $reports = $reports->filter(function ($item) use ($search) {
+                    $name = $item['employee']['name'] ?? '';
+                    $nip = $item['employee']['nuptk_nip_nik'] ?? '';
+                    return stripos($name, $search) !== false || stripos($nip, $search) !== false;
+                });
+            }
+        }
+        
+        $reports = $reports->values()->toArray();
+
+        $periodeStr = $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
+        $searchStr = !empty($search) ? '_Pencarian_' . preg_replace('/[^A-Za-z0-9]/', '', $search) : '';
+        $baseFileName = 'Matriks_Absensi_Unit_' . strtoupper($schoolUnit) . '_' . $month . $searchStr;
+
+        $start = $startDate->copy();
+        $end = clone $endDate;
+        $dates = [];
+        while($start <= $end) {
+            $dates[] = $start->copy();
+            $start->addDay();
+        }
+
+        if ($format === 'pdf') {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.attendances.export-pdf', compact('reports', 'periodeStr', 'dates', 'schoolUnit'))
+                ->setPaper('a4', 'landscape');
+            return $pdf->download($baseFileName . ".pdf");
+        }
+
+        // Excel
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Matriks Absensi');
+
+        $sheet->setCellValue('A1', 'NO');
+        $sheet->setCellValue('B1', 'NAMA PEGAWAI');
+        $sheet->getColumnDimension('A')->setWidth(5);
+        $sheet->getColumnDimension('B')->setWidth(30);
+
+        $colIndex = 3;
+        foreach ($dates as $dateObj) {
+            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
+            $sheet->setCellValue($colLetter . '1', $dateObj->format('d/M'));
+            $sheet->getColumnDimension($colLetter)->setWidth(12);
+            $colIndex++;
+        }
+
+        $lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex - 1);
+        $headerRange = 'A1:' . $lastColLetter . '1';
+        $sheet->getStyle($headerRange)->getFont()->setBold(true);
+        $sheet->getStyle($headerRange)->getFill()
+              ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+              ->getStartColor()->setARGB('FFD9E1F2');
+        $sheet->getStyle($headerRange)->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('B1')->getAlignment()->setHorizontal('left');
+
+        $sheet->freezePane('C2');
+
+        $row = 2;
+        $no = 1;
+        foreach ($reports as $report) {
+            $sheet->setCellValue('A' . $row, $no++);
+            $sheet->setCellValue('B' . $row, $report['employee']['name'] ?? '-');
+            
+            $colIndex = 3;
+            foreach ($dates as $dateObj) {
+                $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
+                $dateStr = $dateObj->format('Y-m-d');
+                $detail = $report['daily_details'][$dateStr] ?? null;
+                
+                $cellValue = '-';
+                if ($detail) {
+                    if ($detail['status'] === 'Hadir') {
+                        $in = $detail['check_in'] ?? '-';
+                        $out = $detail['check_out'] ?? '-';
+                        $cellValue = $in . "\n" . $out;
+                        $sheet->getStyle($colLetter . $row)->getAlignment()->setWrapText(true);
+                    } elseif ($detail['status'] === 'Alfa') {
+                        $cellValue = 'A';
+                        $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED));
+                    } elseif ($detail['status'] === 'Cuti/Izin') {
+                        $cellValue = $detail['leave_type'] ?? 'IZIN';
+                        $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE));
+                    } elseif ($detail['status'] === 'Libur') {
+                        $cellValue = 'L';
+                        $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF9CA3AF'));
+                    }
+                } else {
+                    if ($dateObj->isWeekend()) {
+                        $cellValue = 'L';
+                        $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF9CA3AF'));
+                    }
+                }
+                
+                $sheet->setCellValue($colLetter . $row, $cellValue);
+                if ($cellValue === 'A' || $cellValue === 'L' || $cellValue === '-' || $detail['status'] ?? '' === 'Cuti/Izin') {
+                    $sheet->getStyle($colLetter . $row)->getAlignment()->setHorizontal('center')->setVertical('center');
+                }
+                $colIndex++;
+            }
+            $row++;
+        }
+
+        $dataRange = 'A1:' . $lastColLetter . ($row - 1);
+        $sheet->getStyle($dataRange)->getBorders()->getAllBorders()
+              ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $responseHeaders = [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $baseFileName . '.xlsx"',
+            'Cache-Control' => 'max-age=0',
+        ];
+
+        return response()->stream(function () use ($writer) {
+            $writer->save('php://output');
+        }, 200, $responseHeaders);
+    }
     /**
      * Store a newly created resource in storage.
      */

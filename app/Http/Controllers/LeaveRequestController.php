@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\LeaveRequest;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class LeaveRequestController extends Controller
 {
@@ -29,12 +31,33 @@ class LeaveRequestController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'nullable|string',
-            'attachment' => 'nullable|file|mimes:pdf,png,jpg,jpeg,doc,docx|max:2048',
+            'attachment' => 'nullable|file|mimes:pdf,png,jpg,jpeg,doc,docx|max:1024',
         ]);
 
         if ($request->hasFile('attachment')) {
-            $path = $request->file('attachment')->store('attachments/leaves', 'public');
-            $validated['attachment'] = $path;
+            $file = $request->file('attachment');
+            $extension = strtolower($file->extension());
+            
+            if (in_array($extension, ['png', 'jpg', 'jpeg'])) {
+                // Compress image
+                $manager = new ImageManager(new Driver());
+                $image = $manager->decode($file);
+                $image->scaleDown(width: 1000);
+                
+                $filename = 'attachments/leaves/' . uniqid() . '.webp';
+                $fullPath = storage_path('app/public/' . $filename);
+                
+                if (!file_exists(dirname($fullPath))) {
+                    mkdir(dirname($fullPath), 0755, true);
+                }
+                
+                $image->save($fullPath, 80);
+                $validated['attachment'] = $filename;
+            } else {
+                // Store non-images (PDF, DOC) normally
+                $path = $file->store('attachments/leaves', 'public');
+                $validated['attachment'] = $path;
+            }
         }
 
         LeaveRequest::create($validated);

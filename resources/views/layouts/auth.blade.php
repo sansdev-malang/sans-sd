@@ -4,7 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SANS.dev - Log In</title>
+    <title>{{ setting('app_name', 'SANS') }} - Log In</title>
+    @if(setting('app_favicon'))
+        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . setting('app_favicon')) }}">
+    @else
+        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%236366f1'/><stop offset='100%' stop-color='%23a855f7'/></linearGradient></defs><rect width='100' height='100' rx='25' fill='url(%23g)'/><text x='50' y='75' font-family='Arial, sans-serif' font-size='65' font-weight='bold' fill='white' text-anchor='middle'>{{ substr(setting('app_name', 'SANS'), 0, 1) }}</text></svg>">
+    @endif
 
     <!-- Google Fonts: Inter & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,14 +72,14 @@
             <!-- Header section (Logo and Theme Toggle) -->
             <div class="flex items-center justify-between">
                 <a href="/" class="flex items-center gap-2.5">
-                    <!-- Logo badge with animated gradient -->
-                    <div
-                        class="w-8 h-8 rounded-lg logo-gradient-bg flex items-center justify-center shrink-0 shadow-sm">
-                        <span class="text-white text-lg font-bold"
-                            style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">A</span>
-                    </div>
-                    <span class="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50"
-                        style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">SANS.dev</span>
+                    @if (setting('app_logo'))
+                        <img src="{{ asset('storage/' . setting('app_logo')) }}" alt="Logo" class="w-8 h-8 rounded-lg object-cover shrink-0 shadow-sm">
+                    @else
+                        <div class="w-8 h-8 rounded-lg logo-gradient-bg flex items-center justify-center shrink-0 shadow-sm">
+                            <span class="text-white text-lg font-bold" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">{{ substr(setting('app_name', 'SANS'), 0, 1) }}</span>
+                        </div>
+                    @endif
+                    <span class="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">{{ setting('app_name', 'SANS') }}</span>
                 </a>
 
                 <!-- Light / Dark Switch Button -->
@@ -90,7 +95,7 @@
 
             <!-- Footer links -->
             <div class="text-center lg:text-left text-[10px] font-semibold text-slate-400">
-                &copy; 2026 SANS.dev School Information System.
+                {{ setting('app_copyright', '© 2026 SANS School Information System. All rights reserved.') }}
             </div>
         </div>
 
@@ -107,7 +112,7 @@
             <!-- Graphic layout content overlay -->
             <div class="absolute inset-0 flex flex-col justify-between p-12 text-white">
                 <div class="flex items-center gap-2">
-                    <span class="text-xs font-bold uppercase tracking-widest text-slate-400">SANS.dev Portal</span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-slate-400">SANS Portal</span>
                 </div>
 
                 <div class="space-y-4 max-w-md">

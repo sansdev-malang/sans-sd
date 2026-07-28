@@ -7,19 +7,24 @@
                 <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Data Pegawai & Guru</h2>
                 <p class="text-xs text-slate-500 dark:text-slate-400">Kelola dan pantau seluruh data pendidik (guru) dan kependidikan (karyawan/staff) di semua unit.</p>
             </div>
-            <div class="flex items-center gap-3 shrink-0">
-                <button onclick="alert('Fitur integrasi penarikan ZKTeco siap dikonfigurasikan')" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-855 text-slate-700 dark:text-slate-355 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-150 cursor-pointer">
-                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-500"></i>
-                    Tarik Mesin ZK
-                </button>
+            <div class="flex flex-wrap items-center gap-3 shrink-0">
                 <button onclick="toggleModal('import-employee-modal')" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-855 text-slate-700 dark:text-slate-355 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-150 cursor-pointer">
                     <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-slate-500"></i>
                     Impor Pegawai
                 </button>
-                <button onclick="toggleModal('add-employee-modal')" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-150 cursor-pointer">
+                <a href="{{ route('employees.create') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-150 cursor-pointer">
                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                     Tambah Pegawai
-                </button>
+                </a>
+                @if(auth()->user()->role === 'super_admin')
+                <form action="{{ route('employees.generate-accounts') }}" method="POST" class="m-0 p-0 flex">
+                    @csrf
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white text-xs font-semibold rounded-lg shadow-sm transition-all duration-150 cursor-pointer" onclick="return confirm('Generate akun untuk semua pegawai yang memiliki email tetapi belum punya akun?')">
+                        <i data-lucide="key" class="w-3.5 h-3.5"></i>
+                        Generate Akun Massal
+                    </button>
+                </form>
+                @endif
             </div>
         </section>
 
@@ -93,19 +98,19 @@
 
         <!-- TABLE SECTION -->
         <section class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto overflow-y-auto" style="max-height: calc(100vh - 240px);">
                 <table class="w-full text-xs border-collapse">
-                    <thead>
-                        <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-16">No</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Nama & Email</th>
+                    <thead class="sticky top-0 z-10 shadow-sm">
+                        <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-14">No</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider min-w-[200px]">Nama & Email</th>
                             @if(!config('app.school_unit'))
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-32">Unit</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-28">Unit</th>
                             @endif
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-32">Tipe</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-40">Jabatan / Mapel</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-28">NUPTK/NIP/NIK</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-24">ZK ID</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-40">Tipe</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-56">Jabatan</th>
+                            
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-32">ZK ID</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-24">Status</th>
                             <th class="px-6 py-4 text-right text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-24">Aksi</th>
                         </tr>
@@ -124,16 +129,12 @@
                                             </div>
                                         @endif
                                         <div>
-                                            <span @click="selectedEmp = {
-                                                name: '{{ addslashes($employee->name) }}',
-                                                nuptk_nip_nik: '{{ addslashes($employee->nuptk_nip_nik ?? "-") }}',
-                                                subject_position: '{{ addslashes($employee->subject_position ?? "-") }}',
-                                                unit: '{{ addslashes(strtoupper($employee->unit ?? "-")) }}',
-                                                email: '{{ addslashes($employee->email ?? "-") }}',
-                                                gender: '{{ addslashes($employee->gender ?? "-") }}',
-                                                employment_status: '{{ addslashes($employee->employment_status ?? "-") }}',
-                                                photo_url: '{{ $employee->photo ? (str_contains($employee->photo, 'photos/') ? asset('storage/' . $employee->photo) : asset('storage/photos/' . $employee->photo)) : '' }}'
-                                            }; showEmpDetailModal = true" class="text-slate-900 dark:text-slate-50 font-bold tracking-tight block cursor-pointer hover:underline hover:text-indigo-650 dark:hover:text-indigo-400">{{ $employee->name }}</span>
+                                            @php
+                                                $empData = $employee->toArray();
+                                                $empData['photo_url'] = $employee->photo ? (str_contains($employee->photo, 'photos/') ? asset('storage/' . $employee->photo) : asset('storage/photos/' . $employee->photo)) : '';
+                                                $empData['unit_name'] = 'SD';
+                                            @endphp
+                                            <span @click='selectedEmp = @json($empData); showEmpDetailModal = true' class="text-slate-900 dark:text-slate-50 font-bold tracking-tight block cursor-pointer hover:underline hover:text-indigo-650 dark:hover:text-indigo-400">{{ $employee->name }}</span>
                                             <span class="text-[10px] text-slate-500 dark:text-slate-400 block">{{ $employee->email ?? 'Tidak ada email' }}</span>
                                         </div>
                                     </div>
@@ -152,8 +153,13 @@
                                 <td class="px-6 py-4 text-slate-700 dark:text-slate-300 font-medium">
                                     {{ $employee->employeeType->name ?? '-' }}
                                 </td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-medium">{{ $employee->subject_position ?? '-' }}</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-[11px]">{{ $employee->nuptk_nip_nik ?? '-' }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="block text-slate-700 dark:text-slate-300 font-medium">{{ $employee->position ?? '-' }}</span>
+                                    @if(!empty($employee->additional_position))
+                                        <span class="block text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{{ $employee->additional_position }}</span>
+                                    @endif
+                                </td>
+                                
                                 <td class="px-6 py-4">
                                     @if($employee->zkteco_uid)
                                         <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-mono text-[10px]">ID: {{ $employee->zkteco_uid }}</span>
@@ -172,9 +178,17 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-1.5">
-                                        <button onclick="editEmployee({{ json_encode($employee) }})" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Edit Data">
+                                        @if(!$employee->user && auth()->user()->role === 'super_admin')
+                                        <form action="{{ route('employees.generate-account', $employee->id) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" class="p-1.5 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors cursor-pointer" title="Buatkan Akun" onclick="return confirm('Buat akun untuk {{ $employee->name }} dengan password default: sans1234?')">
+                                                <i data-lucide="user-plus" class="w-4 h-4"></i>
+                                            </button>
+                                        </form>
+                                        @endif
+                                        <a href="{{ route('employees.edit', $employee->id) }}" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Edit Data">
                                             <i data-lucide="edit" class="w-4 h-4"></i>
-                                        </button>
+                                        </a>
                                         <button onclick="deleteEmployee('{{ $employee->id }}', '{{ $employee->name }}')" class="p-1.5 hover:bg-red-50 dark:hover:bg-red-955/20 rounded-lg text-red-655 dark:text-red-400 hover:text-red-700 transition-colors cursor-pointer" title="Hapus Data">
                                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                                         </button>
@@ -183,7 +197,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-6 py-10 text-center text-slate-500 dark:text-slate-400">
+                                <td colspan="8" class="px-6 py-10 text-center text-slate-500 dark:text-slate-400">
                                     <div class="flex flex-col items-center justify-center gap-2">
                                         <i data-lucide="users" class="w-8 h-8 text-slate-300 dark:text-slate-700"></i>
                                         <p class="font-medium text-xs">Belum ada data pegawai terdaftar.</p>
@@ -224,186 +238,6 @@
                     <div class="p-5 border-t border-slate-200 dark:border-slate-850 flex justify-end gap-2.5">
                         <button type="button" onclick="toggleModal('import-employee-modal')" class="px-4 py-2 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-355 bg-transparent text-xs font-bold rounded-lg cursor-pointer">Batal</button>
                         <button type="submit" class="px-4 py-2 bg-slate-900 dark:bg-slate-50 text-white dark:text-slate-900 text-xs font-bold rounded-lg cursor-pointer">Mulai Impor</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- ADD MODAL -->
-        <div id="add-employee-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-opacity">
-            <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-lg overflow-hidden transform transition-all scale-95 opacity-0 duration-200">
-                <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-50">Tambah Pegawai Baru</h3>
-                    <button onclick="toggleModal('add-employee-modal')" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
-                </div>
-                <form action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data" class="p-5 space-y-4 text-left">
-                    @csrf
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-                        <input type="text" name="name" required class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Email</label>
-                            <input type="email" name="email" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">NIP/NIK/NUPTK</label>
-                            <input type="text" name="nuptk_nip_nik" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                                                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Tipe Pegawai <span class="text-red-555">*</span></label>
-                                                            <select name="employee_type_id" required class="w-full h-9 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer">
-                                                                @foreach($employeeTypes as $type)
-                                                                    <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                                                 @endforeach
-                                                            </select>
-                                                        </div>
-                        @if(config('app.school_unit'))
-                            <input type="hidden" name="unit" value="{{ config('app.school_unit') }}">
-                        @else
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Unit Sekolah <span class="text-red-550">*</span></label>
-                            <select name="unit" required class="w-full h-9 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer">
-                                <option value="paud">PAUD & TK</option>
-                                <option value="sd">Sekolah Dasar (SD)</option>
-                                <option value="smp">SMP</option>
-                            </select>
-                        </div>
-                        @endif
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Jenis Kelamin <span class="text-red-550">*</span></label>
-                            <select name="gender" required class="w-full h-9 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer">
-                                <option value="Male">Laki-laki</option>
-                                <option value="Female">Perempuan</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">ID ZKTeco</label>
-                            <input type="text" name="zkteco_uid" placeholder="Contoh: ZK-100A" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Jabatan / Mapel</label>
-                            <input type="text" name="subject_position" placeholder="Contoh: Matematika" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Status Kepegawaian</label>
-                            <input type="text" name="employment_status" placeholder="Contoh: PNS / Honorer" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Foto Pegawai</label>
-                        <input type="file" name="photo" accept="image/*" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none file:mr-4 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-slate-200 dark:file:bg-slate-800 file:text-slate-700 dark:file:text-slate-300 hover:file:bg-slate-300 dark:hover:file:bg-slate-700 cursor-pointer">
-                    </div>
-                    <div class="p-5 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2.5">
-                        <button type="button" onclick="toggleModal('add-employee-modal')" class="px-4 py-2 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-350 bg-transparent text-xs font-bold rounded-lg cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 bg-slate-900 dark:bg-slate-50 text-white dark:text-slate-900 text-xs font-bold rounded-lg cursor-pointer">Simpan</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- EDIT MODAL -->
-        <div id="edit-employee-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-opacity">
-            <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-lg overflow-hidden transform transition-all scale-95 opacity-0 duration-200">
-                <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-50">Edit Data Pegawai</h3>
-                    <button onclick="toggleModal('edit-employee-modal')" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
-                </div>
-                <form id="edit-employee-form" action="" method="POST" enctype="multipart/form-data" class="p-5 space-y-4 text-left">
-                    @csrf
-                    @method('PUT')
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-                        <input type="text" name="name" required class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Email</label>
-                            <input type="email" name="email" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">NIP/NIK/NUPTK</label>
-                            <input type="text" name="nuptk_nip_nik" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Tipe Pegawai <span class="text-red-555">*</span></label>
-                            <select name="employee_type_id" required class="w-full h-9 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer">
-                                @foreach($employeeTypes as $type)
-                                    <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        @if(config('app.school_unit'))
-                            <input type="hidden" name="unit" value="{{ config('app.school_unit') }}">
-                        @else
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Unit Sekolah <span class="text-red-550">*</span></label>
-                            <select name="unit" required class="w-full h-9 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer">
-                                <option value="paud">PAUD & TK</option>
-                                <option value="sd">Sekolah Dasar (SD)</option>
-                                <option value="smp">SMP</option>
-                            </select>
-                        </div>
-                        @endif
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Jenis Kelamin <span class="text-red-550">*</span></label>
-                            <select name="gender" required class="w-full h-9 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer">
-                                <option value="Male">Laki-laki</option>
-                                <option value="Female">Perempuan</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">ID ZKTeco</label>
-                            <input type="text" name="zkteco_uid" placeholder="Contoh: ZK-100A" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Jabatan / Mapel</label>
-                            <input type="text" name="subject_position" placeholder="Contoh: Matematika" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Status Kepegawaian</label>
-                            <input type="text" name="employment_status" placeholder="Contoh: PNS / Honorer" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Status Pegawai <span class="text-red-550">*</span></label>
-                        <select name="status" required class="w-full h-9 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer">
-                            <option value="Active">Aktif</option>
-                            <option value="Leave">Cuti</option>
-                            <option value="Inactive">Nonaktif</option>
-                        </select>
-                    </div>
-                    <div id="edit-photo-preview-container" class="hidden">
-                        <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Foto Saat Ini</label>
-                        <div class="flex items-center gap-3 mb-2">
-                            <img id="edit-photo-preview" src="" class="w-12 h-12 rounded-full object-cover border border-slate-200 dark:border-slate-800">
-                            <span class="text-[10px] text-slate-450 dark:text-slate-500">Akan diganti jika Anda mengunggah berkas baru.</span>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Ganti Foto Pegawai</label>
-                        <input type="file" name="photo" accept="image/*" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none file:mr-4 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-slate-200 dark:file:bg-slate-800 file:text-slate-700 dark:file:text-slate-300 hover:file:bg-slate-300 dark:hover:file:bg-slate-700 cursor-pointer">
-                    </div>
-                    <div class="p-5 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2.5">
-                        <button type="button" onclick="toggleModal('edit-employee-modal')" class="px-4 py-2 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-350 bg-transparent text-xs font-bold rounded-lg cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 bg-slate-900 dark:bg-slate-50 text-white dark:text-slate-900 text-xs font-bold rounded-lg cursor-pointer">Simpan Perubahan</button>
                     </div>
                 </form>
             </div>
@@ -510,9 +344,9 @@
             });
         </script>
     @endif
-        <!-- MODAL DETAIL PEGAWAI -->
+                <!-- MODAL DETAIL PEGAWAI (WIDE 3 COLUMNS) -->
         <div x-show="showEmpDetailModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-955/60 backdrop-blur-xs text-left" style="display: none;">
-            <div @click.outside="showEmpDetailModal = false" class="bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-w-md w-full overflow-hidden text-xs">
+            <div @click.outside="showEmpDetailModal = false" class="bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-w-4xl w-full overflow-hidden text-xs">
                 <div class="p-5 border-b border-slate-150 dark:border-slate-850 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
                     <h3 class="text-sm font-bold text-slate-900 dark:text-slate-55 font-nasalization flex items-center gap-2">
                         <i data-lucide="user" class="w-4 h-4 text-indigo-650 dark:text-indigo-400"></i>
@@ -537,33 +371,103 @@
                         </div>
                         <div class="space-y-1">
                             <h4 class="text-sm font-bold text-slate-900 dark:text-slate-50 font-nasalization" x-text="selectedEmp ? selectedEmp.name : ''"></h4>
-                            <p class="text-slate-450 dark:text-slate-500 font-mono" x-text="selectedEmp ? 'NIP/NUPTK: ' + (selectedEmp.nuptk_nip_nik || '-') : ''"></p>
-                            <span class="inline-flex px-2 py-0.5 rounded text-[9px] font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-455 border border-indigo-200 dark:border-indigo-800 uppercase" x-text="selectedEmp ? selectedEmp.subject_position : ''"></span>
+                            <p class="text-slate-450 dark:text-slate-500 font-mono" x-text="selectedEmp ? 'NIP/NUPTK: ' + (selectedEmp.nik || selectedEmp.nuptk || '-') : ''"></p>
+                            <span class="inline-flex px-2 py-0.5 rounded text-[9px] font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-455 border border-indigo-200 dark:border-indigo-800 uppercase" x-text="selectedEmp ? (selectedEmp.position || selectedEmp.subject_position || '-') : ''"></span>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4 text-[11px] pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-3 text-[11px] pt-4 border-t border-slate-100 dark:border-slate-800 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                        <div class="col-span-full mb-1">
+                            <h5 class="text-xs font-bold text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800 pb-1 mb-2">Informasi Umum</h5>
+                        </div>
                         <div>
                             <span class="block text-slate-400 text-[9px] uppercase font-semibold">Unit Kerja</span>
-                            <span class="font-bold text-slate-700 dark:text-slate-200 uppercase" x-text="selectedEmp ? selectedEmp.unit : ''"></span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200 uppercase" x-text="selectedEmp ? selectedEmp.unit_name : '-'"></span>
                         </div>
                         <div>
                             <span class="block text-slate-400 text-[9px] uppercase font-semibold">Email</span>
-                            <span class="font-medium text-slate-700 dark:text-slate-200" x-text="selectedEmp ? selectedEmp.email : ''"></span>
+                            <span class="font-medium text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.email || '-') : '-'"></span>
                         </div>
                         <div>
                             <span class="block text-slate-400 text-[9px] uppercase font-semibold">Jenis Kelamin</span>
-                            <span class="font-bold text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.gender === 'Male' ? 'Laki-laki' : 'Perempuan') : ''"></span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.gender === 'Male' ? 'Laki-laki' : (selectedEmp.gender === 'Female' ? 'Perempuan' : '-')) : '-'"></span>
                         </div>
                         <div>
-                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Status Pegawai</span>
-                            <span class="font-bold text-slate-700 dark:text-slate-200" x-text="selectedEmp ? selectedEmp.employment_status : ''"></span>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Tempat, Tgl Lahir</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200" x-text="selectedEmp ? ((selectedEmp.birth_place || '-') + ', ' + (selectedEmp.birth_date || '-')) : '-'"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Alamat</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.address || '-') : '-'"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">No. HP/WA</span>
+                            <span class="font-mono text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.phone || '-') : '-'"></span>
+                        </div>
+
+                        <div class="col-span-full mb-1 mt-3">
+                            <h5 class="text-xs font-bold text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800 pb-1 mb-2">Kepegawaian & SK</h5>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">NIK</span>
+                            <span class="font-mono text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.nik || '-') : '-'"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">NIY</span>
+                            <span class="font-mono text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.niy || '-') : '-'"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">NUPTK</span>
+                            <span class="font-mono text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.nuptk || selectedEmp.nuptk_nip_nik || '-') : '-'"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Pangkat / Golongan</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.pangkat_golongan || '-') : '-'"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Tgl SK Terakhir</span>
+                            <span class="font-medium text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.last_sk_date || '-') : '-'"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Nomor SK Terakhir</span>
+                            <span class="font-medium text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.last_sk_number || '-') : '-'"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Masa Kerja</span>
+                            <span class="font-medium text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.work_period || '-') : '-'"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Status Kepegawaian</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.employment_status || '-') : '-'"></span>
+                        </div>
+
+                        <div class="col-span-full mb-1 mt-3">
+                            <h5 class="text-xs font-bold text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800 pb-1 mb-2">Pendidikan & Absensi</h5>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Pendidikan Terakhir</span>
+                            <span class="font-medium text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.last_education || '-') : '-'"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Jurusan</span>
+                            <span class="font-medium text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.major || '-') : '-'"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">ID ZKTeco</span>
+                            <span class="font-mono text-slate-700 dark:text-slate-200" x-text="selectedEmp ? (selectedEmp.zkteco_uid || '-') : '-'"></span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Status Keaktifan</span>
+                            <span class="font-bold" :class="selectedEmp && selectedEmp.status === 'Active' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'" x-text="selectedEmp ? (selectedEmp.status === 'Active' ? 'Aktif' : (selectedEmp.status === 'Leave' ? 'Cuti' : 'Nonaktif')) : '-'"></span>
+                        </div>
+                        <div class="col-span-full">
+                            <span class="block text-slate-400 text-[9px] uppercase font-semibold">Catatan</span>
+                            <span class="font-medium text-slate-700 dark:text-slate-200 italic" x-text="selectedEmp ? (selectedEmp.notes || '-') : '-'"></span>
                         </div>
                     </div>
                 </div>
-                <div class="p-5 border-t border-slate-150 dark:border-slate-850 flex justify-end">
-                    <button @click="showEmpDetailModal = false" class="h-9 px-4 bg-slate-900 dark:bg-slate-100 hover:bg-slate-855 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-semibold rounded-lg shadow-sm transition-colors cursor-pointer">Tutup</button>
+                <div class="p-4 border-t border-slate-150 dark:border-slate-850 flex justify-end bg-slate-50 dark:bg-slate-900/50">
+                    <button @click="showEmpDetailModal = false" class="h-8 px-4 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 transition-all">Tutup</button>
                 </div>
             </div>
         </div>
-    </div>
-</x-admin-layout>
+    </x-admin-layout>

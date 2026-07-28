@@ -14,8 +14,9 @@ class VerifyHrdApiToken
     public function handle(Request $request, Closure $next): Response
     {
         $token = $request->header('X-API-TOKEN');
+        $validToken = \App\Models\Setting::get('hrd_api_token', config('app.hrd_api_token'));
 
-        if (!$token || $token !== config('app.hrd_api_token')) {
+        if (!$token || $token !== $validToken) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized. Invalid or missing API token.'

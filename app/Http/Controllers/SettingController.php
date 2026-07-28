@@ -28,8 +28,10 @@ class SettingController extends Controller
             'app_email' => 'nullable|email|max:255',
             'app_phone' => 'nullable|string|max:50',
             'app_address' => 'nullable|string|max:500',
-            'app_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'app_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:1024',
             'app_favicon' => 'nullable|mimes:ico,png,jpg,jpeg,svg|max:1024',
+            'hrd_api_url' => 'nullable|url|max:255',
+            'hrd_api_token' => 'nullable|string|max:255',
         ]);
 
         // Save text fields
@@ -40,6 +42,8 @@ class SettingController extends Controller
             'app_email',
             'app_phone',
             'app_address',
+            'hrd_api_url',
+            'hrd_api_token',
         ];
 
         foreach ($fields as $field) {

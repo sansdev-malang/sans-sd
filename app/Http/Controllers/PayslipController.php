@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+use App\Models\Employee;
+
+class PayslipController extends Controller
+{
+    public function index(Request $request)
+    {
+        $month = $request->input('month', Carbon::today()->format('Y-m'));
+        $schoolUnit = config('app.school_unit', 'sd');
+        
+        $hrdUrl = \App\Models\Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
+        
+        $payslips = [];
+        
+        try {
+            $response = Http::timeout(10)->get("{$hrdUrl}/api/payslips", [
+                'month' => $month,
+                'unit_id' => $schoolUnit
+            ]);
+            
+            if ($response->successful()) {
+                $payslips = $response->json('data') ?? [];
+            }
+        } catch (\Exception $e) {
+            // Ignore for now
+        }
+        
+        // Fetch local employees based on role
+        $user = auth()->user();
+        if ($user->hasRole('super_admin')) {
+            $employees = Employee::with('employeeType')->get();
+        } else {
+            $employees = collect();
+            if ($user->employee_id) {
+                $employee = Employee::with('employeeType')->find($user->employee_id);
+                if ($employee) {
+                    $employees->push($employee);
+                }
+            }
+        }
+        
+        $employees = $employees->map(function($emp) use ($payslips) {
+            $emp->payslip_url = $payslips[$emp->id]['file_url'] ?? null;
+            return $emp;
+        })->sortBy('name');
+        
+        return view('admin.payslips.index', compact('employees', 'month'));
+    }
+}

@@ -40,61 +40,137 @@
                         @enderror
                     </div>
 
-                    <!-- NIP / NUPTK / NIK -->
+                                        <!-- DATA DIRI -->
+                    <div class="md:col-span-2 mt-4 mb-2 border-b pb-2"><h4 class="font-bold text-slate-700 dark:text-slate-300">Data Diri</h4></div>
+                    
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">NIP / NUPTK / NIK</label>
-                        <input type="text" name="nuptk_nip_nik" value="{{ old('nuptk_nip_nik') }}" placeholder="Masukkan nomor identitas pendidik"
-                            class="w-full h-9 px-3 font-mono bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 @error('nuptk_nip_nik') border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-950/40 @else border-slate-200 dark:border-slate-800 focus:ring-slate-100 @enderror">
-                        @error('nuptk_nip_nik')
-                            <span class="text-[10px] text-rose-500 mt-1 block font-medium">{{ $message }}</span>
-                        @enderror
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Tempat Lahir</label>
+                        <input type="text" name="birth_place" value="{{ old('birth_place', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
                     </div>
-
-                    <!-- Mata Pelajaran -->
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Mata Pelajaran</label>
-                        <input type="text" name="subject_position" value="{{ old('subject_position') }}" placeholder="Contoh: Matematika, Fisika, Bahasa Indonesia"
-                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 @error('subject_position') border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-950/40 @else border-slate-200 dark:border-slate-800 focus:ring-slate-100 @enderror">
-                        @error('subject_position')
-                            <span class="text-[10px] text-rose-500 mt-1 block font-medium">{{ $message }}</span>
-                        @enderror
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Tanggal Lahir</label>
+                        <input type="date" name="birth_date" value="{{ old('birth_date', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
                     </div>
-
-                    <!-- Jenis Kelamin -->
                     <div>
                         <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Jenis Kelamin</label>
-                        <select name="gender" required class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 @error('gender') border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-950/40 @else border-slate-200 dark:border-slate-800 focus:ring-slate-100 @enderror cursor-pointer">
-                            <option value="">Pilih Jenis Kelamin</option>
-                            <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>Laki-laki</option>
-                            <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>Perempuan</option>
+                        <select name="gender" required class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800 cursor-pointer">
+                            <option value="Male" {{ old('gender', '') == 'Male' ? 'selected' : '' }}>Laki-laki</option>
+                            <option value="Female" {{ old('gender', '') == 'Female' ? 'selected' : '' }}>Perempuan</option>
                         </select>
-                        @error('gender')
-                            <span class="text-[10px] text-rose-500 mt-1 block font-medium">{{ $message }}</span>
-                        @enderror
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Alamat</label>
+                        <input type="text" name="address" value="{{ old('address', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">No. HP / WA</label>
+                        <input type="text" name="phone" value="{{ old('phone', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
                     </div>
 
-                    <!-- Status Kepegawaian -->
+                    <!-- DATA KEPEGAWAIAN -->
+                    <div class="md:col-span-2 mt-4 mb-2 border-b pb-2"><h4 class="font-bold text-slate-700 dark:text-slate-300">Data Kepegawaian</h4></div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">NIK</label>
+                        <input type="text" name="nik" value="{{ old('nik', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">NIY</label>
+                        <input type="text" name="niy" value="{{ old('niy', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">NUPTK</label>
+                        <input type="text" name="nuptk" value="{{ old('nuptk', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">NO UKG</label>
+                        <input type="text" name="no_ukg" value="{{ old('no_ukg', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">NRG</label>
+                        <input type="text" name="nrg" value="{{ old('nrg', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Pangkat / Golongan</label>
+                        <input type="text" name="pangkat_golongan" value="{{ old('pangkat_golongan', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Pendidikan Terakhir</label>
+                        <input type="text" name="last_education" value="{{ old('last_education', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Jurusan</label>
+                        <input type="text" name="major" value="{{ old('major', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Jabatan Utama</label>
+                        <input type="text" name="position" value="{{ old('position', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Jabatan Tambahan</label>
+                        <input type="text" name="additional_position" value="{{ old('additional_position', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Status Kepegawaian</label>
-                        <input type="text" name="employment_status" value="{{ old('employment_status') }}" placeholder="Contoh: PNS, GTY, Honorer" required
-                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 @error('employment_status') border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-950/40 @else border-slate-200 dark:border-slate-800 focus:ring-slate-100 @enderror">
-                        @error('employment_status')
-                            <span class="text-[10px] text-rose-500 mt-1 block font-medium">{{ $message }}</span>
-                        @enderror
+                        <input type="text" name="employment_status" value="{{ old('employment_status', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Tanggal Mulai Tugas</label>
+                        <input type="date" name="task_start_date" value="{{ old('task_start_date', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Tanggal Diangkat</label>
+                        <input type="date" name="appointment_date" value="{{ old('appointment_date', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Tanggal SK Terakhir</label>
+                        <input type="date" name="last_sk_date" value="{{ old('last_sk_date', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Nomor SK Terakhir</label>
+                        <input type="text" name="last_sk_number" value="{{ old('last_sk_number', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Masa Kerja Golongan</label>
+                        <input type="text" name="work_period" value="{{ old('work_period', '') }}" 
+                            class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 border-slate-200 dark:border-slate-800">
                     </div>
 
+                    <!-- SISTEM ABSENSI -->
+                    <div class="md:col-span-2 mt-4 mb-2 border-b pb-2"><h4 class="font-bold text-slate-700 dark:text-slate-300">Sistem Absensi & Catatan</h4></div>
+                    @if(auth()->user()->role === 'super_admin')
                     <!-- ID ZKTeco / PIN Fingerprint -->
                     <div>
                         <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">ID ZKTeco / PIN Fingerprint</label>
-                        <input type="text" name="zkteco_uid" value="{{ old('zkteco_uid') }}" placeholder="Dapat dikosongkan terlebih dahulu"
-                            class="w-full h-9 px-3 font-mono bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 @error('zkteco_uid') border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-950/40 @else border-slate-200 dark:border-slate-800 focus:ring-slate-100 @enderror">
-                        <span class="text-[10px] text-slate-400 dark:text-slate-500 mt-1 block">
-                            *Dianjurkan dikosongkan dahulu. Biarkan Admin Unit mengisi setelah mengecek fisik mesin.
+                        <input type="text" name="zkteco_uid" value="{{ old('zkteco_uid') }}" readonly
+                            class="w-full h-9 px-3 font-mono bg-slate-100 dark:bg-slate-800 border rounded-lg text-slate-500 dark:text-slate-400 focus:outline-none cursor-not-allowed border-slate-200 dark:border-slate-800">
+                        <span class="text-[10px] text-amber-600 dark:text-amber-500 mt-1 block">
+                            *Pendaftaran/Perubahan PIN Mesin ZKTeco hanya dapat dilakukan melalui Portal SANS HRD Pusat.
                         </span>
                         @error('zkteco_uid')
                             <span class="text-[10px] text-rose-500 mt-1 block font-medium">{{ $message }}</span>
                         @enderror
                     </div>
+                    @endif
 
                     <!-- Status Keaktifan -->
                     <div>

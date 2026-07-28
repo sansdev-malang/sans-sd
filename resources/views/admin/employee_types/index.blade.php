@@ -16,16 +16,16 @@
         </section>
 
         <!-- TABLE SECTION -->
-        <section class="bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full">
+        <section class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full">
             <div class="overflow-x-auto">
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-16">No</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Nama Tipe</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Kode/Slug</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Deskripsi</th>
-                            <th class="px-6 py-4 text-right text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-32">Aksi</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16">No</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Tipe</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kode/Slug</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Deskripsi</th>
+                            <th class="px-6 py-4 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-900">
@@ -42,12 +42,12 @@
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-1.5">
                                         @if(in_array($type->code, ['teacher', 'employee', 'management']))
-                                            <span class="text-[10px] text-slate-400 dark:text-slate-550 font-semibold px-2 py-0.5 bg-slate-50 dark:bg-slate-900/60 rounded border border-slate-200/50 dark:border-slate-800" title="Tipe bawaan sistem tidak dapat diedit/dihapus">Sistem</span>
+                                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-semibold px-2 py-0.5 bg-slate-50 dark:bg-slate-900/60 rounded border border-slate-200/50 dark:border-slate-800" title="Tipe bawaan sistem tidak dapat diedit/dihapus">Sistem</span>
                                         @else
-                                            <button onclick="editType({{ json_encode($type) }})" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Edit Tipe">
+                                            <button onclick="editType({{ json_encode($type) }})" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Edit Tipe">
                                                 <i data-lucide="edit" class="w-4 h-4"></i>
                                             </button>
-                                            <button onclick="deleteType('{{ $type->id }}', '{{ $type->name }}')" class="p-1.5 hover:bg-red-50 dark:hover:bg-red-955/20 rounded-lg text-red-655 dark:text-red-400 hover:text-red-700 transition-colors cursor-pointer" title="Hapus Tipe">
+                                            <button onclick="deleteType('{{ $type->id }}', '{{ $type->name }}')" class="p-1.5 hover:bg-red-50 dark:hover:bg-red-955/20 rounded-lg text-red-600 dark:text-red-400 hover:text-red-700 transition-colors cursor-pointer" title="Hapus Tipe">
                                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                                             </button>
                                         @endif
@@ -93,7 +93,7 @@
                         <textarea name="description" placeholder="Penjelasan singkat..." rows="3" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none"></textarea>
                     </div>
                     <div class="p-5 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2.5">
-                        <button type="button" onclick="toggleModal('add-type-modal')" class="px-4 py-2 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-350 bg-transparent text-xs font-bold rounded-lg cursor-pointer">Batal</button>
+                        <button type="button" onclick="toggleModal('add-type-modal')" class="px-4 py-2 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-300 bg-transparent text-xs font-bold rounded-lg cursor-pointer">Batal</button>
                         <button type="submit" class="px-4 py-2 bg-slate-900 dark:bg-slate-50 text-white dark:text-slate-900 text-xs font-bold rounded-lg cursor-pointer">Simpan</button>
                     </div>
                 </form>
@@ -125,7 +125,7 @@
                         <textarea name="description" rows="3" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none"></textarea>
                     </div>
                     <div class="p-5 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2.5">
-                        <button type="button" onclick="toggleModal('edit-type-modal')" class="px-4 py-2 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-350 bg-transparent text-xs font-bold rounded-lg cursor-pointer">Batal</button>
+                        <button type="button" onclick="toggleModal('edit-type-modal')" class="px-4 py-2 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-300 bg-transparent text-xs font-bold rounded-lg cursor-pointer">Batal</button>
                         <button type="submit" class="px-4 py-2 bg-slate-900 dark:bg-slate-50 text-white dark:text-slate-900 text-xs font-bold rounded-lg cursor-pointer">Simpan Perubahan</button>
                     </div>
                 </form>
