@@ -26,8 +26,29 @@ Route::get('/rombel', function () {
 })->middleware(['auth', 'verified'])->name('rombel');
 
 Route::get('/dashboard', function () {
+    $user = auth()->user();
+    $isAdmin = in_array($user->role, ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp', 'kepala_sekolah', 'waka']);
+
     $employeeCount = \App\Models\Employee::count();
-    return view('admin.dashboard', compact('employeeCount'));
+    
+    $query = \App\Models\Announcement::latest();
+    
+    if (!$isAdmin) {
+        $query->where('is_active', true)
+              ->where(function($q) {
+                  $q->whereNull('publish_date')
+                    ->orWhere('publish_date', '<=', now());
+              })
+              ->where(function($q) {
+                  $q->whereNull('expiry_date')
+                    ->orWhere('expiry_date', '>=', now());
+              })
+              ->whereIn('target_audience', ['global', 'employee']);
+    }
+    
+    $latestAnnouncements = $query->take(3)->get();
+
+    return view('admin.dashboard', compact('employeeCount', 'latestAnnouncements'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 
@@ -128,6 +149,7 @@ Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepal
     Route::resource('attendances', AttendanceController::class)->except(['index', 'show']);
     Route::resource('leaves', \App\Http\Controllers\LeaveRequestController::class);
     Route::get('leave-history', [\App\Http\Controllers\LeaveRequestController::class, 'history'])->name('leave-history.index');
+    Route::resource('announcements', \App\Http\Controllers\AnnouncementController::class)->except(['index', 'show']);
 });
 
 Route::middleware(['auth', 'verified', 'role:employee,admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->group(function () {
@@ -137,6 +159,13 @@ Route::middleware(['auth', 'verified', 'role:employee,admin_sd,admin_paud,admin_
     Route::get('bonus-reports/export', [\App\Http\Controllers\BonusReportController::class, 'export'])->name('bonus-reports.export');
     Route::get('my-attendance', [\App\Http\Controllers\MyAttendanceController::class, 'index'])->name('my-attendance');
     Route::resource('my-leaves', \App\Http\Controllers\MyLeaveRequestController::class);
+    Route::resource('announcements', \App\Http\Controllers\AnnouncementController::class)->only(['index', 'show']);
+
+    Route::get('/notifications/{id}/read', function ($id) {
+        $notification = auth()->user()->notifications()->findOrFail($id);
+        $notification->markAsRead();
+        return redirect($notification->data['url'] ?? url('/dashboard'));
+    })->name('notifications.read');
 });
 
 // REST API for HRD Central Aggregator Integration

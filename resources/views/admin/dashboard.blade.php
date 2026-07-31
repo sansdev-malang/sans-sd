@@ -145,38 +145,33 @@
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50">Pengumuman Sekolah</h3>
-                        <a href="#" class="text-xs text-slate-500 dark:text-slate-400 font-semibold hover:underline">Lihat Semua</a>
+                        <a href="{{ route('announcements.index') }}" class="text-xs text-slate-500 dark:text-slate-400 font-semibold hover:underline">Lihat Semua</a>
                     </div>
 
                     <!-- List of updates -->
                     <div class="space-y-3.5">
-                        <div class="flex gap-2.5 items-start">
-                            <div class="w-1.5 h-1.5 rounded-full bg-slate-900 dark:bg-slate-50 mt-1.5 shrink-0"></div>
-                            <div>
-                                <h4 class="text-xs font-semibold text-slate-900 dark:text-slate-50">Ujian Akhir Semester</h4>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">UAS Semester Genap dimulai serentak pada 15 Juli 2026.</p>
+                        @forelse($latestAnnouncements ?? collect() as $announcement)
+                            <div class="flex gap-2.5 items-start">
+                                <div class="w-1.5 h-1.5 rounded-full {{ $announcement->category == 'penting' ? 'bg-red-500' : 'bg-slate-450 dark:bg-slate-550' }} mt-1.5 shrink-0"></div>
+                                <div class="flex-1">
+                                    <h4 class="text-xs font-semibold {{ $announcement->category == 'penting' ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-50' }}">
+                                        <a href="{{ route('announcements.show', $announcement) }}" class="hover:underline">{{ $announcement->title }}</a>
+                                    </h4>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{{ Str::limit(strip_tags($announcement->content), 100) }}</p>
+                                    @if($announcement->attachment)
+                                        <a href="{{ Storage::url($announcement->attachment) }}" target="_blank" class="text-[10px] text-blue-500 hover:underline mt-1 inline-block"><i data-lucide="paperclip" class="w-3 h-3 inline"></i> Lampiran</a>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex gap-2.5 items-start">
-                            <div class="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-600 mt-1.5 shrink-0"></div>
-                            <div>
-                                <h4 class="text-xs font-semibold text-slate-900 dark:text-slate-50">Rapat Wali Murid</h4>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pertemuan sosialisasi kurikulum Merdeka Belajar Kelas X.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2.5 items-start">
-                            <div class="w-1.5 h-1.5 rounded-full bg-slate-450 dark:bg-slate-550 mt-1.5 shrink-0"></div>
-                            <div>
-                                <h4 class="text-xs font-semibold text-slate-900 dark:text-slate-50">Prestasi Robotika</h4>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">SANS Robotik Club meraih Juara 1 tingkat Provinsi Jawa Timur.</p>
-                            </div>
-                        </div>
+                        @empty
+                            <div class="text-xs text-slate-500 text-center py-4">Belum ada pengumuman terbaru.</div>
+                        @endforelse
                     </div>
                 </div>
 
                 <!-- Info tag footer -->
                 <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-455">
-                    <span>Admin Update: Hari Ini</span>
+                    <span>Diperbarui secara real-time</span>
                 </div>
             </div>
         </section>
