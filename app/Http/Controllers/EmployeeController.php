@@ -265,7 +265,7 @@ class EmployeeController extends Controller
             'Gelar Belakang',
             'Email',
             'Kode Tipe Pegawai',
-            'Unit Sekolah (paud/sd/smp)',
+            'Unit Sekolah (sd)',
             'Jenis Kelamin (Male/Female)',
             'Tempat Lahir',
             'Tanggal Lahir (YYYY-MM-DD)',
@@ -359,7 +359,7 @@ class EmployeeController extends Controller
 
         return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
-        }, 'template_pegawai.xlsx', [
+        }, 'Template_Pegawai_SD.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Cache-Control' => 'max-age=0',
         ]);
@@ -602,6 +602,7 @@ class EmployeeController extends Controller
         return back()->with('success', "Akun untuk {$employee->name} berhasil dibuat dengan password default: sans1234");
     }
 }
+
 
 
 
