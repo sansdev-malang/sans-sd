@@ -209,7 +209,7 @@
                                         @elseif($detail['status'] === 'Alfa')
                                             <div class="mx-auto w-full h-full min-h-[28px] flex items-center justify-center bg-red-50 dark:bg-red-900/20 text-red-500 font-bold text-xs" title="Alfa">A</div>
                                         @elseif($detail['status'] === 'Libur')
-                                            <div class="mx-auto w-full h-full min-h-[28px] flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-400 font-bold text-xs" title="Libur">-</div>
+                                            <div class="mx-auto w-full h-full min-h-[28px] flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-400 font-bold text-xs" title="Libur">L</div>
                                         @elseif($detail['status'] === 'Off')
                                             <div class="mx-auto w-full h-full min-h-[28px] flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-400 font-bold text-[9px]" title="Off Shift">OFF</div>
                                         @elseif($detail['status'] === 'Cuti/Izin')
