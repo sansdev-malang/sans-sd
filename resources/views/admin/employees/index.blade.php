@@ -1,5 +1,5 @@
 <x-admin-layout>
-    <div class="p-6 space-y-6" x-data="{ showEmpDetailModal: false, selectedEmp: null }">
+    <div class="p-6 space-y-6" x-data="{ showEmpDetailModal: false, showCreateModal: {{ $errors->any() && !old('edit_id') ? 'true' : 'false' }}, showEditModal: {{ $errors->any() && old('edit_id') ? 'true' : 'false' }}, selectedEmp: null }">
 
         <!-- HEADER -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left">
@@ -12,10 +12,10 @@
                     <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-slate-500"></i>
                     Impor Pegawai
                 </button>
-                <a href="{{ route('employees.create') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-150 cursor-pointer">
-                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                    Tambah Pegawai
-                </a>
+                <button @click="showCreateModal = true" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-150 cursor-pointer">
+                      <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                      Tambah Pegawai
+                  </button>
                 @if(auth()->user()->role === 'super_admin')
                 <form action="{{ route('employees.generate-accounts') }}" method="POST" class="m-0 p-0 flex">
                     @csrf
@@ -125,7 +125,7 @@
                                             <img src="{{ str_contains($employee->photo, 'photos/') ? asset('storage/' . $employee->photo) : asset('storage/photos/' . $employee->photo) }}" class="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-200/50 dark:border-slate-800/40">
                                         @else
                                             <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-350 shrink-0">
-                                                {{ strtoupper(substr($employee->name, 0, 2)) }}
+                                                {{ strtoupper(substr($employee->raw_name, 0, 2)) }}
                                             </div>
                                         @endif
                                         <div>
@@ -186,9 +186,7 @@
                                             </button>
                                         </form>
                                         @endif
-                                        <a href="{{ route('employees.edit', $employee->id) }}" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Edit Data">
-                                            <i data-lucide="edit" class="w-4 h-4"></i>
-                                        </a>
+                                        <button @click='selectedEmp = @json($employee); showEditModal = true' class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Edit Data"><i data-lucide="edit" class="w-4 h-4"></i></button>
                                         <button onclick="deleteEmployee('{{ $employee->id }}', '{{ $employee->name }}')" class="p-1.5 hover:bg-red-50 dark:hover:bg-red-955/20 rounded-lg text-red-655 dark:text-red-400 hover:text-red-700 transition-colors cursor-pointer" title="Hapus Data">
                                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                                         </button>
@@ -473,7 +471,8 @@
             </div>
         </div>
         </template></div>
-    </x-admin-layout>
+        @include('admin.employees.modals')
+</x-admin-layout>
 
 
 

@@ -89,7 +89,31 @@ class EmployeeController extends Controller
             $request->merge(['unit' => $schoolUnit]);
         }
 
-                $validated = $request->validate([
+                
+        $messages = [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Alamat email sudah terdaftar.',
+            'gender.required' => 'Jenis kelamin wajib dipilih.',
+            'gender.in' => 'Pilihan jenis kelamin tidak valid.',
+            'employee_type_id.required' => 'Tipe pegawai wajib dipilih.',
+            'status.required' => 'Status aktif wajib dipilih.',
+            'front_title.max' => 'Gelar depan tidak boleh lebih dari 50 karakter.',
+            'back_title.max' => 'Gelar belakang tidak boleh lebih dari 50 karakter.',
+            'birth_place.max' => 'Tempat lahir terlalu panjang (maks. 255 karakter).',
+            'birth_date.date' => 'Format tanggal lahir tidak valid.',
+            'address.max' => 'Alamat terlalu panjang (maks. 255 karakter).',
+            'phone.max' => 'Nomor HP tidak boleh lebih dari 20 karakter.',
+            'nik.max' => 'NIK tidak boleh lebih dari 255 karakter.',
+            'niy.max' => 'NIY tidak boleh lebih dari 255 karakter.',
+            'nuptk.max' => 'NUPTK tidak boleh lebih dari 255 karakter.',
+            'last_education.max' => 'Pendidikan terakhir terlalu panjang.',
+            'major.max' => 'Jurusan terlalu panjang.',
+            'photo.image' => 'File harus berupa gambar.',
+            'photo.max' => 'Ukuran foto tidak boleh lebih dari 2MB.',
+        ];
+
+        $validated = $request->validate([
             'front_title' => 'nullable|string|max:50',
             'name' => 'required|string|max:255',
             'back_title' => 'nullable|string|max:50',
@@ -120,7 +144,7 @@ class EmployeeController extends Controller
             'photo' => 'nullable|image|max:1024',
             'status' => 'required|in:Active,Leave,Inactive',
             'employee_type_id' => 'required|exists:employee_types,id',
-        ]);
+        ], $messages);
 
         if ($request->hasFile('photo')) {
             $manager = new ImageManager(new Driver());
@@ -172,7 +196,31 @@ class EmployeeController extends Controller
             $request->merge(['unit' => $schoolUnit]);
         }
 
-                $validated = $request->validate([
+                
+        $messages = [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Alamat email sudah terdaftar.',
+            'gender.required' => 'Jenis kelamin wajib dipilih.',
+            'gender.in' => 'Pilihan jenis kelamin tidak valid.',
+            'employee_type_id.required' => 'Tipe pegawai wajib dipilih.',
+            'status.required' => 'Status aktif wajib dipilih.',
+            'front_title.max' => 'Gelar depan tidak boleh lebih dari 50 karakter.',
+            'back_title.max' => 'Gelar belakang tidak boleh lebih dari 50 karakter.',
+            'birth_place.max' => 'Tempat lahir terlalu panjang (maks. 255 karakter).',
+            'birth_date.date' => 'Format tanggal lahir tidak valid.',
+            'address.max' => 'Alamat terlalu panjang (maks. 255 karakter).',
+            'phone.max' => 'Nomor HP tidak boleh lebih dari 20 karakter.',
+            'nik.max' => 'NIK tidak boleh lebih dari 255 karakter.',
+            'niy.max' => 'NIY tidak boleh lebih dari 255 karakter.',
+            'nuptk.max' => 'NUPTK tidak boleh lebih dari 255 karakter.',
+            'last_education.max' => 'Pendidikan terakhir terlalu panjang.',
+            'major.max' => 'Jurusan terlalu panjang.',
+            'photo.image' => 'File harus berupa gambar.',
+            'photo.max' => 'Ukuran foto tidak boleh lebih dari 2MB.',
+        ];
+
+        $validated = $request->validate([
             'front_title' => 'nullable|string|max:50',
             'name' => 'required|string|max:255',
             'back_title' => 'nullable|string|max:50',
@@ -203,7 +251,7 @@ class EmployeeController extends Controller
             'photo' => 'nullable|image|max:1024',
             'status' => 'required|in:Active,Leave,Inactive',
             'employee_type_id' => 'required|exists:employee_types,id',
-        ]);
+        ], $messages);
 
         if ($request->hasFile('photo')) {
             if ($employee->photo) {
@@ -613,6 +661,8 @@ class EmployeeController extends Controller
         return back()->with('success', "Akun untuk {$employee->name} berhasil dibuat dengan password default: sans1234");
     }
 }
+
+
 
 
 

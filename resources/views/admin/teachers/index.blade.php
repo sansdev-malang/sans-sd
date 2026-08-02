@@ -1,4 +1,5 @@
 <x-admin-layout>
+<div x-data="{ showCreateModal: {{ $errors->any() && !old('edit_id') ? 'true' : 'false' }}, showEditModal: {{ $errors->any() && old('edit_id') ? 'true' : 'false' }}, selectedTeacher: null }">
     <div class="p-6 space-y-6" x-data="{ showEmpDetailModal: false, selectedEmp: null }">
 
         <!-- HEADER -->
@@ -12,7 +13,7 @@
                     <i data-lucide="file-spreadsheet" class="w-4 h-4 text-slate-500"></i>
                     Impor Guru
                 </button>
-                <a href="{{ route('teachers.create') }}" class="h-9 px-4 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer flex items-center gap-2">
+                <button type="button" @click.prevent="showCreateModal = true" class="h-9 px-4 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer flex items-center gap-2">
                     <i data-lucide="user-plus" class="w-4 h-4"></i>
                     Tambah Guru
                 </a>
@@ -216,7 +217,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-1.5">
-                                        <a href="{{ route('teachers.edit', $teacher->id) }}" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Edit Data">
+                                        <a href="#" @click.prevent='selectedTeacher = @json($teacher); showEditModal = true' class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Edit Data">
                                             <i data-lucide="edit" class="w-4 h-4"></i>
                                         </a>
                                         <form action="{{ route('teachers.destroy', $teacher->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data guru ini?')" class="inline-block">
@@ -459,4 +460,6 @@
             </div>
         </div>
         </template></div>
-    </x-admin-layout>
+        @include('admin.teachers.modals')
+</div>
+</x-admin-layout>

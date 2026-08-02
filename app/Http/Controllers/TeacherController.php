@@ -44,7 +44,7 @@ class TeacherController extends Controller
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
                   ->orWhere('nik', 'like', "%{$search}%")->orWhere('nuptk', 'like', "%{$search}%")
-                  ->orWhere('subject_position', 'like', "%{$search}%");
+                  ->orWhere('position', 'like', "%{$search}%");
             });
         }
 
@@ -76,7 +76,7 @@ class TeacherController extends Controller
      */
     public function create()
     {
-        return view('admin.teachers.create');
+        return redirect()->route('teachers.index');
     }
 
     /**
@@ -84,9 +84,31 @@ class TeacherController extends Controller
      */
     public function store(Request $request)
     {
+                $messages = [
+            'front_title.max' => 'Gelar depan tidak boleh lebih dari 50 karakter.',
+            'back_title.max' => 'Gelar belakang tidak boleh lebih dari 50 karakter.',
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Alamat email sudah terdaftar.',
+            'gender.required' => 'Jenis kelamin wajib dipilih.',
+            'gender.in' => 'Pilihan jenis kelamin tidak valid.',
+            'birth_place.max' => 'Tempat lahir terlalu panjang (maks. 255 karakter).',
+            'birth_date.date' => 'Format tanggal lahir tidak valid.',
+            'address.max' => 'Alamat terlalu panjang (maks. 255 karakter).',
+            'phone.max' => 'Nomor HP tidak boleh lebih dari 20 karakter.',
+            'nik.max' => 'NIK tidak boleh lebih dari 255 karakter.',
+            'niy.max' => 'NIY tidak boleh lebih dari 255 karakter.',
+            'nuptk.max' => 'NUPTK tidak boleh lebih dari 255 karakter.',
+            'last_education.max' => 'Pendidikan terakhir terlalu panjang.',
+            'major.max' => 'Jurusan terlalu panjang.',
+            'photo.image' => 'File harus berupa gambar.',
+            'photo.max' => 'Ukuran foto tidak boleh lebih dari 2MB.',
+        ];
         $validated = $request->validate([
+            'front_title' => 'nullable|string|max:50',
             'name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255',
+            'back_title' => 'nullable|string|max:50',
+            'email' => 'nullable|email|max:255|unique:employees,email',
             'gender' => 'required|in:Male,Female,L,P',
             'birth_place' => 'nullable|string|max:255',
             'birth_date' => 'nullable|date',
@@ -112,7 +134,7 @@ class TeacherController extends Controller
             'zkteco_uid' => 'nullable|string|max:255',
             'photo' => 'nullable|image|max:2048',
             'status' => 'required|in:Active,Leave,Inactive',
-        ]);
+        ], $messages);
 
         // Handle file upload
         if ($request->hasFile('photo')) {
@@ -149,9 +171,31 @@ class TeacherController extends Controller
         $teacherType = $this->getTeacherType();
         $teacher = Employee::where('employee_type_id', $teacherType->id)->findOrFail($id);
 
+                $messages = [
+            'front_title.max' => 'Gelar depan tidak boleh lebih dari 50 karakter.',
+            'back_title.max' => 'Gelar belakang tidak boleh lebih dari 50 karakter.',
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Alamat email sudah terdaftar.',
+            'gender.required' => 'Jenis kelamin wajib dipilih.',
+            'gender.in' => 'Pilihan jenis kelamin tidak valid.',
+            'birth_place.max' => 'Tempat lahir terlalu panjang (maks. 255 karakter).',
+            'birth_date.date' => 'Format tanggal lahir tidak valid.',
+            'address.max' => 'Alamat terlalu panjang (maks. 255 karakter).',
+            'phone.max' => 'Nomor HP tidak boleh lebih dari 20 karakter.',
+            'nik.max' => 'NIK tidak boleh lebih dari 255 karakter.',
+            'niy.max' => 'NIY tidak boleh lebih dari 255 karakter.',
+            'nuptk.max' => 'NUPTK tidak boleh lebih dari 255 karakter.',
+            'last_education.max' => 'Pendidikan terakhir terlalu panjang.',
+            'major.max' => 'Jurusan terlalu panjang.',
+            'photo.image' => 'File harus berupa gambar.',
+            'photo.max' => 'Ukuran foto tidak boleh lebih dari 2MB.',
+        ];
         $validated = $request->validate([
+            'front_title' => 'nullable|string|max:50',
             'name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255',
+            'back_title' => 'nullable|string|max:50',
+            'email' => 'nullable|email|max:255|unique:employees,email,' . $id,
             'gender' => 'required|in:Male,Female,L,P',
             'birth_place' => 'nullable|string|max:255',
             'birth_date' => 'nullable|date',
@@ -177,7 +221,7 @@ class TeacherController extends Controller
             'zkteco_uid' => 'nullable|string|max:255',
             'photo' => 'nullable|image|max:2048',
             'status' => 'required|in:Active,Leave,Inactive',
-        ]);
+        ], $messages);
 
         // Handle file upload
         if ($request->hasFile('photo')) {
