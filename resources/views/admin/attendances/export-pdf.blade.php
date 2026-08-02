@@ -73,10 +73,11 @@
                 <th class="col-unit">Unit</th>
                 @foreach($dates as $date)
                     @php
-                        $isWeekend = $date->isWeekend();
-                        $colorClass = $isWeekend ? 'text-red' : '';
+                        $isSunday = $date->isSunday();
+                        $colorClass = $isSunday ? 'text-red' : '';
                     @endphp
                     <th class="col-date {{ $colorClass }}">
+                        {{ $date->translatedFormat('D') }}<br>
                         {{ $date->format('d/m') }}
                     </th>
                 @endforeach
@@ -108,12 +109,14 @@
                                     <span class="badge-blue">{{ substr($detail['leave_type'] ?? 'IZIN', 0, 4) }}</span>
                                 @elseif($detail['status'] === 'Libur')
                                     <span class="text-muted">L</span>
+                                @elseif($detail['status'] === 'Off')
+                                    <span class="text-muted" style="font-size: 6px;">OFF</span>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
                             @else
-                                @if($date->isWeekend())
-                                    <span class="text-muted">L</span>
+                                @if($date->isSunday())
+                                    <span class="text-red">-</span>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif

@@ -70,7 +70,8 @@
         </section>
 
         <!-- ADD MODAL -->
-        <div id="add-type-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-opacity">
+        <div x-data><template x-teleport="body">
+        <div id="add-type-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-opacity overflow-y-auto" style="margin-top: 0px !important; z-index: 9999;" onclick="if(event.target === this) toggleModal('add-type-modal')">
             <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0 duration-200">
                 <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <h3 class="text-sm font-bold text-slate-900 dark:text-slate-50">Tambah Tipe Pegawai</h3>
@@ -99,9 +100,11 @@
                 </form>
             </div>
         </div>
+        </template></div>
 
         <!-- EDIT MODAL -->
-        <div id="edit-type-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-opacity">
+        <div x-data><template x-teleport="body">
+        <div id="edit-type-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-opacity overflow-y-auto" style="margin-top: 0px !important; z-index: 9999;" onclick="if(event.target === this) toggleModal('edit-type-modal')">
             <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0 duration-200">
                 <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <h3 class="text-sm font-bold text-slate-900 dark:text-slate-50">Edit Tipe Pegawai</h3>
@@ -131,6 +134,7 @@
                 </form>
             </div>
         </div>
+        </template></div>
 
         <!-- DELETE FORM -->
         <form id="delete-type-form" action="" method="POST" class="hidden">

@@ -277,7 +277,8 @@
         </section>
 
     <!-- IMPORT MODAL -->
-    <div id="import-teacher-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-opacity">
+    <div x-data><template x-teleport="body">
+    <div id="import-teacher-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-opacity" style="margin-top: 0px !important; z-index: 9999;" onclick="if(event.target === this) toggleModal('import-teacher-modal')">
         <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0 duration-200">
             <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                 <h3 class="text-sm font-bold text-slate-900 dark:text-slate-50">Impor Guru dari Excel</h3>
@@ -308,6 +309,7 @@
             </form>
         </div>
     </div>
+    </template></div>
 
     <script>
         function toggleModal(modalId) {
@@ -330,8 +332,9 @@
             }
         }
     </script>
-                <!-- MODAL DETAIL PEGAWAI (WIDE 3 COLUMNS) -->
-        <div x-show="showEmpDetailModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-955/60 backdrop-blur-xs text-left" style="display: none;">
+        <!-- MODAL DETAIL PEGAWAI (WIDE 3 COLUMNS) -->
+        <div x-data><template x-teleport="body">
+        <div x-show="showEmpDetailModal" @click.self="showEmpDetailModal = false" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-955/60 backdrop-blur-xs text-left" style="margin-top: 0px !important; z-index: 9999;" style="display: none;">
             <div @click.outside="showEmpDetailModal = false" class="bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-w-4xl w-full overflow-hidden text-xs">
                 <div class="p-5 border-b border-slate-150 dark:border-slate-850 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
                     <h3 class="text-sm font-bold text-slate-900 dark:text-slate-55 font-nasalization flex items-center gap-2">
@@ -348,13 +351,12 @@
                         <div class="shrink-0">
                             <template x-if="selectedEmp && selectedEmp.photo_url">
                                 <img :src="selectedEmp.photo_url" class="w-16 h-16 rounded-xl object-cover border border-slate-200 dark:border-slate-800 shadow-sm">
-                            </template>
+                            </template></div>
                             <template x-if="!selectedEmp || !selectedEmp.photo_url">
                                 <div class="w-16 h-16 rounded-xl bg-indigo-50 dark:bg-indigo-955/40 text-indigo-650 dark:text-indigo-400 font-bold flex items-center justify-center text-2xl uppercase shadow-sm">
                                     <span x-text="selectedEmp ? selectedEmp.name.substring(0,2) : ''"></span>
                                 </div>
-                            </template>
-                        </div>
+                            </template></div>
                         <div class="space-y-1">
                             <h4 class="text-sm font-bold text-slate-900 dark:text-slate-50 font-nasalization" x-text="selectedEmp ? selectedEmp.name : ''"></h4>
                             <p class="text-slate-450 dark:text-slate-500 font-mono" x-text="selectedEmp ? 'NIP/NUPTK: ' + (selectedEmp.nik || selectedEmp.nuptk || selectedEmp.nuptk_nip_nik || '-') : ''"></p>
@@ -456,4 +458,5 @@
                 </div>
             </div>
         </div>
+        </template></div>
     </x-admin-layout>

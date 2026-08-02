@@ -153,15 +153,15 @@
                             @foreach($dates as $date)
                             @php
                                 $isToday = $date->isToday();
-                                $isWeekend = $date->isWeekend();
+                                $isSunday = $date->isSunday();
                             @endphp
                             <th class="py-2 px-1 text-center sticky top-0 z-30 bg-slate-50 dark:bg-slate-900/60 min-w-[32px] border-r border-slate-100 dark:border-slate-800/60">
                                 <div class="flex flex-col items-center justify-center gap-1 py-0.5">
-                                    <span class="text-[9px] font-semibold {{ $isWeekend && !$isToday ? 'text-red-400' : ($isToday ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500') }} uppercase tracking-wider leading-none">
+                                    <span class="text-[9px] font-semibold {{ $isSunday && !$isToday ? 'text-red-400' : ($isToday ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500') }} uppercase tracking-wider leading-none">
                                         {{ $date->translatedFormat('D') }}
                                     </span>
                                     <div class="flex items-center justify-center w-6 h-6 {{ $isToday ? 'bg-indigo-600 dark:bg-indigo-500 rounded-full' : '' }}">
-                                        <span class="text-[11px] font-bold leading-none {{ $isWeekend && !$isToday ? 'text-red-500 dark:text-red-400' : ($isToday ? 'text-white' : 'text-slate-700 dark:text-slate-200') }}">
+                                        <span class="text-[11px] font-bold leading-none {{ $isSunday && !$isToday ? 'text-red-500 dark:text-red-400' : ($isToday ? 'text-white' : 'text-slate-700 dark:text-slate-200') }}">
                                             {{ $date->format('d') }}
                                         </span>
                                     </div>
@@ -207,17 +207,19 @@
                                                 <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500" title="Pulang">{{ $detail['check_out'] ?? '-' }}</span>
                                             </div>
                                         @elseif($detail['status'] === 'Alfa')
-                                            <div class="mx-auto w-full h-full min-h-[28px] flex items-center justify-center bg-red-50 dark:bg-red-900/20 text-red-500 font-bold text-xs" title="Alfa">-</div>
+                                            <div class="mx-auto w-full h-full min-h-[28px] flex items-center justify-center bg-red-50 dark:bg-red-900/20 text-red-500 font-bold text-xs" title="Alfa">A</div>
                                         @elseif($detail['status'] === 'Libur')
                                             <div class="mx-auto w-full h-full min-h-[28px] flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-400 font-bold text-xs" title="Libur">-</div>
+                                        @elseif($detail['status'] === 'Off')
+                                            <div class="mx-auto w-full h-full min-h-[28px] flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-400 font-bold text-[9px]" title="Off Shift">OFF</div>
                                         @elseif($detail['status'] === 'Cuti/Izin')
                                             <div class="mx-auto w-full h-full min-h-[28px] flex items-center justify-center bg-blue-50 dark:bg-blue-900/20 text-blue-500 font-bold text-[9px]" title="{{ $detail['leave_type'] ?? 'Izin/Cuti' }}">{{ $detail['leave_type'] ?? 'IZIN' }}</div>
                                         @else
                                             <div class="text-xs text-slate-300">-</div>
                                         @endif
                                     @else
-                                        @if($date->isWeekend())
-                                            <div class="mx-auto flex items-center justify-center text-red-200 dark:text-red-900/30 font-bold text-xs" title="Akhir Pekan">-</div>
+                                        @if($date->isSunday())
+                                            <div class="mx-auto flex items-center justify-center text-red-200 dark:text-red-900/30 font-bold text-xs" title="Minggu">-</div>
                                         @else
                                             <div class="mx-auto flex items-center justify-center text-slate-100 dark:text-slate-800/50 font-bold text-[10px]">-</div>
                                         @endif

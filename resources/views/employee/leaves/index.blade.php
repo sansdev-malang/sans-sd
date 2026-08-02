@@ -120,16 +120,17 @@
         </div>
 
         <!-- ADD MODAL -->
-        <div x-show="showAddModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm" style="display: none;">
-            <div @click.outside="showAddModal = false" class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-md p-6 text-left">
-                <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-900 pb-3 mb-4">
+        <template x-teleport="body">
+        <div x-show="showAddModal" @click.self="showAddModal = false" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto" style="display: none; margin-top: 0px !important; z-index: 9999;">
+            <div @click.outside="showAddModal = false" class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden text-left">
+                <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 p-5 bg-slate-50 dark:bg-slate-900/50">
                     <h3 class="text-sm font-bold text-slate-950 dark:text-slate-50">Ajukan Surat Izin / Cuti</h3>
                     <button @click="showAddModal = false" class="text-slate-400 hover:text-slate-650 cursor-pointer">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
 
-                <form method="POST" action="{{ route('my-leaves.store') }}" enctype="multipart/form-data" class="space-y-4 text-xs">
+                <form method="POST" action="{{ route('my-leaves.store') }}" enctype="multipart/form-data" class="p-5 space-y-4 text-xs">
                     @csrf
                     
                     <div>
@@ -172,9 +173,11 @@
                             Kirim Pengajuan
                         </button>
                     </div>
+                    </div>
                 </form>
             </div>
         </div>
+        </template>
 
     </div>
 </x-admin-layout>

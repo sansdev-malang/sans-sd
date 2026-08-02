@@ -159,7 +159,8 @@
         </div>
 
         <!-- MODAL DETAIL PEGAWAI -->
-        <div x-show="showEmpDetailModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-955/60 backdrop-blur-xs text-left" style="display: none;">
+        <template x-teleport="body">
+        <div x-show="showEmpDetailModal" @click.self="showEmpDetailModal = false" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-955/60 backdrop-blur-xs text-left" style="display: none; margin-top: 0px !important; z-index: 9999;">
             <div @click.outside="showEmpDetailModal = false" class="bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-w-md w-full overflow-hidden text-xs">
                 <div class="p-5 border-b border-slate-150 dark:border-slate-850 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
                     <h3 class="text-sm font-bold text-slate-900 dark:text-slate-55 font-nasalization flex items-center gap-2">
@@ -182,7 +183,6 @@
                                     <span x-text="selectedEmp ? selectedEmp.name.substring(0,2) : ''"></span>
                                 </div>
                             </template>
-                        </div>
                         <div class="space-y-1">
                             <h4 class="text-sm font-bold text-slate-900 dark:text-slate-50 font-nasalization" x-text="selectedEmp ? selectedEmp.name : ''"></h4>
                             <p class="text-slate-450 dark:text-slate-500 font-mono" x-text="selectedEmp ? 'NIP/NUPTK: ' + (selectedEmp.nuptk_nip_nik || '-') : ''"></p>
@@ -213,5 +213,5 @@
                 </div>
             </div>
         </div>
-    </div>
+        </template>
 </x-admin-layout>

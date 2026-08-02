@@ -153,8 +153,11 @@ class AttendanceController extends Controller
         $colIndex = 3;
         foreach ($dates as $dateObj) {
             $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
-            $sheet->setCellValue($colLetter . '1', $dateObj->format('d/M'));
+            $sheet->setCellValue($colLetter . '1', $dateObj->translatedFormat('D') . ", " . $dateObj->format('d/M'));
             $sheet->getColumnDimension($colLetter)->setWidth(12);
+            if ($dateObj->isSunday()) {
+                $sheet->getStyle($colLetter . '1')->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED));
+            }
             $colIndex++;
         }
 
@@ -197,11 +200,14 @@ class AttendanceController extends Controller
                     } elseif ($detail['status'] === 'Libur') {
                         $cellValue = 'L';
                         $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF9CA3AF'));
+                    } elseif ($detail['status'] === 'Off') {
+                        $cellValue = 'OFF';
+                        $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF9CA3AF'));
                     }
                 } else {
-                    if ($dateObj->isWeekend()) {
-                        $cellValue = 'L';
-                        $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF9CA3AF'));
+                    if ($dateObj->isSunday()) {
+                        $cellValue = '-';
+                        $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED));
                     }
                 }
                 
