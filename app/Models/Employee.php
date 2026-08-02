@@ -47,13 +47,18 @@ class Employee extends Model
     /**
      * Get the employee type.
      */
-        protected $appends = ['full_name'];
+        protected $appends = ['raw_name'];
 
-    public function getFullNameAttribute()
+    public function getNameAttribute($value)
     {
         $front = !empty($this->front_title) ? trim($this->front_title) . ' ' : '';
         $back = !empty($this->back_title) ? ', ' . trim($this->back_title) : '';
-        return $front . $this->name . $back;
+        return $front . $value . $back;
+    }
+
+    public function getRawNameAttribute()
+    {
+        return $this->attributes['name'] ?? '';
     }
 
     public function employeeType()
