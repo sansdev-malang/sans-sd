@@ -66,7 +66,7 @@ class TeacherController extends Controller
         $certifiedCount = (clone $statsQuery)->whereNotNull('nuptk')->where('nuptk', '!=', '')->count();
         $certifiedPercent = $totalGuru > 0 ? round(($certifiedCount / $totalGuru) * 100) : 0;
 
-        $teachers = $query->orderBy('name', 'asc')->paginate(10);
+        $teachers = $query->orderBy('name', 'asc')->paginate($request->input('per_page', 10))->withQueryString();
 
         return view('admin.teachers.index', compact('teachers', 'totalGuru', 'guruMale', 'guruFemale', 'certifiedPercent'));
     }
