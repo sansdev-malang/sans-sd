@@ -197,7 +197,7 @@ class AttendanceController extends Controller
                     } elseif ($detail['status'] === 'Cuti/Izin') {
                         $cellValue = $detail['leave_type'] ?? 'IZIN';
                         $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE));
-                    } elseif ($detail['status'] === 'Libur' -or $detail['status'] === 'LiburTemp123456') {
+                    } elseif ($detail['status'] === 'Libur') {
                         $cellValue = '-';
                         $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED));
                     } elseif ($detail['status'] === 'Off') {
