@@ -71,7 +71,7 @@
                     
                     <!-- EXPORT DROPDOWN -->
                     <div x-data="{ open: false }" class="relative">
-                        <button type="button" @click="open = !open" @click.outside="open = false" class="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-2">
+                        <button type="button" @click="open = !open" @click.outside="open = false" class="h-9 px-4 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-semibold text-xs rounded-lg shadow-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-2">
                             <i data-lucide="download" class="w-4 h-4"></i>
                             <span>Ekspor</span>
                             <i data-lucide="chevron-down" class="w-3.5 h-3.5 opacity-70"></i>
@@ -236,3 +236,4 @@
         </section>
     </div>
 </x-admin-layout>
+

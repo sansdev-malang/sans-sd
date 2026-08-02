@@ -139,16 +139,21 @@ class BonusReportController extends Controller
                 $sheet = $spreadsheet->getActiveSheet();
                 
                 $sheet->setCellValue('A1', 'No');
-                $sheet->setCellValue('B1', 'NUPTK / NIP');
-                $sheet->setCellValue('C1', 'Nama Pegawai');
-                $sheet->setCellValue('D1', 'Unit');
-                $sheet->setCellValue('E1', 'Total Bonus (Rp)');
+                $sheet->setCellValue('B1', 'Nama Pegawai');
+                $sheet->setCellValue('C1', 'Unit');
+                $sheet->setCellValue('D1', 'Total Bonus (Rp)');
 
-                // Build dynamic date headers starting from column F (Index 6)
-                $colIndex = 6;
+                // Build dynamic date headers starting from column E (Index 5)
+                $colIndex = 5;
+                $hari = [0 => 'MIN', 1 => 'SEN', 2 => 'SEL', 3 => 'RAB', 4 => 'KAM', 5 => 'JUM', 6 => 'SAB'];
                 foreach($dates as $date) {
                     $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
-                    $sheet->setCellValue($colLetter . '1', $date->format('d/m'));
+                    $dayName = $hari[$date->dayOfWeek];
+                    $sheet->setCellValue($colLetter . '1', $dayName . "
+" . $date->format('d/m'));
+                    if ($date->dayOfWeek == 0) {
+                        $sheet->getStyle($colLetter . '1')->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED));
+                    }
                     $colIndex++;
                 }
 
@@ -157,17 +162,20 @@ class BonusReportController extends Controller
                 $sheet->getStyle('A1:' . $lastColLetter . '1')->getFont()->setBold(true);
                 $sheet->getStyle('A1:' . $lastColLetter . '1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                     ->getStartColor()->setARGB('FFEFEFEF');
+                $sheet->getRowDimension(1)->setRowHeight(30);
+                $sheet->getStyle('A1:' . $lastColLetter . '1')->getAlignment()->setWrapText(true)
+                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+                    ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
                     
                 $row = 2;
                 $no = 1;
                 foreach ($reportsArr as $report) {
                     $sheet->setCellValue('A' . $row, $no++);
-                    $sheet->setCellValueExplicit('B' . $row, $report['employee']['nuptk'] ?? '-', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-                    $sheet->setCellValue('C' . $row, $report['employee']['name']);
-                    $sheet->setCellValue('D' . $row, $report['employee']['unit']['name'] ?? ($report['employee']['unit_name'] ?? '-'));
-                    $sheet->setCellValue('E' . $row, $report['bonus_nominal']);
+                    $sheet->setCellValue('B' . $row, $report['employee']['name']);
+                    $sheet->setCellValue('C' . $row, $report['employee']['unit']['name'] ?? ($report['employee']['unit_name'] ?? '-'));
+                    $sheet->setCellValue('D' . $row, $report['bonus_nominal']);
                     
-                    $colIdx = 6;
+                    $colIdx = 5;
                     foreach($dates as $date) {
                         $dateStr = $date->format('Y-m-d');
                         $detail = $report['daily_details'][$dateStr] ?? null;
@@ -186,19 +194,19 @@ class BonusReportController extends Controller
                     $row++;
                 }
                 
-                $sheet->setCellValue('D' . $row, 'TOTAL:');
+                $sheet->setCellValue('C' . $row, 'TOTAL:');
+                $sheet->getStyle('C' . $row)->getFont()->setBold(true);
+                $sheet->setCellValue('D' . $row, $totalSemuaBonus);
                 $sheet->getStyle('D' . $row)->getFont()->setBold(true);
-                $sheet->setCellValue('E' . $row, $totalSemuaBonus);
-                $sheet->getStyle('E' . $row)->getFont()->setBold(true);
                 
-                $sheet->getStyle('E2:E'.$row)->getNumberFormat()->setFormatCode('#,##0');
+                $sheet->getStyle('D2:D'.$row)->getNumberFormat()->setFormatCode('#,##0');
                 
                 foreach(range(1, $colIndex - 1) as $c) {
                     $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($c);
                     $sheet->getColumnDimension($colLetter)->setAutoSize(true);
                 }
 
-                $sheet->freezePane('F2');
+                $sheet->freezePane('E2');
 
                 return response()->streamDownload(function() use ($spreadsheet) {
                     $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
