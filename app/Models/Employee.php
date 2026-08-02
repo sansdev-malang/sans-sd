@@ -47,6 +47,15 @@ class Employee extends Model
     /**
      * Get the employee type.
      */
+        protected $appends = ['full_name'];
+
+    public function getFullNameAttribute()
+    {
+        $front = !empty($this->front_title) ? trim($this->front_title) . ' ' : '';
+        $back = !empty($this->back_title) ? ', ' . trim($this->back_title) : '';
+        return $front . $this->name . $back;
+    }
+
     public function employeeType()
     {
         return $this->belongsTo(EmployeeType::class);
@@ -78,4 +87,5 @@ class Employee extends Model
         return $this->hasMany(LeaveRequest::class);
     }
 }
+
 

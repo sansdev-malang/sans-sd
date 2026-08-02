@@ -372,7 +372,7 @@
                                 </div>
                             </template></div>
                         <div class="space-y-1">
-                            <h4 class="text-sm font-bold text-slate-900 dark:text-slate-50 font-nasalization" x-text="selectedEmp ? selectedEmp.name : ''"></h4>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-slate-50 font-nasalization" x-text="selectedEmp ? selectedEmp.full_name : ''"></h4>
                             <p class="text-slate-450 dark:text-slate-500 font-mono" x-text="selectedEmp ? 'NIP/NUPTK: ' + (selectedEmp.nik || selectedEmp.nuptk || '-') : ''"></p>
                             <span class="inline-flex px-2 py-0.5 rounded text-[9px] font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-455 border border-indigo-200 dark:border-indigo-800 uppercase" x-text="selectedEmp ? (selectedEmp.position || selectedEmp.subject_position || '-') : ''"></span>
                         </div>
@@ -474,4 +474,5 @@
         </div>
         </template></div>
     </x-admin-layout>
+
 
