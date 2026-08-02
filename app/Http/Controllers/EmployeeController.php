@@ -260,7 +260,9 @@ class EmployeeController extends Controller
 
         // Headers
         $headers = [
+            'Gelar Depan',
             'Nama Lengkap',
+            'Gelar Belakang',
             'Email',
             'Kode Tipe Pegawai',
             'Unit Sekolah (paud/sd/smp)',
@@ -295,7 +297,9 @@ class EmployeeController extends Controller
 
         // Example data row
                 $example = [
+            'Dr.',
             'Budi Santoso',
+            'S.Pd.',
             'budi@example.com',
             'employee',
             'sd',
