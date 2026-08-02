@@ -342,14 +342,15 @@ class EmployeeController extends Controller
         }
 
         // Format headers (bold text & light gray background fill)
-        $headerRange = 'A1:AB1';
+        $lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers));
+        $headerRange = 'A1:' . $lastCol . '1';
         $sheet->getStyle($headerRange)->getFont()->setBold(true);
         $sheet->getStyle($headerRange)->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setARGB('FFE0E0E0');
 
         // Auto-size columns
-        foreach (range(1, 28) as $colIndex) {
+        foreach (range(1, count($headers)) as $colIndex) {
             $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
             $sheet->getColumnDimension($colLetter)->setAutoSize(true);
         }
@@ -601,5 +602,6 @@ class EmployeeController extends Controller
         return back()->with('success', "Akun untuk {$employee->name} berhasil dibuat dengan password default: sans1234");
     }
 }
+
 
 
