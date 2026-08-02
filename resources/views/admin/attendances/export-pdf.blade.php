@@ -108,7 +108,7 @@
                                 @elseif($detail['status'] === 'Cuti/Izin')
                                     <span class="badge-blue">{{ substr($detail['leave_type'] ?? 'IZIN', 0, 4) }}</span>
                                 @elseif($detail['status'] === 'Libur')
-                                    <span class="text-muted">L</span>
+                                    <span class="text-red">-</span>
                                 @elseif($detail['status'] === 'Off')
                                     <span class="text-muted" style="font-size: 6px;">OFF</span>
                                 @else
