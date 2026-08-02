@@ -90,7 +90,9 @@ class EmployeeController extends Controller
         }
 
                 $validated = $request->validate([
+            'front_title' => 'nullable|string|max:50',
             'name' => 'required|string|max:255',
+            'back_title' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
             'gender' => 'required|in:Male,Female,L,P',
             'birth_place' => 'nullable|string|max:255',
@@ -171,7 +173,9 @@ class EmployeeController extends Controller
         }
 
                 $validated = $request->validate([
+            'front_title' => 'nullable|string|max:50',
             'name' => 'required|string|max:255',
+            'back_title' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
             'gender' => 'required|in:Male,Female,L,P',
             'birth_place' => 'nullable|string|max:255',
@@ -389,7 +393,7 @@ class EmployeeController extends Controller
 
         foreach ($rows as $index => $row) {
             // Skip empty rows (must have name)
-            if (empty($row[0])) {
+            if (empty($row[1])) {
                 continue;
             }
 
@@ -609,6 +613,9 @@ class EmployeeController extends Controller
         return back()->with('success', "Akun untuk {$employee->name} berhasil dibuat dengan password default: sans1234");
     }
 }
+
+
+
 
 
 
