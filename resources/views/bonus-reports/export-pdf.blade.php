@@ -62,7 +62,7 @@
     <h2>Rekap Bonus Kehadiran</h2>
     <div class="subtitle">
         Periode: {{ $periodeStr }} <br>
-        Unit: {{ config('app.name') }}
+        Unit: SANS {{ strtoupper(config('app.school_unit', 'SD')) }}
     </div>
 
     <table>
@@ -74,11 +74,12 @@
                 <th class="col-total">Total Bonus (Rp)</th>
                 @foreach($dates as $date)
                     @php
-                        $isWeekend = $date->isWeekend();
-                        $colorClass = $isWeekend ? 'text-red' : '';
+                        $colorClass = $date->dayOfWeek == 0 ? 'text-red' : '';
+                        $hari = [0 => 'MIN', 1 => 'SEN', 2 => 'SEL', 3 => 'RAB', 4 => 'KAM', 5 => 'JUM', 6 => 'SAB'];
+                        $dayName = $hari[$date->dayOfWeek];
                     @endphp
                     <th class="col-date {{ $colorClass }}">
-                        {{ $date->format('d/m') }}
+                        {{ $dayName }}<br>{{ $date->format('d/m') }}
                     </th>
                 @endforeach
             </tr>
@@ -149,4 +150,5 @@
 
 </body>
 </html>
+
 
