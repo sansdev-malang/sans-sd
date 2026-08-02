@@ -325,7 +325,7 @@ class EmployeeController extends Controller
             'Jl. Merdeka No. 1, Malang',
             '081234567890',
             '-',
-            '1001',
+            '',
             'Active'
         ];
 
@@ -601,4 +601,5 @@ class EmployeeController extends Controller
         return back()->with('success', "Akun untuk {$employee->name} berhasil dibuat dengan password default: sans1234");
     }
 }
+
 
