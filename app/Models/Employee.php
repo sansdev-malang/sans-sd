@@ -11,7 +11,9 @@ class Employee extends Model
     use HasFactory;
 
     protected $fillable = [
+        'front_title',
         'name',
+        'back_title',
         'email',
         'employee_type_id',
         'unit',
@@ -76,3 +78,4 @@ class Employee extends Model
         return $this->hasMany(LeaveRequest::class);
     }
 }
+

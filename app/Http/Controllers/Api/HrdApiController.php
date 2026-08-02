@@ -72,7 +72,9 @@ class HrdApiController extends Controller
         public function store(Request $request)
     {
         $validated = $request->validate([
+            'front_title' => 'nullable|string|max:255',
             'name' => 'required|string|max:255',
+            'back_title' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'gender' => 'required|in:Male,Female,L,P',
             'birth_place' => 'nullable|string|max:255',
@@ -142,7 +144,9 @@ class HrdApiController extends Controller
         }
 
         $validated = $request->validate([
+            'front_title' => 'nullable|string|max:255',
             'name' => 'required|string|max:255',
+            'back_title' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'gender' => 'required|in:Male,Female,L,P',
             'birth_place' => 'nullable|string|max:255',
@@ -435,3 +439,4 @@ class HrdApiController extends Controller
         return response()->json(['success' => true, 'message' => 'Decision processed successfully.']);
     }
 }
+

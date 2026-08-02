@@ -389,34 +389,36 @@ class EmployeeController extends Controller
             }
 
                         // Map variables
-            $name = trim($row[0]);
-            $email = !empty($row[1]) ? trim($row[1]) : null;
-            $type = strtolower(trim($row[2]));
-            $unit = strtolower(trim($row[3]));
-            $gender = trim($row[4]);
-            $birth_place = !empty($row[5]) ? trim($row[5]) : null;
-            $birth_date = !empty($row[6]) ? date('Y-m-d', strtotime(trim($row[6]))) : null;
-            $nik = !empty($row[7]) ? trim($row[7]) : null;
-            $niy = !empty($row[8]) ? trim($row[8]) : null;
-            $nuptk = !empty($row[9]) ? trim($row[9]) : null;
-            $no_ukg = !empty($row[10]) ? trim($row[10]) : null;
-            $nrg = !empty($row[11]) ? trim($row[11]) : null;
-            $pangkat_golongan = !empty($row[12]) ? trim($row[12]) : null;
-            $last_education = !empty($row[13]) ? trim($row[13]) : null;
-            $major = !empty($row[14]) ? trim($row[14]) : null;
-            $position = !empty($row[15]) ? trim($row[15]) : null;
-            $additional_position = !empty($row[16]) ? trim($row[16]) : null;
-            $task_start_date = !empty($row[17]) ? date('Y-m-d', strtotime(trim($row[17]))) : null;
-            $employment_status = !empty($row[18]) ? trim($row[18]) : null;
-            $appointment_date = !empty($row[19]) ? date('Y-m-d', strtotime(trim($row[19]))) : null;
-            $last_sk_date = !empty($row[20]) ? date('Y-m-d', strtotime(trim($row[20]))) : null;
-            $last_sk_number = !empty($row[21]) ? trim($row[21]) : null;
-            $work_period = !empty($row[22]) ? trim($row[22]) : null;
-            $address = !empty($row[23]) ? trim($row[23]) : null;
-            $phone = !empty($row[24]) ? trim($row[24]) : null;
-            $notes = !empty($row[25]) ? trim($row[25]) : null;
-            $zkteco_uid = !empty($row[26]) ? trim($row[26]) : null;
-            $status = !empty($row[27]) ? trim($row[27]) : 'Active';
+            $front_title = !empty($row[0]) ? trim($row[0]) : null;
+            $name = trim($row[1]);
+            $back_title = !empty($row[2]) ? trim($row[2]) : null;
+            $email = !empty($row[3]) ? trim($row[3]) : null;
+            $type = strtolower(trim($row[4]));
+            $unit = strtolower(trim($row[5]));
+            $gender = trim($row[6]);
+            $birth_place = !empty($row[7]) ? trim($row[7]) : null;
+            $birth_date = !empty($row[8]) ? date('Y-m-d', strtotime(trim($row[8]))) : null;
+            $nik = !empty($row[9]) ? trim($row[9]) : null;
+            $niy = !empty($row[10]) ? trim($row[10]) : null;
+            $nuptk = !empty($row[11]) ? trim($row[11]) : null;
+            $no_ukg = !empty($row[12]) ? trim($row[12]) : null;
+            $nrg = !empty($row[13]) ? trim($row[13]) : null;
+            $pangkat_golongan = !empty($row[14]) ? trim($row[14]) : null;
+            $last_education = !empty($row[15]) ? trim($row[15]) : null;
+            $major = !empty($row[16]) ? trim($row[16]) : null;
+            $position = !empty($row[17]) ? trim($row[17]) : null;
+            $additional_position = !empty($row[18]) ? trim($row[18]) : null;
+            $task_start_date = !empty($row[19]) ? date('Y-m-d', strtotime(trim($row[19]))) : null;
+            $employment_status = !empty($row[20]) ? trim($row[20]) : null;
+            $appointment_date = !empty($row[21]) ? date('Y-m-d', strtotime(trim($row[21]))) : null;
+            $last_sk_date = !empty($row[22]) ? date('Y-m-d', strtotime(trim($row[22]))) : null;
+            $last_sk_number = !empty($row[23]) ? trim($row[23]) : null;
+            $work_period = !empty($row[24]) ? trim($row[24]) : null;
+            $address = !empty($row[25]) ? trim($row[25]) : null;
+            $phone = !empty($row[26]) ? trim($row[26]) : null;
+            $notes = !empty($row[27]) ? trim($row[27]) : null;
+            $zkteco_uid = !empty($row[28]) ? trim($row[28]) : null;
+            $status = !empty($row[29]) ? trim($row[29]) : 'Active';
 
             // Validate dynamic EmployeeType lookup
             $typeObj = \App\Models\EmployeeType::where('code', $type)->orWhere('name', $type)->first();
@@ -452,7 +454,9 @@ class EmployeeController extends Controller
 
             // Create employee
                         Employee::create([
-                'name' => $name,
+                'front_title' => $front_title,
+                  'name' => $name,
+                  'back_title' => $back_title,
                 'email' => $email,
                 'employee_type_id' => $typeObj->id,
                 'unit' => $unit,
@@ -593,3 +597,4 @@ class EmployeeController extends Controller
         return back()->with('success', "Akun untuk {$employee->name} berhasil dibuat dengan password default: sans1234");
     }
 }
+
