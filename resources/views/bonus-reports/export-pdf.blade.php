@@ -62,7 +62,7 @@
     <h2>Rekap Bonus Kehadiran</h2>
     <div class="subtitle">
         Periode: {{ $periodeStr }} <br>
-        Unit: SANS {{ strtoupper(config('app.school_unit', 'SD')) }}
+        Unit: {{ count($reports) > 0 ? ($reports[0]['employee']['unit']['name'] ?? ($reports[0]['employee']['unit_name'] ?? 'Semua Unit')) : 'Semua Unit' }}
     </div>
 
     <table>
@@ -150,5 +150,8 @@
 
 </body>
 </html>
+
+
+
 
 
