@@ -125,8 +125,7 @@ class BonusReportController extends Controller
 
             $dates = [];
             $currentDate = clone $startDate;
-            $lastDay = $endDate > now() ? now()->endOfDay() : $endDate;
-            while ($currentDate <= $lastDay) {
+            while ($currentDate <= $endDate) {
                 $dates[] = clone $currentDate;
                 $currentDate->addDay();
             }
@@ -235,3 +234,4 @@ class BonusReportController extends Controller
         }
     }
 }
+
