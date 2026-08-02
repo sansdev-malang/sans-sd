@@ -266,7 +266,7 @@ class EmployeeController extends Controller
             'Email',
             'Kode Tipe Pegawai',
             'Unit Sekolah (sd)',
-            'Jenis Kelamin (Male/Female)',
+            'Jenis Kelamin (L/P)',
             'Tempat Lahir',
             'Tanggal Lahir (YYYY-MM-DD)',
             'NIK',
@@ -303,7 +303,7 @@ class EmployeeController extends Controller
             'budi@example.com',
             'employee',
             'sd',
-            'Male',
+            'L',
             'Malang',
             '1985-01-01',
             '3573010101850001',
@@ -443,8 +443,15 @@ class EmployeeController extends Controller
                 continue;
             }
 
+            // Translasi L/P ke Male/Female
+            if (strtoupper($gender) === 'L') {
+                $gender = 'Male';
+            } elseif (strtoupper($gender) === 'P') {
+                $gender = 'Female';
+            }
+
             if (!in_array($gender, ['Male', 'Female'])) {
-                $errors[] = "Baris " . ($index + 2) . ": Jenis kelamin harus 'Male' atau 'Female'.";
+                $errors[] = "Baris " . ($index + 2) . ": Jenis kelamin harus 'L' atau 'P'.";
                 continue;
             }
 
@@ -602,6 +609,7 @@ class EmployeeController extends Controller
         return back()->with('success', "Akun untuk {$employee->name} berhasil dibuat dengan password default: sans1234");
     }
 }
+
 
 
 
