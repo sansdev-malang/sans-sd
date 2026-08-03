@@ -66,7 +66,11 @@ class TeacherController extends Controller
         $certifiedCount = (clone $statsQuery)->whereNotNull('nuptk')->where('nuptk', '!=', '')->count();
         $certifiedPercent = $totalGuru > 0 ? round(($certifiedCount / $totalGuru) * 100) : 0;
 
-        $teachers = $query->orderBy('name', 'asc')->paginate($request->input('per_page', 10))->withQueryString();
+        $perPage = $request->input('per_page', 10);
+        if ($perPage === 'all') {
+            $perPage = $query->count() > 0 ? $query->count() : 1;
+        }
+        $teachers = $query->orderBy('name', 'asc')->paginate($perPage)->withQueryString();
 
         return view('admin.teachers.index', compact('teachers', 'totalGuru', 'guruMale', 'guruFemale', 'certifiedPercent'));
     }
@@ -269,23 +273,70 @@ class TeacherController extends Controller
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Title and columns
+        // Headers
         $headers = [
-            'Nama Lengkap', 'Email', 'Jenis Kelamin (Male/Female)', 'Tempat Lahir', 'Tanggal Lahir (YYYY-MM-DD)',
-            'NIK', 'NIY', 'NUPTK', 'No UKG', 'NRG', 'Pangkat/Golongan',
-            'Pendidikan Terakhir', 'Jurusan', 'Jabatan Utama', 'Jabatan Tambahan',
-            'Tanggal Mulai Tugas (YYYY-MM-DD)', 'Status Kepegawaian', 'Tanggal Pengangkatan (YYYY-MM-DD)',
-            'Tanggal SK Terakhir (YYYY-MM-DD)', 'Nomor SK Terakhir', 'Masa Kerja',
-            'Alamat', 'No. HP', 'Catatan Tambahan', 'ID ZKTeco (Alfanumerik)', 'Status (Active/Leave/Inactive)'
+            'Gelar Depan',
+            'Nama Lengkap',
+            'Gelar Belakang',
+            'Email',
+            'Unit Sekolah (sd)',
+            'Jenis Kelamin (L/P)',
+            'Tempat Lahir',
+            'Tanggal Lahir (YYYY-MM-DD)',
+            'NIK',
+            'NIY',
+            'NUPTK',
+            'NO UKG',
+            'NRG',
+            'Pangkat / Golongan',
+            'Pendidikan Terakhir',
+            'Jurusan',
+            'Jabatan Utama',
+            'Jabatan Tambahan',
+            'Tanggal Mulai Tugas (YYYY-MM-DD)',
+            'Status Kepegawaian',
+            'Tanggal Diangkat (YYYY-MM-DD)',
+            'Tanggal SK Terakhir (YYYY-MM-DD)',
+            'Nomor SK Terakhir',
+            'Masa Kerja Golongan',
+            'Alamat',
+            'No. HP / WA',
+            'Catatan',
+            'ID ZKTeco (Alfanumerik)',
+            'Status (Active/Leave/Inactive)'
         ];
 
+        // Example data row
         $example = [
-            'Retno Lestari, S.Pd', 'retno@sans.dev', 'Female', 'Malang', '1982-04-15',
-            '3573012345678901', '123456', '198204152009042003', '2015023912', '123984', 'III/a',
-            'S1', 'Pendidikan Bahasa Inggris', 'Guru Kelas', 'Wali Kelas',
-            '2010-07-15', 'PNS', '2010-07-15',
-            '2022-01-01', '800/123/2022', '12 Tahun',
-            'Jl. Mawar No. 12', '081234567890', 'Guru tetap', '102', 'Active'
+            'Dr.',
+            'Budi Santoso',
+            'S.Pd.',
+            'budi@example.com',
+            config('app.school_unit') ?: 'sd',
+            'L',
+            'Malang',
+            '1985-01-01',
+            '3573010101850001',
+            '123456',
+            '198501012010121002',
+            'UKG-001',
+            'NRG-123',
+            'Gol III/A',
+            'S1 Administrasi',
+            'Administrasi Perkantoran',
+            'Guru Kelas',
+            'Wali Kelas',
+            '2010-01-01',
+            'PTT',
+            '2010-01-01',
+            '2025-01-01',
+            'SK-001/2025',
+            '15 Tahun',
+            'Jl. Merdeka No. 1, Malang',
+            '081234567890',
+            '-',
+            '',
+            'Active'
         ];
 
         // Put headers in row 1
@@ -301,14 +352,15 @@ class TeacherController extends Controller
         }
 
         // Format headers (bold text & light gray background fill)
-        $headerRange = 'A1:Z1';
+        $lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers));
+        $headerRange = 'A1:' . $lastCol . '1';
         $sheet->getStyle($headerRange)->getFont()->setBold(true);
         $sheet->getStyle($headerRange)->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setARGB('FFE0E0E0');
 
         // Auto-size columns
-        foreach (range(1, 26) as $colIndex) {
+        foreach (range(1, count($headers)) as $colIndex) {
             $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
             $sheet->getColumnDimension($colLetter)->setAutoSize(true);
         }
@@ -317,7 +369,7 @@ class TeacherController extends Controller
 
         return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
-        }, 'template_impor_guru.xlsx', [
+        }, 'Template_Guru.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Cache-Control' => 'max-age=0',
         ]);
@@ -336,81 +388,105 @@ class TeacherController extends Controller
         ]);
 
         $file = $request->file('file');
-        $spreadsheet = IOFactory::load($file->getRealPath());
+        $path = $file->getRealPath();
+
+        $spreadsheet = IOFactory::load($path);
         $sheet = $spreadsheet->getActiveSheet();
         $rows = $sheet->toArray();
+
+        // Remove header row
+        $header = array_shift($rows);
 
         $errors = [];
         $importedCount = 0;
         $teacherType = $this->getTeacherType();
 
-        // Process data starting from row index 1 (skip header)
-        for ($index = 1; $index < count($rows); $index++) {
-            $row = $rows[$index];
-            if (empty(array_filter($row))) {
-                continue; // Skip empty rows
+        foreach ($rows as $index => $row) {
+            // Skip empty rows (must have name)
+            if (empty($row[1])) {
+                continue;
             }
 
-            $name = trim($row[0] ?? '');
-            $email = trim($row[1] ?? '') ? trim($row[1] ?? '') : null;
-            $gender = trim($row[2] ?? '');
-            $birth_place = trim($row[3] ?? '') ? trim($row[3] ?? '') : null;
-            $birth_date = trim($row[4] ?? '') ? date('Y-m-d', strtotime(trim($row[4] ?? ''))) : null;
-            $nik = trim($row[5] ?? '') ? trim($row[5] ?? '') : null;
-            $niy = trim($row[6] ?? '') ? trim($row[6] ?? '') : null;
-            $nuptk = trim($row[7] ?? '') ? trim($row[7] ?? '') : null;
-            $no_ukg = trim($row[8] ?? '') ? trim($row[8] ?? '') : null;
-            $nrg = trim($row[9] ?? '') ? trim($row[9] ?? '') : null;
-            $pangkat_golongan = trim($row[10] ?? '') ? trim($row[10] ?? '') : null;
-            $last_education = trim($row[11] ?? '') ? trim($row[11] ?? '') : null;
-            $major = trim($row[12] ?? '') ? trim($row[12] ?? '') : null;
-            $position = trim($row[13] ?? '') ? trim($row[13] ?? '') : null;
-            $additional_position = trim($row[14] ?? '') ? trim($row[14] ?? '') : null;
-            $task_start_date = trim($row[15] ?? '') ? date('Y-m-d', strtotime(trim($row[15] ?? ''))) : null;
-            $employment_status = trim($row[16] ?? '') ? trim($row[16] ?? '') : null;
-            $appointment_date = trim($row[17] ?? '') ? date('Y-m-d', strtotime(trim($row[17] ?? ''))) : null;
-            $last_sk_date = trim($row[18] ?? '') ? date('Y-m-d', strtotime(trim($row[18] ?? ''))) : null;
-            $last_sk_number = trim($row[19] ?? '') ? trim($row[19] ?? '') : null;
-            $work_period = trim($row[20] ?? '') ? trim($row[20] ?? '') : null;
-            $address = trim($row[21] ?? '') ? trim($row[21] ?? '') : null;
-            $phone = trim($row[22] ?? '') ? trim($row[22] ?? '') : null;
-            $notes = trim($row[23] ?? '') ? trim($row[23] ?? '') : null;
-            $zkteco_uid = trim($row[24] ?? '') ? trim($row[24] ?? '') : null;
-            $status = trim($row[25] ?? '') ? trim($row[25] ?? '') : 'Active';
+            // Map variables
+            $front_title = !empty($row[0]) ? trim($row[0]) : null;
+            $name = trim($row[1]);
+            $back_title = !empty($row[2]) ? trim($row[2]) : null;
+            $email = !empty($row[3]) ? trim($row[3]) : null;
+            $unit = strtolower(trim($row[4]));
+            $gender = trim($row[5]);
+            $birth_place = !empty($row[6]) ? trim($row[6]) : null;
+            $birth_date = !empty($row[7]) ? date('Y-m-d', strtotime(trim($row[7]))) : null;
+            $nik = !empty($row[8]) ? trim($row[8]) : null;
+            $niy = !empty($row[9]) ? trim($row[9]) : null;
+            $nuptk = !empty($row[10]) ? trim($row[10]) : null;
+            $no_ukg = !empty($row[11]) ? trim($row[11]) : null;
+            $nrg = !empty($row[12]) ? trim($row[12]) : null;
+            $pangkat_golongan = !empty($row[13]) ? trim($row[13]) : null;
+            $last_education = !empty($row[14]) ? trim($row[14]) : null;
+            $major = !empty($row[15]) ? trim($row[15]) : null;
+            $position = !empty($row[16]) ? trim($row[16]) : null;
+            $additional_position = !empty($row[17]) ? trim($row[17]) : null;
+            $task_start_date = !empty($row[18]) ? date('Y-m-d', strtotime(trim($row[18]))) : null;
+            $employment_status = !empty($row[19]) ? trim($row[19]) : null;
+            $appointment_date = !empty($row[20]) ? date('Y-m-d', strtotime(trim($row[20]))) : null;
+            $last_sk_date = !empty($row[21]) ? date('Y-m-d', strtotime(trim($row[21]))) : null;
+            $last_sk_number = !empty($row[22]) ? trim($row[22]) : null;
+            $work_period = !empty($row[23]) ? trim($row[23]) : null;
+            $address = !empty($row[24]) ? trim($row[24]) : null;
+            $phone = !empty($row[25]) ? trim($row[25]) : null;
+            $notes = !empty($row[26]) ? trim($row[26]) : null;
+            $zkteco_uid = !empty($row[27]) ? trim($row[27]) : null;
+            $status = !empty($row[28]) ? trim($row[28]) : 'Active';
 
-            if (!$name) {
-                $errors[] = "Baris " . ($index + 1) . ": Nama Lengkap wajib diisi.";
+            $schoolUnit = config('app.school_unit');
+            if ($schoolUnit && $unit !== $schoolUnit) {
+                $errors[] = "Baris " . ($index + 2) . ": Unit sekolah harus '{$schoolUnit}' sesuai konfigurasi sistem.";
+                continue;
+            }
+
+            if (!in_array($unit, ['paud', 'sd', 'smp'])) {
+                $errors[] = "Baris " . ($index + 2) . ": Unit sekolah harus 'paud', 'sd', atau 'smp'.";
+                continue;
+            }
+
+            // Translasi L/P ke Male/Female
+            if (strtoupper($gender) === 'L' || strtolower($gender) === 'laki-laki' || strtolower($gender) === 'male') {
+                $gender = 'Male';
+            } elseif (strtoupper($gender) === 'P' || strtolower($gender) === 'perempuan' || strtolower($gender) === 'female') {
+                $gender = 'Female';
+            }
+
+            if (!in_array($gender, ['Male', 'Female'])) {
+                $errors[] = "Baris " . ($index + 2) . ": Jenis kelamin harus 'L' atau 'P'.";
                 continue;
             }
 
             if ($email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 if (Employee::where('email', $email)->exists()) {
-                    $errors[] = "Baris " . ($index + 1) . ": Email '{$email}' sudah terdaftar.";
+                    $errors[] = "Baris " . ($index + 2) . ": Email '{$email}' sudah terdaftar.";
                     continue;
                 }
             }
 
             if ($nik && Employee::where('nik', $nik)->exists()) {
-                $errors[] = "Baris " . ($index + 1) . ": NIK '{$nik}' sudah terdaftar.";
+                $errors[] = "Baris " . ($index + 2) . ": NIK '{$nik}' sudah terdaftar.";
                 continue;
             }
 
             if ($nuptk && Employee::where('nuptk', $nuptk)->exists()) {
-                $errors[] = "Baris " . ($index + 1) . ": NUPTK '{$nuptk}' sudah terdaftar.";
+                $errors[] = "Baris " . ($index + 2) . ": NUPTK '{$nuptk}' sudah terdaftar.";
                 continue;
             }
 
-            if ($zkteco_uid && Employee::where('zkteco_uid', $zkteco_uid)->exists()) {
-                $errors[] = "Baris " . ($index + 1) . ": ID ZKTeco '{$zkteco_uid}' sudah terdaftar.";
-                continue;
+            if ($zkteco_uid) {
+                // Check if ID ZKTeco is already taken by another employee (as string check)
+                $exists = Employee::where('zkteco_uid', $zkteco_uid)->exists();
+                if ($exists) {
+                    $errors[] = "Baris " . ($index + 2) . ": ID ZKTeco '{$zkteco_uid}' sudah digunakan oleh pegawai lain.";
+                    continue;
+                }
             }
 
-            if (strtolower($gender) == 'male' || strtolower($gender) == 'laki-laki' || strtolower($gender) == 'l') {
-                $gender = 'Male';
-            } else {
-                $gender = 'Female';
-            }
-            
             if (strtolower($status) == 'active') {
                 $status = 'Active';
             } elseif (strtolower($status) == 'leave') {
@@ -421,10 +497,12 @@ class TeacherController extends Controller
 
             // Create teacher
             Employee::create([
+                'front_title' => $front_title,
                 'name' => $name,
+                'back_title' => $back_title,
                 'email' => $email,
                 'employee_type_id' => $teacherType->id,
-                'unit' => config('app.school_unit') ?: 'sd',
+                'unit' => $unit,
                 'gender' => $gender,
                 'birth_place' => $birth_place,
                 'birth_date' => $birth_date,
@@ -463,3 +541,4 @@ class TeacherController extends Controller
         return redirect()->route('teachers.index')->with('success', "Berhasil mengimpor {$importedCount} data guru!");
     }
 }
+

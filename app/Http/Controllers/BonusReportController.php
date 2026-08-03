@@ -77,6 +77,10 @@ class BonusReportController extends Controller
                     ['path' => $request->url(), 'query' => $request->query()]
                 );
             }
+            
+            if ($user && $user->role === 'employee' && $user->employee_id) {
+                return view('bonus-reports.employee-index', compact('paginatedReports', 'month', 'startDateReq', 'endDateReq', 'activeSchema', 'totalSemuaBonus'));
+            }
 
             return view('bonus-reports.index', compact('paginatedReports', 'month', 'startDateReq', 'endDateReq', 'activeSchema', 'totalSemuaBonus'));
 

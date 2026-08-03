@@ -54,7 +54,12 @@ class EmployeeController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        $employees = $query->with('employeeType')->orderBy('name', 'asc')->get();
+        $perPage = $request->input('per_page', 10);
+        if ($perPage === 'all') {
+            $perPage = $query->count() > 0 ? $query->count() : 1;
+        }
+
+        $employees = $query->with('employeeType')->orderBy('name', 'asc')->paginate($perPage)->withQueryString();
         $employeeTypes = \App\Models\EmployeeType::all();
 
         if ($request->wantsJson() || $request->ajax()) {
@@ -661,6 +666,7 @@ class EmployeeController extends Controller
         return back()->with('success', "Akun untuk {$employee->name} berhasil dibuat dengan password default: sans1234");
     }
 }
+
 
 
 

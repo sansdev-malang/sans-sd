@@ -10,7 +10,7 @@ use App\Http\Controllers\ZktecoDeviceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/login');
 });
 
 Route::get('/siswa', function () {
@@ -200,7 +200,7 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 // Slip Gaji
-Route::middleware(['auth', 'verified', 'role:employee,kepala_sekolah,waka,admin_sd,super_admin'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:employee,kepala_sekolah,waka,admin_sd,admin_paud,admin_smp,super_admin'])->group(function () {
     Route::get('attendances', [\App\Http\Controllers\AttendanceController::class, 'index'])->name('attendances.index');
     Route::get('attendances/export', [\App\Http\Controllers\AttendanceController::class, 'export'])->name('attendances.export');
     Route::get('bonus-reports', [\App\Http\Controllers\BonusReportController::class, 'index'])->name('bonus-reports.index');

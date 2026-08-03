@@ -20,12 +20,21 @@ class AttendanceController extends Controller
         $schoolUnit = config('app.school_unit', 'smp');
 
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
+        $user = auth()->user();
 
         try {
-            $response = \Illuminate\Support\Facades\Http::get("{$hrdUrl}/api/attendance-matrix", [
+            $apiParams = [
                 'month' => $month,
                 'unit_id' => strtolower($schoolUnit)
-            ]);
+            ];
+
+            if ($user && $user->role === 'employee') {
+                $monthCarbon = \Carbon\Carbon::createFromFormat('Y-m', $month);
+                $apiParams['start_date'] = $monthCarbon->copy()->startOfMonth()->format('Y-m-d');
+                $apiParams['end_date'] = $monthCarbon->copy()->endOfMonth()->format('Y-m-d');
+            }
+
+            $response = \Illuminate\Support\Facades\Http::get("{$hrdUrl}/api/attendance-matrix", $apiParams);
             
             $json = $response->json();
             $reports = collect($json['data'] ?? []);
@@ -33,7 +42,6 @@ class AttendanceController extends Controller
             $endDate = \Carbon\Carbon::parse($json['end_date'] ?? date('Y-m-d'));
 
                         // Apply Role-based filtering
-            $user = auth()->user();
             if ($user && $user->role === 'employee' && $user->employee_id) {
                 // If it's a regular employee, only show their own report
                 $reports = $reports->filter(function ($item) use ($user) {
@@ -71,6 +79,10 @@ class AttendanceController extends Controller
             $startDate = \Carbon\Carbon::now();
             $endDate = \Carbon\Carbon::now();
             session()->flash('error', 'Gagal memuat matriks absensi dari HRD: ' . $e->getMessage());
+        }
+
+        if ($user && $user->role === 'employee' && $user->employee_id) {
+            return view('admin.attendances.calendar', compact('reports', 'month', 'search', 'perPage', 'startDate', 'endDate'));
         }
 
         return view('admin.attendances.index', compact('reports', 'month', 'search', 'perPage', 'startDate', 'endDate'));

@@ -68,7 +68,28 @@
 
     <div class="grid min-h-screen lg:grid-cols-2">
         <!-- FORM COLUMN -->
-        <div class="flex flex-col justify-between p-8 lg:p-12">
+        <div class="relative flex flex-col justify-between p-8 lg:p-12 overflow-hidden">
+            <!-- Aesthetic "SANS DEV" watermark background -->
+            <div aria-hidden="true" style="
+                position: absolute;
+                bottom: 60px;
+                left: 90px;
+                font-family: 'Nasalization Rg', sans-serif;
+                font-size: clamp(64px, 22vw, 160px);
+                font-weight: 600;
+                line-height: 1;
+                white-space: nowrap;
+                pointer-events: none;
+                user-select: none;
+                transform: rotate(-8deg);
+                transform-origin: bottom right;
+                background: linear-gradient(135deg, #6366f1 0%, #a5b4fc 40%, transparent 90%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                opacity: 0.15;
+                z-index: 0;
+            ">SANS DEV</div>
             <!-- Header section (Logo and Theme Toggle) -->
             <div class="flex items-center justify-between">
                 <a href="/" class="flex items-center gap-2.5">
@@ -82,13 +103,21 @@
                     <span class="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">{{ setting('app_name', 'SANS') }}</span>
                 </a>
 
-                <!-- Light / Dark Switch Button -->
-                <button id="theme-toggle"
-                    class="p-1.5 text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md cursor-pointer transition-colors"
-                    title="Toggle Tema">
-                    <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
-                    <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
-                </button>
+                <div class="flex items-center gap-4">
+                    <!-- Light / Dark Switch Button -->
+                    <button id="theme-toggle"
+                        class="p-1.5 text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md cursor-pointer transition-colors"
+                        title="Toggle Tema">
+                        <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                        <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+                    </button>
+    
+                    <!-- Back to Home link -->
+                    <a href="{{ env('PORTAL_URL', 'http://sans-portal.test') }}" class="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-slate-50 transition-colors">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                        Back to Portal
+                    </a>
+                </div>
             </div>
 
             {{ $slot }}
