@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Kesalahan Sistem')
+@section('code', '500')
+@section('icon', 'server-crash')
+@section('message', 'Ups! Sepertinya ada kendala teknis pada server kami. Tim teknisi SANS sedang berusaha memperbaikinya. Silakan coba lagi beberapa saat.')

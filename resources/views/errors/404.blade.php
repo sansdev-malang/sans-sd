@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Halaman Tidak Ditemukan')
+@section('code', '404')
+@section('icon', 'compass')
+@section('message', 'Maaf, halaman yang Anda tuju tidak dapat ditemukan. Halaman tersebut mungkin telah dihapus, dipindahkan, atau Anda salah memasukkan alamat URL.')

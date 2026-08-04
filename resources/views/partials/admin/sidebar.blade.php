@@ -49,11 +49,14 @@
                     </span>
                 </a>
 
-                <a href="{{ route('siswa') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg
-                    {{ Request::routeIs('siswa') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-650 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
+                <a href="{{ route('coming-soon') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg
+                    {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-650 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
                     text-xs relative group">
-                    <i data-lucide="users" class="menu-icon w-4 h-4"></i>
-                    <span class="menu-text">Data Siswa</span>
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="users" class="menu-icon w-4 h-4"></i>
+                        <span class="menu-text">Data Siswa</span>
+                    </div>
+                    <span class="menu-text text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
                     <span
                         class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-950 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
                         Data Siswa
@@ -71,11 +74,14 @@
                     </span>
                 </a>
                 @endif
-                <a href="{{ route('rombel') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg 
-                    {{ Request::routeIs('rombel') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
+                <a href="{{ route('coming-soon') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg 
+                    {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
                     text-xs font-medium relative group">
-                    <i data-lucide="university" class="menu-icon w-4 h-4"></i>
-                    <span class="menu-text">Rombongan Belajar</span>
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="university" class="menu-icon w-4 h-4"></i>
+                        <span class="menu-text">Rombongan Belajar</span>
+                    </div>
+                    <span class="menu-text text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
                     <span
                         class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-950 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
                         Rombongan Belajar
@@ -90,11 +96,14 @@
                 class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
                 Homebase</h3>
             <nav class="space-y-1"></nav>
-            <a href="{{ route('homebase_leaderboard') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg 
-                    {{ Request::routeIs('homebase_leaderboard') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
+            <a href="{{ route('coming-soon') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg 
+                    {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
                     text-xs font-medium relative group">
-                <i data-lucide="podium" class="menu-icon w-4 h-4"></i>
-                <span class="menu-text">Leaderboard</span>
+                <div class="flex items-center gap-3">
+                    <i data-lucide="podium" class="menu-icon w-4 h-4"></i>
+                    <span class="menu-text">Leaderboard</span>
+                </div>
+                <span class="menu-text text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
                 <span
                     class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-950 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
                     Leaderboard
@@ -115,37 +124,55 @@
                 <div x-show="open1" x-collapse
                     class="mt-1 ml-5 pl-4 border-l border-slate-200 dark:border-slate-800 space-y-1"
                     style="margin-left:20px">
-                    <a href="{{ route('homebase_merah') }}"
-                        class="flex items-center gap-2 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                        <i data-lucide="sparkles" class="w-3 h-3 text-red-600"></i>
-                        <span>Homebase Merah</span>
+                    <a href="{{ route('coming-soon') }}"
+                        class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('coming-soon') ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-3 h-3 text-red-600"></i>
+                            <span>Homebase Merah</span>
+                        </div>
+                        <span class="text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
                     </a>
-                    <a href="{{ route('homebase_kuning') }}"
-                        class="flex items-center gap-2 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                        <i data-lucide="sparkles" class="w-3 h-3 text-yellow-600"></i>
-                        <span>Homebase Kuning</span>
+                    <a href="{{ route('coming-soon') }}"
+                        class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('coming-soon') ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-3 h-3 text-yellow-600"></i>
+                            <span>Homebase Kuning</span>
+                        </div>
+                        <span class="text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
                     </a>
-                    <a href="{{ route('homebase_hijau') }}"
-                        class="flex items-center gap-2 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                        <i data-lucide="sparkles" class="w-3 h-3 text-green-600"></i>
-                        <span>Homebase Hijau</span>
+                    <a href="{{ route('coming-soon') }}"
+                        class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('coming-soon') ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-3 h-3 text-green-600"></i>
+                            <span>Homebase Hijau</span>
+                        </div>
+                        <span class="text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
                     </a>
-                    <a href="{{ route('homebase_biru') }}"
-                        class="flex items-center gap-2 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                        <i data-lucide="sparkles" class="w-3 h-3 text-blue-600"></i>
-                        <span>Homebase Biru</span>
+                    <a href="{{ route('coming-soon') }}"
+                        class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('coming-soon') ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-3 h-3 text-blue-600"></i>
+                            <span>Homebase Biru</span>
+                        </div>
+                        <span class="text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
                     </a>
-                    <a href="{{ route('homebase_ungu') }}"
-                        class="flex items-center gap-2 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                        <i data-lucide="sparkles" class="w-3 h-3 text-indigo-600"></i>
-                        <span>Homebase Ungu</span>
+                    <a href="{{ route('coming-soon') }}"
+                        class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('coming-soon') ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-3 h-3 text-indigo-600"></i>
+                            <span>Homebase Ungu</span>
+                        </div>
+                        <span class="text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
                     </a>
                 </div>
-                <a href="{{ route('form_homebase') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg 
-                    {{ Request::routeIs('form_homebase') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
+                <a href="{{ route('coming-soon') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg 
+                    {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-655 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
                     text-xs font-medium relative group">
-                <i data-lucide="star-check" class="menu-icon w-4 h-4"></i>
-                <span class="menu-text">Input Poin</span>
+                <div class="flex items-center gap-3">
+                    <i data-lucide="star-check" class="menu-icon w-4 h-4"></i>
+                    <span class="menu-text">Input Poin</span>
+                </div>
+                <span class="menu-text text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
                 <span
                     class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-950 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
                     Input Poin
@@ -246,10 +273,13 @@
                 class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
                 Manajemen</h3>
             <nav class="space-y-1">
-                <a href="#"
-                    class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg text-slate-650 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors text-xs font-medium relative group">
-                    <i data-lucide="calendar" class="menu-icon w-4 h-4"></i>
-                    <span class="menu-text">Jadwal Kelas</span>
+                <a href="{{ route('coming-soon') }}"
+                    class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-650 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} transition-colors text-xs relative group">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="calendar" class="menu-icon w-4 h-4"></i>
+                        <span class="menu-text">Jadwal Kelas</span>
+                    </div>
+                    <span class="menu-text text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
                     <span
                         class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-950 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
                         Jadwal Kelas
@@ -312,10 +342,13 @@
                 <i data-lucide="badge-check" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
                 <span>Account</span>
             </a>
-            <a href="#"
-                class="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                <i data-lucide="bell" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
-                <span>Notifications</span>
+            <a href="{{ route('coming-soon') }}"
+                class="flex items-center justify-between gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="bell" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                    <span>Notifications</span>
+                </div>
+                <span class="text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
             </a>
 
             <div class="border-t border-slate-100 dark:border-slate-900 my-1"></div>
