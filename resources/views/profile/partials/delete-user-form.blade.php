@@ -1,56 +1,63 @@
 <section class="space-y-6">
-    <header>
-        <h2 class="text-xl font-semibold leading-none tracking-tight text-slate-900 dark:text-slate-50">
-            {{ __('Delete Account') }}
-        </h2>
-
-        <p class="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
-            {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
-        </p>
+    <header class="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="p-2 bg-rose-50 dark:bg-rose-900/30 rounded-lg text-rose-600 dark:text-rose-400">
+            <i data-lucide="trash-2" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Hapus Akun</h3>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Setelah akun Anda dihapus, semua data dan sumber daya di dalamnya akan dihapus secara permanen.</p>
+        </div>
     </header>
 
-    <button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-        class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-900 disabled:pointer-events-none disabled:opacity-50 bg-red-600 text-white shadow hover:bg-red-600/90 h-9 px-4 py-2 dark:bg-red-900 dark:text-slate-50 dark:hover:bg-red-900/90 dark:focus-visible:ring-slate-300"
-    >{{ __('Delete Account') }}</button>
+    <div class="max-w-xl text-xs space-y-4">
+        <p class="text-slate-550 dark:text-slate-400">
+            Sebelum menghapus akun, mohon unduh data atau informasi penting yang ingin Anda simpan terlebih dahulu. Tindakan ini tidak dapat dibatalkan.
+        </p>
+
+        <button
+            type="button"
+            x-data=""
+            x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
+            class="h-9 px-4 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer"
+        >
+            Hapus Akun Saya
+        </button>
+    </div>
 
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
+        <form method="post" action="{{ route('profile.destroy') }}" class="p-6 text-xs text-left bg-white dark:bg-slate-955">
             @csrf
             @method('delete')
 
-            <h2 class="text-xl font-semibold leading-none tracking-tight text-slate-900 dark:text-slate-50">
-                {{ __('Are you sure you want to delete your account?') }}
-            </h2>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-50 mb-2">
+                Apakah Anda yakin ingin menghapus akun Anda?
+            </h3>
 
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
+            <p class="text-slate-550 dark:text-slate-400 mb-4 leading-relaxed">
+                Semua data akan dihapus secara permanen. Silakan masukkan kata sandi Anda untuk mengonfirmasi bahwa Anda ingin menghapus akun secara permanen.
             </p>
 
-            <div class="mt-6 space-y-2">
-                <label for="password" class="sr-only">
-                    {{ __('Password') }}
-                </label>
-
+            <div class="space-y-1.5 max-w-md">
+                <label for="password" class="block font-semibold text-slate-700 dark:text-slate-350">Kata Sandi Anda</label>
                 <input
                     id="password"
                     name="password"
                     type="password"
-                    class="flex h-9 w-full sm:w-3/4 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
-                    placeholder="{{ __('Password') }}"
+                    placeholder="Masukkan Kata Sandi"
+                    class="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                 />
-
-                <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2 text-sm" />
+                @error('password', 'userDeletion')
+                    <p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
-            <div class="mt-6 flex justify-end gap-3">
-                <button type="button" x-on:click="$dispatch('close')" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-900 disabled:pointer-events-none disabled:opacity-50 border border-slate-200 bg-white shadow-sm hover:bg-slate-100 hover:text-slate-900 h-9 px-4 py-2 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-800 dark:hover:text-slate-50">
-                    {{ __('Cancel') }}
+            <div class="mt-6 flex justify-end gap-2.5">
+                <button type="button" x-on:click="$dispatch('close')" class="h-9 px-4 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-300 bg-transparent text-xs font-semibold rounded-lg transition-all cursor-pointer">
+                    Batal
                 </button>
 
-                <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-red-600 dark:bg-red-50 hover:bg-red-800 dark:hover:bg-red-200 text-white dark:text-red-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-150 cursor-pointer">
-                    {{ __('Delete Account') }}
+                <button type="submit" class="h-9 px-4 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer">
+                    Hapus Akun
                 </button>
             </div>
         </form>

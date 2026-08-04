@@ -15,6 +15,8 @@ use App\Models\BonusTier;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class HrdApiController extends Controller
 {
@@ -117,8 +119,19 @@ class HrdApiController extends Controller
         unset($validated['employee_type_code']);
 
         if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('photos', 'public');
-            $validated['photo'] = $path;
+            $manager = new ImageManager(new Driver());
+            $image = $manager->decode($request->file('photo'));
+            $image->scaleDown(width: 800);
+            
+            $filename = 'photos/' . uniqid() . '.webp';
+            $fullPath = storage_path('app/public/' . $filename);
+            
+            if (!file_exists(dirname($fullPath))) {
+                mkdir(dirname($fullPath), 0755, true);
+            }
+            
+            $image->save($fullPath, 80);
+            $validated['photo'] = $filename;
         }
 
         $employee = Employee::create($validated);
@@ -193,8 +206,20 @@ class HrdApiController extends Controller
                 $oldPath = str_contains($employee->photo, 'photos/') ? $employee->photo : 'photos/' . $employee->photo;
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
             }
-            $path = $request->file('photo')->store('photos', 'public');
-            $validated['photo'] = $path;
+            
+            $manager = new ImageManager(new Driver());
+            $image = $manager->decode($request->file('photo'));
+            $image->scaleDown(width: 800);
+            
+            $filename = 'photos/' . uniqid() . '.webp';
+            $fullPath = storage_path('app/public/' . $filename);
+            
+            if (!file_exists(dirname($fullPath))) {
+                mkdir(dirname($fullPath), 0755, true);
+            }
+            
+            $image->save($fullPath, 80);
+            $validated['photo'] = $filename;
         }
 
         $employee->update($validated);
@@ -437,6 +462,75 @@ class HrdApiController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Decision processed successfully.']);
+    }
+
+    /**
+     * Sync announcements from central HRD.
+     */
+    public function syncAnnouncements(Request $request)
+    {
+        $action = $request->input('action', 'sync');
+        $centralId = $request->input('central_id');
+
+        if (!$centralId) {
+            return response()->json(['success' => false, 'message' => 'Missing central_id.'], 400);
+        }
+
+        if ($action === 'delete') {
+            \App\Models\Announcement::where('central_id', $centralId)->delete();
+            return response()->json(['success' => true, 'message' => 'Announcement deleted successfully.']);
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'category' => 'required|string',
+            'target_audience' => 'required|string',
+            'publish_date' => 'nullable|date_format:Y-m-d H:i:s',
+            'expiry_date' => 'nullable|date_format:Y-m-d H:i:s',
+            'is_active' => 'required|boolean',
+            'attachment' => 'nullable|string',
+        ]);
+
+        // Find a default creator to satisfy foreign key (a superadmin or admin)
+        $admin = \App\Models\User::whereIn('role', ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp', 'kepala_sekolah', 'waka'])->first()
+            ?? \App\Models\User::first();
+        
+        $creatorId = $admin ? $admin->id : 1;
+
+        $announcement = \App\Models\Announcement::updateOrCreate(
+            ['central_id' => $centralId],
+            [
+                'title' => $validated['title'],
+                'content' => $validated['content'],
+                'category' => $validated['category'],
+                'target_audience' => $validated['target_audience'],
+                'publish_date' => $validated['publish_date'] ?? now(),
+                'expiry_date' => $validated['expiry_date'],
+                'is_active' => $validated['is_active'],
+                'attachment' => $validated['attachment'],
+                'created_by' => $creatorId,
+            ]
+        );
+
+        // If it's active, send notification locally
+        if ($announcement->is_active) {
+            $audiences = explode(',', $announcement->target_audience);
+            $query = \App\Models\User::where('id', '!=', $creatorId);
+            
+            if (!in_array('global', $audiences)) {
+                $query->where(function($q) use ($audiences) {
+                    $q->whereHas('employee.employeeType', function($sq) use ($audiences) {
+                        $sq->whereIn('code', $audiences);
+                    })->orWhereIn('role', ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp', 'kepala_sekolah', 'waka']);
+                });
+            }
+            
+            $users = $query->get();
+            \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\NewAnnouncementNotification($announcement));
+        }
+
+        return response()->json(['success' => true, 'message' => 'Announcement synced successfully.']);
     }
 }
 

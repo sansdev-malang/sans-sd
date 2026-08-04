@@ -16,6 +16,7 @@ class Announcement extends Model
         'created_by',
         'publish_date',
         'expiry_date',
+        'central_id',
     ];
 
     protected $casts = [

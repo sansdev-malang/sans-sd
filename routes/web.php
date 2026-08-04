@@ -48,7 +48,97 @@ Route::get('/dashboard', function () {
     
     $latestAnnouncements = $query->take(3)->get();
 
-    return view('admin.dashboard', compact('employeeCount', 'latestAnnouncements'));
+    // Fetch personal stats for non-admin employees
+    $myReport = null;
+    $sisaCuti = 12;
+    $myRecentLeaves = collect();
+    $chartPoints = [];
+
+    if (!$isAdmin && $user->employee_id) {
+        $employee = \App\Models\Employee::find($user->employee_id);
+        if ($employee) {
+            // Calculate Leave Balance
+            $usedCuti = 0;
+            $approvedCutiRequests = \App\Models\LeaveRequest::where('employee_id', $employee->id)
+                ->where('type', 'Cuti')
+                ->where('status', 'Approved')
+                ->get();
+            foreach ($approvedCutiRequests as $req) {
+                $usedCuti += \Carbon\Carbon::parse($req->start_date)->diffInDays(\Carbon\Carbon::parse($req->end_date)) + 1;
+            }
+            $sisaCuti = max(0, 12 - $usedCuti);
+
+            // Fetch Recent Activity (Leaves/Permits status)
+            $myRecentLeaves = \App\Models\LeaveRequest::where('employee_id', $employee->id)
+                ->latest()
+                ->limit(5)
+                ->get();
+
+            // Fetch Presence & Bonus details from HRD
+            $schoolUnit = config('app.school_unit', 'sd');
+            $hrdUrl = \App\Models\Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
+            try {
+                $response = \Illuminate\Support\Facades\Http::timeout(15)->get("{$hrdUrl}/api/bonus-reports", [
+                    'month' => date('Y-m'),
+                    'unit_id' => strtolower($schoolUnit)
+                ]);
+                if ($response->successful()) {
+                    $json = $response->json();
+                    $reports = collect($json['data'] ?? []);
+                    $myReport = $reports->first(function ($item) use ($employee) {
+                        return ($item['employee']['id'] ?? 0) == $employee->id;
+                    });
+                }
+            } catch (\Exception $e) {
+                // Fallback silently
+            }
+        }
+    }
+
+    // Prepare SVG Chart Points
+    $dailyDetails = $myReport['daily_details'] ?? [];
+    if (!empty($dailyDetails)) {
+        ksort($dailyDetails);
+        // Filter out Pending days
+        $completedDetails = array_filter($dailyDetails, function ($day) {
+            return isset($day['status']) && $day['status'] !== 'Pending';
+        });
+        $last7 = array_slice($completedDetails, -7, 7, true);
+        $idx = 0;
+        foreach ($last7 as $dateStr => $det) {
+            $bonus = $det['bonus_nominal'] ?? 0;
+            $x = $idx * 83;
+            $y = 130 - (($bonus / 50000) * 100);
+            $chartPoints[] = [
+                'x' => $x,
+                'y' => $y,
+                'date' => date('d M', strtotime($dateStr)),
+                'bonus' => $bonus
+            ];
+            $idx++;
+        }
+    }
+
+    if (empty($chartPoints)) {
+        for ($i = 0; $i < 7; $i++) {
+            $chartPoints[] = [
+                'x' => $i * 83,
+                'y' => 130,
+                'date' => '-',
+                'bonus' => 0
+            ];
+        }
+    }
+
+    return view('admin.dashboard', compact(
+        'isAdmin',
+        'employeeCount',
+        'latestAnnouncements',
+        'myReport',
+        'sisaCuti',
+        'myRecentLeaves',
+        'chartPoints'
+    ));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 
@@ -159,6 +249,7 @@ Route::middleware(['auth', 'verified', 'role:employee,admin_sd,admin_paud,admin_
     Route::get('bonus-reports/export', [\App\Http\Controllers\BonusReportController::class, 'export'])->name('bonus-reports.export');
     Route::get('my-attendance', [\App\Http\Controllers\MyAttendanceController::class, 'index'])->name('my-attendance');
     Route::resource('my-leaves', \App\Http\Controllers\MyLeaveRequestController::class);
+    Route::get('announcements/{announcement}/download', [\App\Http\Controllers\AnnouncementController::class, 'download'])->name('announcements.download');
     Route::resource('announcements', \App\Http\Controllers\AnnouncementController::class)->only(['index', 'show']);
 
     Route::get('/notifications/{id}/read', function ($id) {
@@ -182,6 +273,7 @@ Route::middleware('hrd.api')->prefix('api/v1/hrd')->group(function () {
     Route::post('sync/schedules', [\App\Http\Controllers\Api\HrdApiController::class, 'syncSchedules']);
     Route::post('sync/holidays', [\App\Http\Controllers\Api\HrdApiController::class, 'syncHolidays']);
     Route::post('sync/bonus-schemas', [\App\Http\Controllers\Api\HrdApiController::class, 'syncBonusSchemas']);
+    Route::post('sync/announcements', [\App\Http\Controllers\Api\HrdApiController::class, 'syncAnnouncements']);
     Route::get('leave-requests', [\App\Http\Controllers\Api\HrdApiController::class, 'leaveRequests']);
     Route::post('leave-requests/decision', [\App\Http\Controllers\Api\HrdApiController::class, 'leaveDecision']);
 });

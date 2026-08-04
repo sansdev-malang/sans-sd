@@ -177,11 +177,11 @@
         }
 
         function deleteType(id, name) {
-            if (confirm('Apakah Anda yakin ingin menghapus tipe pegawai "' + name + '"? Semua pegawai dengan tipe ini akan diset ke tipe kosong.')) {
+            showGlobalConfirmModal('Apakah Anda yakin ingin menghapus tipe pegawai "' + name + '"? Semua pegawai dengan tipe ini akan diset ke tipe kosong.', function() {
                 const form = document.getElementById('delete-type-form');
                 form.action = '/employee-types/' + id;
                 form.submit();
-            }
+            });
         }
     </script>
 

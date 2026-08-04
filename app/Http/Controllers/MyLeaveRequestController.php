@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class MyLeaveRequestController extends Controller
 {
@@ -47,8 +49,29 @@ class MyLeaveRequestController extends Controller
         $validated['status'] = 'Pending';
 
         if ($request->hasFile('attachment')) {
-            $path = $request->file('attachment')->store('attachments/leaves', 'public');
-            $validated['attachment'] = $path;
+            $file = $request->file('attachment');
+            $extension = strtolower($file->extension());
+            
+            if (in_array($extension, ['png', 'jpg', 'jpeg'])) {
+                // Compress image
+                $manager = new ImageManager(new Driver());
+                $image = $manager->decode($file);
+                $image->scaleDown(width: 1000);
+                
+                $filename = 'attachments/leaves/' . uniqid() . '.webp';
+                $fullPath = storage_path('app/public/' . $filename);
+                
+                if (!file_exists(dirname($fullPath))) {
+                    mkdir(dirname($fullPath), 0755, true);
+                }
+                
+                $image->save($fullPath, 80);
+                $validated['attachment'] = $filename;
+            } else {
+                // Store non-images (PDF, DOC) normally
+                $path = $file->store('attachments/leaves', 'public');
+                $validated['attachment'] = $path;
+            }
         }
 
         LeaveRequest::create($validated);

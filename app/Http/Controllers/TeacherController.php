@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class TeacherController extends Controller
 {
@@ -107,6 +109,7 @@ class TeacherController extends Controller
             'major.max' => 'Jurusan terlalu panjang.',
             'photo.image' => 'File harus berupa gambar.',
             'photo.max' => 'Ukuran foto tidak boleh lebih dari 2MB.',
+            'photo.uploaded' => 'Gagal mengunggah foto. Ukuran file kemungkinan terlalu besar (maksimal 2MB) atau format tidak didukung.',
         ];
         $validated = $request->validate([
             'front_title' => 'nullable|string|max:50',
@@ -142,10 +145,19 @@ class TeacherController extends Controller
 
         // Handle file upload
         if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('photos', $filename, 'public');
-            $validated['photo'] = $path;
+            $manager = new ImageManager(new Driver());
+            $image = $manager->decode($request->file('photo'));
+            $image->scaleDown(width: 800);
+            
+            $filename = 'photos/' . uniqid() . '.webp';
+            $fullPath = storage_path('app/public/' . $filename);
+            
+            if (!file_exists(dirname($fullPath))) {
+                mkdir(dirname($fullPath), 0755, true);
+            }
+            
+            $image->save($fullPath, 80);
+            $validated['photo'] = $filename;
         }
 
         $teacherType = $this->getTeacherType();
@@ -194,6 +206,7 @@ class TeacherController extends Controller
             'major.max' => 'Jurusan terlalu panjang.',
             'photo.image' => 'File harus berupa gambar.',
             'photo.max' => 'Ukuran foto tidak boleh lebih dari 2MB.',
+            'photo.uploaded' => 'Gagal mengunggah foto. Ukuran file kemungkinan terlalu besar (maksimal 2MB) atau format tidak didukung.',
         ];
         $validated = $request->validate([
             'front_title' => 'nullable|string|max:50',
@@ -235,10 +248,19 @@ class TeacherController extends Controller
                 Storage::disk('public')->delete($oldPath);
             }
 
-            $file = $request->file('photo');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('photos', $filename, 'public');
-            $validated['photo'] = $path;
+            $manager = new ImageManager(new Driver());
+            $image = $manager->decode($request->file('photo'));
+            $image->scaleDown(width: 800);
+            
+            $filename = 'photos/' . uniqid() . '.webp';
+            $fullPath = storage_path('app/public/' . $filename);
+            
+            if (!file_exists(dirname($fullPath))) {
+                mkdir(dirname($fullPath), 0755, true);
+            }
+            
+            $image->save($fullPath, 80);
+            $validated['photo'] = $filename;
         }
 
         $teacher->update($validated);

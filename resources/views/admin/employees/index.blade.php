@@ -285,11 +285,11 @@
         }
 
         function deleteEmployee(id, name) {
-            if (confirm('Apakah Anda yakin ingin menghapus data pegawai ' + name + '?')) {
+            showGlobalConfirmModal('Apakah Anda yakin ingin menghapus data pegawai ' + name + '?', function() {
                 const form = document.getElementById('delete-form');
                 form.action = '/employees/' + id;
                 form.submit();
-            }
+            });
         }
 
         function editEmployee(employee) {

@@ -116,6 +116,7 @@ class EmployeeController extends Controller
             'major.max' => 'Jurusan terlalu panjang.',
             'photo.image' => 'File harus berupa gambar.',
             'photo.max' => 'Ukuran foto tidak boleh lebih dari 2MB.',
+            'photo.uploaded' => 'Gagal mengunggah foto. Ukuran file kemungkinan terlalu besar (maksimal 2MB) atau format tidak didukung.',
         ];
 
         $validated = $request->validate([
@@ -146,7 +147,7 @@ class EmployeeController extends Controller
             'phone' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'zkteco_uid' => 'nullable|string|max:255',
-            'photo' => 'nullable|image|max:1024',
+            'photo' => 'nullable|image|max:2048',
             'status' => 'required|in:Active,Leave,Inactive',
             'employee_type_id' => 'required|exists:employee_types,id',
         ], $messages);
@@ -223,6 +224,7 @@ class EmployeeController extends Controller
             'major.max' => 'Jurusan terlalu panjang.',
             'photo.image' => 'File harus berupa gambar.',
             'photo.max' => 'Ukuran foto tidak boleh lebih dari 2MB.',
+            'photo.uploaded' => 'Gagal mengunggah foto. Ukuran file kemungkinan terlalu besar (maksimal 2MB) atau format tidak didukung.',
         ];
 
         $validated = $request->validate([
@@ -253,7 +255,7 @@ class EmployeeController extends Controller
             'phone' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'zkteco_uid' => 'nullable|string|max:255',
-            'photo' => 'nullable|image|max:1024',
+            'photo' => 'nullable|image|max:2048',
             'status' => 'required|in:Active,Leave,Inactive',
             'employee_type_id' => 'required|exists:employee_types,id',
         ], $messages);

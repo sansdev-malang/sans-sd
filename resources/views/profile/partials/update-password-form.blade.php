@@ -1,56 +1,46 @@
 <section class="space-y-6">
-    <header>
-        <h2 class="text-xl font-semibold leading-none tracking-tight text-slate-900 dark:text-slate-50">
-            {{ __('Update Password') }}
-        </h2>
-
-        <p class="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
-            {{ __('Ensure your account is using a long, random password to stay secure.') }}
-        </p>
+    <header class="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
+            <i data-lucide="key-round" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Perbarui Kata Sandi</h3>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Pastikan akun Anda menggunakan kata sandi yang panjang dan acak untuk menjaga keamanan.</p>
+        </div>
     </header>
 
-    <form method="post" action="{{ route('password.update') }}" class="space-y-6">
+    <form method="post" action="{{ route('password.update') }}" class="space-y-4 max-w-xl text-xs">
         @csrf
         @method('put')
 
-        <div class="space-y-2">
-            <label for="update_password_current_password" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-slate-900 dark:text-slate-50">
-                {{ __('Current Password') }}
-            </label>
-            <input id="update_password_current_password" name="current_password" type="password" class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300" autocomplete="current-password" />
-            <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2 text-sm" />
+        <div class="space-y-1.5">
+            <label for="update_password_current_password" class="block font-semibold text-slate-700 dark:text-slate-300">Kata Sandi Saat Ini</label>
+            <input id="update_password_current_password" name="current_password" type="password" autocomplete="current-password" class="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+            @error('current_password', 'updatePassword')
+                <p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="space-y-2">
-            <label for="update_password_password" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-slate-900 dark:text-slate-50">
-                {{ __('New Password') }}
-            </label>
-            <input id="update_password_password" name="password" type="password" class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300" autocomplete="new-password" />
-            <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2 text-sm" />
+        <div class="space-y-1.5">
+            <label for="update_password_password" class="block font-semibold text-slate-700 dark:text-slate-300">Kata Sandi Baru</label>
+            <input id="update_password_password" name="password" type="password" autocomplete="new-password" class="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+            @error('password', 'updatePassword')
+                <p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="space-y-2">
-            <label for="update_password_password_confirmation" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-slate-900 dark:text-slate-50">
-                {{ __('Confirm Password') }}
-            </label>
-            <input id="update_password_password_confirmation" name="password_confirmation" type="password" class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300" autocomplete="new-password" />
-            <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2 text-sm" />
+        <div class="space-y-1.5">
+            <label for="update_password_password_confirmation" class="block font-semibold text-slate-700 dark:text-slate-300">Konfirmasi Kata Sandi Baru</label>
+            <input id="update_password_password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" class="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+            @error('password_confirmation', 'updatePassword')
+                <p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="flex items-center gap-4">
-            <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-150 cursor-pointer">
-                {{ __('Save') }}
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-4">
+            <button type="submit" class="h-9 px-5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-semibold text-xs rounded-lg shadow-sm transition-colors cursor-pointer">
+                Simpan Kata Sandi
             </button>
-
-            @if (session('status') === 'password-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-slate-500 dark:text-slate-400"
-                >{{ __('Saved.') }}</p>
-            @endif
         </div>
     </form>
 </section>

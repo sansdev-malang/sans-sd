@@ -308,6 +308,7 @@
                         <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Foto Profil</label>
                         <input type="file" name="photo" accept="image/*"
                             class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none file:mr-4 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-slate-200 dark:file:bg-slate-800 file:text-slate-700 dark:file:text-slate-300 hover:file:bg-slate-300 dark:hover:file:bg-slate-700 cursor-pointer">
+                        <span class="text-[10px] text-slate-400 block mt-1">Format: JPG, JPEG, PNG, GIF, SVG. Maksimal 2MB.</span>
                         @error('photo')
                             <span class="text-[10px] text-rose-500 mt-1 block font-medium">{{ $message }}</span>
                         @enderror
@@ -655,6 +656,7 @@
                         <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Ganti Foto Profil</label>
                         <input type="file" name="photo" accept="image/*"
                             class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none file:mr-4 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-slate-200 dark:file:bg-slate-800 file:text-slate-700 dark:file:text-slate-300 hover:file:bg-slate-300 dark:hover:file:bg-slate-700 cursor-pointer">
+                        <span class="text-[10px] text-slate-400 block mt-1">Format: JPG, JPEG, PNG, GIF, SVG. Maksimal 2MB.</span>
                         @error('photo')
                             <span class="text-[10px] text-rose-500 mt-1 block font-medium">{{ $message }}</span>
                         @enderror

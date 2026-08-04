@@ -31,7 +31,20 @@ class LeaveRequestController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'nullable|string',
-            'attachment' => 'nullable|file|mimes:pdf,png,jpg,jpeg,doc,docx|max:1024',
+            'attachment' => 'nullable|file|mimes:pdf,png,jpg,jpeg,doc,docx|max:2048',
+        ], [
+            'employee_id.required' => 'Pegawai harus dipilih.',
+            'employee_id.exists' => 'Pegawai yang dipilih tidak valid.',
+            'type.required' => 'Jenis izin harus dipilih.',
+            'type.in' => 'Jenis izin tidak valid.',
+            'start_date.required' => 'Tanggal mulai harus diisi.',
+            'start_date.date' => 'Format tanggal mulai tidak valid.',
+            'end_date.required' => 'Tanggal selesai harus diisi.',
+            'end_date.date' => 'Format tanggal selesai tidak valid.',
+            'end_date.after_or_equal' => 'Tanggal selesai harus sama atau setelah tanggal mulai.',
+            'attachment.file' => 'Lampiran harus berupa file.',
+            'attachment.mimes' => 'Format file lampiran harus berupa PDF, PNG, JPG, JPEG, DOC, atau DOCX.',
+            'attachment.max' => 'Ukuran file lampiran maksimal 2MB.',
         ]);
 
         if ($request->hasFile('attachment')) {

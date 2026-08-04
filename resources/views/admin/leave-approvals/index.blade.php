@@ -192,73 +192,76 @@
 
         </div>
 
-    </div>
+    </div>    <!-- MODAL: DETAIL PENGAJUAN -->
+    <template x-teleport="body">
+        <div x-show="showDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-955/40 dark:bg-slate-955/60 backdrop-blur-sm transition-opacity" style="display: none; margin-top: 0px !important; z-index: 9999;" x-transition>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-855 rounded-xl shadow-xl w-full max-w-md overflow-hidden" @click.away="showDetailModal = false">
+                <div class="px-6 py-4 border-b border-slate-150 dark:border-slate-800 flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-55 flex items-center gap-2">
+                        <i data-lucide="info" class="w-4 h-4 text-indigo-650 dark:text-indigo-400"></i>
+                        Tinjau Pengajuan
+                    </h3>
+                    <button @click="showDetailModal = false" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-650 transition-colors cursor-pointer">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4" x-show="selectedLeave">
+                    <template x-if="selectedLeave">
+                        <div class="space-y-3 text-left">
+                            <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                                <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Pegawai</span>
+                                <span class="text-xs text-slate-900 dark:text-slate-50 font-bold" x-text="selectedLeave.employee.name"></span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                                <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Tipe</span>
+                                <span class="text-xs font-bold text-slate-900 dark:text-slate-50" x-text="selectedLeave.type"></span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                                <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Waktu</span>
+                                <span class="text-xs text-slate-900 dark:text-slate-50 font-semibold" x-text="`${selectedLeave.start_date_formatted} s/d ${selectedLeave.end_date_formatted}`"></span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                                <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Durasi</span>
+                                <span class="text-xs text-slate-900 dark:text-slate-50 font-bold" x-text="`${selectedLeave.duration} Hari`"></span>
+                            </div>
+                            <div class="flex flex-col gap-1 border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                                <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Alasan Pengajuan</span>
+                                <span class="text-xs text-slate-850 dark:text-slate-200 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-100 dark:border-slate-850/80 mt-1" x-text="selectedLeave.reason || '-'"></span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2 items-center">
+                                <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Lampiran Dokumen</span>
+                                <span class="text-xs text-slate-900 dark:text-slate-50">
+                                    <template x-if="selectedLeave.attachment">
+                                        <a :href="`{{ asset('storage') }}/${selectedLeave.attachment}`" target="_blank" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 font-semibold hover:underline">
+                                            <i data-lucide="paperclip" class="w-3.5 h-3.5"></i> Lihat Lampiran
+                                        </a>
+                                    </template>
+                                    <template x-if="!selectedLeave.attachment">
+                                        <span class="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500 italic">Tidak ada lampiran</span>
+                                    </template>
+                                </span>
+                            </div>
+                        </div>
+                    </template>
 
-    <!-- MODAL: DETAIL PENGAJUAN -->
-    <div x-show="showDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-955/40 dark:bg-slate-955/60 backdrop-blur-sm transition-opacity" style="display: none;" x-transition>
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-855 rounded-xl shadow-xl w-full max-w-md overflow-hidden" @click.away="showDetailModal = false">
-            <div class="px-6 py-4 border-b border-slate-150 dark:border-slate-800 flex items-center justify-between">
-                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-50">Tinjau Pengajuan</h3>
-                <button @click="showDetailModal = false" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-            <div class="p-6 space-y-4" x-show="selectedLeave">
-                <template x-if="selectedLeave">
-                    <div class="space-y-3 text-left">
-                        <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
-                            <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Pegawai</span>
-                            <span class="text-xs text-slate-900 dark:text-slate-50 font-bold" x-text="selectedLeave.employee.name"></span>
-                        </div>
-                        <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
-                            <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Tipe</span>
-                            <span class="text-xs font-bold text-slate-900 dark:text-slate-50" x-text="selectedLeave.type"></span>
-                        </div>
-                        <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
-                            <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Waktu</span>
-                            <span class="text-xs text-slate-900 dark:text-slate-50 font-semibold" x-text="`${selectedLeave.start_date_formatted} s/d ${selectedLeave.end_date_formatted}`"></span>
-                        </div>
-                        <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
-                            <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Durasi</span>
-                            <span class="text-xs text-slate-900 dark:text-slate-50 font-bold" x-text="`${selectedLeave.duration} Hari`"></span>
-                        </div>
-                        <div class="flex flex-col gap-1 border-b border-slate-100 dark:border-slate-800/80 pb-2">
-                            <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Alasan Pengajuan</span>
-                            <span class="text-xs text-slate-850 dark:text-slate-200 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-100 dark:border-slate-850/80 mt-1" x-text="selectedLeave.reason || '-'"></span>
-                        </div>
-                        <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2 items-center">
-                            <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Lampiran Dokumen</span>
-                            <span class="text-xs text-slate-900 dark:text-slate-50">
-                                <template x-if="selectedLeave.attachment">
-                                    <a :href="`{{ asset('storage') }}/${selectedLeave.attachment}`" target="_blank" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 font-semibold hover:underline">
-                                        <i data-lucide="paperclip" class="w-3.5 h-3.5"></i> Lihat Lampiran
-                                    </a>
-                                </template>
-                                <template x-if="!selectedLeave.attachment">
-                                    <span class="inline-flex items-center gap-1 text-slate-400 dark:text-slate-500 italic">Tidak ada lampiran</span>
-                                </template>
-                            </span>
-                        </div>
+                    <div class="pt-4 flex items-center justify-end gap-2 border-t border-slate-150 dark:border-slate-855" x-show="selectedLeave">
+                        <form :action="`{{ url('leave-approvals') }}/${selectedLeave ? selectedLeave.id : ''}/reject`" method="POST" class="flex-1">
+                            @csrf
+                            <button type="submit" class="w-full px-4 py-2 hover:bg-rose-50 dark:hover:bg-rose-955/20 border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5">
+                                <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+                                Tolak
+                            </button>
+                        </form>
+                        <form :action="`{{ url('leave-approvals') }}/${selectedLeave ? selectedLeave.id : ''}/approve`" method="POST" class="flex-1">
+                            @csrf
+                            <button type="submit" class="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-750 dark:hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-1.5">
+                                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                                Setujui
+                            </button>
+                        </form>
                     </div>
-                </template>
-
-                <div class="pt-4 flex items-center justify-end gap-2 border-t border-slate-150 dark:border-slate-850" x-show="selectedLeave">
-                    <form :action="`{{ url('leave-approvals') }}/${selectedLeave ? selectedLeave.id : ''}/reject`" method="POST" class="flex-1">
-                        @csrf
-                        <button type="submit" class="w-full px-4 py-2 hover:bg-rose-50 dark:hover:bg-rose-955/20 border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5">
-                            <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
-                            Tolak
-                        </button>
-                    </form>
-                    <form :action="`{{ url('leave-approvals') }}/${selectedLeave ? selectedLeave.id : ''}/approve`" method="POST" class="flex-1">
-                        @csrf
-                        <button type="submit" class="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-750 dark:hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer flex items-center justify-center gap-1.5">
-                            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
-                            Setujui
-                        </button>
-                    </form>
                 </div>
             </div>
         </div>
-    </div>
+    </template>
 </x-admin-layout>

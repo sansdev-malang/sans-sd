@@ -35,8 +35,10 @@
                     <div>
                         <label for="target_audience" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Target Audiens <span class="text-red-500">*</span></label>
                         <select name="target_audience" id="target_audience" required class="mt-1 block w-full border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                            <option value="global" {{ old('target_audience') == 'global' ? 'selected' : '' }}>Global (Semua)</option>
-                            <option value="employee" {{ old('target_audience') == 'employee' ? 'selected' : '' }}>Pegawai / Guru Saja</option>
+                            <option value="global" {{ old('target_audience') == 'global' ? 'selected' : '' }}>Semua (Global)</option>
+                            <option value="management" {{ old('target_audience') == 'management' ? 'selected' : '' }}>Manajemen Saja (Kepala Sekolah, Waka, Admin)</option>
+                            <option value="teacher" {{ old('target_audience') == 'teacher' ? 'selected' : '' }}>Guru Saja</option>
+                            <option value="employee" {{ old('target_audience') == 'employee' ? 'selected' : '' }}>Pegawai / Staf Saja (Non-Guru)</option>
                             <option value="student" {{ old('target_audience') == 'student' ? 'selected' : '' }}>Siswa Saja (API)</option>
                             <option value="parent" {{ old('target_audience') == 'parent' ? 'selected' : '' }}>Orang Tua Saja (API)</option>
                         </select>

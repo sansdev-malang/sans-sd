@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 
 use App\Models\Announcement;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class AnnouncementController extends Controller
 {
@@ -27,8 +29,18 @@ class AnnouncementController extends Controller
                   ->where(function($q) {
                       $q->whereNull('expiry_date')
                         ->orWhere('expiry_date', '>=', now());
-                  })
-                  ->whereIn('target_audience', ['global', 'employee']);
+                  });
+
+            // Filter by user's employee type code
+            $userTypeCode = $user->employee && $user->employee->employeeType ? $user->employee->employeeType->code : null;
+            if ($userTypeCode) {
+                $query->where(function($q) use ($userTypeCode) {
+                    $q->where('target_audience', 'global')
+                      ->orWhere('target_audience', 'like', "%{$userTypeCode}%");
+                });
+            } else {
+                $query->where('target_audience', 'global');
+            }
         }
 
         $announcements = $query->paginate(10);
@@ -54,7 +66,26 @@ class AnnouncementController extends Controller
         ]);
 
         if ($request->hasFile('attachment')) {
-            $validated['attachment'] = $request->file('attachment')->store('announcements', 'public');
+            $file = $request->file('attachment');
+            $extension = strtolower($file->extension());
+            
+            if (in_array($extension, ['png', 'jpg', 'jpeg'])) {
+                $manager = new ImageManager(new Driver());
+                $image = $manager->decode($file);
+                $image->scaleDown(width: 1000);
+                
+                $filename = 'announcements/' . uniqid() . '.webp';
+                $fullPath = storage_path('app/public/' . $filename);
+                
+                if (!file_exists(dirname($fullPath))) {
+                    mkdir(dirname($fullPath), 0755, true);
+                }
+                
+                $image->save($fullPath, 80);
+                $validated['attachment'] = $filename;
+            } else {
+                $validated['attachment'] = $file->store('announcements', 'public');
+            }
         }
 
         $validated['created_by'] = auth()->id();
@@ -64,10 +95,33 @@ class AnnouncementController extends Controller
         $announcement = Announcement::create($validated);
 
         if ($announcement->is_active) {
-            // Ideally we'd filter users by target_audience (employee vs student vs parent)
-            // For now, send to all users except the creator
-            $users = \App\Models\User::where('id', '!=', auth()->id())->get();
-            \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\NewAnnouncementNotification($announcement));
+            // Hanya kirim notifikasi ke user SANS-HRD jika targetnya global, teacher, employee, atau management
+            if (in_array($announcement->target_audience, ['global', 'teacher', 'employee', 'management'])) {
+                $query = \App\Models\User::where('id', '!=', auth()->id());
+                
+                if ($announcement->target_audience === 'teacher') {
+                    $query->where(function($q) {
+                        $q->whereHas('employee.employeeType', function($sq) {
+                            $sq->where('code', 'teacher');
+                        })->orWhereIn('role', ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp', 'kepala_sekolah', 'waka']);
+                    });
+                } elseif ($announcement->target_audience === 'employee') {
+                    $query->where(function($q) {
+                        $q->whereHas('employee.employeeType', function($sq) {
+                            $sq->where('code', 'employee');
+                        })->orWhereIn('role', ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp', 'kepala_sekolah', 'waka']);
+                    });
+                } elseif ($announcement->target_audience === 'management') {
+                    $query->where(function($q) {
+                        $q->whereHas('employee.employeeType', function($sq) {
+                            $sq->where('code', 'management');
+                        })->orWhereIn('role', ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp', 'kepala_sekolah', 'waka']);
+                    });
+                }
+                
+                $users = $query->get();
+                \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\NewAnnouncementNotification($announcement));
+            }
         }
 
         return redirect()->route('announcements.index')->with('success', 'Pengumuman berhasil dibuat.');
@@ -80,11 +134,19 @@ class AnnouncementController extends Controller
 
     public function edit(Announcement $announcement)
     {
+        if ($announcement->central_id && !auth()->user()->hasRole('super_admin')) {
+            abort(403, 'Hanya Super Admin yang dapat memodifikasi pengumuman dari HRD Pusat.');
+        }
+
         return view('admin.announcements.edit', compact('announcement'));
     }
 
     public function update(Request $request, Announcement $announcement)
     {
+        if ($announcement->central_id && !auth()->user()->hasRole('super_admin')) {
+            abort(403, 'Hanya Super Admin yang dapat memodifikasi pengumuman dari HRD Pusat.');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
@@ -100,7 +162,27 @@ class AnnouncementController extends Controller
             if ($announcement->attachment) {
                 Storage::disk('public')->delete($announcement->attachment);
             }
-            $validated['attachment'] = $request->file('attachment')->store('announcements', 'public');
+            
+            $file = $request->file('attachment');
+            $extension = strtolower($file->extension());
+            
+            if (in_array($extension, ['png', 'jpg', 'jpeg'])) {
+                $manager = new ImageManager(new Driver());
+                $image = $manager->decode($file);
+                $image->scaleDown(width: 1000);
+                
+                $filename = 'announcements/' . uniqid() . '.webp';
+                $fullPath = storage_path('app/public/' . $filename);
+                
+                if (!file_exists(dirname($fullPath))) {
+                    mkdir(dirname($fullPath), 0755, true);
+                }
+                
+                $image->save($fullPath, 80);
+                $validated['attachment'] = $filename;
+            } else {
+                $validated['attachment'] = $file->store('announcements', 'public');
+            }
         }
 
         $validated['is_active'] = $request->has('is_active');
@@ -115,11 +197,45 @@ class AnnouncementController extends Controller
 
     public function destroy(Announcement $announcement)
     {
+        if ($announcement->central_id && !auth()->user()->hasRole('super_admin')) {
+            abort(403, 'Hanya Super Admin yang dapat memodifikasi pengumuman dari HRD Pusat.');
+        }
+
         if ($announcement->attachment) {
             Storage::disk('public')->delete($announcement->attachment);
         }
         $announcement->delete();
 
         return redirect()->route('announcements.index')->with('success', 'Pengumuman berhasil dihapus.');
+    }
+
+    public function download(Announcement $announcement)
+    {
+        if (!$announcement->attachment) {
+            abort(404);
+        }
+
+        $url = $announcement->attachment;
+
+        if (filter_var($url, FILTER_VALIDATE_URL)) {
+            try {
+                $filename = basename($url);
+                $content = file_get_contents($url);
+                if ($content === false) {
+                    return redirect($url);
+                }
+                return response($content)
+                    ->header('Content-Type', 'application/octet-stream')
+                    ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            } catch (\Exception $e) {
+                return redirect($url);
+            }
+        }
+
+        if (!Storage::disk('public')->exists($announcement->attachment)) {
+            abort(404);
+        }
+
+        return Storage::disk('public')->download($announcement->attachment);
     }
 }

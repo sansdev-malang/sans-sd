@@ -1,5 +1,5 @@
 <x-admin-layout>
-    <div class="p-6 space-y-6" x-data="{ showAddModal: false, showEmpDetailModal: false, selectedEmp: null }">
+    <div class="p-6 space-y-6" x-data="{ showAddModal: {{ $errors->any() ? 'true' : 'false' }}, showEmpDetailModal: false, selectedEmp: null }">
 
         <!-- SUCCESS/ERROR ALERTS -->
         @if(session('success'))
@@ -141,7 +141,8 @@
         </div>
 
         <!-- ADD MODAL -->
-        <div x-show="showAddModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm" style="display: none;">
+        <template x-teleport="body">
+            <div x-show="showAddModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm" style="display: none; margin-top: 0px !important; z-index: 9999;">
             <div @click.outside="showAddModal = false" class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-md p-6 text-left">
                 <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-900 pb-3 mb-4">
                     <h3 class="text-sm font-bold text-slate-950 dark:text-slate-50">Input Pengajuan Izin Pegawai</h3>
@@ -158,8 +159,8 @@
                         <div x-data="{
                             open: false,
                             search: '',
-                            selectedId: '',
-                            selectedName: '',
+                            selectedId: '{{ old('employee_id') ?? '' }}',
+                            selectedName: '{{ old('employee_id') ? addslashes(App\Models\Employee::find(old('employee_id'))?->name . ' (' . (App\Models\Employee::find(old('employee_id'))?->nuptk_nip_nik ?? '-') . ')') : '' }}',
                             employees: [
                                 @foreach($employees as $emp)
                                 { id: '{{ $emp->id }}', name: '{{ addslashes($emp->name) }}', nip: '{{ $emp->nuptk_nip_nik ?? '-' }}' },
@@ -189,11 +190,11 @@
                             <!-- Dropdown panel -->
                             <div x-show="open" @click.outside="open = false" 
                                  class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg overflow-hidden text-left"
-                                 x-transition style="display: none;">
+                                  x-transition style="display: none;">
                                 <!-- Search input inside dropdown -->
                                 <div class="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
                                     <input type="text" x-model="search" placeholder="Ketik nama/NIP untuk mencari..." 
-                                           class="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md focus:outline-none focus:border-indigo-500 text-slate-900 dark:text-slate-100">
+                                           class="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-md focus:outline-none focus:border-indigo-500 text-slate-900 dark:text-slate-100">
                                 </div>
                                 
                                 <!-- List items -->
@@ -211,38 +212,56 @@
                                 </ul>
                             </div>
                         </div>
+                        @error('employee_id')
+                            <p class="text-rose-500 text-[10px] mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
                         <label class="block font-semibold text-slate-700 dark:text-slate-350 mb-1.5">Jenis Izin</label>
                         <select name="type" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-880 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
-                            <option value="Sakit">Sakit</option>
-                            <option value="Izin">Izin (Pribadi/Penting)</option>
-                            <option value="Cuti">Cuti Tahunan</option>
-                            <option value="Dinas">Tugas Dinas (Tetap dapat Bonus)</option>
+                            <option value="Sakit" {{ old('type') === 'Sakit' ? 'selected' : '' }}>Sakit</option>
+                            <option value="Izin" {{ old('type') === 'Izin' ? 'selected' : '' }}>Izin (Pribadi/Penting)</option>
+                            <option value="Cuti" {{ old('type') === 'Cuti' ? 'selected' : '' }}>Cuti Tahunan</option>
+                            <option value="Dinas" {{ old('type') === 'Dinas' ? 'selected' : '' }}>Tugas Dinas (Tetap dapat Bonus)</option>
                         </select>
+                        @error('type')
+                            <p class="text-rose-500 text-[10px] mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block font-semibold text-slate-700 dark:text-slate-350 mb-1.5">Mulai Tanggal</label>
-                            <input type="date" name="start_date" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-880 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-mono">
+                            <input type="date" name="start_date" value="{{ old('start_date') }}" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-880 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-mono">
+                            @error('start_date')
+                                <p class="text-rose-500 text-[10px] mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
-                            <label class="block font-semibold text-slate-700 dark:text-slate-350 mb-1.5">Selesai Tanggal</label>
-                            <input type="date" name="end_date" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-880 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-mono">
+                            <label class="block font-semibold text-slate-700 dark:text-slate-355 mb-1.5">Selesai Tanggal</label>
+                            <input type="date" name="end_date" value="{{ old('end_date') }}" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-880 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-mono">
+                            @error('end_date')
+                                <p class="text-rose-500 text-[10px] mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
                     <div>
                         <label class="block font-semibold text-slate-700 dark:text-slate-350 mb-1.5">Alasan / Keterangan</label>
-                        <textarea name="reason" rows="2" placeholder="Tuliskan keterangan detail alasan pengajuan..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-880 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"></textarea>
+                        <textarea name="reason" rows="2" placeholder="Tuliskan keterangan detail alasan pengajuan..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-880 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500">{{ old('reason') }}</textarea>
+                        @error('reason')
+                            <p class="text-rose-500 text-[10px] mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
                         <label class="block font-semibold text-slate-700 dark:text-slate-350 mb-1.5">File Lampiran (Surat Dokter / Bukti Pendukung)</label>
                         <input type="file" name="attachment" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-880 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
-                        <span class="text-[10px] text-slate-400 block mt-1">Format: PDF, PNG, JPG, JPEG, DOC, DOCX. Maksimal 1MB.</span>
+                        <span class="text-[10px] text-slate-400 block mt-1">Format: PDF, PNG, JPG, JPEG, DOC, DOCX. Maksimal 2MB.</span>
+                        @error('attachment')
+                            <p class="text-rose-500 text-[10px] mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div class="flex gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-900 justify-end">
@@ -255,10 +274,11 @@
                     </div>
                 </form>
             </div>
-        </div>
+        </template>
 
         <!-- MODAL DETAIL PEGAWAI -->
-        <div x-show="showEmpDetailModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-955/60 backdrop-blur-xs text-left" style="display: none;">
+        <template x-teleport="body">
+            <div x-show="showEmpDetailModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-955/60 backdrop-blur-xs text-left" style="display: none; margin-top: 0px !important; z-index: 9999;">
             <div @click.outside="showEmpDetailModal = false" class="bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl max-w-md w-full overflow-hidden text-xs">
                 <div class="p-5 border-b border-slate-150 dark:border-slate-850 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
                     <h3 class="text-sm font-bold text-slate-900 dark:text-slate-55 font-nasalization flex items-center gap-2">
@@ -311,6 +331,6 @@
                     <button @click="showEmpDetailModal = false" class="h-9 px-4 bg-slate-900 dark:bg-slate-100 hover:bg-slate-850 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-semibold rounded-lg shadow-sm transition-colors cursor-pointer">Tutup</button>
                 </div>
             </div>
-        </div>
+        </template>
     </div>
 </x-admin-layout>

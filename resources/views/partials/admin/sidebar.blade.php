@@ -32,22 +32,26 @@
 
     <!-- Grouped Navigation Links (sidebar-07 style) -->
     <div class="flex-1 space-y-4 overflow-y-auto px-1 py-2 no-scrollbar">
+        <!-- Dashboard Link (At the very top, outside groups) -->
+        <div class="space-y-1">
+            <a href="{{ route('dashboard') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg
+                {{ Request::routeIs('dashboard') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-650 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
+                text-xs relative group">
+                <i data-lucide="layout-dashboard" class="menu-icon w-4 h-4"></i>
+                <span class="menu-text">Dashboard</span>
+                <span
+                    class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-955 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
+                    Dashboard
+                </span>
+            </a>
+        </div>
+
         <!-- Group 1: Platform -->
         <div>
             <h3
                 class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
                 Platform</h3>
             <nav class="space-y-1">
-                <a href="{{ route('dashboard') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg
-                    {{ Request::routeIs('dashboard') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-650 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
-                    text-xs relative group">
-                    <i data-lucide="layout-dashboard" class="menu-icon w-4 h-4"></i>
-                    <span class="menu-text">Dashboard</span>
-                    <span
-                        class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-950 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-150 pointer-events-none whitespace-nowrap z-50">
-                        Dashboard
-                    </span>
-                </a>
 
                 <a href="{{ route('coming-soon') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg
                     {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-650 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
@@ -340,15 +344,7 @@
             <a href="{{ route('profile.edit') }}"
                 class="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
                 <i data-lucide="badge-check" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
-                <span>Account</span>
-            </a>
-            <a href="{{ route('coming-soon') }}"
-                class="flex items-center justify-between gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="bell" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
-                    <span>Notifications</span>
-                </div>
-                <span class="text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
+                <span>Profil</span>
             </a>
 
             <div class="border-t border-slate-100 dark:border-slate-900 my-1"></div>
@@ -357,9 +353,9 @@
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
                 <button type="submit"
-                    class="flex items-center gap-2 px-3 py-2 text-xs text-red-650 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors">
-                    <i data-lucide="log-out" class="w-4 h-4 text-red-500 dark:text-red-450"></i>
-                    <span>Log out</span>
+                    class="w-full text-left flex items-center gap-2 px-3 py-2 text-xs text-red-650 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer">
+                    <i data-lucide="log-out" class="w-4 h-4 text-red-500 dark:text-red-455"></i>
+                    <span>Keluar</span>
                 </button>
             </form>
         </div>
