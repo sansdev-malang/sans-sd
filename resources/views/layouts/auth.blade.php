@@ -113,7 +113,7 @@
                     </button>
     
                     <!-- Back to Home link -->
-                    <a href="{{ env('PORTAL_URL', 'http://sans-portal.test') }}" class="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-slate-50 transition-colors">
+                    <a href="https://sans.sch.id" class="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-slate-50 transition-colors">
                         <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
                         Back to Portal
                     </a>
