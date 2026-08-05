@@ -22,7 +22,7 @@ class BonusReportController extends Controller
         $hrdUrl = Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
 
         try {
-            $response = Http::get("{$hrdUrl}/api/bonus-reports", [
+            $response = Http::get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                 'month' => $month,
                 'unit_id' => strtolower($schoolUnit)
             ]);
@@ -85,6 +85,9 @@ class BonusReportController extends Controller
             return view('bonus-reports.index', compact('paginatedReports', 'month', 'startDateReq', 'endDateReq', 'activeSchema', 'totalSemuaBonus'));
 
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal memuat rekap bonus dari HRD: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
             return back()->with('error', 'Gagal memuat rekap bonus dari HRD: ' . $e->getMessage());
         }
     }
@@ -100,7 +103,7 @@ class BonusReportController extends Controller
         $hrdUrl = Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
 
         try {
-            $response = Http::get("{$hrdUrl}/api/bonus-reports", [
+            $response = Http::get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                 'month' => $month,
                 'unit_id' => strtolower($schoolUnit)
             ]);

@@ -78,7 +78,7 @@ Route::get('/dashboard', function () {
             $schoolUnit = config('app.school_unit', 'sd');
             $hrdUrl = \App\Models\Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
             try {
-                $response = \Illuminate\Support\Facades\Http::timeout(15)->get("{$hrdUrl}/api/bonus-reports", [
+                $response = \Illuminate\Support\Facades\Http::timeout(15)->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                     'month' => date('Y-m'),
                     'unit_id' => strtolower($schoolUnit)
                 ]);

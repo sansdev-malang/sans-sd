@@ -19,7 +19,7 @@ class PayslipController extends Controller
         $payslips = [];
         
         try {
-            $response = Http::timeout(10)->get("{$hrdUrl}/api/payslips", [
+            $response = Http::timeout(10)->get(rtrim($hrdUrl, '/') . '/api/payslips', [
                 'month' => $month,
                 'unit_id' => $schoolUnit
             ]);

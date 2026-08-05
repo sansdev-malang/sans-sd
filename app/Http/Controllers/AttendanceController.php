@@ -34,7 +34,7 @@ class AttendanceController extends Controller
                 $apiParams['end_date'] = $monthCarbon->copy()->endOfMonth()->format('Y-m-d');
             }
 
-            $response = \Illuminate\Support\Facades\Http::get("{$hrdUrl}/api/attendance-matrix", $apiParams);
+            $response = \Illuminate\Support\Facades\Http::get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', $apiParams);
             
             $json = $response->json();
             $reports = collect($json['data'] ?? []);
@@ -75,6 +75,9 @@ class AttendanceController extends Controller
             }
 
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal memuat matriks absensi dari HRD: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
             $reports = collect([]);
             $startDate = \Carbon\Carbon::now();
             $endDate = \Carbon\Carbon::now();
@@ -101,7 +104,7 @@ class AttendanceController extends Controller
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
 
         try {
-            $response = \Illuminate\Support\Facades\Http::get("{$hrdUrl}/api/attendance-matrix", [
+            $response = \Illuminate\Support\Facades\Http::get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
                 'month' => $month,
                 'unit_id' => strtolower($schoolUnit)
             ]);
