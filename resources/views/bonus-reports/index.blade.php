@@ -130,9 +130,9 @@
                             @foreach($dates as $date)
                             @php
                                 $isToday = $date->isToday();
-                                $isWeekend = $date->isWeekend();
-                                $dayColor = $isWeekend && !$isToday ? 'text-red-400' : ($isToday ? '' : 'text-slate-400 dark:text-slate-500');
-                                $numColor = $isWeekend && !$isToday ? 'text-red-500 dark:text-red-400' : ($isToday ? 'text-white' : 'text-slate-700 dark:text-slate-200');
+                                $isSunday = $date->isSunday();
+                                $dayColor = $isSunday && !$isToday ? 'text-red-400' : ($isToday ? '' : 'text-slate-400 dark:text-slate-500');
+                                $numColor = $isSunday && !$isToday ? 'text-red-500 dark:text-red-400' : ($isToday ? 'text-white' : 'text-slate-700 dark:text-slate-200');
                                 $bgToday = $isToday ? 'bg-indigo-600 dark:bg-indigo-500 w-6 h-6 flex items-center justify-center rounded-full' : '';
                             @endphp
                             <th class="py-2 px-1 text-center sticky top-0 z-30 bg-slate-50 dark:bg-slate-900/60 min-w-[48px] max-w-[48px] border-r border-slate-100 dark:border-slate-800/60">
@@ -194,8 +194,8 @@
                                             <div class="mx-auto flex items-center justify-center text-slate-300 dark:text-slate-600 font-bold text-xs" title="Tidak ada bonus">-</div>
                                         @endif
                                     @else
-                                        @if($date->isWeekend())
-                                            <div class="mx-auto flex items-center justify-center text-red-200 dark:text-red-900/30 font-bold text-xs" title="Akhir Pekan">-</div>
+                                        @if($date->isSunday())
+                                            <div class="mx-auto flex items-center justify-center text-red-200 dark:text-red-900/30 font-bold text-xs" title="Hari Minggu">-</div>
                                         @else
                                             <div class="mx-auto flex items-center justify-center text-slate-100 dark:text-slate-800/50 font-bold text-[10px]">-</div>
                                         @endif
