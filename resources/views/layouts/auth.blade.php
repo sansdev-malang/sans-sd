@@ -19,13 +19,19 @@
         rel="stylesheet">
     <link href="https://fonts.cdnfonts.com/css/nasalization" rel="stylesheet">
 
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Tailwind styling compiled by Vite / CDN Fallback -->
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <script src="https://cdn.tailwindcss.com"></script>
+    @endif
 
     <script>
         // Support tailwind CDN dark mode class configuration
-        tailwind.config = {
-            darkMode: 'class'
+        if (typeof tailwind !== 'undefined') {
+            tailwind.config = {
+                darkMode: 'class'
+            }
         }
         // Apply saved theme or default to dark
         if (localStorage.getItem('color-theme') === 'light' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: light)').matches)) {
