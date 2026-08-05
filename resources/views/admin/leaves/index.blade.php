@@ -76,7 +76,12 @@
                                                 email: '{{ addslashes($leave->employee ? $leave->employee->email : "-") }}',
                                                 gender: '{{ addslashes($leave->employee ? $leave->employee->gender : "-") }}',
                                                 employment_status: '{{ addslashes($leave->employee ? $leave->employee->employment_status : "-") }}',
-                                                photo_url: '{{ $leave->employee && $leave->employee->photo ? (str_contains($leave->employee->photo, 'photos/') ? asset('storage/' . $leave->employee->photo) : asset('storage/photos/' . $leave->employee->photo)) : '' }}'
+                                                photo_url: '{{ $leave->employee && $leave->employee->photo ? (str_contains($leave->employee->photo, "photos/") ? asset("storage/" . $leave->employee->photo) : asset("storage/photos/" . $leave->employee->photo)) : "" }}',
+                                                leave_type: '{{ $leave->type }}',
+                                                leave_start: '{{ $leave->start_date->format("d M Y") }}',
+                                                leave_end: '{{ $leave->end_date->format("d M Y") }}',
+                                                leave_reason: '{{ addslashes($leave->reason ?? "-") }}',
+                                                leave_attachment: '{{ $leave->attachment ? asset("storage/" . $leave->attachment) : "" }}'
                                             }; showEmpDetailModal = true" class="text-slate-900 dark:text-slate-50 font-bold tracking-tight block cursor-pointer hover:underline hover:text-indigo-650 dark:hover:text-indigo-400">{{ $leave->employee ? $leave->employee->name : '-' }}</span>
                                             <span class="text-[10px] text-slate-405 dark:text-slate-550 font-mono block">NIP: {{ $leave->employee ? $leave->employee->nuptk_nip_nik : '-' }}</span>
                                         </div>
@@ -324,6 +329,34 @@
                         <div>
                             <span class="block text-slate-400 text-[9px] uppercase font-semibold">Status Pegawai</span>
                             <span class="font-bold text-slate-700 dark:text-slate-200" x-text="selectedEmp ? selectedEmp.employment_status : ''"></span>
+                        </div>
+                    </div>
+
+                    <!-- Detail Pengajuan Izin -->
+                    <div class="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                        <h4 class="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[10px]">Detail Pengajuan Izin</h4>
+                        <div class="grid grid-cols-2 gap-4 text-[11px]">
+                            <div>
+                                <span class="block text-slate-400 text-[9px] uppercase font-semibold">Jenis Izin</span>
+                                <span class="inline-flex px-2 py-0.5 rounded text-[9px] font-bold bg-amber-50 dark:bg-amber-955/40 text-amber-700 dark:text-amber-400 border border-amber-200/30 dark:border-amber-900/30 uppercase" x-text="selectedEmp ? selectedEmp.leave_type : ''"></span>
+                            </div>
+                            <div>
+                                <span class="block text-slate-400 text-[9px] uppercase font-semibold">Rentang Tanggal</span>
+                                <span class="font-medium text-slate-700 dark:text-slate-200" x-text="selectedEmp ? selectedEmp.leave_start + ' - ' + selectedEmp.leave_end : ''"></span>
+                            </div>
+                            <div class="col-span-2">
+                                <span class="block text-slate-400 text-[9px] uppercase font-semibold">Alasan</span>
+                                <span class="font-medium text-slate-700 dark:text-slate-200" x-text="selectedEmp ? selectedEmp.leave_reason : ''"></span>
+                            </div>
+                            <template x-if="selectedEmp && selectedEmp.leave_attachment">
+                                <div class="col-span-2">
+                                    <span class="block text-slate-400 text-[9px] uppercase font-semibold">Lampiran</span>
+                                    <a :href="selectedEmp.leave_attachment" target="_blank" class="inline-flex items-center gap-1 text-[10px] text-indigo-650 hover:text-indigo-850 dark:text-indigo-400 dark:hover:text-indigo-300 font-bold underline mt-0.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                                        Lihat Lampiran Dokumen
+                                    </a>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </div>
