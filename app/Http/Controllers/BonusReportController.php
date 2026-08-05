@@ -187,8 +187,8 @@ class BonusReportController extends Controller
                         $detail = $report['daily_details'][$dateStr] ?? null;
                         $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx);
                         
-                        if ($detail && $detail['status'] === 'Present') {
-                            $sheet->setCellValue($colLetter . $row, $detail['bonus_nominal'] > 0 ? $detail['bonus_nominal'] : '-');
+                        if ($detail && isset($detail['bonus_nominal']) && $detail['bonus_nominal'] > 0) {
+                            $sheet->setCellValue($colLetter . $row, $detail['bonus_nominal']);
                         } else {
                             $sheet->setCellValue($colLetter . $row, '-');
                         }
