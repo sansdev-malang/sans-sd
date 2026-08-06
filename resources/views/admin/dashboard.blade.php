@@ -17,7 +17,7 @@
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             @if($isAdmin)
                 <!-- Admin Card 1: Total Siswa -->
-                <div class="animate-card bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Siswa Aktif</p>
@@ -35,7 +35,7 @@
                 </div>
 
                 <!-- Admin Card 2: Guru & Staf -->
-                <div class="animate-card bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Guru & Staf</p>
@@ -57,7 +57,7 @@
                 </div>
 
                 <!-- Admin Card 3: Total Rombel / Kelas -->
-                <div class="animate-card bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Rombel / Kelas</p>
@@ -75,7 +75,7 @@
                 </div>
 
                 <!-- Admin Card 4: Presensi Hari Ini -->
-                <div class="animate-card bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Presensi Hari Ini</p>
@@ -93,7 +93,7 @@
                 </div>
             @else
                 <!-- Pegawai Card 1: Kehadiran Bulan Ini -->
-                <div class="animate-card bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kehadiran Bulan Ini</p>
@@ -111,7 +111,7 @@
                 </div>
 
                 <!-- Pegawai Card 2: Menit Terlambat -->
-                <div class="animate-card bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Keterlambatan</p>
@@ -133,7 +133,7 @@
                 </div>
 
                 <!-- Pegawai Card 3: Sisa Jatah Cuti -->
-                <div class="animate-card bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sisa Cuti Tahunan</p>
@@ -151,7 +151,7 @@
                 </div>
 
                 <!-- Pegawai Card 4: Estimasi Bonus -->
-                <div class="animate-card bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Estimasi Bonus</p>
@@ -174,7 +174,7 @@
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             <!-- Graph Card (SVG) -->
-            <div class="animate-card lg:col-span-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 relative flex flex-col justify-between overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700">
+            <div class="animate-card lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 relative flex flex-col justify-between overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <div>
@@ -216,10 +216,10 @@
                                 @foreach($chartPoints as $pt)
                                     @if($pt['date'] !== '-')
                                         <!-- Point Circle -->
-                                        <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="3.5" class="fill-indigo-600 dark:fill-indigo-400 stroke-white dark:stroke-slate-950" stroke-width="1" />
+                                        <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="3.5" class="fill-indigo-600 dark:fill-indigo-400 stroke-white dark:stroke-slate-900" stroke-width="1" />
                                         
                                         <!-- Nominal Text -->
-                                        <text x="{{ $pt['x'] }}" y="{{ $pt['y'] - 8 }}" text-anchor="middle" class="text-[8px] sm:text-[9px] font-bold fill-slate-650 dark:fill-slate-350">
+                                        <text x="{{ $pt['x'] }}" y="{{ $pt['y'] - 8 }}" text-anchor="middle" class="text-[8px] sm:text-[9px] font-bold fill-slate-600 dark:fill-slate-300">
                                             {{ $pt['bonus'] >= 1000 ? ($pt['bonus'] / 1000) . 'k' : $pt['bonus'] }}
                                         </text>
                                     @endif
@@ -229,8 +229,8 @@
                             <!-- Gradients defs -->
                             <defs>
                                 <linearGradient id="grad-area" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="currentColor" class="text-indigo-600 dark:text-indigo-450" />
-                                    <stop offset="100%" stop-color="currentColor" class="text-indigo-600 dark:text-indigo-450" stop-opacity="0" />
+                                    <stop offset="0%" stop-color="currentColor" class="text-indigo-600 dark:text-indigo-400" />
+                                    <stop offset="100%" stop-color="currentColor" class="text-indigo-600 dark:text-indigo-400" stop-opacity="0" />
                                 </linearGradient>
                             </defs>
                         </svg>
@@ -256,7 +256,7 @@
             </div>
 
             <!-- Announcements / Information System -->
-            <div class="animate-card bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col justify-between shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700">
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col justify-between shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50">Pengumuman Sekolah</h3>
@@ -267,7 +267,7 @@
                     <div class="space-y-3.5">
                         @forelse($latestAnnouncements ?? collect() as $announcement)
                             <div class="flex gap-2.5 items-start">
-                                <div class="w-1.5 h-1.5 rounded-full {{ $announcement->category == 'penting' ? 'bg-red-500' : 'bg-slate-450 dark:bg-slate-550' }} mt-1.5 shrink-0"></div>
+                                <div class="w-1.5 h-1.5 rounded-full {{ $announcement->category == 'penting' ? 'bg-red-500' : 'bg-slate-400 dark:bg-slate-500' }} mt-1.5 shrink-0"></div>
                                 <div class="flex-1">
                                     <h4 class="text-xs font-semibold {{ $announcement->category == 'penting' ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-50' }}">
                                         <a href="{{ route('announcements.show', $announcement) }}" class="hover:underline">{{ $announcement->title }}</a>
@@ -285,7 +285,7 @@
                 </div>
 
                 <!-- Info tag footer -->
-                <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-455">
+                <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-400">
                     <span>Diperbarui secara real-time</span>
                 </div>
             </div>
@@ -295,41 +295,41 @@
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             <!-- Quick Actions Grid -->
-            <div class="animate-card bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700">
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                 <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">Aksi Cepat</h3>
                 <div class="grid grid-cols-2 gap-2">
                     @if($isAdmin)
-                        <button onclick="window.location='{{ route('coming-soon') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-150 cursor-pointer">
-                            <i data-lucide="user-plus" class="w-4 h-4 text-slate-655 dark:text-slate-455 group-hover:scale-105 transition-transform"></i>
+                        <button onclick="window.location='{{ route('coming-soon') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
+                            <i data-lucide="user-plus" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
                             <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5">Tambah Siswa</span>
                         </button>
-                        <button onclick="window.location='{{ route('coming-soon') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-150 cursor-pointer">
-                            <i data-lucide="clipboard-list" class="w-4 h-4 text-slate-655 dark:text-slate-455 group-hover:scale-105 transition-transform"></i>
+                        <button onclick="window.location='{{ route('coming-soon') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
+                            <i data-lucide="clipboard-list" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
                             <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5">Input Nilai</span>
                         </button>
-                        <button onclick="window.location='{{ route('coming-soon') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-150 cursor-pointer">
-                            <i data-lucide="send" class="w-4 h-4 text-slate-650 dark:text-slate-455 group-hover:scale-105 transition-transform"></i>
+                        <button onclick="window.location='{{ route('coming-soon') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
+                            <i data-lucide="send" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
                             <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5">Kirim Pesan</span>
                         </button>
-                        <button onclick="window.location='{{ route('coming-soon') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-150 cursor-pointer">
-                            <i data-lucide="receipt" class="w-4 h-4 text-slate-650 dark:text-slate-455 group-hover:scale-105 transition-transform"></i>
+                        <button onclick="window.location='{{ route('coming-soon') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
+                            <i data-lucide="receipt" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
                             <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5">Cek SPP</span>
                         </button>
                     @else
-                        <button onclick="window.location='{{ route('my-leaves.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-150 cursor-pointer">
+                        <button onclick="window.location='{{ route('my-leaves.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
                             <i data-lucide="file-text" class="w-4 h-4 text-indigo-600 dark:text-indigo-400 group-hover:scale-105 transition-transform"></i>
                             <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5">Ajukan Cuti/Izin</span>
                         </button>
-                        <button onclick="window.location='{{ route('coming-soon') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-150 cursor-pointer relative">
-                            <i data-lucide="clipboard-list" class="w-4 h-4 text-slate-655 dark:text-slate-455 group-hover:scale-105 transition-transform"></i>
+                        <button onclick="window.location='{{ route('coming-soon') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer relative">
+                            <i data-lucide="clipboard-list" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
                             <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5 flex items-center gap-1">Input Nilai Siswa <span class="text-[8px] font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 px-1 py-0.2 rounded uppercase">Dev</span></span>
                         </button>
-                        <button onclick="window.location='{{ route('coming-soon') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-150 cursor-pointer relative">
-                            <i data-lucide="calendar" class="w-4 h-4 text-slate-650 dark:text-slate-455 group-hover:scale-105 transition-transform"></i>
+                        <button onclick="window.location='{{ route('coming-soon') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer relative">
+                            <i data-lucide="calendar" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
                             <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5 flex items-center gap-1">Lihat Jadwal <span class="text-[8px] font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 px-1 py-0.2 rounded uppercase">Dev</span></span>
                         </button>
-                        <button onclick="window.location='{{ route('payslips.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-150 cursor-pointer">
-                            <i data-lucide="receipt" class="w-4 h-4 text-slate-650 dark:text-slate-455 group-hover:scale-105 transition-transform"></i>
+                        <button onclick="window.location='{{ route('payslips.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
+                            <i data-lucide="receipt" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
                             <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5">Lihat Slip Gaji</span>
                         </button>
                     @endif
@@ -337,7 +337,7 @@
             </div>
 
             <!-- Recent Activity Logs -->
-            <div class="animate-card lg:col-span-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700">
+            <div class="animate-card lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                 @if($isAdmin)
                     <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">Log Aktivitas Terbaru</h3>
                     <div class="space-y-3.5">
@@ -351,7 +351,7 @@
                                     <p class="text-xs text-slate-500">Guru: Drs. Eko Prasetyo</p>
                                 </div>
                             </div>
-                            <span class="text-xs text-slate-450">10 mnt yang lalu</span>
+                            <span class="text-xs text-slate-400">10 mnt yang lalu</span>
                         </div>
                         <div class="flex items-center justify-between py-1 border-b border-slate-50 dark:border-slate-900/60 pb-3">
                             <div class="flex items-center gap-3">
@@ -363,7 +363,7 @@
                                     <p class="text-xs text-slate-500">Kelas: XII-IPA</p>
                                 </div>
                             </div>
-                            <span class="text-xs text-slate-450">24 mnt yang lalu</span>
+                            <span class="text-xs text-slate-400">24 mnt yang lalu</span>
                         </div>
                         <div class="flex items-center justify-between py-1">
                             <div class="flex items-center gap-3">
@@ -375,7 +375,7 @@
                                     <p class="text-xs text-slate-500">Gelombang 2 SANS Malang</p>
                                 </div>
                             </div>
-                            <span class="text-xs text-slate-455">45 mnt yang lalu</span>
+                            <span class="text-xs text-slate-400">45 mnt yang lalu</span>
                         </div>
                     </div>
                 @else
@@ -390,13 +390,13 @@
                                     <div>
                                         <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">Pengajuan Izin / Cuti ({{ $leave->type }})</p>
                                         <p class="text-xs text-slate-500">Status: 
-                                            <span class="font-bold {{ $leave->status == 'Approved' ? 'text-emerald-600 dark:text-emerald-400' : ($leave->status == 'Rejected' ? 'text-rose-600 dark:text-rose-455' : 'text-amber-500') }}">
+                                            <span class="font-bold {{ $leave->status == 'Approved' ? 'text-emerald-600 dark:text-emerald-400' : ($leave->status == 'Rejected' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-500') }}">
                                                 {{ $leave->status }}
                                             </span>
                                         </p>
                                     </div>
                                 </div>
-                                <span class="text-xs text-slate-450">{{ $leave->created_at->diffForHumans() }}</span>
+                                <span class="text-xs text-slate-400">{{ $leave->created_at->diffForHumans() }}</span>
                             </div>
                         @empty
                             <div class="text-xs text-slate-500 text-center py-4">Belum ada riwayat aktivitas pengajuan cuti/izin.</div>
