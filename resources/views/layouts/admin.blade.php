@@ -274,7 +274,7 @@
 
         <!-- Global Delete Confirmation Modal Script -->
         <script>
-            function showGlobalConfirmModal(message, onConfirm) {
+            function showGlobalConfirmModal(message, onConfirm, isDelete = true) {
                 const existing = document.getElementById('global-delete-modal');
                 if (existing) existing.remove();
                 
@@ -288,6 +288,19 @@
                 const cancelBorder = isDark ? '#1e293b' : '#e2e8f0';
                 const cancelText = isDark ? '#cbd5e1' : '#334155';
                 
+                const iconBg = isDelete 
+                    ? (isDark ? 'rgba(225, 29, 72, 0.15)' : '#ffe4e6')
+                    : (isDark ? 'rgba(79, 70, 229, 0.15)' : '#e0e7ff');
+                const iconColor = isDelete ? '#e11d48' : '#4f46e5';
+                const titleText = isDelete ? 'Konfirmasi Hapus' : 'Konfirmasi Tindakan';
+                const confirmBg = isDelete ? '#e11d48' : '#4f46e5';
+                const confirmHoverBg = isDelete ? '#be123c' : '#4338ca';
+                const confirmText = isDelete ? 'Ya, Hapus' : 'Ya, Lanjutkan';
+                
+                const iconSvg = isDelete 
+                    ? `<svg xmlns="http://www.w3.org/2000/svg" style="width: 2rem; height: 2rem; color: ${iconColor};" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
+                    : `<svg xmlns="http://www.w3.org/2000/svg" style="width: 2rem; height: 2rem; color: ${iconColor};" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+                
                 const modal = document.createElement('div');
                 modal.id = 'global-delete-modal';
                 modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem; box-sizing: border-box;';
@@ -296,21 +309,17 @@
                     <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); transition: opacity 0.3s ease; opacity: 0;" id="global-delete-backdrop"></div>
                     <div style="position: relative; background: ${panelBg}; color: ${panelText}; border-radius: 1rem; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04); border: 1px solid ${panelBorder}; padding: 1.5rem; z-index: 10; transition: all 0.3s ease; transform: scale(0.95); opacity: 0; box-sizing: border-box;" id="global-delete-panel">
                         <div style="text-align: center; font-family: system-ui, -apple-system, sans-serif;">
-                            <div style="width: 4rem; height: 4rem; border-radius: 9999px; background-color: ${isDark ? 'rgba(225, 29, 72, 0.15)' : '#ffe4e6'}; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                                <svg xmlns="http://www.w3.org/2000/svg" style="width: 2rem; height: 2rem; color: #e11d48;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                                    <line x1="12" y1="9" x2="12" y2="13"/>
-                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
-                                </svg>
+                            <div style="width: 4rem; height: 4rem; border-radius: 9999px; background-color: ${iconBg}; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                                ${iconSvg}
                             </div>
-                            <h3 style="font-size: 1.125rem; font-weight: 700; margin: 0 0 0.5rem 0; line-height: 1.25;">Konfirmasi Hapus</h3>
+                            <h3 style="font-size: 1.125rem; font-weight: 700; margin: 0 0 0.5rem 0; line-height: 1.25;">${titleText}</h3>
                             <p style="font-size: 0.875rem; color: ${descText}; margin: 0 0 1.5rem 0; line-height: 1.5;" id="global-delete-message"></p>
                             <div style="display: flex; gap: 0.75rem; justify-content: center;">
                                 <button type="button" id="global-delete-cancel" style="flex: 1; height: 2.5rem; padding: 0 1rem; border: 1px solid ${cancelBorder}; color: ${cancelText}; background: ${cancelBg}; font-size: 0.875rem; font-weight: 600; border-radius: 0.75rem; cursor: pointer; transition: background 0.2s; outline: none;">
                                     Batal
                                 </button>
-                                <button type="button" id="global-delete-confirm" style="flex: 1; height: 2.5rem; padding: 0 1rem; border: none; color: #ffffff; background: #e11d48; font-size: 0.875rem; font-weight: 600; border-radius: 0.75rem; cursor: pointer; transition: background 0.2s; outline: none;">
-                                    Ya, Hapus
+                                <button type="button" id="global-delete-confirm" style="flex: 1; height: 2.5rem; padding: 0 1rem; border: none; color: #ffffff; background: ${confirmBg}; font-size: 0.875rem; font-weight: 600; border-radius: 0.75rem; cursor: pointer; transition: background 0.2s; outline: none;">
+                                    ${confirmText}
                                 </button>
                             </div>
                         </div>
@@ -324,8 +333,8 @@
                 const confirmBtn = document.getElementById('global-delete-confirm');
                 cancelBtn.onmouseenter = () => cancelBtn.style.background = isDark ? '#1e293b' : '#f8fafc';
                 cancelBtn.onmouseleave = () => cancelBtn.style.background = cancelBg;
-                confirmBtn.onmouseenter = () => confirmBtn.style.background = '#be123c';
-                confirmBtn.onmouseleave = () => confirmBtn.style.background = '#e11d48';
+                confirmBtn.onmouseenter = () => confirmBtn.style.background = confirmHoverBg;
+                confirmBtn.onmouseleave = () => confirmBtn.style.background = confirmBg;
                 
                 setTimeout(() => {
                     const backdrop = document.getElementById('global-delete-backdrop');
@@ -398,7 +407,7 @@
                         if (originalOnsubmit) {
                             form.setAttribute('onsubmit', originalOnsubmit);
                         }
-                    });
+                    }, isDelete);
                 }
             }, true);
 
