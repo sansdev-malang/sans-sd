@@ -532,5 +532,29 @@ class HrdApiController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Announcement synced successfully.']);
     }
+
+    /**
+     * Verify employee credentials for SSO.
+     */
+    public function verify(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        if (\Illuminate\Support\Facades\Auth::guard('web')->attempt($credentials)) {
+            $user = \Illuminate\Support\Facades\Auth::guard('web')->user();
+            return response()->json([
+                'success' => true,
+                'role' => $user->role ?? 'teacher',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Password salah.'
+        ], 401);
+    }
 }
 

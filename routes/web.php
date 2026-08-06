@@ -261,6 +261,7 @@ Route::middleware(['auth', 'verified', 'role:employee,admin_sd,admin_paud,admin_
 
 // REST API for HRD Central Aggregator Integration
 Route::middleware('hrd.api')->prefix('api/v1/hrd')->group(function () {
+    Route::post('auth/verify', [\App\Http\Controllers\Api\HrdApiController::class, 'verify']);
     Route::get('employees', [\App\Http\Controllers\Api\HrdApiController::class, 'employees']);
     Route::post('employees', [\App\Http\Controllers\Api\HrdApiController::class, 'store']);
     Route::put('employees/{id}', [\App\Http\Controllers\Api\HrdApiController::class, 'update']);
