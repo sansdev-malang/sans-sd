@@ -410,40 +410,44 @@
                     }, isDelete);
             }, true);
 
-            // Intercept click event for inline onclick="return confirm(...)"
-            document.addEventListener('click', function (e) {
-                const button = e.target.closest('button, a, input[type="submit"], input[type="button"]');
-                if (!button) return;
-                
-                const onclickAttr = button.getAttribute('onclick');
-                if (onclickAttr && onclickAttr.includes('confirm(')) {
+            // Suppress and convert all native confirms to global modals dynamically
+            function initConfirmInterceptors() {
+                document.querySelectorAll('[onclick*="confirm("]').forEach(el => {
+                    const onclickAttr = el.getAttribute('onclick');
                     const match = onclickAttr.match(/confirm\(['"](.*?)['"]\)/);
                     if (match) {
-                        const confirmMsg = match[1];
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.stopImmediatePropagation();
+                        el.setAttribute('data-confirm-message', match[1]);
+                        el.removeAttribute('onclick');
                         
-                        const form = button.closest('form');
-                        const methodInput = form ? form.querySelector('input[name="_method"]') : null;
-                        const isDelete = methodInput && methodInput.value.toUpperCase() === 'DELETE';
-                        
-                        showGlobalConfirmModal(confirmMsg, function () {
-                            if (form) {
-                                form.dataset.confirmed = 'true';
-                                const originalOnsubmit = form.getAttribute('onsubmit');
-                                form.removeAttribute('onsubmit');
-                                form.submit();
-                                if (originalOnsubmit) {
-                                    form.setAttribute('onsubmit', originalOnsubmit);
+                        el.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            const confirmMsg = this.getAttribute('data-confirm-message');
+                            const form = this.closest('form');
+                            const methodInput = form ? form.querySelector('input[name="_method"]') : null;
+                            const isDelete = methodInput && methodInput.value.toUpperCase() === 'DELETE';
+                            
+                            showGlobalConfirmModal(confirmMsg, function () {
+                                if (form) {
+                                    form.dataset.confirmed = 'true';
+                                    const originalOnsubmit = form.getAttribute('onsubmit');
+                                    form.removeAttribute('onsubmit');
+                                    form.submit();
+                                    if (originalOnsubmit) {
+                                        form.setAttribute('onsubmit', originalOnsubmit);
+                                    }
+                                } else if (el.tagName === 'A') {
+                                    window.location.href = el.href;
                                 }
-                            } else if (button.tagName === 'A') {
-                                window.location.href = button.href;
-                            }
-                        }, isDelete);
+                            }, isDelete);
+                        });
                     }
-                }
-            }, true);
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', initConfirmInterceptors);
+            setInterval(initConfirmInterceptors, 1000);
 
             // Global Tooltip System
             (function() {
