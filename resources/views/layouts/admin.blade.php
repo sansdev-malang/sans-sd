@@ -408,6 +408,40 @@
                             form.setAttribute('onsubmit', originalOnsubmit);
                         }
                     }, isDelete);
+            }, true);
+
+            // Intercept click event for inline onclick="return confirm(...)"
+            document.addEventListener('click', function (e) {
+                const button = e.target.closest('button, a, input[type="submit"], input[type="button"]');
+                if (!button) return;
+                
+                const onclickAttr = button.getAttribute('onclick');
+                if (onclickAttr && onclickAttr.includes('confirm(')) {
+                    const match = onclickAttr.match(/confirm\(['"](.*?)['"]\)/);
+                    if (match) {
+                        const confirmMsg = match[1];
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        
+                        const form = button.closest('form');
+                        const methodInput = form ? form.querySelector('input[name="_method"]') : null;
+                        const isDelete = methodInput && methodInput.value.toUpperCase() === 'DELETE';
+                        
+                        showGlobalConfirmModal(confirmMsg, function () {
+                            if (form) {
+                                form.dataset.confirmed = 'true';
+                                const originalOnsubmit = form.getAttribute('onsubmit');
+                                form.removeAttribute('onsubmit');
+                                form.submit();
+                                if (originalOnsubmit) {
+                                    form.setAttribute('onsubmit', originalOnsubmit);
+                                }
+                            } else if (button.tagName === 'A') {
+                                window.location.href = button.href;
+                            }
+                        }, isDelete);
+                    }
                 }
             }, true);
 
