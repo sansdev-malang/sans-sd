@@ -365,89 +365,51 @@
                 });
             }
 
-            document.addEventListener('submit', function (e) {
-                const form = e.target;
+            // Override native window.confirm to display our premium custom modal
+            window.confirm = function (message) {
+                const triggerEl = document.activeElement;
                 
-                if (form.dataset.confirmed === 'true' || form.getAttribute('data-confirm') === 'false') {
-                    return;
+                // Determine if this is a delete action
+                let isDelete = false;
+                if (triggerEl) {
+                    const form = triggerEl.closest('form');
+                    const methodInput = form ? form.querySelector('input[name="_method"]') : null;
+                    const confirmAttr = triggerEl.getAttribute('onclick') || '';
+                    const titleAttr = triggerEl.getAttribute('title') || '';
+                    isDelete = (methodInput && methodInput.value.toUpperCase() === 'DELETE') || 
+                               message.toLowerCase().includes('hapus') || 
+                               titleAttr.toLowerCase().includes('hapus') ||
+                               confirmAttr.toLowerCase().includes('hapus') ||
+                               triggerEl.className.includes('red') || 
+                               triggerEl.className.includes('trash');
+                } else if (message.toLowerCase().includes('hapus')) {
+                    isDelete = true;
                 }
                 
-                const methodInput = form.querySelector('input[name="_method"]');
-                const isDelete = methodInput && methodInput.value.toUpperCase() === 'DELETE';
-                
-                let confirmMsg = '';
-                const onsubmitAttr = form.getAttribute('onsubmit');
-                if (onsubmitAttr && onsubmitAttr.includes('confirm(')) {
-                    const match = onsubmitAttr.match(/confirm\(['"](.*?)['"]\)/);
-                    if (match) confirmMsg = match[1];
-                }
-                
-                const activeEl = document.activeElement;
-                if (!confirmMsg && activeEl && activeEl.form === form) {
-                    const onclickAttr = activeEl.getAttribute('onclick');
-                    if (onclickAttr && onclickAttr.includes('confirm(')) {
-                        const match = onclickAttr.match(/confirm\(['"](.*?)['"]\)/);
-                        if (match) confirmMsg = match[1];
-                    }
-                }
-                
-                if (confirmMsg || isDelete) {
-                    if (!confirmMsg) {
-                        confirmMsg = 'Apakah Anda yakin ingin menghapus data ini?';
-                    }
-                    
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    showGlobalConfirmModal(confirmMsg, function () {
-                        form.dataset.confirmed = 'true';
-                        const originalOnsubmit = form.getAttribute('onsubmit');
-                        form.removeAttribute('onsubmit');
-                        form.submit();
-                        if (originalOnsubmit) {
-                            form.setAttribute('onsubmit', originalOnsubmit);
+                showGlobalConfirmModal(message, function () {
+                    if (triggerEl) {
+                        const form = triggerEl.closest('form');
+                        if (form) {
+                            form.dataset.confirmed = 'true';
+                            const originalOnsubmit = form.getAttribute('onsubmit');
+                            form.removeAttribute('onsubmit');
+                            form.submit();
+                            if (originalOnsubmit) {
+                                form.setAttribute('onsubmit', originalOnsubmit);
+                            }
+                        } else if (triggerEl.tagName === 'A') {
+                            window.location.href = triggerEl.href;
+                        } else {
+                            const origOnclick = triggerEl.getAttribute('onclick');
+                            triggerEl.removeAttribute('onclick');
+                            triggerEl.click();
+                            if (origOnclick) triggerEl.setAttribute('onclick', origOnclick);
                         }
-                    }, isDelete);
-            }, true);
-
-            // Suppress and convert all native confirms to global modals dynamically
-            function initConfirmInterceptors() {
-                document.querySelectorAll('[onclick*="confirm("]').forEach(el => {
-                    const onclickAttr = el.getAttribute('onclick');
-                    const match = onclickAttr.match(/confirm\(['"](.*?)['"]\)/);
-                    if (match) {
-                        el.setAttribute('data-confirm-message', match[1]);
-                        el.removeAttribute('onclick');
-                        
-                        el.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            
-                            const confirmMsg = this.getAttribute('data-confirm-message');
-                            const form = this.closest('form');
-                            const methodInput = form ? form.querySelector('input[name="_method"]') : null;
-                            const isDelete = methodInput && methodInput.value.toUpperCase() === 'DELETE';
-                            
-                            showGlobalConfirmModal(confirmMsg, function () {
-                                if (form) {
-                                    form.dataset.confirmed = 'true';
-                                    const originalOnsubmit = form.getAttribute('onsubmit');
-                                    form.removeAttribute('onsubmit');
-                                    form.submit();
-                                    if (originalOnsubmit) {
-                                        form.setAttribute('onsubmit', originalOnsubmit);
-                                    }
-                                } else if (el.tagName === 'A') {
-                                    window.location.href = el.href;
-                                }
-                            }, isDelete);
-                        });
                     }
-                });
-            }
-
-            document.addEventListener('DOMContentLoaded', initConfirmInterceptors);
-            setInterval(initConfirmInterceptors, 1000);
+                }, isDelete);
+                
+                return false; // Always prevent native browser confirm prompt immediately
+            };
 
             // Global Tooltip System
             (function() {
