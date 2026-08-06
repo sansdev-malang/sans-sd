@@ -363,8 +363,24 @@
         <div @click="open = !open"
             class="user-selector flex items-center justify-between p-2 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg cursor-pointer transition-colors relative group">
             <div class="flex items-center gap-2.5 overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256"
-                    alt="Avatar" class="w-7 h-7 rounded-lg object-cover ring-1 ring-slate-200 dark:ring-slate-800">
+                @php
+                    $nameParts = explode(' ', Auth::user()->name);
+                    $initials = strtoupper(substr($nameParts[0], 0, 1) . (isset($nameParts[1]) ? substr($nameParts[1], 0, 1) : ''));
+                    $photo = null;
+                    if (method_exists(Auth::user(), 'employee') && Auth::user()->employee) {
+                        $photo = Auth::user()->employee->photo;
+                    } elseif (isset(Auth::user()->photo)) {
+                        $photo = Auth::user()->photo;
+                    }
+                @endphp
+
+                @if($photo)
+                    <img src="{{ asset('storage/' . $photo) }}" alt="Avatar" class="w-7 h-7 rounded-lg object-cover ring-1 ring-slate-200 dark:ring-slate-800 shrink-0">
+                @else
+                    <div class="w-7 h-7 rounded-lg bg-indigo-900/30 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
+                        {{ $initials }}
+                    </div>
+                @endif
                 <div class="user-info overflow-hidden">
                     <h4 class="text-xs font-semibold text-slate-900 dark:text-slate-50 truncate leading-none">
                         {{ Auth::user()->name }}
