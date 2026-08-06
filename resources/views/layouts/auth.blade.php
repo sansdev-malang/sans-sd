@@ -119,7 +119,7 @@
                     </button>
     
                     <!-- Back to Home link -->
-                    <a href="https://sans.sch.id" class="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-slate-50 transition-colors">
+                    <a href="https://sans.sch.id" class="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50 transition-colors">
                         <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
                         Back to Portal
                     </a>
@@ -135,14 +135,14 @@
         </div>
 
         <!-- HERO COVER COLUMN (Visible on large screens) -->
-        <div class="hidden lg:block relative overflow-hidden bg-slate-900 dark:bg-slate-950">
+        <div class="hidden lg:block relative overflow-hidden bg-slate-900 dark:bg-slate-900">
             <!-- Modern abstract gradient mesh background inside the cover -->
             <div class="absolute inset-0 bg-cover bg-center"
                 style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200'); opacity: 0.65; mix-blend-mode: overlay;">
             </div>
 
             <!-- Sleek dark overlay gradient -->
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/50 to-slate-950"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-slate-900"></div>
 
             <!-- Graphic layout content overlay -->
             <div class="absolute inset-0 flex flex-col justify-between p-12 text-white">
@@ -157,11 +157,11 @@
                     </blockquote>
                     <div>
                         <cite class="text-sm font-bold not-italic text-slate-200">SANS School System</cite>
-                        <p class="text-xs text-slate-450 mt-1">Platform Informasi Sekolah Terintegrasi</p>
+                        <p class="text-xs text-slate-400 mt-1">Platform Informasi Sekolah Terintegrasi</p>
                     </div>
                 </div>
 
-                <div class="text-[10px] text-slate-450">
+                <div class="text-[10px] text-slate-400">
                     Sistem Manajemen Akademik &amp; Administrasi Digital
                 </div>
             </div>

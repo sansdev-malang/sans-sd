@@ -13,7 +13,7 @@
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             
             <!-- Stat Card 1 -->
-            <div class="animate-card border-t-[4px] dark:border-t-[4px] border-t-red-600 dark:border-t-red-600 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
+            <div class="animate-card border-t-[4px] dark:border-t-[4px] border-t-red-600 dark:border-t-red-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Homebase Merah</p>
@@ -29,7 +29,7 @@
             </div>
 
             <!-- Stat Card 2 -->
-            <div class="animate-card border-t-[4px] dark:border-t-[4px] border-t-yellow-600 dark:border-t-yellow-600 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
+            <div class="animate-card border-t-[4px] dark:border-t-[4px] border-t-yellow-600 dark:border-t-yellow-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Homebase Kuning</p>
@@ -45,7 +45,7 @@
             </div>
             
             <!-- Stat Card 3 -->
-            <div class="animate-card border-t-[4px] dark:border-t-[4px] border-t-green-600 dark:border-t-green-600 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
+            <div class="animate-card border-t-[4px] dark:border-t-[4px] border-t-green-600 dark:border-t-green-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Homebase Hijau</p>
@@ -61,7 +61,7 @@
             </div>
 
             <!-- Stat Card 4 -->
-            <div class="animate-card border-t-[4px] dark:border-t-[4px] border-t-blue-600 dark:border-t-blue-600 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
+            <div class="animate-card border-t-[4px] dark:border-t-[4px] border-t-blue-600 dark:border-t-blue-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Homebase Biru</p>
@@ -77,7 +77,7 @@
             </div>
             
             <!-- Stat Card 5 -->
-            <div class="animate-card border-t-[4px] dark:border-t-[4px] border-t-purple-600 dark:border-t-purple-600 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
+            <div class="animate-card border-t-[4px] dark:border-t-[4px] border-t-purple-600 dark:border-t-purple-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Homebase Ungu</p>
@@ -97,7 +97,7 @@
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             <!-- Graph Card (SVG) -->
-            <div class="animate-card lg:col-span-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 relative flex flex-col justify-between overflow-hidden shadow-sm">
+            <div class="animate-card lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 relative flex flex-col justify-between overflow-hidden shadow-sm">
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <div>
@@ -145,7 +145,7 @@
             </div>
 
             <!-- Announcements / Information System -->
-            <div class="animate-card bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col justify-between shadow-sm">
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col justify-between shadow-sm">
                 <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">Log Aktivitas Terbaru</h3>
                 <div class="space-y-3.5">
                     <div class="flex items-center justify-between py-1 border-b border-slate-50 dark:border-slate-900/60 pb-3">
@@ -158,7 +158,7 @@
                                 <p class="text-xs text-slate-500">Guru: Drs. Eko Prasetyo</p>
                             </div>
                         </div>
-                        <span class="text-xs text-slate-450">10 mnt yang lalu</span>
+                        <span class="text-xs text-slate-400">10 mnt yang lalu</span>
                     </div>
                     <div class="flex items-center justify-between py-1 border-b border-slate-50 dark:border-slate-900/60 pb-3">
                         <div class="flex items-center gap-3">
@@ -170,7 +170,7 @@
                                 <p class="text-xs text-slate-500">Kelas: XII-IPA</p>
                             </div>
                         </div>
-                        <span class="text-xs text-slate-450">24 mnt yang lalu</span>
+                        <span class="text-xs text-slate-400">24 mnt yang lalu</span>
                     </div>
                     <div class="flex items-center justify-between py-1">
                         <div class="flex items-center gap-3">
@@ -182,12 +182,12 @@
                                 <p class="text-xs text-slate-500">Gelombang 2 SANS Malang</p>
                             </div>
                         </div>
-                        <span class="text-xs text-slate-455">45 mnt yang lalu</span>
+                        <span class="text-xs text-slate-400">45 mnt yang lalu</span>
                     </div>
                 </div>
 
                 <!-- Info tag footer -->
-                <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-455">
+                <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-400">
                     <span>Admin Update: Hari Ini</span>
                 </div>
             </div>
@@ -199,13 +199,13 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                 
                 <!-- Homebase Merah -->
-                <div class="animate-card relative overflow-hidden border-l-[4px] border-l-red-600 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+                <div class="animate-card relative overflow-hidden border-l-[4px] border-l-red-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
                     <!-- Background Star Watermark -->
                     <div class="absolute -right-4 -top-4 text-red-500/10 dark:text-red-500/5 pointer-events-none transform rotate-12">
                         <i data-lucide="star" class="w-16 h-16 fill-current"></i>
                     </div>
                     <div class="flex items-center gap-3 relative z-10">
-                        <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400 flex items-center justify-center text-sm font-bold shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-sm font-bold shrink-0">
                             AF
                         </div>
                         <div class="min-w-0">
@@ -214,7 +214,7 @@
                         </div>
                     </div>
                     <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-900 flex justify-between items-center relative z-10">
-                        <div class="text-[10px] text-slate-400 dark:text-slate-550">
+                        <div class="text-[10px] text-slate-400 dark:text-slate-500">
                             <p>NIS: 1234</p>
                             <p>NISN: 1234567890</p>
                         </div>
@@ -223,13 +223,13 @@
                 </div>
 
                 <!-- Homebase Kuning -->
-                <div class="animate-card relative overflow-hidden border-l-[4px] border-l-yellow-500 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+                <div class="animate-card relative overflow-hidden border-l-[4px] border-l-yellow-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
                     <!-- Background Star Watermark -->
                     <div class="absolute -right-4 -top-4 text-yellow-500/10 dark:text-yellow-500/5 pointer-events-none transform rotate-12">
                         <i data-lucide="star" class="w-16 h-16 fill-current"></i>
                     </div>
                     <div class="flex items-center gap-3 relative z-10">
-                        <div class="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-950/30 text-yellow-600 dark:text-yellow-400 flex items-center justify-center text-sm font-bold shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 flex items-center justify-center text-sm font-bold shrink-0">
                             SA
                         </div>
                         <div class="min-w-0">
@@ -238,7 +238,7 @@
                         </div>
                     </div>
                     <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-900 flex justify-between items-center relative z-10">
-                        <div class="text-[10px] text-slate-400 dark:text-slate-550">
+                        <div class="text-[10px] text-slate-400 dark:text-slate-500">
                             <p>NIS: 1235</p>
                             <p>NISN: 1234567891</p>
                         </div>
@@ -247,13 +247,13 @@
                 </div>
 
                 <!-- Homebase Hijau -->
-                <div class="animate-card relative overflow-hidden border-l-[4px] border-l-green-600 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+                <div class="animate-card relative overflow-hidden border-l-[4px] border-l-green-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
                     <!-- Background Star Watermark -->
                     <div class="absolute -right-4 -top-4 text-green-500/10 dark:text-green-500/5 pointer-events-none transform rotate-12">
                         <i data-lucide="star" class="w-16 h-16 fill-current"></i>
                     </div>
                     <div class="flex items-center gap-3 relative z-10">
-                        <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-950/30 text-green-600 dark:text-green-400 flex items-center justify-center text-sm font-bold shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center text-sm font-bold shrink-0">
                             RH
                         </div>
                         <div class="min-w-0">
@@ -262,7 +262,7 @@
                         </div>
                     </div>
                     <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-900 flex justify-between items-center relative z-10">
-                        <div class="text-[10px] text-slate-400 dark:text-slate-550">
+                        <div class="text-[10px] text-slate-400 dark:text-slate-500">
                             <p>NIS: 1236</p>
                             <p>NISN: 1234567892</p>
                         </div>
@@ -271,13 +271,13 @@
                 </div>
 
                 <!-- Homebase Biru -->
-                <div class="animate-card relative overflow-hidden border-l-[4px] border-l-blue-600 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+                <div class="animate-card relative overflow-hidden border-l-[4px] border-l-blue-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
                     <!-- Background Star Watermark -->
                     <div class="absolute -right-4 -top-4 text-blue-500/10 dark:text-blue-500/5 pointer-events-none transform rotate-12">
                         <i data-lucide="star" class="w-16 h-16 fill-current"></i>
                     </div>
                     <div class="flex items-center gap-3 relative z-10">
-                        <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm font-bold shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm font-bold shrink-0">
                             NP
                         </div>
                         <div class="min-w-0">
@@ -286,7 +286,7 @@
                         </div>
                     </div>
                     <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-900 flex justify-between items-center relative z-10">
-                        <div class="text-[10px] text-slate-400 dark:text-slate-550">
+                        <div class="text-[10px] text-slate-400 dark:text-slate-500">
                             <p>NIS: 1237</p>
                             <p>NISN: 1234567893</p>
                         </div>
@@ -295,13 +295,13 @@
                 </div>
 
                 <!-- Homebase Ungu -->
-                <div class="animate-card relative overflow-hidden border-l-[4px] border-l-indigo-600 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+                <div class="animate-card relative overflow-hidden border-l-[4px] border-l-indigo-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
                     <!-- Background Star Watermark -->
                     <div class="absolute -right-4 -top-4 text-indigo-500/10 dark:text-indigo-500/5 pointer-events-none transform rotate-12">
                         <i data-lucide="star" class="w-16 h-16 fill-current"></i>
                     </div>
                     <div class="flex items-center gap-3 relative z-10">
-                        <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm font-bold shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm font-bold shrink-0">
                             FP
                         </div>
                         <div class="min-w-0">
@@ -310,7 +310,7 @@
                         </div>
                     </div>
                     <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-900 flex justify-between items-center relative z-10">
-                        <div class="text-[10px] text-slate-400 dark:text-slate-550">
+                        <div class="text-[10px] text-slate-400 dark:text-slate-500">
                             <p>NIS: 1238</p>
                             <p>NISN: 1234567894</p>
                         </div>

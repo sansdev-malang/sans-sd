@@ -27,11 +27,11 @@
         @endif
 
         <!-- FILTERS -->
-        <section class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm w-full">
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm w-full">
             <form method="GET" action="{{ route('bonus-reports.index') }}" class="flex flex-wrap gap-4 items-end w-full">
                 <!-- Month Filter -->
                 <div class="flex flex-col gap-1">
-                    <label class="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase">Bulan (YYYY-MM)</label>
+                    <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">Bulan (YYYY-MM)</label>
                     <input type="month" name="month" value="{{ $month }}" onchange="this.form.submit()"
                         class="h-9 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none cursor-pointer">
                 </div>
@@ -39,7 +39,7 @@
                 @if(auth()->user()->role !== 'employee')
                 <!-- Type Filter -->
                 <div class="flex flex-col gap-1 w-full sm:w-auto">
-                    <label class="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase">Tipe Pegawai</label>
+                    <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">Tipe Pegawai</label>
                     <select name="type" class="h-9 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none w-full sm:w-36" onchange="this.form.submit()">
                         <option value="">Semua Tipe</option>
                         @foreach($employeeTypes ?? [] as $empType)
@@ -50,7 +50,7 @@
 
                 <!-- Search Filter -->
                 <div class="flex flex-col gap-1 flex-1 min-w-[200px]">
-                    <label class="text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase">Cari Pegawai</label>
+                    <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">Cari Pegawai</label>
                     <div class="flex gap-2">
                         <div class="relative flex-1">
                             <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau NIK..."
@@ -74,17 +74,17 @@
         </section>
 
         <!-- TABLE -->
-        <section class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full">
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full">
             <div class="overflow-x-auto">
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr class="bg-slate-50/50 dark:bg-slate-900/30 border-b border-slate-200 dark:border-slate-800">
-                            <th class="px-6 py-4 text-left font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-12 sticky top-0 bg-slate-50 dark:bg-slate-900">No</th>
-                            <th class="px-6 py-4 text-left font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider sticky top-0 bg-slate-50 dark:bg-slate-900">Nama Pegawai</th>
-                            <th class="px-6 py-4 text-center font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-24 sticky top-0 bg-slate-50 dark:bg-slate-900">Hadir</th>
-                            <th class="px-6 py-4 text-center font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-24 sticky top-0 bg-slate-50 dark:bg-slate-900">Terlambat</th>
-                            <th class="px-6 py-4 text-center font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-24 sticky top-0 bg-slate-50 dark:bg-slate-900">Alpha</th>
-                            <th class="px-6 py-4 text-right font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-36 sticky top-0 bg-slate-50 dark:bg-slate-900">Total Bonus</th>
+                            <th class="px-6 py-4 text-left font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-12 sticky top-0 bg-slate-50 dark:bg-slate-900">No</th>
+                            <th class="px-6 py-4 text-left font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider sticky top-0 bg-slate-50 dark:bg-slate-900">Nama Pegawai</th>
+                            <th class="px-6 py-4 text-center font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24 sticky top-0 bg-slate-50 dark:bg-slate-900">Hadir</th>
+                            <th class="px-6 py-4 text-center font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24 sticky top-0 bg-slate-50 dark:bg-slate-900">Terlambat</th>
+                            <th class="px-6 py-4 text-center font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24 sticky top-0 bg-slate-50 dark:bg-slate-900">Alpha</th>
+                            <th class="px-6 py-4 text-right font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-36 sticky top-0 bg-slate-50 dark:bg-slate-900">Total Bonus</th>
                             <th class="px-4 py-4 sticky top-0 bg-slate-50 dark:bg-slate-900 w-10"></th>
                         </tr>
                     </thead>

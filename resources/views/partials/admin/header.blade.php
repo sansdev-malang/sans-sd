@@ -48,7 +48,7 @@
             
             <!-- Dropdown Menu -->
             <div x-show="open" @click.outside="open = false" 
-                class="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 z-50 text-left text-xs"
+                class="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 z-50 text-left text-xs"
                 x-transition:enter="transition ease-out duration-100"
                 x-transition:enter-start="transform opacity-0 scale-95"
                 x-transition:enter-end="transform opacity-100 scale-100"
@@ -60,7 +60,7 @@
                 <div class="px-4 py-1.5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/20">
                     <span class="font-bold text-slate-900 dark:text-slate-100">Notifikasi</span>
                     @if($totalNotifs > 0)
-                        <span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40">
+                        <span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40">
                             {{ $totalNotifs }} Baru
                         </span>
                     @endif
@@ -77,7 +77,7 @@
                         @if(auth()->user() && auth()->user()->unreadNotifications->count() > 0)
                             @foreach(auth()->user()->unreadNotifications as $notification)
                                 <a href="{{ route('notifications.read', $notification->id) }}" class="flex items-start gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
-                                    <div class="w-8 h-8 rounded-lg bg-indigo-50/60 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100/40 dark:border-indigo-900/20">
+                                    <div class="w-8 h-8 rounded-lg bg-indigo-50/60 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100/40 dark:border-indigo-900/20">
                                         <i data-lucide="megaphone" class="w-4 h-4"></i>
                                     </div>
                                     <div class="space-y-0.5 overflow-hidden">
@@ -93,7 +93,7 @@
                             @if(isset($pendingLeaves) && count($pendingLeaves) > 0)
                                 @foreach($pendingLeaves as $item)
                                     <a href="{{ route('leave-approvals.index') }}" class="flex items-start gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
-                                        <div class="w-8 h-8 rounded-lg bg-amber-50/60 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100/40 dark:border-amber-900/20">
+                                        <div class="w-8 h-8 rounded-lg bg-amber-50/60 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100/40 dark:border-amber-900/20">
                                             <i data-lucide="file-signature" class="w-4 h-4"></i>
                                         </div>
                                         <div class="space-y-0.5 overflow-hidden">
@@ -108,7 +108,7 @@
                             @if(isset($myNotifications) && count($myNotifications) > 0)
                                 @foreach($myNotifications as $item)
                                     <a href="{{ route('my-leaves.index') }}" class="flex items-start gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
-                                        <div class="w-8 h-8 rounded-lg {{ $item->status === 'Approved' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-100/50 dark:border-emerald-900/30' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border border-rose-100/50 dark:border-rose-900/30' }} flex items-center justify-center shrink-0">
+                                        <div class="w-8 h-8 rounded-lg {{ $item->status === 'Approved' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-100/50 dark:border-emerald-900/30' : 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border border-rose-100/50 dark:border-rose-900/30' }} flex items-center justify-center shrink-0">
                                             <i data-lucide="{{ $item->status === 'Approved' ? 'check-circle-2' : 'x-circle' }}" class="w-4 h-4"></i>
                                         </div>
                                         <div class="space-y-0.5 overflow-hidden">

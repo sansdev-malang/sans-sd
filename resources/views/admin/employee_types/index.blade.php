@@ -8,7 +8,7 @@
                 <p class="text-xs text-slate-500 dark:text-slate-400">Atur tipe pegawai dan peran dinamis (seperti Guru, Karyawan, Satpam, Staf Administrasi) untuk klasifikasi data pegawai.</p>
             </div>
             <div class="flex items-center gap-3 shrink-0">
-                <button onclick="toggleModal('add-type-modal')" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-150 cursor-pointer">
+                <button onclick="toggleModal('add-type-modal')" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-100 cursor-pointer">
                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                     Tambah Tipe Baru
                 </button>
@@ -16,7 +16,7 @@
         </section>
 
         <!-- TABLE SECTION -->
-        <section class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full">
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full">
             <div class="overflow-x-auto">
                 <table class="w-full text-xs border-collapse">
                     <thead>
@@ -47,7 +47,7 @@
                                             <button onclick="editType({{ json_encode($type) }})" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Edit Tipe">
                                                 <i data-lucide="edit" class="w-4 h-4"></i>
                                             </button>
-                                            <button onclick="deleteType('{{ $type->id }}', '{{ $type->name }}')" class="p-1.5 hover:bg-red-50 dark:hover:bg-red-955/20 rounded-lg text-red-600 dark:text-red-400 hover:text-red-700 transition-colors cursor-pointer" title="Hapus Tipe">
+                                            <button onclick="deleteType('{{ $type->id }}', '{{ $type->name }}')" class="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 hover:text-red-700 transition-colors cursor-pointer" title="Hapus Tipe">
                                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                                             </button>
                                         @endif
@@ -71,8 +71,8 @@
 
         <!-- ADD MODAL -->
         <div x-data><template x-teleport="body">
-        <div id="add-type-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-opacity overflow-y-auto" style="margin-top: 0px !important; z-index: 9999;" onclick="if(event.target === this) toggleModal('add-type-modal')">
-            <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0 duration-200">
+        <div id="add-type-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs hidden transition-opacity overflow-y-auto" style="margin-top: 0px !important; z-index: 9999;" onclick="if(event.target === this) toggleModal('add-type-modal')">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0 duration-200">
                 <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <h3 class="text-sm font-bold text-slate-900 dark:text-slate-50">Tambah Tipe Pegawai</h3>
                     <button onclick="toggleModal('add-type-modal')" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer">
@@ -82,19 +82,19 @@
                 <form action="{{ route('employee-types.store') }}" method="POST" class="p-5 space-y-4 text-left">
                     @csrf
                     <div>
-                        <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Nama Tipe <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Nama Tipe <span class="text-red-500">*</span></label>
                         <input type="text" name="name" required placeholder="Contoh: Guru Tetap, Satpam" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Kode / Slug (Opsional)</label>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Kode / Slug (Opsional)</label>
                         <input type="text" name="code" placeholder="Contoh: guru-tetap (auto-generated jika kosong)" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none font-mono">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Deskripsi</label>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Deskripsi</label>
                         <textarea name="description" placeholder="Penjelasan singkat..." rows="3" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none"></textarea>
                     </div>
                     <div class="p-5 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2.5">
-                        <button type="button" onclick="toggleModal('add-type-modal')" class="px-4 py-2 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-300 bg-transparent text-xs font-bold rounded-lg cursor-pointer">Batal</button>
+                        <button type="button" onclick="toggleModal('add-type-modal')" class="px-4 py-2 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 bg-transparent text-xs font-bold rounded-lg cursor-pointer">Batal</button>
                         <button type="submit" class="px-4 py-2 bg-slate-900 dark:bg-slate-50 text-white dark:text-slate-900 text-xs font-bold rounded-lg cursor-pointer">Simpan</button>
                     </div>
                 </form>
@@ -104,8 +104,8 @@
 
         <!-- EDIT MODAL -->
         <div x-data><template x-teleport="body">
-        <div id="edit-type-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs hidden transition-opacity overflow-y-auto" style="margin-top: 0px !important; z-index: 9999;" onclick="if(event.target === this) toggleModal('edit-type-modal')">
-            <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0 duration-200">
+        <div id="edit-type-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs hidden transition-opacity overflow-y-auto" style="margin-top: 0px !important; z-index: 9999;" onclick="if(event.target === this) toggleModal('edit-type-modal')">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0 duration-200">
                 <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <h3 class="text-sm font-bold text-slate-900 dark:text-slate-50">Edit Tipe Pegawai</h3>
                     <button onclick="toggleModal('edit-type-modal')" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg cursor-pointer">
@@ -116,19 +116,19 @@
                     @csrf
                     @method('PUT')
                     <div>
-                        <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Nama Tipe <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Nama Tipe <span class="text-red-500">*</span></label>
                         <input type="text" name="name" required class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Kode / Slug</label>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Kode / Slug</label>
                         <input type="text" name="code" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none font-mono">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-650 dark:text-slate-400 mb-1">Deskripsi</label>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Deskripsi</label>
                         <textarea name="description" rows="3" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none"></textarea>
                     </div>
                     <div class="p-5 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2.5">
-                        <button type="button" onclick="toggleModal('edit-type-modal')" class="px-4 py-2 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-300 bg-transparent text-xs font-bold rounded-lg cursor-pointer">Batal</button>
+                        <button type="button" onclick="toggleModal('edit-type-modal')" class="px-4 py-2 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 bg-transparent text-xs font-bold rounded-lg cursor-pointer">Batal</button>
                         <button type="submit" class="px-4 py-2 bg-slate-900 dark:bg-slate-50 text-white dark:text-slate-900 text-xs font-bold rounded-lg cursor-pointer">Simpan Perubahan</button>
                     </div>
                 </form>

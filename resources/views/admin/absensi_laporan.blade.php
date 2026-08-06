@@ -19,7 +19,7 @@
         </section>
 
         <!-- Filters -->
-        <section class="animate-card bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+        <section class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="space-y-1.5">
                     <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Periode Tanggal</label>
@@ -59,7 +59,7 @@
 
         <!-- Summary Cards -->
         <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white dark:bg-slate-950 p-5 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center justify-between">
+            <div class="bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center justify-between">
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Rata-rata Hadir</p>
                     <h3 class="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight">96.8%</h3>
@@ -70,7 +70,7 @@
                 </div>
             </div>
             
-            <div class="bg-white dark:bg-slate-950 p-5 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center justify-between">
+            <div class="bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center justify-between">
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Total Terlambat</p>
                     <h3 class="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight">42</h3>
@@ -81,7 +81,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-950 p-5 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center justify-between">
+            <div class="bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center justify-between">
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Total Izin / Cuti</p>
                     <h3 class="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight">15</h3>
@@ -92,7 +92,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-950 p-5 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center justify-between">
+            <div class="bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center justify-between">
                 <div>
                     <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Total Alpha</p>
                     <h3 class="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight">3</h3>
@@ -108,7 +108,7 @@
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             <!-- Graph Card (SVG) -->
-            <div class="animate-card lg:col-span-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 relative flex flex-col justify-between overflow-hidden shadow-sm">
+            <div class="animate-card lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 relative flex flex-col justify-between overflow-hidden shadow-sm">
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <div>
@@ -156,7 +156,7 @@
             </div>
 
             <!-- Calendar Card -->
-            <div class="animate-card bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col justify-between shadow-sm">
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col justify-between shadow-sm">
                 <div>
                     <!-- Calendar Header -->
                     <div class="flex items-center justify-between mb-6">
@@ -188,7 +188,7 @@
 
                 <!-- Footer with current date info -->
                 <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
-                    <span id="calendar-today-btn" class="hover:text-slate-850 dark:hover:text-slate-200 cursor-pointer font-semibold transition-colors">Hari Ini</span>
+                    <span id="calendar-today-btn" class="hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer font-semibold transition-colors">Hari Ini</span>
                     <span id="calendar-selected-info" class="font-bold text-slate-800 dark:text-slate-200"></span>
                 </div>
             </div>
@@ -254,25 +254,25 @@
                             const dayOfWeek = thisDate.getDay();
                             
                             // Base day style
-                            let btnClasses = 'w-9 h-9 mx-auto rounded-xl flex items-center justify-center transition-all duration-150 cursor-pointer focus:outline-none hover:bg-slate-100 dark:hover:bg-slate-800 ';
+                            let btnClasses = 'w-9 h-9 mx-auto rounded-xl flex items-center justify-center transition-all duration-100 cursor-pointer focus:outline-none hover:bg-slate-100 dark:hover:bg-slate-800 ';
                             
                             // Check Sunday for red text color
                             if (dayOfWeek === 0) {
-                                btnClasses += 'text-rose-500 dark:text-rose-450 font-bold ';
+                                btnClasses += 'text-rose-500 dark:text-rose-400 font-bold ';
                             } else {
-                                btnClasses += 'text-slate-850 dark:text-slate-200 ';
+                                btnClasses += 'text-slate-800 dark:text-slate-200 ';
                             }
 
                             // Match the statuses/highlights from screenshot
                             const status = mockStatus[d];
                             if (status === 'green') {
-                                btnClasses += 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 ';
+                                btnClasses += 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 ';
                             } else if (status === 'purple') {
-                                btnClasses += 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-850 dark:text-indigo-300 ';
+                                btnClasses += 'bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300 ';
                             } else if (status === 'red') {
-                                btnClasses += 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-350 ';
+                                btnClasses += 'bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300 ';
                             } else if (status === 'outline') {
-                                btnClasses += 'border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-850 dark:text-slate-200 ';
+                                btnClasses += 'border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 ';
                             }
 
                             // If selected, apply special focus/active border or overlay if not already outlined
@@ -333,7 +333,7 @@
         </section>
 
         <!-- MAIN TABLE -->
-        <section class="animate-card bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-all w-full p-6 space-y-6">
+        <section class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-all w-full p-6 space-y-6">
             
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
                 <div class="space-y-1 text-left">
@@ -343,7 +343,7 @@
                 <!-- Search -->
                 <div class="relative w-full md:w-64">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <i data-lucide="search" class="w-4 h-4 text-slate-400 dark:text-slate-550"></i>
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 dark:text-slate-500"></i>
                     </span>
                     <input type="text" placeholder="Cari Nama Pegawai..." class="w-full h-9 pl-9 pr-4 text-xs font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-slate-700 text-slate-800 dark:text-slate-200 transition-all shadow-inner">
                 </div>
@@ -353,14 +353,14 @@
                 <table class="w-full text-xs border-collapse text-left">
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
-                            <th class="px-6 py-4 font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-16">No</th>
-                            <th class="px-6 py-4 font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Nama Pegawai</th>
-                            <th class="px-6 py-4 font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Jabatan</th>
-                            <th class="px-6 py-4 font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider text-center">Hadir</th>
-                            <th class="px-6 py-4 font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider text-center">Terlambat</th>
-                            <th class="px-6 py-4 font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider text-center">Izin / Cuti</th>
-                            <th class="px-6 py-4 font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider text-center">Alpha</th>
-                            <th class="px-6 py-4 font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider text-right">Persentase Kehadiran</th>
+                            <th class="px-6 py-4 font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16">No</th>
+                            <th class="px-6 py-4 font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Pegawai</th>
+                            <th class="px-6 py-4 font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Jabatan</th>
+                            <th class="px-6 py-4 font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Hadir</th>
+                            <th class="px-6 py-4 font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Terlambat</th>
+                            <th class="px-6 py-4 font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Izin / Cuti</th>
+                            <th class="px-6 py-4 font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Alpha</th>
+                            <th class="px-6 py-4 font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Persentase Kehadiran</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">

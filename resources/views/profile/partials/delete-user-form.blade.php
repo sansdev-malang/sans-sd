@@ -10,7 +10,7 @@
     </header>
 
     <div class="max-w-xl text-xs space-y-4">
-        <p class="text-slate-550 dark:text-slate-400">
+        <p class="text-slate-500 dark:text-slate-400">
             Sebelum menghapus akun, mohon unduh data atau informasi penting yang ingin Anda simpan terlebih dahulu. Tindakan ini tidak dapat dibatalkan.
         </p>
 
@@ -25,7 +25,7 @@
     </div>
 
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('profile.destroy') }}" class="p-6 text-xs text-left bg-white dark:bg-slate-955">
+        <form method="post" action="{{ route('profile.destroy') }}" class="p-6 text-xs text-left bg-white dark:bg-slate-900">
             @csrf
             @method('delete')
 
@@ -33,12 +33,12 @@
                 Apakah Anda yakin ingin menghapus akun Anda?
             </h3>
 
-            <p class="text-slate-550 dark:text-slate-400 mb-4 leading-relaxed">
+            <p class="text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
                 Semua data akan dihapus secara permanen. Silakan masukkan kata sandi Anda untuk mengonfirmasi bahwa Anda ingin menghapus akun secara permanen.
             </p>
 
             <div class="space-y-1.5 max-w-md">
-                <label for="password" class="block font-semibold text-slate-700 dark:text-slate-350">Kata Sandi Anda</label>
+                <label for="password" class="block font-semibold text-slate-700 dark:text-slate-300">Kata Sandi Anda</label>
                 <input
                     id="password"
                     name="password"
@@ -52,7 +52,7 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-2.5">
-                <button type="button" x-on:click="$dispatch('close')" class="h-9 px-4 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-300 bg-transparent text-xs font-semibold rounded-lg transition-all cursor-pointer">
+                <button type="button" x-on:click="$dispatch('close')" class="h-9 px-4 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 bg-transparent text-xs font-semibold rounded-lg transition-all cursor-pointer">
                     Batal
                 </button>
 

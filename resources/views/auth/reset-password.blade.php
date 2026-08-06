@@ -49,7 +49,7 @@
             </div>
 
             <!-- Submit Button -->
-            <button type="submit" class="w-full bg-[#0f172a] hover:bg-slate-850 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-semibold text-sm py-2.5 rounded-lg transition-colors cursor-pointer shadow-sm">
+            <button type="submit" class="w-full bg-[#0f172a] hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-semibold text-sm py-2.5 rounded-lg transition-colors cursor-pointer shadow-sm">
                 Reset Password
             </button>
         </form>

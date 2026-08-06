@@ -12,12 +12,12 @@
         </section>
 
         <!-- FILTERS -->
-        <section class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-4 w-full">
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-4 w-full">
             <form method="GET" action="{{ route('bonus-reports.index') }}" class="flex flex-row flex-wrap items-end gap-3 w-full">
                 
                 <!-- Bulan -->
                 <div class="space-y-1 w-40">
-                    <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Bulan</label>
+                    <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Bulan</label>
                     <input type="month" name="month" value="{{ request('month', $month) }}" class="w-full h-9 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
                 </div>
 
@@ -31,7 +31,7 @@
                 @if(auth()->user()->role !== 'employee')
                 <!-- Search -->
                 <div class="space-y-1 w-60">
-                    <label class="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1">Pencarian</label>
+                    <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Pencarian</label>
                     <div class="relative w-full">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
                             <i data-lucide="search" class="w-4 h-4"></i>
@@ -77,7 +77,7 @@
                             <i data-lucide="chevron-down" class="w-3.5 h-3.5 opacity-70"></i>
                         </button>
                         
-                        <div x-show="open" x-transition.opacity.duration.200ms style="display: none;" class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-50">
+                        <div x-show="open" x-transition.opacity.duration.200ms style="display: none;" class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-50">
                             <a href="{{ route('bonus-reports.export', array_merge(request()->query(), ['format' => 'excel'])) }}" class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors border-b border-slate-100 dark:border-slate-800">
                                 <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600 dark:text-emerald-500"></i>
                                 Excel (.xlsx)
@@ -116,7 +116,7 @@
             $colors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#14b8a6', '#f43f5e', '#0ea5e9', '#d946ef'];
         @endphp
 
-        <section class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full p-0">
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full p-0">
             <div class="overflow-x-auto" style="max-height: calc(100vh - 280px); overflow-y: auto;">
                 <table class="w-full text-xs border-collapse">
                     <thead>
@@ -153,7 +153,7 @@
                             @endphp
                             <tr class="group hover:bg-slate-50/60 dark:hover:bg-slate-900/30 transition-colors">
                                 <!-- KOLOM 1: PROFIL -->
-                                <td class="px-4 py-2 sticky left-0 z-10 bg-white dark:bg-slate-950 group-hover:bg-slate-50/60 dark:group-hover:bg-slate-900/30 border-r border-slate-100 dark:border-slate-800/60 transition-colors">
+                                <td class="px-4 py-2 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50/60 dark:group-hover:bg-slate-900/30 border-r border-slate-100 dark:border-slate-800/60 transition-colors">
                                     <div class="flex items-center gap-3">
                                         <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-sm" style="background:{{ $color }}">{{ $initial }}</div>
                                         <div class="flex flex-col min-w-0">
@@ -166,7 +166,7 @@
                                     </div>
                                 </td>
                                 <!-- KOLOM 2: TOTAL BONUS -->
-                                <td class="px-4 py-2 sticky left-[200px] z-10 bg-white dark:bg-slate-950 group-hover:bg-slate-50/60 dark:group-hover:bg-slate-900/30 border-r border-slate-100 dark:border-slate-800/60 text-center transition-colors">
+                                <td class="px-4 py-2 sticky left-[200px] z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50/60 dark:group-hover:bg-slate-900/30 border-r border-slate-100 dark:border-slate-800/60 text-center transition-colors">
                                     @if($report['bonus_nominal'] > 0)
                                         <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400">Rp {{ number_format($report['bonus_nominal'], 0, ',', '.') }}</span>
                                     @else

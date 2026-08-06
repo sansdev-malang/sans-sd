@@ -9,7 +9,7 @@
             </div>
             <div class="flex items-center gap-2.5 shrink-0">
                 <button onclick="openAddModal()"
-                    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-150 cursor-pointer">
+                    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-100 cursor-pointer">
                     <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i>
                     Buat Pengajuan
                 </button>
@@ -19,7 +19,7 @@
         <!-- STATS CARDS -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
             <!-- Total Pengajuan -->
-            <div class="bg-white dark:bg-slate-950 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
+            <div class="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
                 <div class="p-3 bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 rounded-lg">
                     <i data-lucide="file-text" class="w-5 h-5"></i>
                 </div>
@@ -29,7 +29,7 @@
                 </div>
             </div>
             <!-- Menunggu Persetujuan -->
-            <div class="bg-white dark:bg-slate-950 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
+            <div class="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
                 <div class="p-3 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
                     <i data-lucide="clock" class="w-5 h-5"></i>
                 </div>
@@ -39,7 +39,7 @@
                 </div>
             </div>
             <!-- Disetujui -->
-            <div class="bg-white dark:bg-slate-950 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
+            <div class="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
                 <div class="p-3 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
                     <i data-lucide="check-circle-2" class="w-5 h-5"></i>
                 </div>
@@ -49,7 +49,7 @@
                 </div>
             </div>
             <!-- Ditolak -->
-            <div class="bg-white dark:bg-slate-950 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
+            <div class="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
                 <div class="p-3 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg">
                     <i data-lucide="x-circle" class="w-5 h-5"></i>
                 </div>
@@ -61,7 +61,7 @@
         </div>
 
         <!-- MAIN TABLE CARD -->
-        <section class="animate-card bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-all w-full p-6 space-y-6">
+        <section class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-all w-full p-6 space-y-6">
             
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left">
                 <div class="space-y-1">
@@ -119,14 +119,14 @@
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
-                            <th class="px-6 py-4 text-left font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-16">No</th>
-                            <th class="px-6 py-4 text-left font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Nama Pegawai</th>
-                            <th class="px-6 py-4 text-left font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-28">Jenis</th>
-                            <th class="px-6 py-4 text-left font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-44">Tanggal</th>
-                            <th class="px-6 py-4 text-left font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-20">Durasi</th>
-                            <th class="px-6 py-4 text-left font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Keterangan</th>
-                            <th class="px-6 py-4 text-left font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-36">Status</th>
-                            <th class="px-6 py-4 text-center font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-32">Aksi</th>
+                            <th class="px-6 py-4 text-left font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16">No</th>
+                            <th class="px-6 py-4 text-left font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Pegawai</th>
+                            <th class="px-6 py-4 text-left font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">Jenis</th>
+                            <th class="px-6 py-4 text-left font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-44">Tanggal</th>
+                            <th class="px-6 py-4 text-left font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-20">Durasi</th>
+                            <th class="px-6 py-4 text-left font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Keterangan</th>
+                            <th class="px-6 py-4 text-left font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-36">Status</th>
+                            <th class="px-6 py-4 text-center font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60" id="izin-table-body">
@@ -139,9 +139,9 @@
     </div>
 
     <!-- MODAL: TAMBAH PENGAJUAN -->
-    <div id="add-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/40 dark:bg-slate-950/60 backdrop-blur-sm transition-opacity">
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div class="px-6 py-4 border-b border-slate-150 dark:border-slate-800 flex items-center justify-between">
+    <div id="add-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-slate-900 dark:text-slate-50">Buat Pengajuan Baru</h3>
                 <button onclick="closeAddModal()" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
                     <i data-lucide="x" class="w-4 h-4"></i>
@@ -150,7 +150,7 @@
             <form id="add-form" onsubmit="submitForm(event)" class="p-6 space-y-4">
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Pegawai</label>
-                    <select required id="form-pegawai" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                    <select required id="form-pegawai" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
                         <option value="">Pilih Pegawai...</option>
                         <option value="MUHAMMAD AKBAR AMIN">MUHAMMAD AKBAR AMIN</option>
                         <option value="AHMAD FAJAR ARIF">AHMAD FAJAR ARIF</option>
@@ -160,7 +160,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Jenis Pengajuan</label>
-                        <select required id="form-jenis" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                        <select required id="form-jenis" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
                             <option value="Cuti">Cuti</option>
                             <option value="Izin">Izin</option>
                             <option value="Sakit">Sakit</option>
@@ -175,18 +175,18 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Tanggal Mulai</label>
-                        <input type="date" required id="form-start-date" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                        <input type="date" required id="form-start-date" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
                     </div>
                     <div class="space-y-1">
                         <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Tanggal Selesai</label>
-                        <input type="date" required id="form-end-date" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                        <input type="date" required id="form-end-date" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
                     </div>
                 </div>
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Keterangan / Alasan</label>
-                    <textarea required id="form-keterangan" rows="3" placeholder="Masukkan alasan pengajuan..." class="w-full p-3 text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 placeholder-slate-400 dark:placeholder-slate-650 resize-none"></textarea>
+                    <textarea required id="form-keterangan" rows="3" placeholder="Masukkan alasan pengajuan..." class="w-full p-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 placeholder-slate-400 dark:placeholder-slate-600 resize-none"></textarea>
                 </div>
-                <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-150 dark:border-slate-800">
+                <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
                     <button type="button" onclick="closeAddModal()" class="px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg transition-colors cursor-pointer">
                         Batal
                     </button>
@@ -199,9 +199,9 @@
     </div>
 
     <!-- MODAL: DETAIL & PERSETUJUAN -->
-    <div id="detail-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/40 dark:bg-slate-950/60 backdrop-blur-sm transition-opacity">
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div class="px-6 py-4 border-b border-slate-150 dark:border-slate-800 flex items-center justify-between">
+    <div id="detail-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-slate-900 dark:text-slate-50">Detail Pengajuan Izin/Cuti</h3>
                 <button onclick="closeDetailModal()" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
                     <i data-lucide="x" class="w-4 h-4"></i>
@@ -211,40 +211,40 @@
                 <!-- Info list -->
                 <div class="space-y-3">
                     <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
-                        <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Nama Pegawai</span>
+                        <span class="text-xs text-slate-500 dark:text-slate-405 font-medium">Nama Pegawai</span>
                         <span class="text-xs text-slate-900 dark:text-slate-50 font-bold" id="det-pegawai">-</span>
                     </div>
                     <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
-                        <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Jenis Pengajuan</span>
+                        <span class="text-xs text-slate-500 dark:text-slate-405 font-medium">Jenis Pengajuan</span>
                         <span id="det-jenis-badge">-</span>
                     </div>
                     <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
-                        <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Tanggal Pelaksanaan</span>
+                        <span class="text-xs text-slate-500 dark:text-slate-405 font-medium">Tanggal Pelaksanaan</span>
                         <span class="text-xs text-slate-900 dark:text-slate-50 font-semibold" id="det-tanggal">-</span>
                     </div>
                     <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2">
-                        <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Durasi</span>
+                        <span class="text-xs text-slate-500 dark:text-slate-405 font-medium">Durasi</span>
                         <span class="text-xs text-slate-900 dark:text-slate-50 font-bold" id="det-durasi">-</span>
                     </div>
                     <div class="flex flex-col gap-1 border-b border-slate-100 dark:border-slate-800/80 pb-2">
-                        <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Keterangan / Alasan</span>
-                        <span class="text-xs text-slate-850 dark:text-slate-200 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-100 dark:border-slate-850/80 mt-1" id="det-keterangan">-</span>
+                        <span class="text-xs text-slate-500 dark:text-slate-405 font-medium">Keterangan / Alasan</span>
+                        <span class="text-xs text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800/80 mt-1" id="det-keterangan">-</span>
                     </div>
                     <div class="flex justify-between border-b border-slate-100 dark:border-slate-800/80 pb-2 items-center">
-                        <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Lampiran Dokumen</span>
+                        <span class="text-xs text-slate-500 dark:text-slate-405 font-medium">Lampiran Dokumen</span>
                         <span class="text-xs text-slate-900 dark:text-slate-50" id="det-lampiran">
                             <span class="inline-flex items-center gap-1 text-slate-400 italic">Tidak ada lampiran</span>
                         </span>
                     </div>
                     <div class="flex justify-between items-center pt-1">
-                        <span class="text-xs text-slate-550 dark:text-slate-405 font-medium">Status Saat Ini</span>
+                        <span class="text-xs text-slate-500 dark:text-slate-405 font-medium">Status Saat Ini</span>
                         <span id="det-status-badge">-</span>
                     </div>
                 </div>
 
                 <!-- Approval Actions -->
-                <div id="approval-actions" class="pt-4 flex items-center justify-end gap-2 border-t border-slate-150 dark:border-slate-800">
-                    <button onclick="approveRequest(false)" class="flex-1 px-4 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5">
+                <div id="approval-actions" class="pt-4 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+                    <button onclick="approveRequest(false)" class="flex-1 px-4 py-2 hover:bg-rose-50 dark:hover:bg-rose-900/20 border border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5">
                         <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
                         Tolak
                     </button>
@@ -253,7 +253,7 @@
                         Setujui
                     </button>
                 </div>
-                <div id="close-only-action" class="pt-4 hidden border-t border-slate-150 dark:border-slate-800">
+                <div id="close-only-action" class="pt-4 hidden border-t border-slate-100 dark:border-slate-800">
                     <button onclick="closeDetailModal()" class="w-full px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg transition-colors cursor-pointer text-center">
                         Tutup
                     </button>
@@ -336,7 +336,7 @@
                     <tr>
                         <td colspan="8" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                             <div class="flex flex-col items-center justify-center gap-2">
-                                <i data-lucide="calendar-x-2" class="w-8 h-8 text-slate-350 dark:text-slate-600 mb-1"></i>
+                                <i data-lucide="calendar-x-2" class="w-8 h-8 text-slate-300 dark:text-slate-600 mb-1"></i>
                                 <p class="font-semibold text-xs">Tidak ada data pengajuan</p>
                                 <p class="text-[11px] opacity-70">Gunakan kata kunci lain atau ubah filter Anda.</p>
                             </div>
@@ -351,11 +351,11 @@
                 // Badges builder
                 let jenisBadge = '';
                 if (item.jenis === 'Cuti') {
-                    jenisBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-150 dark:border-blue-900/40">Cuti</span>`;
+                    jenisBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40">Cuti</span>`;
                 } else if (item.jenis === 'Izin') {
-                    jenisBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-455 border border-amber-150 dark:border-amber-900/40">Izin</span>`;
+                    jenisBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40">Izin</span>`;
                 } else if (item.jenis === 'Sakit') {
-                    jenisBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-150 dark:border-rose-900/40">Sakit</span>`;
+                    jenisBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40">Sakit</span>`;
                 } else {
                     jenisBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800">Dispensasi</span>`;
                 }
@@ -363,21 +363,21 @@
                 let statusBadge = '';
                 if (item.status === 'Pending') {
                     statusBadge = `
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40 shadow-sm">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40 shadow-sm">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                             Pending
                         </span>
                     `;
                 } else if (item.status === 'Disetujui') {
                     statusBadge = `
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-450 border border-emerald-200/50 dark:border-emerald-800/40 shadow-sm">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 shadow-sm">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                             Disetujui
                         </span>
                     `;
                 } else {
                     statusBadge = `
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-450 border border-rose-200/50 dark:border-rose-800/40 shadow-sm">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-200/50 dark:border-rose-800/40 shadow-sm">
                             <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                             Ditolak
                         </span>
@@ -395,7 +395,7 @@
                     <td class="px-6 py-4 font-semibold text-slate-900 dark:text-slate-50">${index + 1}</td>
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-350 shrink-0">
+                            <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
                                 ${item.name.split(' ').map(n => n[0]).join('').substring(0,2)}
                             </div>
                             <div>
@@ -411,10 +411,10 @@
                     <td class="px-6 py-4">${statusBadge}</td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center gap-1.5">
-                            <button onclick="viewDetails(${item.id})" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-855 rounded-lg text-slate-600 dark:text-slate-455 hover:text-slate-955 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Detail & Approval">
+                            <button onclick="viewDetails(${item.id})" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Detail & Approval">
                                 <i data-lucide="eye" class="w-4 h-4"></i>
                             </button>
-                            <button onclick="deleteRequest(${item.id})" class="p-1.5 hover:bg-red-50 dark:hover:bg-red-955/20 rounded-lg text-red-655 dark:text-red-400 hover:text-red-700 transition-colors cursor-pointer" title="Hapus Data">
+                            <button onclick="deleteRequest(${item.id})" class="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 hover:text-red-700 transition-colors cursor-pointer" title="Hapus Data">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
@@ -529,9 +529,9 @@
             const jBadge = document.getElementById('det-jenis-badge');
             jBadge.className = 'text-xs font-semibold';
             jBadge.innerText = item.jenis;
-            if (item.jenis === 'Cuti') jBadge.className = 'inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/45 text-blue-700 dark:text-blue-400 border border-blue-150 dark:border-blue-900/40';
-            else if (item.jenis === 'Izin') jBadge.className = 'inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/45 text-amber-700 dark:text-amber-455 border border-amber-150 dark:border-amber-900/40';
-            else if (item.jenis === 'Sakit') jBadge.className = 'inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 dark:bg-rose-950/45 text-rose-700 dark:text-rose-400 border border-rose-150 dark:border-rose-900/40';
+            if (item.jenis === 'Cuti') jBadge.className = 'inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 dark:bg-blue-900/45 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40';
+            else if (item.jenis === 'Izin') jBadge.className = 'inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 dark:bg-amber-900/45 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40';
+            else if (item.jenis === 'Sakit') jBadge.className = 'inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 dark:bg-rose-900/45 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40';
             else jBadge.className = 'inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800';
 
             // date range
@@ -553,15 +553,15 @@
             const sBadge = document.getElementById('det-status-badge');
             sBadge.innerText = item.status;
             if (item.status === 'Pending') {
-                sBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40';
+                sBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40';
                 document.getElementById('approval-actions').classList.remove('hidden');
                 document.getElementById('approval-actions').classList.add('flex');
                 document.getElementById('close-only-action').classList.add('hidden');
             } else {
                 if (item.status === 'Disetujui') {
-                    sBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-450 border border-emerald-200/50 dark:border-emerald-800/40';
+                    sBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40';
                 } else {
-                    sBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-450 border border-rose-200/50 dark:border-rose-800/40';
+                    sBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-200/50 dark:border-rose-800/40';
                 }
                 document.getElementById('approval-actions').classList.add('hidden');
                 document.getElementById('approval-actions').classList.remove('flex');

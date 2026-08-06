@@ -162,7 +162,7 @@
         <div class="flex h-screen overflow-hidden">
 
             <!-- SIDEBAR BACKDROP FOR MOBILE -->
-            <div id="sidebar-backdrop" class="fixed inset-0 z-35 bg-slate-950/20 backdrop-blur-xs hidden md:hidden transition-opacity duration-200 opacity-0"></div>
+            <div id="sidebar-backdrop" class="fixed inset-0 z-35 bg-slate-900/20 backdrop-blur-xs hidden md:hidden transition-opacity duration-200 opacity-0"></div>
 
             <!-- SIDEBAR -->
             @include('partials.admin.sidebar')
@@ -178,7 +178,7 @@
         </div>
 
         <!-- TOAST NOTIFICATION CONTAINER -->
-        <div id="toast-notification" class="fixed bottom-5 right-5 z-50 hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 px-4 py-3 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 flex items-center gap-3 max-w-sm">
+        <div id="toast-notification" class="fixed bottom-5 right-5 z-50 hidden bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 px-4 py-3 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 flex items-center gap-3 max-w-sm">
             <div id="toast-icon-bg" class="w-8 h-8 rounded-full flex items-center justify-center shrink-0">
                 <i id="toast-icon" data-lucide="check" class="w-4 h-4"></i>
             </div>
@@ -211,10 +211,10 @@
                 messageEl.textContent = message;
 
                 if (type === 'success') {
-                    iconBg.className = 'w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0';
+                    iconBg.className = 'w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0';
                     icon.setAttribute('data-lucide', 'check');
                 } else {
-                    iconBg.className = 'w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-955/20 text-rose-600 dark:text-rose-455 flex items-center justify-center shrink-0';
+                    iconBg.className = 'w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0';
                     icon.setAttribute('data-lucide', 'alert-circle');
                 }
 

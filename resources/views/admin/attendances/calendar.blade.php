@@ -24,7 +24,7 @@
         }
     }">
         <!-- HEADER SECTION -->
-        <header class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white dark:bg-slate-950 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <header class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <div class="flex flex-col gap-0.5">
                 <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Data Riwayat Absensi</h2>
                 <p class="text-xs text-slate-500 dark:text-slate-400">Memantau waktu kedatangan dan kepulangan Anda secara komprehensif.</p>
@@ -72,7 +72,7 @@
         @endphp
 
         <!-- CALENDAR WALL-STYLE -->
-        <section class="bg-[#fcfbf9] dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm w-full mx-auto p-4 sm:p-8 font-sans">
+        <section class="bg-[#fcfbf9] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm w-full mx-auto p-4 sm:p-8 font-sans">
             <!-- Wall Calendar Header -->
             <div class="flex flex-col sm:flex-row items-center justify-between border-b-2 border-slate-300 dark:border-slate-700 mb-6 sm:gap-0" style="padding-bottom: 1.5rem !important;">
                 <div class="flex flex-row items-center gap-1.5 sm:gap-2">

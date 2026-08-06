@@ -8,7 +8,7 @@
 
         <!-- Session Status -->
         @if (session('status'))
-            <div class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 p-3 rounded-lg text-xs font-semibold">
+            <div class="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 p-3 rounded-lg text-xs font-semibold">
                 {{ session('status') }}
             </div>
         @endif
@@ -29,7 +29,7 @@
             </div>
 
             <!-- Submit Button -->
-            <button type="submit" class="w-full bg-[#0f172a] hover:bg-slate-850 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-semibold text-sm py-2.5 rounded-lg transition-colors cursor-pointer shadow-sm">
+            <button type="submit" class="w-full bg-[#0f172a] hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-semibold text-sm py-2.5 rounded-lg transition-colors cursor-pointer shadow-sm">
                 Kirim Tautan Reset Password
             </button>
             

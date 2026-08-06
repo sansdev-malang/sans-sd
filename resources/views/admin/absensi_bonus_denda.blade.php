@@ -9,7 +9,7 @@
             </div>
             <div class="flex items-center gap-2.5 shrink-0">
                 <button onclick="openAddModal()"
-                    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-150 cursor-pointer">
+                    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-100 cursor-pointer">
                     <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
                     Tambah Skema Baru
                 </button>
@@ -19,7 +19,7 @@
         <!-- STATS CARDS -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
             <!-- Total Skema -->
-            <div class="bg-white dark:bg-slate-955 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
+            <div class="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
                 <div class="p-3 bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 rounded-lg">
                     <i data-lucide="settings" class="w-5 h-5"></i>
                 </div>
@@ -29,7 +29,7 @@
                 </div>
             </div>
             <!-- Total Bonus -->
-            <div class="bg-white dark:bg-slate-955 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
+            <div class="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
                 <div class="p-3 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
                     <i data-lucide="trending-up" class="w-5 h-5"></i>
                 </div>
@@ -39,7 +39,7 @@
                 </div>
             </div>
             <!-- Total Denda -->
-            <div class="bg-white dark:bg-slate-955 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
+            <div class="bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex items-center gap-4">
                 <div class="p-3 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg">
                     <i data-lucide="trending-down" class="w-5 h-5"></i>
                 </div>
@@ -51,7 +51,7 @@
         </div>
 
         <!-- MAIN TABLE CARD -->
-        <section class="animate-card bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-all w-full p-6 space-y-6">
+        <section class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-all w-full p-6 space-y-6">
             
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left">
                 <div class="space-y-1">
@@ -65,12 +65,12 @@
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
-                            <th class="px-6 py-4 text-left font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-16">No</th>
-                            <th class="px-6 py-4 text-left font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Nama Aturan</th>
-                            <th class="px-6 py-4 text-left font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-36">Jenis</th>
-                            <th class="px-6 py-4 text-left font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-40">Nominal Tarif</th>
-                            <th class="px-6 py-4 text-left font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Kondisi Pemicu</th>
-                            <th class="px-6 py-4 text-center font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-32">Aksi</th>
+                            <th class="px-6 py-4 text-left font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16">No</th>
+                            <th class="px-6 py-4 text-left font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Aturan</th>
+                            <th class="px-6 py-4 text-left font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-36">Jenis</th>
+                            <th class="px-6 py-4 text-left font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-40">Nominal Tarif</th>
+                            <th class="px-6 py-4 text-left font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kondisi Pemicu</th>
+                            <th class="px-6 py-4 text-center font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60" id="skema-table-body">
@@ -83,9 +83,9 @@
     </div>
 
     <!-- MODAL: ADD / EDIT SCHEME -->
-    <div id="add-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-955/40 dark:bg-slate-955/60 backdrop-blur-sm transition-opacity">
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div class="px-6 py-4 border-b border-slate-150 dark:border-slate-800 flex items-center justify-between">
+    <div id="add-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-slate-900 dark:text-slate-50" id="modal-title">Tambah Skema Baru</h3>
                 <button onclick="closeAddModal()" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
                     <i data-lucide="x" class="w-4 h-4"></i>
@@ -96,29 +96,29 @@
                 
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Nama Aturan / Skema</label>
-                    <input type="text" required id="form-nama" placeholder="Contoh: Denda Terlambat >15 Menit" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                    <input type="text" required id="form-nama" placeholder="Contoh: Denda Terlambat >15 Menit" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Jenis Skema</label>
-                        <select required id="form-jenis" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                        <select required id="form-jenis" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
                             <option value="Denda">Denda / Potongan</option>
                             <option value="Bonus">Bonus / Insentif</option>
                         </select>
                     </div>
                     <div class="space-y-1">
                         <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Nominal Tarif (Rp)</label>
-                        <input type="number" required id="form-nominal" placeholder="50000" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                        <input type="number" required id="form-nominal" placeholder="50000" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
                     </div>
                 </div>
 
                 <div class="space-y-1">
                     <label class="text-xs font-semibold text-slate-500 dark:text-slate-400">Kondisi Pemicu</label>
-                    <input type="text" required id="form-kondisi" placeholder="Contoh: Keterlambatan lebih dari 15 menit" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                    <input type="text" required id="form-kondisi" placeholder="Contoh: Keterlambatan lebih dari 15 menit" class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
                 </div>
 
-                <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-150 dark:border-slate-800">
+                <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
                     <button type="button" onclick="closeAddModal()" class="px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg transition-colors cursor-pointer">
                         Batal
                     </button>
@@ -171,13 +171,13 @@
                 let jenisBadge = '';
                 if (item.jenis === 'Bonus') {
                     jenisBadge = `
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-450 border border-emerald-150 dark:border-emerald-900/30">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30">
                             Bonus / Insentif
                         </span>
                     `;
                 } else {
                     jenisBadge = `
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-450 border border-rose-150 dark:border-rose-900/30">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30">
                             Denda / Potongan
                         </span>
                     `;
@@ -189,14 +189,14 @@
                     <td class="px-6 py-4 font-semibold text-slate-900 dark:text-slate-50">${index + 1}</td>
                     <td class="px-6 py-4 font-bold text-slate-800 dark:text-slate-100">${item.nama}</td>
                     <td class="px-6 py-4">${jenisBadge}</td>
-                    <td class="px-6 py-4 font-semibold text-slate-700 dark:text-slate-350 font-mono">${formatRupiah(item.nominal)}</td>
+                    <td class="px-6 py-4 font-semibold text-slate-700 dark:text-slate-300 font-mono">${formatRupiah(item.nominal)}</td>
                     <td class="px-6 py-4 text-slate-600 dark:text-slate-405">${item.kondisi}</td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center gap-1.5">
                             <button onclick="editSkema(${item.id})" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors cursor-pointer" title="Edit Skema">
                                 <i data-lucide="edit" class="w-4 h-4"></i>
                             </button>
-                            <button onclick="deleteSkema(${item.id})" class="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-955/20 rounded-lg text-rose-600 dark:text-rose-400 hover:text-rose-700 transition-colors cursor-pointer" title="Hapus Skema">
+                            <button onclick="deleteSkema(${item.id})" class="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg text-rose-600 dark:text-rose-400 hover:text-rose-700 transition-colors cursor-pointer" title="Hapus Skema">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>

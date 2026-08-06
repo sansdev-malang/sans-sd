@@ -7,7 +7,7 @@
                 <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Riwayat Absensi Saya</h2>
                 <p class="text-xs text-slate-500 dark:text-slate-400">Pantau seluruh catatan kehadiran, keterlambatan, dan status izin/sakit Anda.</p>
             </div>
-            <div class="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-350">
+            <div class="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300">
                 <i data-lucide="user" class="w-3.5 h-3.5"></i>
                 <span>{{ auth()->user()->name }}</span>
             </div>
@@ -22,52 +22,52 @@
         @endphp
         <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <!-- Hadir Card -->
-            <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm text-left flex items-center justify-between">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm text-left flex items-center justify-between">
                 <div>
-                    <span class="text-xs text-slate-500 dark:text-slate-450 block font-medium">Hadir</span>
+                    <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">Hadir</span>
                     <span class="text-2xl font-bold text-slate-900 dark:text-slate-50 mt-1 block">{{ $hadir }}</span>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                     <i data-lucide="check-circle" class="w-5 h-5"></i>
                 </div>
             </div>
 
             <!-- Izin Card -->
-            <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm text-left flex items-center justify-between">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm text-left flex items-center justify-between">
                 <div>
-                    <span class="text-xs text-slate-500 dark:text-slate-450 block font-medium">Izin</span>
+                    <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">Izin</span>
                     <span class="text-2xl font-bold text-slate-900 dark:text-slate-50 mt-1 block">{{ $izin }}</span>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                     <i data-lucide="file-text" class="w-5 h-5"></i>
                 </div>
             </div>
 
             <!-- Sakit Card -->
-            <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm text-left flex items-center justify-between">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm text-left flex items-center justify-between">
                 <div>
-                    <span class="text-xs text-slate-500 dark:text-slate-450 block font-medium">Sakit</span>
+                    <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">Sakit</span>
                     <span class="text-2xl font-bold text-slate-900 dark:text-slate-50 mt-1 block">{{ $sakit }}</span>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <div class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                     <i data-lucide="activity" class="w-5 h-5"></i>
                 </div>
             </div>
 
             <!-- Alpa Card -->
-            <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm text-left flex items-center justify-between">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm text-left flex items-center justify-between">
                 <div>
-                    <span class="text-xs text-slate-500 dark:text-slate-450 block font-medium">Alpa</span>
+                    <span class="text-xs text-slate-500 dark:text-slate-400 block font-medium">Alpa</span>
                     <span class="text-2xl font-bold text-slate-900 dark:text-slate-50 mt-1 block">{{ $alpa }}</span>
                 </div>
-                <div class="w-10 h-10 rounded-lg bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                <div class="w-10 h-10 rounded-lg bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
                     <i data-lucide="x-circle" class="w-5 h-5"></i>
                 </div>
             </div>
         </section>
 
         <!-- FILTERS -->
-        <section class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm w-full">
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm w-full">
             <form method="GET" action="{{ route('my-attendance') }}" class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
                 <div class="flex items-center gap-3 w-full md:w-auto">
                     <div>
@@ -81,7 +81,7 @@
                             class="h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 cursor-pointer">
                     </div>
                     <div class="pt-5">
-                        <button type="submit" class="h-9 px-4 bg-slate-900 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-150 cursor-pointer flex items-center justify-center gap-2">
+                        <button type="submit" class="h-9 px-4 bg-slate-900 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-100 cursor-pointer flex items-center justify-center gap-2">
                             <i data-lucide="filter" class="w-3.5 h-3.5"></i>
                             Filter
                         </button>
@@ -98,17 +98,17 @@
         </section>
 
         <!-- TABLE SECTION -->
-        <section class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full">
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full">
             <div class="overflow-x-auto">
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-16">No</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-36">Hari & Tanggal</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-32">Jam Masuk</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-32">Jam Pulang</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider w-32">Status</th>
-                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Keterangan</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16">No</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-36">Hari & Tanggal</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32">Jam Masuk</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32">Jam Pulang</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32">Status</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Keterangan</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
@@ -126,13 +126,13 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     @if($attendance->status == 'Present')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/40 dark:border-emerald-800/30 uppercase">Hadir</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/40 dark:border-emerald-800/30 uppercase">Hadir</span>
                                     @elseif($attendance->status == 'Permit')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border border-blue-200/40 dark:border-blue-800/30 uppercase">Izin</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200/40 dark:border-blue-800/30 uppercase">Izin</span>
                                     @elseif($attendance->status == 'Sick')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200/40 dark:border-amber-800/30 uppercase">Sakit</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200/40 dark:border-amber-800/30 uppercase">Sakit</span>
                                     @elseif($attendance->status == 'Absent')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border border-rose-200/40 dark:border-rose-800/30 uppercase">Alpa</span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-200/40 dark:border-rose-800/30 uppercase">Alpa</span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-slate-500 dark:text-slate-400 text-xs italic">
