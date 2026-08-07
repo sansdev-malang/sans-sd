@@ -28,8 +28,10 @@ class AttendanceController extends Controller
                 'unit_id' => strtolower($schoolUnit)
             ];
 
+            $monthCarbon = \Carbon\Carbon::createFromFormat('Y-m', $month);
+            $previousMonth = $monthCarbon->copy()->subMonthNoOverflow()->format('Y-m');
+
             if ($user && $user->role === 'employee') {
-                $monthCarbon = \Carbon\Carbon::createFromFormat('Y-m', $month);
                 $apiParams['start_date'] = $monthCarbon->copy()->startOfMonth()->format('Y-m-d');
                 $apiParams['end_date'] = $monthCarbon->copy()->endOfMonth()->format('Y-m-d');
             }
@@ -40,6 +42,32 @@ class AttendanceController extends Controller
             $reports = collect($json['data'] ?? []);
             $startDate = \Carbon\Carbon::parse($json['start_date'] ?? date('Y-m-d'));
             $endDate = \Carbon\Carbon::parse($json['end_date'] ?? date('Y-m-d'));
+
+            if ($user && $user->role === 'employee' && $user->employee_id) {
+                $previousResponse = \Illuminate\Support\Facades\Http::get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
+                    'month' => $previousMonth,
+                    'unit_id' => strtolower($schoolUnit),
+                    'start_date' => \Carbon\Carbon::createFromFormat('Y-m', $previousMonth)->startOfMonth()->format('Y-m-d'),
+                    'end_date' => \Carbon\Carbon::createFromFormat('Y-m', $previousMonth)->endOfMonth()->format('Y-m-d'),
+                ]);
+
+                $previousJson = $previousResponse->json();
+                $previousReports = collect($previousJson['data'] ?? []);
+                $previousReport = $previousReports->first(function ($item) use ($user) {
+                    return ($item['employee']['id'] ?? 0) == $user->employee_id;
+                });
+
+                $currentReport = $reports->first(function ($item) use ($user) {
+                    return ($item['employee']['id'] ?? 0) == $user->employee_id;
+                });
+
+                if ($currentReport && $previousReport) {
+                    $currentDetails = $currentReport['daily_details'] ?? [];
+                    $previousDetails = $previousReport['daily_details'] ?? [];
+                    $currentReport['daily_details'] = $previousDetails + $currentDetails;
+                    $reports = collect([$currentReport]);
+                }
+            }
 
                         // Apply Role-based filtering
             if ($user && $user->role === 'employee' && $user->employee_id) {
