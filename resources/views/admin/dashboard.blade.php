@@ -183,81 +183,108 @@
                                 <p class="text-xs text-slate-500 dark:text-slate-400">Tingkat kehadiran siswa pada 7 bulan terakhir</p>
                             @else
                                 <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 font-nasalization">Riwayat Absensi Harian</h3>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">Tren waktu kedatangan (jam masuk) Anda pada 7 hari aktif terakhir</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Tren waktu kedatangan (jam masuk) Anda pada bulan ini</p>
                             @endif
                         </div>
                     </div>
-                    <!-- Mini Graphic SVG Container -->
-                    <div class="relative w-full h-44 mt-4 flex items-end">
-                        <svg viewBox="0 0 500 150" class="w-full h-full chart-line overflow-visible">
-                            <!-- Grids -->
-                            <line x1="0" y1="30" x2="500" y2="30" stroke="currentColor" class="text-slate-100 dark:text-slate-900" stroke-width="1" />
-                            <line x1="0" y1="75" x2="500" y2="75" stroke="currentColor" class="text-slate-100 dark:text-slate-900" stroke-width="1" />
-                            <line x1="0" y1="120" x2="500" y2="120" stroke="currentColor" class="text-slate-100 dark:text-slate-900" stroke-width="1" />
+                    <!-- Scrollable wrapper for chart and labels -->
+                    <div class="overflow-x-auto hide-scrollbar pb-2 mt-4 w-full">
+                        @php
+                            $minCardWidth = 850; // typical width to fill desktop card
+                            $minSpacing = 60;
+                            $svgWidth = 500;
                             
-                            @if($isAdmin)
-                                <!-- Area path -->
-                                <path d="M 0,150 L 0,110 L 80,120 L 160,85 L 240,95 L 320,60 L 400,45 L 500,30 L 500,150 Z" 
-                                      fill="url(#grad-area)" opacity="0.15"></path>
+                            if (!$isAdmin && count($chartPoints) > 0) {
+                                $count = count($chartPoints);
+                                $requiredWidth = ($count - 1) * $minSpacing + 60; // 30px padding each side
+                                $svgWidth = max($minCardWidth, $requiredWidth);
+                                $spacing = ($svgWidth - 60) / max(1, $count - 1);
                                 
-                                <!-- Animated line path -->
-                                <path d="M 0,110 L 80,120 L 160,85 L 240,95 L 320,60 L 400,45 L 500,30" 
-                                      fill="none" stroke="currentColor" class="text-slate-800 dark:text-slate-100" stroke-width="2" stroke-linecap="round"></path>
-                            @else
-                                <!-- Dynamic Area path -->
-                                <path d="M {{$chartPoints[0]['x']}},150 L {{$chartPoints[0]['x']}},{{$chartPoints[0]['y']}} L {{$chartPoints[1]['x']}},{{$chartPoints[1]['y']}} L {{$chartPoints[2]['x']}},{{$chartPoints[2]['y']}} L {{$chartPoints[3]['x']}},{{$chartPoints[3]['y']}} L {{$chartPoints[4]['x']}},{{$chartPoints[4]['y']}} L {{$chartPoints[5]['x']}},{{$chartPoints[5]['y']}} L {{$chartPoints[6]['x']}},{{$chartPoints[6]['y']}} L {{$chartPoints[6]['x']}},150 Z" 
-                                      fill="url(#grad-area)" opacity="0.15"></path>
+                                $areaD = "";
+                                $lineD = "";
                                 
-                                <!-- Dynamic line path -->
-                                <path d="M {{$chartPoints[0]['x']}},{{$chartPoints[0]['y']}} L {{$chartPoints[1]['x']}},{{$chartPoints[1]['y']}} L {{$chartPoints[2]['x']}},{{$chartPoints[2]['y']}} L {{$chartPoints[3]['x']}},{{$chartPoints[3]['y']}} L {{$chartPoints[4]['x']}},{{$chartPoints[4]['y']}} L {{$chartPoints[5]['x']}},{{$chartPoints[5]['y']}} L {{$chartPoints[6]['x']}},{{$chartPoints[6]['y']}}" 
-                                      fill="none" stroke="currentColor" class="text-indigo-600 dark:text-indigo-400" stroke-width="2.5" stroke-linecap="round"></path>
-
-                                <!-- Circles & Text Labels on Points -->
-                                @foreach($chartPoints as $pt)
-                                    @if($pt['date'] !== '-')
-                                        <!-- Point Circle -->
-                                        <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="3.5" class="fill-indigo-600 dark:fill-indigo-400 stroke-white dark:stroke-slate-900" stroke-width="1" />
+                                foreach($chartPoints as $i => &$pt) {
+                                    $pt['x'] = $i * $spacing + 30;
+                                    $prefix = $i == 0 ? "M" : "L";
+                                    $lineD .= "{$prefix} {$pt['x']},{$pt['y']} ";
+                                    $areaD .= "L {$pt['x']},{$pt['y']} ";
+                                }
+                                
+                                $firstX = $chartPoints[0]['x'];
+                                $lastX = end($chartPoints)['x'];
+                                $areaD = "M {$firstX},150 " . $areaD . " L {$lastX},150 Z";
+                            }
+                        @endphp
+                        
+                        <div style="min-width: {{ $svgWidth }}px; width: {{ $svgWidth }}px;">
+                            <!-- Mini Graphic SVG Container -->
+                            <div class="relative w-full h-44 flex items-end">
+                                <svg viewBox="0 0 {{ $svgWidth }} 150" class="w-full h-full chart-line overflow-visible">
+                                    <!-- Grids -->
+                                    <line x1="0" y1="30" x2="{{ $svgWidth }}" y2="30" stroke="currentColor" class="text-slate-100 dark:text-slate-900" stroke-width="1" />
+                                    <line x1="0" y1="75" x2="{{ $svgWidth }}" y2="75" stroke="currentColor" class="text-slate-100 dark:text-slate-900" stroke-width="1" />
+                                    <line x1="0" y1="120" x2="{{ $svgWidth }}" y2="120" stroke="currentColor" class="text-slate-100 dark:text-slate-900" stroke-width="1" />
+                                    
+                                    @if($isAdmin)
+                                        <!-- Area path -->
+                                        <path d="M 0,150 L 0,110 L 80,120 L 160,85 L 240,95 L 320,60 L 400,45 L 500,30 L 500,150 Z" 
+                                              fill="url(#grad-area)" opacity="0.15"></path>
                                         
-                                        <!-- Time Text -->
-                                        <text x="{{ $pt['x'] }}" y="{{ $pt['y'] - 8 }}" text-anchor="middle" class="text-[8px] sm:text-[9px] font-bold fill-slate-600 dark:fill-slate-300">
-                                            {{ $pt['time'] }}
-                                        </text>
+                                        <!-- Animated line path -->
+                                        <path d="M 0,110 L 80,120 L 160,85 L 240,95 L 320,60 L 400,45 L 500,30" 
+                                              fill="none" stroke="currentColor" class="text-slate-800 dark:text-slate-100" stroke-width="2" stroke-linecap="round"></path>
+                                    @else
+                                        <!-- Dynamic Area path -->
+                                        @if(count($chartPoints) > 0)
+                                        <path d="{{ $areaD }}" fill="url(#grad-area)" opacity="0.15"></path>
+                                        
+                                        <!-- Dynamic line path -->
+                                        <path d="{{ $lineD }}" fill="none" stroke="currentColor" class="text-indigo-600 dark:text-indigo-400" stroke-width="2.5" stroke-linecap="round"></path>
+                                        
+                                        <!-- Circles & Text Labels on Points -->
+                                        @foreach($chartPoints as $pt)
+                                            <!-- Point Circle -->
+                                            <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="3.5" class="fill-indigo-600 dark:fill-indigo-400 stroke-white dark:stroke-slate-900" stroke-width="1" />
+                                            
+                                            <!-- Time Text -->
+                                            <text x="{{ $pt['x'] }}" y="{{ $pt['y'] - 8 }}" text-anchor="middle" class="text-[8px] sm:text-[9px] font-bold fill-slate-600 dark:fill-slate-300">
+                                                {{ $pt['time'] }}
+                                            </text>
+                                        @endforeach
+                                        @endif
                                     @endif
-                                @endforeach
-                            @endif
+                                    
+                                    <!-- Gradients defs -->
+                                    <defs>
+                                        <linearGradient id="grad-area" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="currentColor" class="text-indigo-600 dark:text-indigo-400" />
+                                            <stop offset="100%" stop-color="currentColor" class="text-indigo-600 dark:text-indigo-400" stop-opacity="0" />
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                            </div>
                             
-                            <!-- Gradients defs -->
-                            <defs>
-                                <linearGradient id="grad-area" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="currentColor" class="text-indigo-600 dark:text-indigo-400" />
-                                    <stop offset="100%" stop-color="currentColor" class="text-indigo-600 dark:text-indigo-400" stop-opacity="0" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
+                            <!-- Chart Labels -->
+                            <div class="flex justify-between text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase mt-4 w-full px-[15px]">
+                                @if($isAdmin)
+                                    <span class="w-[30px] text-center">Jan</span>
+                                    <span class="w-[30px] text-center">Feb</span>
+                                    <span class="w-[30px] text-center">Mar</span>
+                                    <span class="w-[30px] text-center">Apr</span>
+                                    <span class="w-[30px] text-center">Mei</span>
+                                    <span class="w-[30px] text-center">Jun</span>
+                                    <span class="w-[30px] text-center">Jul</span>
+                                @else
+                                    @foreach($chartPoints as $pt)
+                                        <span class="w-[30px] text-center">{{ $pt['short_date'] }}</span>
+                                    @endforeach
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <!-- Chart Labels -->
-                <div class="flex justify-between text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase px-1 mt-4">
-                    @if($isAdmin)
-                        <span>Jan</span>
-                        <span>Feb</span>
-                        <span>Mar</span>
-                        <span>Apr</span>
-                        <span>Mei</span>
-                        <span>Jun</span>
-                        <span>Jul</span>
-                    @else
-                        @foreach($chartPoints as $pt)
-                            <span>{{ $pt['date'] }}</span>
-                        @endforeach
-                    @endif
                 </div>
-                
-
-            </div>
-
-            <!-- Announcements / Information System -->
+                <!-- Announcements / Information System -->
             <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col justify-between shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                 <div>
                     <div class="flex items-center justify-between mb-4">

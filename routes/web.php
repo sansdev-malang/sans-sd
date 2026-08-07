@@ -112,11 +112,10 @@ Route::get('/dashboard', function () {
         $completedDetails = array_filter($dailyDetails, function ($day) {
             return isset($day['status']) && $day['status'] !== 'Pending';
         });
-        $last7 = array_slice($completedDetails, -7, 7, true);
         
         $idx = 0;
-        foreach ($last7 as $dateStr => $det) {
-            $x = $idx * 83;
+        foreach ($completedDetails as $dateStr => $det) {
+            $x = $idx * 60; // 60px spacing per day
             $y = 130;
             $timeStr = '-';
             
@@ -138,6 +137,7 @@ Route::get('/dashboard', function () {
                 'x' => $x,
                 'y' => $y,
                 'date' => date('d M', strtotime($dateStr)),
+                'short_date' => date('d/m', strtotime($dateStr)), // Added shorter date format for tight spaces
                 'time' => $timeStr,
                 'status' => $det['status'] ?? '-',
                 'check_in' => $jamMasuk ? substr($jamMasuk, 0, 5) : '-',
@@ -145,19 +145,6 @@ Route::get('/dashboard', function () {
             ];
             $idx++;
         }
-    }
-
-    // Pad to 7 points
-    while (count($chartPoints) < 7) {
-        $chartPoints[] = [
-            'x' => count($chartPoints) * 83,
-            'y' => 130,
-            'date' => '-',
-            'time' => '-',
-            'status' => '-',
-            'check_in' => '-',
-            'check_out' => '-'
-        ];
     }
 
     return view('admin.dashboard', compact(
