@@ -1,10 +1,4 @@
 <x-admin-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Data Riwayat Absensi') }}
-        </h2>
-    </x-slot>
-
     <div class="p-6 space-y-6" x-data="{
         showModal: false,
         selectedDate: '',
@@ -23,13 +17,14 @@
             this.showModal = true;
         }
     }">
-        <!-- HEADER SECTION -->
-        <header class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <!-- DATA RIWAYAT ABSENSI / PAGE TITLE -->
+        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex flex-col gap-0.5">
                 <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Data Riwayat Absensi</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Memantau waktu kedatangan dan kepulangan Anda secara komprehensif.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Memantau waktu kedatangan dan
+                    kepulangan Anda secara komprehensif.</p>
             </div>
-        </header>
+        </section>
 
 
         @php
