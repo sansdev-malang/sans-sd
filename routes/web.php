@@ -74,61 +74,66 @@ Route::get('/dashboard', function () {
                 ->limit(5)
                 ->get();
 
-            // Fetch Presence & Bonus details from HRD
-            $schoolUnit = config('app.school_unit', 'sd');
-            $hrdUrl = \App\Models\Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
-            try {
-                $response = \Illuminate\Support\Facades\Http::timeout(15)->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
-                    'month' => date('Y-m'),
-                    'unit_id' => strtolower($schoolUnit)
-                ]);
-                if ($response->successful()) {
-                    $json = $response->json();
-                    $reports = collect($json['data'] ?? []);
-                    $myReport = $reports->first(function ($item) use ($employee) {
-                        return ($item['employee']['id'] ?? 0) == $employee->id;
-                    });
-                }
-            } catch (\Exception $e) {
-                // Fallback silently
-            }
+                        // Fetch Recent Attendances (last 7 days) for Employee
+            $myRecentAttendances = \App\Models\Attendance::where('employee_id', $employee->id)
+                ->orderBy('date', 'desc')
+                ->limit(7)
+                ->get()
+                ->reverse()
+                ->values();
         }
     }
 
     // Prepare SVG Chart Points
-    $dailyDetails = $myReport['daily_details'] ?? [];
-    if (!empty($dailyDetails)) {
-        ksort($dailyDetails);
-        // Filter out Pending days
-        $completedDetails = array_filter($dailyDetails, function ($day) {
-            return isset($day['status']) && $day['status'] !== 'Pending';
-        });
-        $last7 = array_slice($completedDetails, -7, 7, true);
+    $chartPoints = [];
+    if (isset($myRecentAttendances) && $myRecentAttendances->isNotEmpty()) {
         $idx = 0;
-        foreach ($last7 as $dateStr => $det) {
-            $bonus = $det['bonus_nominal'] ?? 0;
+        foreach ($myRecentAttendances as $att) {
             $x = $idx * 83;
-            $y = 130 - (($bonus / 50000) * 100);
+            $y = 130;
+            $timeStr = '-';
+            
+            if ($att->check_in) {
+                // Time calculations for chart Y position (06:00 = top, 08:00 = bottom)
+                $parts = explode(':', $att->check_in);
+                $mins = (int)$parts[0] * 60 + (int)$parts[1];
+                
+                // 360 mins (06:00) -> Y=30. 480 mins (08:00) -> Y=130
+                $y = 30 + (($mins - 360) * (100 / 120));
+                if ($y < 30) $y = 30; 
+                if ($y > 130) $y = 130; 
+                
+                $timeStr = substr($att->check_in, 0, 5);
+            }
+            
             $chartPoints[] = [
                 'x' => $x,
                 'y' => $y,
-                'date' => date('d M', strtotime($dateStr)),
-                'bonus' => $bonus
+                'date' => \Carbon\Carbon::parse($att->date)->format('d M'),
+                'time' => $timeStr,
+                'status' => $att->status,
+                'check_in' => $att->check_in ? substr($att->check_in, 0, 5) : '-',
+                'check_out' => $att->check_out ? substr($att->check_out, 0, 5) : '-'
             ];
             $idx++;
         }
     }
 
-    if (empty($chartPoints)) {
-        for ($i = 0; $i < 7; $i++) {
-            $chartPoints[] = [
-                'x' => $i * 83,
-                'y' => 130,
-                'date' => '-',
-                'bonus' => 0
-            ];
-        }
+    // Pad to 7 points
+    while (count($chartPoints) < 7) {
+        $chartPoints[] = [
+            'x' => count($chartPoints) * 83,
+            'y' => 130,
+            'date' => '-',
+            'time' => '-',
+            'status' => '-',
+            'check_in' => '-',
+            'check_out' => '-'
+        ];
     }
+
+    // Prepare variables for view
+    $myReport = null; // No longer fetching HRD API bonus
 
     return view('admin.dashboard', compact(
         'isAdmin',
@@ -300,4 +305,10 @@ Route::middleware(['auth', 'verified', 'role:employee,kepala_sekolah,waka,admin_
     Route::get('bonus-reports', [\App\Http\Controllers\BonusReportController::class, 'index'])->name('bonus-reports.index');
     Route::get('bonus-reports/export', [\App\Http\Controllers\BonusReportController::class, 'export'])->name('bonus-reports.export');
     Route::get('payslips', [\App\Http\Controllers\PayslipController::class, 'index'])->name('payslips.index');
+});
+
+// Profil Pegawai (Normal User)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/my-employee-profile', [App\Http\Controllers\MyEmployeeProfileController::class, 'edit'])->name('my-employee-profile.edit');
+    Route::put('/my-employee-profile', [App\Http\Controllers\MyEmployeeProfileController::class, 'update'])->name('my-employee-profile.update');
 });

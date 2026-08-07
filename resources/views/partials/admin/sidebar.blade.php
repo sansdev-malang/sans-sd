@@ -53,6 +53,15 @@
                 Platform</h3>
             <nav class="space-y-1">
 
+                @if(!auth()->user()->hasRole('super_admin') && !auth()->user()->hasRole('admin_sd') && !auth()->user()->hasRole('admin_smp') && !auth()->user()->hasRole('admin_paud') && !auth()->user()->hasRole('kepala_sekolah') && !auth()->user()->hasRole('waka'))
+                <a href="{{ route('my-employee-profile.edit') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('my-employee-profile.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} text-xs relative group">
+                    <i data-lucide="user" class="menu-icon w-4 h-4"></i>
+                    <span class="menu-text">Profil Pegawai</span>
+                    <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
+                        Profil Pegawai
+                    </span>
+                </a>
+                @endif
                 <a href="{{ route('coming-soon') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg
                     {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
                     text-xs relative group">
@@ -344,7 +353,7 @@
             <a href="{{ route('profile.edit') }}"
                 class="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
                 <i data-lucide="badge-check" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
-                <span>Profil</span>
+                <span>Pengaturan Akun</span>
             </a>
 
             <div class="border-t border-slate-100 dark:border-slate-900 my-1"></div>

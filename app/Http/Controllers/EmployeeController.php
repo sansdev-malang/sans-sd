@@ -17,7 +17,9 @@ class EmployeeController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Employee::query();
+                $query = Employee::query();
+
+
 
         // Search filter
         if ($request->filled('search')) {
