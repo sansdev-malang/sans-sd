@@ -34,7 +34,7 @@ class LeaveApprovalController extends Controller
      */
     public function approve(Request $request, $id)
     {
-        $leave = LeaveRequest::findOrFail($id);
+        $leave = LeaveRequest::with('leaveType')->findOrFail($id);
         
         $user = auth()->user();
         $roleLabels = [
@@ -57,18 +57,50 @@ class LeaveApprovalController extends Controller
         $endDate = Carbon::parse($leave->end_date);
         
         for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
-            Attendance::updateOrCreate(
-                [
+            $attendance = Attendance::where('employee_id', $leave->employee_id)
+                ->where('date', $date->format('Y-m-d'))
+                ->first();
+
+            $status = 'Leave';
+            if ($leave->leaveType) {
+                if ($leave->leaveType->status_code === 'S') {
+                    $status = 'Sick';
+                }
+            } else {
+                if ($leave->type === 'Sakit') {
+                    $status = 'Sick';
+                }
+            }
+
+            $getsBonus = $leave->leaveType ? $leave->leaveType->gets_presence_bonus : ($leave->type === 'Dinas');
+            $calculatedBonus = 0.00;
+            if ($getsBonus) {
+                $activeSchema = \App\Models\BonusSchema::where('is_active', true)->first();
+                if ($activeSchema) {
+                    $maxTier = \App\Models\BonusTier::where('bonus_schema_id', $activeSchema->id)
+                        ->orderBy('nominal', 'desc')
+                        ->first();
+                    if ($maxTier) {
+                        $calculatedBonus = $maxTier->nominal;
+                    }
+                }
+            }
+
+            if ($attendance) {
+                $attendance->update([
+                    'status' => $status,
+                    'calculated_bonus' => $calculatedBonus,
+                ]);
+            } else {
+                Attendance::create([
                     'employee_id' => $leave->employee_id,
-                    'date' => $date->format('Y-m-d')
-                ],
-                [
+                    'date' => $date->format('Y-m-d'),
                     'clock_in' => null,
                     'clock_out' => null,
-                    'status' => $leave->type === 'Sakit' ? 'Sick' : 'Leave',
-                    'calculated_bonus' => 0.00
-                ]
-            );
+                    'status' => $status,
+                    'calculated_bonus' => $calculatedBonus,
+                ]);
+            }
         }
 
         return redirect()->route('leave-approvals.index')

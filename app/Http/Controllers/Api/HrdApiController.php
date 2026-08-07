@@ -401,13 +401,15 @@ class HrdApiController extends Controller
      */
     public function leaveRequests()
     {
-        $requests = LeaveRequest::with('employee')->get()->map(function ($req) {
+        $requests = LeaveRequest::with(['employee', 'leaveType'])->get()->map(function ($req) {
             return [
                 'id' => $req->id,
                 'employee_id' => $req->employee_id,
                 'employee_name' => $req->employee ? $req->employee->name : null,
                 'nuptk_nip_nik' => $req->employee ? $req->employee->nuptk_nip_nik : null,
-                'type' => $req->type,
+                'type' => $req->leaveType ? $req->leaveType->name : $req->type,
+                'status_code' => $req->leaveType ? $req->leaveType->status_code : ($req->type === 'Sakit' ? 'S' : ($req->type === 'Cuti' ? 'C' : ($req->type === 'Dinas' ? 'H' : 'I'))),
+                'gets_presence_bonus' => $req->leaveType ? $req->leaveType->gets_presence_bonus : ($req->type === 'Dinas'),
                 'start_date' => $req->start_date ? $req->start_date->format('Y-m-d') : null,
                 'end_date' => $req->end_date ? $req->end_date->format('Y-m-d') : null,
                 'reason' => $req->reason,
@@ -431,7 +433,7 @@ class HrdApiController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $leave = LeaveRequest::find($request->input('leave_id'));
+        $leave = LeaveRequest::with('leaveType')->find($request->input('leave_id'));
         if (!$leave) {
             return response()->json(['success' => false, 'message' => 'Leave request not found.'], 404);
         }
@@ -446,18 +448,50 @@ class HrdApiController extends Controller
             $endDate = Carbon::parse($leave->end_date);
             
             for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
-                Attendance::updateOrCreate(
-                    [
+                $attendance = Attendance::where('employee_id', $leave->employee_id)
+                    ->where('date', $date->format('Y-m-d'))
+                    ->first();
+
+                $status = 'Leave';
+                if ($leave->leaveType) {
+                    if ($leave->leaveType->status_code === 'S') {
+                        $status = 'Sick';
+                    }
+                } else {
+                    if ($leave->type === 'Sakit') {
+                        $status = 'Sick';
+                    }
+                }
+
+                $getsBonus = $leave->leaveType ? $leave->leaveType->gets_presence_bonus : ($leave->type === 'Dinas');
+                $calculatedBonus = 0.00;
+                if ($getsBonus) {
+                    $activeSchema = \App\Models\BonusSchema::where('is_active', true)->first();
+                    if ($activeSchema) {
+                        $maxTier = \App\Models\BonusTier::where('bonus_schema_id', $activeSchema->id)
+                            ->orderBy('nominal', 'desc')
+                            ->first();
+                        if ($maxTier) {
+                            $calculatedBonus = $maxTier->nominal;
+                        }
+                    }
+                }
+
+                if ($attendance) {
+                    $attendance->update([
+                        'status' => $status,
+                        'calculated_bonus' => $calculatedBonus,
+                    ]);
+                } else {
+                    Attendance::create([
                         'employee_id' => $leave->employee_id,
-                        'date' => $date->format('Y-m-d')
-                    ],
-                    [
+                        'date' => $date->format('Y-m-d'),
                         'clock_in' => null,
                         'clock_out' => null,
-                        'status' => $leave->type === 'Sakit' ? 'Sick' : 'Leave',
-                        'calculated_bonus' => 0.00
-                    ]
-                );
+                        'status' => $status,
+                        'calculated_bonus' => $calculatedBonus,
+                    ]);
+                }
             }
         }
 
@@ -531,6 +565,29 @@ class HrdApiController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Announcement synced successfully.']);
+    }
+
+    /**
+     * Sync payslip notification from central HRD.
+     */
+    public function syncPayslip(Request $request)
+    {
+        $employeeId = $request->input('employee_id');
+        $period = $request->input('period');
+        $fileUrl = $request->input('file_url');
+
+        if (!$employeeId || !$period || !$fileUrl) {
+            return response()->json(['success' => false, 'message' => 'Missing required fields.'], 400);
+        }
+
+        // Find the user associated with this employee_id
+        $user = \App\Models\User::where('employee_id', $employeeId)->first();
+
+        if ($user) {
+            $user->notify(new \App\Notifications\NewPayslipNotification($period, $fileUrl));
+        }
+
+        return response()->json(['success' => true, 'message' => 'Payslip notification sent successfully.']);
     }
 
     /**

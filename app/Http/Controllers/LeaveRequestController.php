@@ -15,9 +15,33 @@ class LeaveRequestController extends Controller
      */
     public function index()
     {
-        $leaves = LeaveRequest::with('employee')->orderBy('start_date', 'desc')->get();
+        if (request()->has('clear_all')) {
+            if (auth()->user()) {
+                auth()->user()->unreadNotifications->markAsRead();
+            }
+            $schoolUnit = config('app.school_unit');
+            $recentLeavesQuery = LeaveRequest::where('created_at', '>=', now()->subDays(3));
+            if ($schoolUnit) {
+                $recentLeavesQuery->whereHas('employee', function ($q) use ($schoolUnit) {
+                    $q->where('unit', $schoolUnit);
+                });
+            }
+            $recentIds = $recentLeavesQuery->pluck('id')->toArray();
+            $readIds = session('read_leave_ids_' . auth()->id(), []);
+            $newReadIds = array_unique(array_merge($readIds, $recentIds));
+            session(['read_leave_ids_' . auth()->id() => $newReadIds]);
+            return redirect()->route('leaves.index');
+        }
+
+        if (request()->has('read_id')) {
+            $readIds = session('read_leave_ids_' . auth()->id(), []);
+            $readIds[] = (int) request('read_id');
+            session(['read_leave_ids_' . auth()->id() => array_unique($readIds)]);
+        }
+        $leaves = LeaveRequest::with(['employee', 'leaveType'])->orderBy('start_date', 'desc')->get();
         $employees = Employee::orderBy('name')->get();
-        return view('admin.leaves.index', compact('leaves', 'employees'));
+        $leaveTypes = \App\Models\LeaveType::orderBy('name')->get();
+        return view('admin.leaves.index', compact('leaves', 'employees', 'leaveTypes'));
     }
 
     /**
@@ -27,7 +51,7 @@ class LeaveRequestController extends Controller
     {
         $validated = $request->validate([
             'employee_id' => 'required|exists:employees,id',
-            'type' => 'required|string|in:Sakit,Izin,Cuti,Dinas',
+            'leave_type_id' => 'required|exists:leave_types,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'nullable|string',
@@ -35,8 +59,8 @@ class LeaveRequestController extends Controller
         ], [
             'employee_id.required' => 'Pegawai harus dipilih.',
             'employee_id.exists' => 'Pegawai yang dipilih tidak valid.',
-            'type.required' => 'Jenis izin harus dipilih.',
-            'type.in' => 'Jenis izin tidak valid.',
+            'leave_type_id.required' => 'Jenis izin harus dipilih.',
+            'leave_type_id.exists' => 'Jenis izin tidak valid.',
             'start_date.required' => 'Tanggal mulai harus diisi.',
             'start_date.date' => 'Format tanggal mulai tidak valid.',
             'end_date.required' => 'Tanggal selesai harus diisi.',
@@ -46,6 +70,9 @@ class LeaveRequestController extends Controller
             'attachment.mimes' => 'Format file lampiran harus berupa PDF, PNG, JPG, JPEG, DOC, atau DOCX.',
             'attachment.max' => 'Ukuran file lampiran maksimal 2MB.',
         ]);
+
+        $leaveType = \App\Models\LeaveType::findOrFail($validated['leave_type_id']);
+        $validated['type'] = $leaveType->name;
 
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
@@ -73,10 +100,11 @@ class LeaveRequestController extends Controller
             }
         }
 
+        $validated['status'] = 'Approved';
         LeaveRequest::create($validated);
 
         return redirect()->route('leaves.index')
-            ->with('success', 'Pengajuan izin berhasil diajukan dan menunggu persetujuan HRD Pusat.');
+            ->with('success', 'Izin / Cuti pegawai berhasil dicatat.');
     }
 
     /**
@@ -104,7 +132,7 @@ class LeaveRequestController extends Controller
     {
         $schoolUnit = config('app.school_unit');
         
-        $query = LeaveRequest::with('employee')->orderBy('start_date', 'desc');
+        $query = LeaveRequest::with(['employee', 'leaveType'])->orderBy('start_date', 'desc');
 
         if ($schoolUnit) {
             $query->whereHas('employee', function ($q) use ($schoolUnit) {
@@ -121,7 +149,11 @@ class LeaveRequestController extends Controller
         }
 
         if ($request->filled('type')) {
-            $query->where('type', $request->input('type'));
+            $typeFilter = $request->input('type');
+            $query->where(function($q) use ($typeFilter) {
+                $q->where('leave_type_id', $typeFilter)
+                  ->orWhere('type', $typeFilter);
+            });
         }
 
         if ($request->filled('status')) {
@@ -129,7 +161,8 @@ class LeaveRequestController extends Controller
         }
 
         $leaves = $query->get();
+        $leaveTypes = \App\Models\LeaveType::orderBy('name')->get();
 
-        return view('admin.leaves.history', compact('leaves'));
+        return view('admin.leaves.history', compact('leaves', 'leaveTypes'));
     }
 }

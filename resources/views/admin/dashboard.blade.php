@@ -132,21 +132,21 @@
                     </div>
                 </div>
 
-                <!-- Pegawai Card 3: Sisa Jatah Cuti -->
+                <!-- Pegawai Card 3: Total Izin & Cuti -->
                 <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sisa Cuti Tahunan</p>
+                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Izin & Cuti</p>
                             <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                                <span>{{ $sisaCuti }}</span> Hari
+                                <span>{{ $totalLeavesThisYear }}</span> Hari
                             </h3>
                         </div>
                         <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                            <i data-lucide="plane-takeoff" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                            <i data-lucide="calendar-days" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
                         </div>
                     </div>
                     <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                        Kuota 12 hari per tahun
+                        Akumulasi persetujuan tahun ini
                     </div>
                 </div>
 

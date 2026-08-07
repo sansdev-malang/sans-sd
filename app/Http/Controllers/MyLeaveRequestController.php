@@ -20,11 +20,34 @@ class MyLeaveRequestController extends Controller
             return redirect()->route('dashboard')->with('error', 'Akun Anda tidak terhubung dengan data pegawai.');
         }
 
+        if (request()->has('clear_all')) {
+            if ($user) {
+                $user->unreadNotifications->markAsRead();
+            }
+            if ($user->employee) {
+                $recentIds = LeaveRequest::where('employee_id', $user->employee->id)
+                    ->where('created_at', '>=', now()->subDays(3))
+                    ->pluck('id')
+                    ->toArray();
+                $readIds = session('read_leave_ids_' . $user->id, []);
+                $newReadIds = array_unique(array_merge($readIds, $recentIds));
+                session(['read_leave_ids_' . $user->id => $newReadIds]);
+            }
+            return redirect()->route('my-leaves.index');
+        }
+
+        if (request()->has('read_id')) {
+            $readIds = session('read_leave_ids_' . $user->id, []);
+            $readIds[] = (int) request('read_id');
+            session(['read_leave_ids_' . $user->id => array_unique($readIds)]);
+        }
         $leaves = LeaveRequest::where('employee_id', $user->employee->id)
+            ->with('leaveType')
             ->orderBy('start_date', 'desc')
             ->get();
+        $leaveTypes = \App\Models\LeaveType::orderBy('name')->get();
 
-        return view('employee.leaves.index', compact('leaves'));
+        return view('employee.leaves.index', compact('leaves', 'leaveTypes'));
     }
 
     /**
@@ -38,15 +61,17 @@ class MyLeaveRequestController extends Controller
         }
 
         $validated = $request->validate([
-            'type' => 'required|string|in:Sakit,Izin,Cuti,Dinas',
+            'leave_type_id' => 'required|exists:leave_types,id',
             'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'nullable|string',
             'attachment' => 'nullable|file|mimes:pdf,png,jpg,jpeg,doc,docx|max:2048',
         ]);
 
+        $leaveType = \App\Models\LeaveType::findOrFail($validated['leave_type_id']);
+        $validated['type'] = $leaveType->name;
         $validated['employee_id'] = $user->employee->id;
-        $validated['status'] = 'Pending';
+        $validated['status'] = 'Approved';
 
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
@@ -77,7 +102,7 @@ class MyLeaveRequestController extends Controller
         LeaveRequest::create($validated);
 
         return redirect()->route('my-leaves.index')
-            ->with('success', 'Pengajuan izin/cuti berhasil diajukan dan menunggu persetujuan HRD Pusat.');
+            ->with('success', 'Izin / Cuti berhasil diajukan.');
     }
 
     /**

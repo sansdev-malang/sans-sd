@@ -445,7 +445,8 @@ class AttendanceController extends Controller
         $isOffDay = ($shiftDetail && $shiftDetail->is_off) || $isHoliday;
 
         // 3. Check Approved Leave Requests
-        $leave = \App\Models\LeaveRequest::where('employee_id', $employeeId)
+        $leave = \App\Models\LeaveRequest::with('leaveType')
+            ->where('employee_id', $employeeId)
             ->where('start_date', '<=', $date)
             ->where('end_date', '>=', $date)
             ->where('status', 'Approved')
@@ -456,8 +457,16 @@ class AttendanceController extends Controller
         $calculatedBonus = 0.00;
 
         if ($leave) {
-            $status = $leave->type === 'Sakit' ? 'Sick' : 'Leave';
-            if ($leave->type === 'Dinas') {
+            $getsBonus = $leave->leaveType ? $leave->leaveType->gets_presence_bonus : ($leave->type === 'Dinas');
+            $statusCode = $leave->leaveType ? $leave->leaveType->status_code : null;
+
+            if ($statusCode === 'S') {
+                $status = 'Sick';
+            } else {
+                $status = 'Leave';
+            }
+
+            if ($getsBonus) {
                 $activeSchema = \App\Models\BonusSchema::where('is_active', true)->first();
                 if ($activeSchema) {
                     $maxTier = \App\Models\BonusTier::where('bonus_schema_id', $activeSchema->id)

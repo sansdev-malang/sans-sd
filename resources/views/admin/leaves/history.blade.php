@@ -22,12 +22,11 @@
                 <!-- Filter Type -->
                 <div class="space-y-1">
                     <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Jenis Izin</label>
-                    <select name="type" class="w-full h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 cursor-pointer">
+                    <select name="type" class="w-full h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-880 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 cursor-pointer">
                         <option value="">Semua Jenis</option>
-                        <option value="Sakit" {{ request('type') === 'Sakit' ? 'selected' : '' }}>Sakit</option>
-                        <option value="Izin" {{ request('type') === 'Izin' ? 'selected' : '' }}>Izin</option>
-                        <option value="Cuti" {{ request('type') === 'Cuti' ? 'selected' : '' }}>Cuti</option>
-                        <option value="Dinas" {{ request('type') === 'Dinas' ? 'selected' : '' }}>Dinas</option>
+                        @foreach($leaveTypes as $lt)
+                            <option value="{{ $lt->id }}" {{ request('type') == $lt->id ? 'selected' : '' }}>{{ $lt->name }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -103,15 +102,31 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    @if($leave->type === 'Cuti')
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40">Cuti</span>
-                                    @elseif($leave->type === 'Izin')
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40">Izin</span>
-                                    @elseif($leave->type === 'Sakit')
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40">Sakit</span>
-                                    @else
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800">{{ $leave->type }}</span>
-                                    @endif
+                                    @php
+                                        $sc = $leave->leaveType ? $leave->leaveType->status_code : null;
+                                        if (!$sc) {
+                                            if ($leave->type === 'Cuti') $sc = 'C';
+                                            elseif ($leave->type === 'Izin') $sc = 'I';
+                                            elseif ($leave->type === 'Sakit') $sc = 'S';
+                                            elseif ($leave->type === 'Dinas') $sc = 'H';
+                                        }
+
+                                        if ($sc === 'C') {
+                                            $badgeStyle = 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40';
+                                        } elseif ($sc === 'I') {
+                                            $badgeStyle = 'bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40';
+                                        } elseif ($sc === 'S') {
+                                            $badgeStyle = 'bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40';
+                                        } elseif ($sc === 'H') {
+                                            $badgeStyle = 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40';
+                                        } else {
+                                            $badgeStyle = 'bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800';
+                                        }
+                                        $typeName = $leave->leaveType ? $leave->leaveType->name : $leave->type;
+                                    @endphp
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold {{ $badgeStyle }}">
+                                        {{ $typeName }}
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 text-center font-mono">
                                     {{ $leave->start_date->format('d M Y') }}{{ $leave->start_date != $leave->end_date ? ' s/d ' . $leave->end_date->format('d M Y') : '' }}

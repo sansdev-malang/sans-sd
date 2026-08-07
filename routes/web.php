@@ -50,23 +50,21 @@ Route::get('/dashboard', function () {
 
     // Fetch personal stats for non-admin employees
     $myReport = null;
-    $sisaCuti = 12;
+    $totalLeavesThisYear = 0;
     $myRecentLeaves = collect();
     $chartPoints = [];
 
     if (!$isAdmin && $user->employee_id) {
         $employee = \App\Models\Employee::find($user->employee_id);
         if ($employee) {
-            // Calculate Leave Balance
-            $usedCuti = 0;
-            $approvedCutiRequests = \App\Models\LeaveRequest::where('employee_id', $employee->id)
-                ->where('type', 'Cuti')
+            // Calculate Leave Days Approved This Year
+            $approvedLeavesThisYear = \App\Models\LeaveRequest::where('employee_id', $employee->id)
                 ->where('status', 'Approved')
+                ->whereYear('start_date', date('Y'))
                 ->get();
-            foreach ($approvedCutiRequests as $req) {
-                $usedCuti += \Carbon\Carbon::parse($req->start_date)->diffInDays(\Carbon\Carbon::parse($req->end_date)) + 1;
+            foreach ($approvedLeavesThisYear as $req) {
+                $totalLeavesThisYear += \Carbon\Carbon::parse($req->start_date)->diffInDays(\Carbon\Carbon::parse($req->end_date)) + 1;
             }
-            $sisaCuti = max(0, 12 - $usedCuti);
 
             // Fetch Recent Activity (Leaves/Permits status)
             $myRecentLeaves = \App\Models\LeaveRequest::where('employee_id', $employee->id)
@@ -152,7 +150,7 @@ Route::get('/dashboard', function () {
         'employeeCount',
         'latestAnnouncements',
         'myReport',
-        'sisaCuti',
+        'totalLeavesThisYear',
         'myRecentLeaves',
         'chartPoints'
     ));
@@ -253,6 +251,7 @@ Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepal
     Route::post('employees/{employee}/generate-account', [EmployeeController::class, 'generateSingleAccount'])->name('employees.generate-account');
     Route::resource('employees', EmployeeController::class);
     Route::resource('employee-types', EmployeeTypeController::class);
+    Route::resource('leave-types', \App\Http\Controllers\LeaveTypeController::class);
     Route::resource('attendances', AttendanceController::class)->except(['index', 'show']);
     Route::resource('leaves', \App\Http\Controllers\LeaveRequestController::class);
     Route::get('leave-history', [\App\Http\Controllers\LeaveRequestController::class, 'history'])->name('leave-history.index');
@@ -292,6 +291,7 @@ Route::middleware('hrd.api')->prefix('api/v1/hrd')->group(function () {
     Route::post('sync/holidays', [\App\Http\Controllers\Api\HrdApiController::class, 'syncHolidays']);
     Route::post('sync/bonus-schemas', [\App\Http\Controllers\Api\HrdApiController::class, 'syncBonusSchemas']);
     Route::post('sync/announcements', [\App\Http\Controllers\Api\HrdApiController::class, 'syncAnnouncements']);
+    Route::post('sync/payslips', [\App\Http\Controllers\Api\HrdApiController::class, 'syncPayslip']);
     Route::get('leave-requests', [\App\Http\Controllers\Api\HrdApiController::class, 'leaveRequests']);
     Route::post('leave-requests/decision', [\App\Http\Controllers\Api\HrdApiController::class, 'leaveDecision']);
 });
