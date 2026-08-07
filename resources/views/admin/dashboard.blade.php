@@ -183,7 +183,7 @@
                                 <p class="text-xs text-slate-500 dark:text-slate-400">Tingkat kehadiran siswa pada 7 bulan terakhir</p>
                             @else
                                 <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 font-nasalization">Riwayat Absensi Harian</h3>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">Riwayat jam masuk, pulang, dan status Anda pada 7 hari terakhir</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Tren waktu kedatangan (jam masuk) Anda pada 7 hari aktif terakhir</p>
                             @endif
                         </div>
                     </div>
@@ -254,46 +254,7 @@
                     @endif
                 </div>
                 
-                @if(!$isAdmin)
-                <!-- Mini Table for Attendance Details -->
-                <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <h4 class="text-xs font-semibold text-slate-900 dark:text-slate-50 mb-3">Rincian 7 Hari Terakhir</h4>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead class="text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
-                                <tr>
-                                    <th class="pb-2 font-medium">Tanggal</th>
-                                    <th class="pb-2 font-medium">Jam Masuk</th>
-                                    <th class="pb-2 font-medium">Jam Pulang</th>
-                                    <th class="pb-2 font-medium">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-50 dark:divide-slate-800/50">
-                                @foreach(array_reverse($chartPoints) as $pt)
-                                    @if($pt['date'] !== '-')
-                                    <tr class="text-slate-600 dark:text-slate-300">
-                                        <td class="py-2">{{ $pt['date'] }}</td>
-                                        <td class="py-2 font-medium {{ $pt['jam_masuk'] != '-' ? 'text-slate-900 dark:text-slate-100' : '' }}">{{ $pt['check_in'] ?? '-' }}</td>
-                                        <td class="py-2 font-medium {{ $pt['jam_pulang'] != '-' ? 'text-slate-900 dark:text-slate-100' : '' }}">{{ $pt['check_out'] ?? '-' }}</td>
-                                        <td class="py-2">
-                                            @if($pt['status'] == 'Hadir')
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">Hadir</span>
-                                            @elseif($pt['status'] == 'Terlambat')
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Terlambat</span>
-                                            @elseif(in_array($pt['status'], ['Izin', 'Sakit', 'Cuti']))
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">{{ $pt['status'] }}</span>
-                                            @else
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400">Alpha</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                @endif
+
             </div>
 
             <!-- Announcements / Information System -->
@@ -376,46 +337,7 @@
                     @endif
                 </div>
                 
-                @if(!$isAdmin)
-                <!-- Mini Table for Attendance Details -->
-                <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <h4 class="text-xs font-semibold text-slate-900 dark:text-slate-50 mb-3">Rincian 7 Hari Terakhir</h4>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead class="text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
-                                <tr>
-                                    <th class="pb-2 font-medium">Tanggal</th>
-                                    <th class="pb-2 font-medium">Jam Masuk</th>
-                                    <th class="pb-2 font-medium">Jam Pulang</th>
-                                    <th class="pb-2 font-medium">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-50 dark:divide-slate-800/50">
-                                @foreach(array_reverse($chartPoints) as $pt)
-                                    @if($pt['date'] !== '-')
-                                    <tr class="text-slate-600 dark:text-slate-300">
-                                        <td class="py-2">{{ $pt['date'] }}</td>
-                                        <td class="py-2 font-medium {{ $pt['jam_masuk'] != '-' ? 'text-slate-900 dark:text-slate-100' : '' }}">{{ $pt['check_in'] ?? '-' }}</td>
-                                        <td class="py-2 font-medium {{ $pt['jam_pulang'] != '-' ? 'text-slate-900 dark:text-slate-100' : '' }}">{{ $pt['check_out'] ?? '-' }}</td>
-                                        <td class="py-2">
-                                            @if($pt['status'] == 'Hadir')
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">Hadir</span>
-                                            @elseif($pt['status'] == 'Terlambat')
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Terlambat</span>
-                                            @elseif(in_array($pt['status'], ['Izin', 'Sakit', 'Cuti']))
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">{{ $pt['status'] }}</span>
-                                            @else
-                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400">Alpha</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                @endif
+
             </div>
 
             <!-- Recent Activity Logs -->

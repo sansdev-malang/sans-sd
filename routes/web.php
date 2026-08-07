@@ -74,28 +74,56 @@ Route::get('/dashboard', function () {
                 ->limit(5)
                 ->get();
 
-                        // Fetch Recent Attendances (last 7 days) for Employee
+                                    // Fetch Recent Attendances (last 7 days) for Employee
             $myRecentAttendances = \App\Models\Attendance::where('employee_id', $employee->id)
                 ->orderBy('date', 'desc')
                 ->limit(7)
                 ->get()
                 ->reverse()
                 ->values();
+
+            // Fetch Presence & Bonus details from HRD for the top cards
+            $schoolUnit = config('app.school_unit', 'sd');
+            $hrdUrl = \App\Models\Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
+            try {
+                $response = \Illuminate\Support\Facades\Http::timeout(15)->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                    'month' => date('Y-m'),
+                    'unit_id' => strtolower($schoolUnit)
+                ]);
+                if ($response->successful()) {
+                    $json = $response->json();
+                    $reports = collect($json['data'] ?? []);
+                    $myReport = $reports->first(function ($item) use ($employee) {
+                        return ($item['employee']['id'] ?? 0) == $employee->id;
+                    });
+                }
+            } catch (\Exception $e) {
+                // Fallback silently
+            }
         }
     }
 
-    // Prepare SVG Chart Points
+    // Prepare SVG Chart Points from HRD API daily_details
     $chartPoints = [];
-    if (isset($myRecentAttendances) && $myRecentAttendances->isNotEmpty()) {
+    $dailyDetails = $myReport['daily_details'] ?? [];
+    if (!empty($dailyDetails)) {
+        ksort($dailyDetails);
+        // Filter out Pending days
+        $completedDetails = array_filter($dailyDetails, function ($day) {
+            return isset($day['status']) && $day['status'] !== 'Pending';
+        });
+        $last7 = array_slice($completedDetails, -7, 7, true);
+        
         $idx = 0;
-        foreach ($myRecentAttendances as $att) {
+        foreach ($last7 as $dateStr => $det) {
             $x = $idx * 83;
             $y = 130;
             $timeStr = '-';
             
-            if ($att->check_in) {
+            $jamMasuk = $det['check_in'] ?? null;
+            if ($jamMasuk) {
                 // Time calculations for chart Y position (06:00 = top, 08:00 = bottom)
-                $parts = explode(':', $att->check_in);
+                $parts = explode(':', $jamMasuk);
                 $mins = (int)$parts[0] * 60 + (int)$parts[1];
                 
                 // 360 mins (06:00) -> Y=30. 480 mins (08:00) -> Y=130
@@ -103,17 +131,17 @@ Route::get('/dashboard', function () {
                 if ($y < 30) $y = 30; 
                 if ($y > 130) $y = 130; 
                 
-                $timeStr = substr($att->check_in, 0, 5);
+                $timeStr = substr($jamMasuk, 0, 5);
             }
             
             $chartPoints[] = [
                 'x' => $x,
                 'y' => $y,
-                'date' => \Carbon\Carbon::parse($att->date)->format('d M'),
+                'date' => date('d M', strtotime($dateStr)),
                 'time' => $timeStr,
-                'status' => $att->status,
-                'check_in' => $att->check_in ? substr($att->check_in, 0, 5) : '-',
-                'check_out' => $att->check_out ? substr($att->check_out, 0, 5) : '-'
+                'status' => $det['status'] ?? '-',
+                'check_in' => $jamMasuk ? substr($jamMasuk, 0, 5) : '-',
+                'check_out' => isset($det['check_out']) && $det['check_out'] ? substr($det['check_out'], 0, 5) : '-'
             ];
             $idx++;
         }
@@ -131,9 +159,6 @@ Route::get('/dashboard', function () {
             'check_out' => '-'
         ];
     }
-
-    // Prepare variables for view
-    $myReport = null; // No longer fetching HRD API bonus
 
     return view('admin.dashboard', compact(
         'isAdmin',
