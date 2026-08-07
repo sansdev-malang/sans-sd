@@ -42,13 +42,13 @@
                 <div style="flex: 0 0 250px;">
                     <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Cari Pengguna</label>
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Nama atau email..." 
-                        class="w-full h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                        class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
                 </div>
 
                 <!-- Filter Role -->
                 <div style="flex: 0 0 180px;">
                     <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Hak Akses / Role</label>
-                    <select name="role" class="w-full h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 cursor-pointer">
+                    <select name="role" class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 cursor-pointer">
                         <option value="">Semua Role</option>
                         <option value="super_admin" {{ request('role') === 'super_admin' ? 'selected' : '' }}>Super Admin</option>
                         <option value="admin_sd" {{ request('role') === 'admin_sd' ? 'selected' : '' }}>Admin SD</option>
@@ -76,7 +76,7 @@
                 <!-- Per Page -->
                 <div style="margin-left: auto; flex: 0 0 110px;">
                     <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Tampilkan</label>
-                    <select name="per_page" onchange="this.form.submit()" class="w-full h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 cursor-pointer">
+                    <select name="per_page" onchange="this.form.submit()" class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 cursor-pointer">
                         <option value="10" {{ request('per_page', '10') == '10' ? 'selected' : '' }}>10 baris</option>
                         <option value="25" {{ request('per_page') == '25' ? 'selected' : '' }}>25 baris</option>
                         <option value="50" {{ request('per_page') == '50' ? 'selected' : '' }}>50 baris</option>

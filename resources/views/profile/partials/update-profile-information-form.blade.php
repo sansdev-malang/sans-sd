@@ -19,7 +19,7 @@
 
         <div class="space-y-1.5">
             <label for="name" class="block font-semibold text-slate-700 dark:text-slate-300">Nama Lengkap <span class="text-red-500">*</span></label>
-            <input id="name" name="name" type="text" value="{{ old('name', $user->name) }}" required autofocus autocomplete="name" class="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+            <input id="name" name="name" type="text" value="{{ old('name', $user->name) }}" required autofocus autocomplete="name" class="w-full text-xs h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
             @error('name')
                 <p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p>
             @enderror
@@ -27,7 +27,7 @@
 
         <div class="space-y-1.5">
             <label for="email" class="block font-semibold text-slate-700 dark:text-slate-300">Alamat Email <span class="text-red-500">*</span></label>
-            <input id="email" name="email" type="email" value="{{ old('email', $user->email) }}" required autocomplete="username" class="w-full h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+            <input id="email" name="email" type="email" value="{{ old('email', $user->email) }}" required autocomplete="username" class="w-full text-xs h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
             @error('email')
                 <p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p>
             @enderror
@@ -57,3 +57,19 @@
         </div>
     </form>
 </section>
+
+@if (session('status') === 'profile-updated')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            showToast('Sukses!', 'Informasi profil berhasil diperbarui.', 'success');
+        });
+    </script>
+@endif
+
+@if (session('status') === 'verification-link-sent')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            showToast('Info', 'Tautan verifikasi telah dikirim ke email Anda.', 'success');
+        });
+    </script>
+@endif

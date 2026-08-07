@@ -1,101 +1,161 @@
 <x-admin-layout>
-<div x-data="{ showEditModal: {{ $errors->any() ? 'true' : 'false' }} }" class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
-    <div class="mb-8 flex items-center justify-between">
-        <div>
+<div x-data="{ showEditModal: {{ $errors->any() ? 'true' : 'false' }} }" class="p-6 space-y-6">
+    <!-- PROFIL PEGAWAI / PAGE TITLE -->
+    <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex flex-col gap-0.5">
             <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Profil Pegawai</h2>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Informasi detail data diri dan kepegawaian Anda.</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Informasi detail data diri dan kepegawaian Anda.</p>
         </div>
-        <button @click="showEditModal = true" class="inline-flex items-center gap-2 justify-center rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2.5 text-sm font-semibold text-white dark:text-slate-900 shadow-sm hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer">
+        <button @click="showEditModal = true" class="inline-flex items-center gap-2 justify-center rounded-lg bg-slate-900 dark:bg-slate-100 px-4 py-2.5 text-xs font-semibold text-white dark:text-slate-900 shadow-sm hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer">
             <i data-lucide="edit-3" class="w-4 h-4"></i> Edit Profil
         </button>
-    </div>
+    </section>
 
-    
-    
+    <!-- BENTO GRID PROFIL -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-    <!-- Tampilan Data Profil -->
-    <div class="bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-900/5 sm:rounded-xl overflow-hidden">
-        <div class="px-6 py-6 sm:px-8">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8 pb-8 border-b border-slate-100 dark:border-slate-800">
-                <div class="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0 overflow-hidden shadow-sm">
-                    @if($employee->photo)
-                        <img src="{{ Storage::url($employee->photo) }}" alt="Foto {{ $employee->name }}" class="w-full h-full object-cover">
-                    @else
-                        <span class="text-2xl font-bold uppercase">{{ substr($employee->name, 0, 2) }}</span>
-                    @endif
+        <!-- Kartu Identitas Utama (kolom kiri, row 1) -->
+        <div class="animate-card lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col items-center text-center gap-4 transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+            <div class="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0 overflow-hidden shadow-sm ring-2 ring-slate-200 dark:ring-slate-700">
+                @if($employee->photo)
+                    <img src="{{ Storage::url($employee->photo) }}" alt="Foto {{ $employee->name }}" class="w-full h-full object-cover">
+                @else
+                    <span class="text-2xl font-bold uppercase">{{ substr($employee->name, 0, 2) }}</span>
+                @endif
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-900 dark:text-slate-50 leading-tight">
+                    {{ $employee->front_title ? $employee->front_title . ' ' : '' }}{{ $employee->name }}{{ $employee->back_title ? ', ' . $employee->back_title : '' }}
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ $employee->email ?? 'Email belum diisi' }}</p>
+            </div>
+            <div class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                {{ $employee->employeeType->name ?? 'Tipe Tidak Diketahui' }}
+            </div>
+            <div class="w-full border-t border-slate-100 dark:border-slate-800 pt-4 space-y-3 text-left">
+                <div class="flex items-center gap-3">
+                    <span class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400"></i>
+                    </span>
+                    <span class="text-xs text-slate-600 dark:text-slate-300 truncate">{{ $employee->address ?: 'Alamat belum diisi' }}</span>
                 </div>
-                <div>
-                    <h3 class="text-xl font-bold text-slate-900 dark:text-slate-50">
-                        {{ $employee->front_title ? $employee->front_title . ' ' : '' }}{{ $employee->name }}{{ $employee->back_title ? ', ' . $employee->back_title : '' }}
-                    </h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ $employee->email ?? 'Email belum diisi' }}</p>
-                    <div class="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/40">
-                        {{ $employee->employeeType->name ?? 'Tipe Pegawai Tidak Diketahui' }}
+                <div class="flex items-center gap-3">
+                    <span class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                        <i data-lucide="phone" class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400"></i>
+                    </span>
+                    <span class="text-xs text-slate-600 dark:text-slate-300">{{ $employee->phone ?: 'Nomor belum diisi' }}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400"></i>
+                    </span>
+                    <span class="text-xs text-slate-600 dark:text-slate-300">{{ $employee->birth_date ? \Carbon\Carbon::parse($employee->birth_date)->translatedFormat('d F Y') : 'Tanggal lahir belum diisi' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kolom kanan (2 baris: Data Diri + Data Kepegawaian) -->
+        <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            <!-- Data Diri (bento tile kanan-atas) -->
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2 uppercase tracking-wider">
+                    <span class="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                        <i data-lucide="contact" class="w-3.5 h-3.5 text-slate-500"></i>
+                    </span>
+                    Data Diri
+                </h4>
+                <dl class="space-y-3 text-xs">
+                    <div class="flex flex-col gap-0.5">
+                        <dt class="font-medium text-slate-400 dark:text-slate-500">Tempat Lahir</dt>
+                        <dd class="font-semibold text-slate-900 dark:text-slate-100">{{ $employee->birth_place ?: '-' }}</dd>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <dt class="font-medium text-slate-400 dark:text-slate-500">Tanggal Lahir</dt>
+                        <dd class="font-semibold text-slate-900 dark:text-slate-100">{{ $employee->birth_date ? \Carbon\Carbon::parse($employee->birth_date)->translatedFormat('d F Y') : '-' }}</dd>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <dt class="font-medium text-slate-400 dark:text-slate-500">Jenis Kelamin</dt>
+                        <dd class="font-semibold text-slate-900 dark:text-slate-100">{{ $employee->gender === 'Male' || $employee->gender === 'L' ? 'Laki-laki' : ($employee->gender === 'Female' || $employee->gender === 'P' ? 'Perempuan' : '-') }}</dd>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <dt class="font-medium text-slate-400 dark:text-slate-500">No. HP / WA</dt>
+                        <dd class="font-semibold text-slate-900 dark:text-slate-100">{{ $employee->phone ?: '-' }}</dd>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <dt class="font-medium text-slate-400 dark:text-slate-500">Alamat</dt>
+                        <dd class="font-semibold text-slate-900 dark:text-slate-100 leading-relaxed">{{ $employee->address ?: '-' }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Data Kepegawaian (bento tile kanan-atas kedua) -->
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2 uppercase tracking-wider">
+                    <span class="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                        <i data-lucide="briefcase" class="w-3.5 h-3.5 text-slate-500"></i>
+                    </span>
+                    Data Kepegawaian
+                </h4>
+                <dl class="space-y-3 text-xs">
+                    <div class="flex flex-col gap-0.5">
+                        <dt class="font-medium text-slate-400 dark:text-slate-500">NIK</dt>
+                        <dd class="font-semibold text-slate-900 dark:text-slate-100 font-mono tracking-wide">{{ $employee->nik ?: '-' }}</dd>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <dt class="font-medium text-slate-400 dark:text-slate-500">NIY</dt>
+                        <dd class="font-semibold text-slate-900 dark:text-slate-100 font-mono tracking-wide">{{ $employee->niy ?: '-' }}</dd>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <dt class="font-medium text-slate-400 dark:text-slate-500">NUPTK</dt>
+                        <dd class="font-semibold text-slate-900 dark:text-slate-100 font-mono tracking-wide">{{ $employee->nuptk ?: '-' }}</dd>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <dt class="font-medium text-slate-400 dark:text-slate-500">NRG</dt>
+                        <dd class="font-semibold text-slate-900 dark:text-slate-100 font-mono tracking-wide">{{ $employee->nrg ?: '-' }}</dd>
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <dt class="font-medium text-slate-400 dark:text-slate-500">Pendidikan Terakhir</dt>
+                        <dd class="font-semibold text-slate-900 dark:text-slate-100">{{ $employee->last_education ?: '-' }}{{ $employee->major ? ' — ' . $employee->major : '' }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Banner info bawah (full width di dalam kolom kanan) -->
+            <div class="animate-card sm:col-span-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <div class="flex items-center gap-3 flex-1">
+                    <span class="w-9 h-9 rounded-xl bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 flex items-center justify-center shrink-0">
+                        <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                    </span>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Program Studi / Jurusan</p>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 mt-0.5">{{ $employee->major ?: 'Belum diisi' }}</p>
+                    </div>
+                </div>
+                <div class="h-px sm:h-10 w-full sm:w-px bg-slate-200 dark:bg-slate-700"></div>
+                <div class="flex items-center gap-3 flex-1">
+                    <span class="w-9 h-9 rounded-xl bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 flex items-center justify-center shrink-0">
+                        <i data-lucide="user-check" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                    </span>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Jenis Kelamin</p>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 mt-0.5">{{ $employee->gender === 'Male' || $employee->gender === 'L' ? 'Laki-laki' : ($employee->gender === 'Female' || $employee->gender === 'P' ? 'Perempuan' : 'Belum diisi') }}</p>
+                    </div>
+                </div>
+                <div class="h-px sm:h-10 w-full sm:w-px bg-slate-200 dark:bg-slate-700"></div>
+                <div class="flex items-center gap-3 flex-1">
+                    <span class="w-9 h-9 rounded-xl bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 flex items-center justify-center shrink-0">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                    </span>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tempat Lahir</p>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 mt-0.5">{{ $employee->birth_place ?: 'Belum diisi' }}</p>
                     </div>
                 </div>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
-                <!-- Data Diri -->
-                <div>
-                    <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                        <i data-lucide="contact" class="w-4 h-4 text-slate-400"></i> Data Diri
-                    </h4>
-                    <dl class="space-y-4 text-sm">
-                        <div class="grid grid-cols-3 gap-4">
-                            <dt class="font-medium text-slate-500 dark:text-slate-400">Tempat Lahir</dt>
-                            <dd class="col-span-2 text-slate-900 dark:text-slate-200">{{ $employee->birth_place ?: '-' }}</dd>
-                        </div>
-                        <div class="grid grid-cols-3 gap-4">
-                            <dt class="font-medium text-slate-500 dark:text-slate-400">Tanggal Lahir</dt>
-                            <dd class="col-span-2 text-slate-900 dark:text-slate-200">{{ $employee->birth_date ? \Carbon\Carbon::parse($employee->birth_date)->translatedFormat('d F Y') : '-' }}</dd>
-                        </div>
-                        <div class="grid grid-cols-3 gap-4">
-                            <dt class="font-medium text-slate-500 dark:text-slate-400">Jenis Kelamin</dt>
-                            <dd class="col-span-2 text-slate-900 dark:text-slate-200">{{ $employee->gender === 'Male' || $employee->gender === 'L' ? 'Laki-laki' : ($employee->gender === 'Female' || $employee->gender === 'P' ? 'Perempuan' : '-') }}</dd>
-                        </div>
-                        <div class="grid grid-cols-3 gap-4">
-                            <dt class="font-medium text-slate-500 dark:text-slate-400">No. HP / WA</dt>
-                            <dd class="col-span-2 text-slate-900 dark:text-slate-200">{{ $employee->phone ?: '-' }}</dd>
-                        </div>
-                        <div class="grid grid-cols-3 gap-4">
-                            <dt class="font-medium text-slate-500 dark:text-slate-400">Alamat</dt>
-                            <dd class="col-span-2 text-slate-900 dark:text-slate-200">{{ $employee->address ?: '-' }}</dd>
-                        </div>
-                    </dl>
-                </div>
-
-                <!-- Data Kepegawaian & Identitas -->
-                <div>
-                    <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                        <i data-lucide="briefcase" class="w-4 h-4 text-slate-400"></i> Data Kepegawaian
-                    </h4>
-                    <dl class="space-y-4 text-sm">
-                        <div class="grid grid-cols-3 gap-4">
-                            <dt class="font-medium text-slate-500 dark:text-slate-400">NIK</dt>
-                            <dd class="col-span-2 text-slate-900 dark:text-slate-200">{{ $employee->nik ?: '-' }}</dd>
-                        </div>
-                        <div class="grid grid-cols-3 gap-4">
-                            <dt class="font-medium text-slate-500 dark:text-slate-400">NIY</dt>
-                            <dd class="col-span-2 text-slate-900 dark:text-slate-200">{{ $employee->niy ?: '-' }}</dd>
-                        </div>
-                        <div class="grid grid-cols-3 gap-4">
-                            <dt class="font-medium text-slate-500 dark:text-slate-400">NUPTK</dt>
-                            <dd class="col-span-2 text-slate-900 dark:text-slate-200">{{ $employee->nuptk ?: '-' }}</dd>
-                        </div>
-                        <div class="grid grid-cols-3 gap-4">
-                            <dt class="font-medium text-slate-500 dark:text-slate-400">NRG</dt>
-                            <dd class="col-span-2 text-slate-900 dark:text-slate-200">{{ $employee->nrg ?: '-' }}</dd>
-                        </div>
-                        <div class="grid grid-cols-3 gap-4">
-                            <dt class="font-medium text-slate-500 dark:text-slate-400">Pendidikan</dt>
-                            <dd class="col-span-2 text-slate-900 dark:text-slate-200">{{ $employee->last_education ?: '-' }} {{ $employee->major ? ' - ' . $employee->major : '' }}</dd>
-                        </div>
-                    </dl>
-                </div>
-            </div>
         </div>
-    </div>
+
+    </section>
 
     <!-- Modal Form Edit -->
     <template x-teleport="body">

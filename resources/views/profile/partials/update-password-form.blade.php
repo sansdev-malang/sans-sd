@@ -44,3 +44,11 @@
         </div>
     </form>
 </section>
+
+@if (session('status') === 'password-updated')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            showToast('Sukses!', 'Kata sandi berhasil diperbarui.', 'success');
+        });
+    </script>
+@endif
