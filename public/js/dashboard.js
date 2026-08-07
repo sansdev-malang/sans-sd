@@ -204,6 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const openSidebarMobile = () => {
                 sidebar.classList.remove('-translate-x-full');
                 sidebar.classList.add('translate-x-0');
+                document.body.classList.add('sidebar-open');
                 if (backdrop) {
                     backdrop.classList.remove('hidden');
                     setTimeout(() => {
@@ -216,6 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const closeSidebarMobile = () => {
                 sidebar.classList.remove('translate-x-0');
                 sidebar.classList.add('-translate-x-full');
+                document.body.classList.remove('sidebar-open');
                 if (backdrop) {
                     backdrop.classList.remove('opacity-100');
                     backdrop.classList.add('opacity-0');
@@ -254,6 +256,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (backdrop) {
                 backdrop.addEventListener('click', closeSidebarMobile);
             }
+
+            window.addEventListener('resize', () => {
+                if (isDesktop()) {
+                    document.body.classList.remove('sidebar-open');
+                    if (backdrop) {
+                        backdrop.classList.add('hidden');
+                        backdrop.classList.remove('opacity-100');
+                        backdrop.classList.add('opacity-0');
+                    }
+                    sidebar.classList.remove('translate-x-0');
+                    sidebar.classList.add('-translate-x-full');
+                }
+            });
         }
     };
 
