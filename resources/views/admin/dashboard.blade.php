@@ -1,10 +1,6 @@
 <x-admin-layout>
     <div class="p-6 space-y-6">
-        @if(!$isAdmin)
-            <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 rounded-xl p-4 text-xs font-mono text-slate-800 dark:text-slate-200 break-all">
-                <strong>DEBUG DATA:</strong> {{ json_encode($chartPoints) }}
-            </div>
-        @endif
+
 
         <!-- GREETING / PAGE TITLE -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -214,6 +210,7 @@
                                     $lineD .= "{$prefix} {$pt['x']},{$pt['y']} ";
                                     $areaD .= "L {$pt['x']},{$pt['y']} ";
                                 }
+                                unset($pt);
                                 
                                 $firstX = $chartPoints[0]['x'];
                                 $lastX = end($chartPoints)['x'];
