@@ -134,8 +134,8 @@ Route::get('/dashboard', function () {
             $chartPoints[] = [
                 'x' => $x,
                 'y' => $y,
-                'date' => date('d M', strtotime($dateStr)),
-                'short_date' => date('d/m', strtotime($dateStr)), // Added shorter date format for tight spaces
+                'date' => \Carbon\Carbon::parse($dateStr)->translatedFormat('d M'),
+                'short_date' => \Carbon\Carbon::parse($dateStr)->format('d/m'), // Added shorter date format for tight spaces
                 'time' => $timeStr,
                 'status' => $det['status'] ?? '-',
                 'check_in' => $jamMasuk ? substr($jamMasuk, 0, 5) : '-',
