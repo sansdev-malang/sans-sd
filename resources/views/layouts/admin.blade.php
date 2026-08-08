@@ -433,36 +433,63 @@
                 }
                 
                 document.addEventListener('mouseover', function(e) {
-                    const target = e.target.closest('[data-tooltip], [title]');
-                    if (!target) return;
+                    let isCollapsedMenu = false;
+                    let target = e.target.closest('[data-tooltip], [title]');
                     
-                    // Convert title attribute to data-tooltip to prevent native tooltip
-                    if (target.hasAttribute('title')) {
-                        const titleText = target.getAttribute('title');
-                        if (titleText && titleText.trim() !== '') {
-                            target.setAttribute('data-tooltip', titleText);
-                            target.removeAttribute('title');
-                        } else {
-                            return;
+                    if (!target && document.body.classList.contains('sidebar-collapsed')) {
+                        target = e.target.closest('#sidebar .menu-item');
+                        if (target) {
+                            isCollapsedMenu = true;
                         }
                     }
                     
+                    if (!target) return;
+                    
+                    let tooltipText = '';
+                    if (isCollapsedMenu) {
+                        tooltipText = target.querySelector('.menu-text')?.innerText || '';
+                        tooltipText = tooltipText.split('\n')[0].trim();
+                    } else {
+                        // Convert title attribute to data-tooltip to prevent native tooltip
+                        if (target.hasAttribute('title')) {
+                            const titleText = target.getAttribute('title');
+                            if (titleText && titleText.trim() !== '') {
+                                target.setAttribute('data-tooltip', titleText);
+                                target.removeAttribute('title');
+                            } else {
+                                return;
+                            }
+                        }
+                        tooltipText = target.getAttribute('data-tooltip');
+                    }
+                    
+                    if (!tooltipText || tooltipText.trim() === '') return;
+                    
                     if (!tooltipEl) createTooltip();
                     
-                    tooltipEl.textContent = target.getAttribute('data-tooltip');
+                    tooltipEl.textContent = tooltipText;
                     tooltipEl.style.display = 'block';
                     
                     const rect = target.getBoundingClientRect();
                     const tooltipWidth = tooltipEl.offsetWidth;
                     const tooltipHeight = tooltipEl.offsetHeight;
                     
-                    let left = rect.left + rect.width / 2 - tooltipWidth / 2;
-                    let top = rect.top - tooltipHeight - 6;
+                    let left = 0;
+                    let top = 0;
                     
-                    // Boundary safety: show below if goes off top edge
-                    if (top < 4) {
-                        top = rect.bottom + 6;
+                    if (isCollapsedMenu) {
+                        left = rect.right + 12;
+                        top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+                    } else {
+                        left = rect.left + rect.width / 2 - tooltipWidth / 2;
+                        top = rect.top - tooltipHeight - 6;
+                        
+                        // Boundary safety: show below if goes off top edge
+                        if (top < 4) {
+                            top = rect.bottom + 6;
+                        }
                     }
+                    
                     // Boundary safety: horizontally constrained
                     if (left < 4) left = 4;
                     if (left + tooltipWidth > window.innerWidth - 4) {
@@ -478,7 +505,7 @@
                 });
                 
                 document.addEventListener('mouseout', function(e) {
-                    const target = e.target.closest('[data-tooltip]');
+                    const target = e.target.closest('[data-tooltip], #sidebar .menu-item');
                     if (!target) return;
                     
                     if (tooltipEl) {
