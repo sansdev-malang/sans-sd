@@ -21,6 +21,7 @@ class AttendanceController extends Controller
 
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
         $user = auth()->user();
+        $myActiveShifts = [];
 
         try {
             $apiParams = [
@@ -82,6 +83,14 @@ class AttendanceController extends Controller
                 ]);
                 $bonusJson = $bonusResponse->json();
                 $bonusReports = collect($bonusJson['data'] ?? []);
+
+                $empId = $user->employee_id;
+                $currentBonus = $bonusReports->first(function ($br) use ($empId) {
+                    return ($br['employee']['id'] ?? 0) == $empId;
+                });
+                if ($currentBonus && isset($currentBonus['active_shifts'])) {
+                    $myActiveShifts = $currentBonus['active_shifts'];
+                }
 
                 $prevBonusResponse = \Illuminate\Support\Facades\Http::get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                     'month' => $previousMonth,
@@ -157,7 +166,7 @@ class AttendanceController extends Controller
         }
 
         if ($user && $user->role === 'employee' && $user->employee_id) {
-            return view('admin.attendances.calendar', compact('reports', 'month', 'search', 'perPage', 'startDate', 'endDate'));
+            return view('admin.attendances.calendar', compact('reports', 'month', 'search', 'perPage', 'startDate', 'endDate', 'myActiveShifts'));
         }
 
         return view('admin.attendances.index', compact('reports', 'month', 'search', 'perPage', 'startDate', 'endDate'));
