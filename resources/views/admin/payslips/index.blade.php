@@ -105,13 +105,13 @@
                             <h3 class="text-base font-bold text-slate-900 dark:text-slate-50">{{ $emp->name }}</h3>
                             <p class="text-xs text-slate-500 mt-1">NIK: {{ $emp->nik ?? '-' }}</p>
                         </div>
-                        <div>
+                        <div class="shrink-0 ml-3">
                             @if($emp->payslip_url)
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/20">
+                                <span class="inline-flex items-center justify-center text-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/20">
                                     Tersedia
                                 </span>
                             @else
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-200/20">
+                                <span class="inline-flex items-center justify-center text-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-200/20">
                                     Belum Ada
                                 </span>
                             @endif
