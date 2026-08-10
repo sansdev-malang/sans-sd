@@ -100,13 +100,27 @@
         <!-- MINIMAL CALENDAR -->
         <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="md:col-span-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[18px] shadow-sm w-full p-3 sm:p-4">
-                <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-[1fr_auto] sm:items-center pb-3 border-b border-slate-200 dark:border-slate-800">
-                    <div class="sm:justify-self-center">
-                        <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-50 text-left sm:text-center">{{ $startMonthName }} {{ $startYear }}</h3>
-                        <p class="text-[11px] text-slate-400 dark:text-slate-500">Tampilan dua bulan kalender absensi</p>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-center pb-3 border-b border-slate-200 dark:border-slate-800">
+                    <!-- Kiri: Total Bonus -->
+                    <div class="flex items-center gap-2 sm:justify-self-start">
+                        <span class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 flex items-center justify-center shrink-0">
+                            <i data-lucide="banknote" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
+                        </span>
+                        <div class="text-left">
+                            <span class="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none">Total Bonus</span>
+                            <span class="text-sm font-extrabold text-slate-900 dark:text-slate-50 leading-tight">Rp {{ number_format($totalBonus, 0, ',', '.') }}</span>
+                        </div>
                     </div>
+                    
+                    <!-- Tengah: Bulan Tahun -->
+                    <div class="sm:justify-self-center text-left sm:text-center">
+                        <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-50 leading-none">{{ $startMonthName }} {{ $startYear }}</h3>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Kalender Roster Absensi</p>
+                    </div>
+                    
+                    <!-- Kanan: Filter Periode -->
                     <form method="GET" action="{{ route('attendances.index') }}" class="m-0 w-full sm:w-auto sm:justify-self-end">
-                        <input type="month" name="month" lang="id-ID" value="{{ $month }}" max="{{ now()->format('Y-m') }}" onchange="this.form.submit()" class="w-full sm:w-auto h-9 px-3.5 text-xs font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-slate-700 cursor-pointer">
+                        <input type="month" name="month" lang="id-ID" value="{{ $month }}" max="{{ now()->format('Y-m') }}" onchange="this.form.submit()" class="w-full sm:w-auto h-8 px-3 text-[11px] font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-slate-700 cursor-pointer">
                     </form>
                 </div>
 
@@ -214,24 +228,6 @@
 
         <aside class="md:col-span-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[18px] shadow-sm p-4 sm:p-5 flex flex-col justify-between">
                 <div>
-                    <!-- Total Bonus Card -->
-                    <div class="mb-5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 p-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0">
-                                <i data-lucide="banknote" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"></i>
-                            </span>
-                            <h5 class="text-[10px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider">Total Bonus Bulan Ini</h5>
-                        </div>
-                        <div class="mt-1">
-                            <span class="text-xl font-extrabold text-slate-900 dark:text-slate-50">
-                                Rp {{ number_format($totalBonus, 0, ',', '.') }}
-                            </span>
-                        </div>
-                        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1.5">
-                            *Akumulasi bonus kehadiran periode cut-off.
-                        </p>
-                    </div>
-
                     <div class="flex items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
                         <div>
                             <h4 class="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-50">Keterangan</h4>
