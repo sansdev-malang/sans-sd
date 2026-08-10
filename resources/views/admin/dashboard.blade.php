@@ -208,17 +208,39 @@
                                         @if(!empty($shift['description']))
                                             <div class="text-[10px] text-slate-450 dark:text-slate-500 mb-1.5">{{ $shift['description'] }}</div>
                                         @endif
-                                        <div class="space-y-1 text-[10px]">
-                                            @php
-                                                $daysName = [0 => 'Minggu', 1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu'];
-                                            @endphp
-                                            @foreach($shift['details'] as $dt)
-                                                @if(!$dt['is_off'])
-                                                    <div class="flex justify-between border-b border-slate-50 dark:border-slate-800/40 pb-0.5">
-                                                        <span>{{ $daysName[$dt['day_of_week']] ?? '-' }}</span>
-                                                        <span class="font-medium text-slate-600 dark:text-slate-300 font-mono">{{ $dt['start_time'] }} - {{ $dt['end_time'] }}</span>
-                                                    </div>
-                                                @endif
+                                        @php
+                                            $daysName = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 0 => 'Minggu'];
+                                            
+                                            // Group by "start_time - end_time"
+                                            $groupedDetails = [];
+                                            foreach($shift['details'] as $dt) {
+                                                if(!$dt['is_off']) {
+                                                    $timeRange = $dt['start_time'] . ' - ' . $dt['end_time'];
+                                                    $groupedDetails[$timeRange][] = $dt['day_of_week'];
+                                                }
+                                            }
+                                        @endphp
+                                        
+                                        <div class="space-y-1.5 mt-1.5">
+                                            @foreach($groupedDetails as $timeRange => $days)
+                                                @php
+                                                    // Sort days by day number (Monday first, Sunday last)
+                                                    usort($days, function($a, $b) {
+                                                        $valA = $a == 0 ? 7 : $a;
+                                                        $valB = $b == 0 ? 7 : $b;
+                                                        return $valA <=> $valB;
+                                                    });
+                                                    
+                                                    $dayLabels = array_map(function($d) use ($daysName) {
+                                                        return $daysName[$d] ?? '';
+                                                    }, $days);
+                                                    
+                                                    $daysStr = implode(', ', $dayLabels);
+                                                @endphp
+                                                <div class="flex items-center justify-between text-[10px] pb-1 border-b border-slate-50 dark:border-slate-800/40 last:border-0">
+                                                    <span class="text-slate-500 dark:text-slate-400 font-medium leading-relaxed max-w-[70%]">{{ $daysStr }}</span>
+                                                    <span class="px-2 py-0.5 font-semibold text-slate-700 dark:text-slate-350 bg-slate-100 dark:bg-slate-800 rounded-md font-mono text-[9px]">{{ $timeRange }}</span>
+                                                </div>
                                             @endforeach
                                         </div>
                                     </div>
