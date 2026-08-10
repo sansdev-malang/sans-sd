@@ -1,12 +1,5 @@
 @php
-    $isAdmin = auth()->user() && (
-        auth()->user()->hasRole('super_admin') || 
-        auth()->user()->hasRole('admin_sd') || 
-        auth()->user()->hasRole('admin_paud') || 
-        auth()->user()->hasRole('admin_smp') || 
-        auth()->user()->hasRole('kepala_sekolah') || 
-        auth()->user()->hasRole('waka')
-    );
+    $isSuperAdmin = auth()->user() && auth()->user()->hasRole('super_admin');
 @endphp
 <x-admin-layout>
     <style>
@@ -25,7 +18,7 @@
 
     <!-- Filters -->
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm mb-6 flex flex-col md:flex-row md:items-end gap-4">
-        @if(in_array(auth()->user()->role, ['admin', 'super_admin']))
+        @if($isSuperAdmin)
         <div class="w-full md:w-64">
             <label for="searchInput" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Cari Pegawai</label>
             <input type="text" id="searchInput" placeholder="Ketik nama..." class="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-blue-500 focus:border-blue-500">
@@ -39,7 +32,7 @@
     </div>
 
     <!-- Table List -->
-    <div class="{{ !$isAdmin ? 'hidden sm:block' : '' }} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full text-left">
+    <div class="{{ !$isSuperAdmin ? 'hidden sm:block' : '' }} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full text-left">
         <div class="overflow-x-auto" style="max-height: calc(100vh - 280px); overflow-y: auto;">
             <table class="w-full text-sm text-left">
                 <thead class="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 uppercase font-semibold border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
@@ -102,7 +95,7 @@
         </div>
     </div>
 
-    @if(!$isAdmin)
+    @if(!$isSuperAdmin)
         <!-- Mobile View for Regular Employee -->
         <div class="block sm:hidden space-y-4">
             @forelse($employees as $emp)
