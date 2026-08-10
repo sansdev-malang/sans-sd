@@ -269,15 +269,14 @@
                                         <div
                                             class="md:col-span-2 mt-4 mb-2 border-b border-slate-200 dark:border-slate-800 pb-2">
                                             <h4 class="font-bold text-slate-700 dark:text-slate-300">Data Diri</h4>
-                                        </div>
-
-                                        <div>
+                                        </div>                                        <div>
                                             <label
                                                 class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Tempat
                                                 Lahir</label>
                                             <input type="text" name="birth_place"
                                                 value="{{ old('birth_place', $employee->birth_place) }}"
                                                 class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                                            @error('birth_place') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                         </div>
                                         <div>
                                             <label
@@ -286,6 +285,7 @@
                                             <input type="date" name="birth_date"
                                                 value="{{ old('birth_date', $employee->birth_date) }}"
                                                 class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                                            @error('birth_date') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                         </div>
                                         <div>
                                             <label
@@ -296,6 +296,7 @@
                                                 <option value="Male" {{ old('gender', $employee->gender) == 'Male' ? 'selected' : '' }}>Laki-laki</option>
                                                 <option value="Female" {{ old('gender', $employee->gender) == 'Female' ? 'selected' : '' }}>Perempuan</option>
                                             </select>
+                                            @error('gender') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                         </div>
                                         <div>
                                             <label
@@ -303,6 +304,7 @@
                                                 HP / WA</label>
                                             <input type="text" name="phone" value="{{ old('phone', $employee->phone) }}"
                                                 class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                                            @error('phone') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                         </div>
                                         <div class="col-span-full">
                                             <label
@@ -310,43 +312,63 @@
                                             <input type="text" name="address"
                                                 value="{{ old('address', $employee->address) }}"
                                                 class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                                            @error('address') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                         </div>
-
+ 
                                         <div
                                             class="md:col-span-2 mt-4 mb-2 border-b border-slate-200 dark:border-slate-800 pb-2">
                                             <h4 class="font-bold text-slate-700 dark:text-slate-300">Data Kepegawaian
                                             </h4>
                                         </div>
-
+ 
                                         <div>
                                             <label
                                                 class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">NIK</label>
                                             <input type="text" name="nik" value="{{ old('nik', $employee->nik) }}"
                                                 class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                                            @error('nik') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                         </div>
                                         <div>
                                             <label
                                                 class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">NIY</label>
                                             <input type="text" name="niy" value="{{ old('niy', $employee->niy) }}"
                                                 class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                                            @error('niy') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                         </div>
                                         <div>
                                             <label
                                                 class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">NUPTK</label>
                                             <input type="text" name="nuptk" value="{{ old('nuptk', $employee->nuptk) }}"
                                                 class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                                            @error('nuptk') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                         </div>
                                         <div>
                                             <label
                                                 class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">NRG</label>
                                             <input type="text" name="nrg" value="{{ old('nrg', $employee->nrg) }}"
                                                 class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                                            @error('nrg') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Pangkat / Golongan</label>
+                                            <input type="text" name="pangkat_golongan" value="{{ old('pangkat_golongan', $employee->pangkat_golongan) }}"
+                                                class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                                            @error('pangkat_golongan') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                         </div>
                                         <div>
                                             <label
                                                 class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Pendidikan Terakhir</label>
                                             <input type="text" name="last_education" value="{{ old('last_education', $employee->last_education) }}"
                                                 class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                                            @error('last_education') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Jurusan</label>
+                                            <input type="text" name="major" value="{{ old('major', $employee->major) }}"
+                                                class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                                            @error('major') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                         </div>
                                     </div>
                                     <div
