@@ -616,14 +616,12 @@
                                     </div>
                                     <div class="min-w-0">
                                         <p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">Pengajuan Izin / Cuti ({{ $leave->type }})</p>
-                                        <p class="text-xs text-slate-500">Status: 
-                                            <span class="font-bold {{ $leave->status == 'Approved' ? 'text-emerald-600 dark:text-emerald-400' : ($leave->status == 'Rejected' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-500') }}">
-                                                {{ $leave->status }}
-                                            </span>
-                                        </p>
+                                        <!-- Time on mobile -->
+                                        <span class="sm:hidden text-[10px] text-slate-400 dark:text-slate-500 font-medium block mt-0.5">{{ $leave->created_at->diffForHumans() }}</span>
                                     </div>
                                 </div>
-                                <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0 mt-0.5">{{ $leave->created_at->diffForHumans() }}</span>
+                                <!-- Time on desktop -->
+                                <span class="hidden sm:inline-block text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0 mt-0.5">{{ $leave->created_at->diffForHumans() }}</span>
                             </div>
                         @empty
                             <div class="text-xs text-slate-500 text-center py-4">Belum ada riwayat aktivitas pengajuan cuti/izin.</div>
