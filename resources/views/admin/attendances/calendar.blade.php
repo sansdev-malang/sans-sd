@@ -48,6 +48,12 @@
             $end = \Carbon\Carbon::parse($endDate);
             $report = $reports->first(); 
             $dailyDetails = $report['daily_details'] ?? [];
+            
+            $totalBonus = 0;
+            foreach ($dailyDetails as $detail) {
+                $totalBonus += $detail['calculated_bonus'] ?? 0;
+            }
+
             \Carbon\Carbon::setLocale('id');
 
             $calendarStart = $start->copy()->startOfMonth();
@@ -208,6 +214,24 @@
 
         <aside class="md:col-span-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[18px] shadow-sm p-4 sm:p-5 flex flex-col justify-between">
                 <div>
+                    <!-- Total Bonus Card -->
+                    <div class="mb-5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0">
+                                <i data-lucide="banknote" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"></i>
+                            </span>
+                            <h5 class="text-[10px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider">Total Bonus Bulan Ini</h5>
+                        </div>
+                        <div class="mt-1">
+                            <span class="text-xl font-extrabold text-slate-900 dark:text-slate-50">
+                                Rp {{ number_format($totalBonus, 0, ',', '.') }}
+                            </span>
+                        </div>
+                        <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-1.5">
+                            *Akumulasi bonus kehadiran periode cut-off.
+                        </p>
+                    </div>
+
                     <div class="flex items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
                         <div>
                             <h4 class="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-50">Keterangan</h4>
