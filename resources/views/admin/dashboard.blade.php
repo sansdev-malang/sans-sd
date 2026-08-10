@@ -283,15 +283,32 @@
                                         
                                         <!-- Circles & Text Labels on Points -->
                                         @foreach($chartPoints as $pt)
-                                            <!-- Point Circle -->
-                                            <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="3.5" class="fill-indigo-600 dark:fill-indigo-400 stroke-white dark:stroke-slate-900" style="{{ !empty($pt['is_late']) ? 'fill: #f59e0b;' : '' }}" stroke-width="1">
-                                                <title>Tanggal: {{ $pt['date'] }}&#10;Jam Masuk: {{ $pt['check_in'] !== '-' ? $pt['check_in'] : 'Belum absen' }}&#10;Jadwal Kerja: {{ $pt['shift_start'] ? $pt['shift_start'] . ' - ' . ($pt['shift_end'] ?? 'Selesai') : 'Libur/Off' }} {{ $pt['shift_name'] ? '(' . $pt['shift_name'] . ')' : '' }}</title>
-                                            </circle>
-                                            
-                                            <!-- Time Text -->
-                                            <text x="{{ $pt['x'] }}" y="{{ $pt['y'] - 8 }}" text-anchor="middle" class="text-[8px] sm:text-[9px] font-bold fill-slate-600 dark:fill-slate-300" style="{{ !empty($pt['is_late']) ? 'fill: #f59e0b;' : '' }}">
-                                                {{ $pt['time'] }}
-                                            </text>
+                                            <g class="group relative cursor-pointer outline-none" tabindex="0">
+                                                <!-- Point Circle -->
+                                                <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="3.5" class="fill-indigo-600 dark:fill-indigo-400 stroke-white dark:stroke-slate-900" style="{{ !empty($pt['is_late']) ? 'fill: #f59e0b;' : '' }}" stroke-width="1" />
+                                                
+                                                <!-- Time Text -->
+                                                <text x="{{ $pt['x'] }}" y="{{ $pt['y'] - 8 }}" text-anchor="middle" class="text-[8px] sm:text-[9px] font-bold fill-slate-600 dark:fill-slate-300" style="{{ !empty($pt['is_late']) ? 'fill: #f59e0b;' : '' }}">
+                                                    {{ $pt['time'] }}
+                                                </text>
+
+                                                <!-- Invisible interactive area for hover/touch (makes it easy to tap on mobile!) -->
+                                                <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] - 10 }}" r="18" fill="transparent" class="cursor-pointer" />
+
+                                                <!-- Styled Tooltip using foreignObject -->
+                                                <foreignObject x="{{ $pt['x'] - 65 }}" y="{{ $pt['y'] - 75 }}" width="130" height="65" class="pointer-events-none invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus:visible group-focus:opacity-100 group-active:visible group-active:opacity-100 transition-all duration-200 overflow-visible z-50">
+                                                    <div class="bg-slate-900/95 dark:bg-slate-950/95 text-white p-2 rounded-lg shadow-lg text-[9px] sm:text-[10px] leading-snug border border-slate-700/50 backdrop-blur-sm relative">
+                                                        <div class="font-semibold border-b border-slate-700/50 pb-0.5 mb-1 flex justify-between">
+                                                            <span>{{ $pt['date'] }}</span>
+                                                            <span class="{{ !empty($pt['is_late']) ? 'text-amber-400 font-bold' : 'text-emerald-450 font-bold' }}">{{ $pt['status'] }}</span>
+                                                        </div>
+                                                        <div>Jam Masuk: <span class="font-semibold">{{ $pt['check_in'] !== '-' ? $pt['check_in'] : 'Belum absen' }}</span></div>
+                                                        <div class="text-[8px] text-slate-300 mt-0.5">Jadwal: {{ $pt['shift_start'] ? $pt['shift_start'] . ' - ' . ($pt['shift_end'] ?? 'Selesai') : 'Libur/Off' }}</div>
+                                                        <!-- Tooltip Arrow -->
+                                                        <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 dark:bg-slate-950 border-r border-b border-slate-700/50 rotate-45"></div>
+                                                    </div>
+                                                </foreignObject>
+                                            </g>
                                         @endforeach
                                         @endif
                                     @endif
