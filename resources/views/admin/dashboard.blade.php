@@ -297,15 +297,15 @@
 
                                                 <!-- Styled Tooltip using foreignObject -->
                                                 <foreignObject x="{{ $pt['x'] - 65 }}" y="{{ $pt['y'] - 75 }}" width="130" height="65" class="pointer-events-none invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus:visible group-focus:opacity-100 group-active:visible group-active:opacity-100 transition-all duration-200 overflow-visible z-50">
-                                                    <div class="bg-slate-900/95 dark:bg-slate-950/95 text-white p-2 rounded-lg shadow-lg text-[9px] sm:text-[10px] leading-snug border border-slate-700/50 backdrop-blur-sm relative">
-                                                        <div class="font-semibold border-b border-slate-700/50 pb-0.5 mb-1 flex justify-between">
-                                                            <span>{{ $pt['date'] }}</span>
-                                                            <span class="{{ !empty($pt['is_late']) ? 'text-amber-400 font-bold' : 'text-emerald-450 font-bold' }}">{{ $pt['status'] }}</span>
+                                                    <div class="bg-white/95 dark:bg-slate-950/95 text-slate-800 dark:text-white p-2 rounded-lg shadow-lg text-[9px] sm:text-[10px] leading-snug border border-slate-200 dark:border-slate-800/80 backdrop-blur-sm relative">
+                                                        <div class="font-semibold border-b border-slate-200 dark:border-slate-800/50 pb-0.5 mb-1 flex justify-between">
+                                                            <span class="text-slate-950 dark:text-white">{{ $pt['date'] }}</span>
+                                                            <span class="{{ !empty($pt['is_late']) ? 'text-amber-500 dark:text-amber-400 font-bold' : 'text-emerald-600 dark:text-emerald-450 font-bold' }}">{{ $pt['status'] }}</span>
                                                         </div>
-                                                        <div>Jam Masuk: <span class="font-semibold">{{ $pt['check_in'] !== '-' ? $pt['check_in'] : 'Belum absen' }}</span></div>
-                                                        <div class="text-[8px] text-slate-300 mt-0.5">Jadwal: {{ $pt['shift_start'] ? $pt['shift_start'] . ' - ' . ($pt['shift_end'] ?? 'Selesai') : 'Libur/Off' }}</div>
+                                                        <div>Jam Masuk: <span class="font-semibold text-slate-950 dark:text-white">{{ $pt['check_in'] !== '-' ? $pt['check_in'] : 'Belum absen' }}</span></div>
+                                                        <div class="text-[8px] text-slate-500 dark:text-slate-400 mt-0.5">Jadwal: {{ $pt['shift_start'] ? $pt['shift_start'] . ' - ' . ($pt['shift_end'] ?? 'Selesai') : 'Libur/Off' }}</div>
                                                         <!-- Tooltip Arrow -->
-                                                        <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 dark:bg-slate-950 border-r border-b border-slate-700/50 rotate-45"></div>
+                                                        <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white dark:bg-slate-950 border-r border-b border-slate-200 dark:border-slate-800/80 rotate-45"></div>
                                                     </div>
                                                 </foreignObject>
                                             </g>
