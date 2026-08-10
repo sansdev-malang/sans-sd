@@ -64,7 +64,6 @@ class AppServiceProvider extends ServiceProvider
                 } else {
                     $readIds = \Illuminate\Support\Facades\Cache::get('read_leave_ids_' . $user->id, []);
                     $myNotificationsQuery = \App\Models\LeaveRequest::where('employee_id', $user->employee_id)
-                        ->whereIn('status', ['Approved', 'Rejected'])
                         ->where('created_at', '>=', now()->subDays(3))
                         ->whereNotIn('id', $readIds);
                     $myNotifications = $myNotificationsQuery->latest()->limit(5)->get();

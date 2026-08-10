@@ -108,11 +108,11 @@
                             @if(isset($myNotifications) && count($myNotifications) > 0)
                                 @foreach($myNotifications as $item)
                                     <a href="{{ route('my-leaves.index', ['read_id' => $item->id]) }}" class="flex items-start gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
-                                        <div class="w-8 h-8 rounded-lg {{ $item->status === 'Approved' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-100/50 dark:border-emerald-900/30' : 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border border-rose-100/50 dark:border-rose-900/30' }} flex items-center justify-center shrink-0">
-                                            <i data-lucide="{{ $item->status === 'Approved' ? 'check-circle-2' : 'x-circle' }}" class="w-4 h-4"></i>
+                                        <div class="w-8 h-8 rounded-lg bg-indigo-50/60 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100/40 dark:border-indigo-900/20">
+                                            <i data-lucide="file-text" class="w-4 h-4"></i>
                                         </div>
                                         <div class="space-y-0.5 overflow-hidden">
-                                            <p class="font-bold text-slate-800 dark:text-slate-200 truncate">Izin Anda {{ $item->status === 'Approved' ? 'Disetujui' : 'Ditolak' }}</p>
+                                            <p class="font-bold text-slate-800 dark:text-slate-200 truncate">Pengajuan Izin / Cuti Terkirim</p>
                                             <p class="text-slate-500 dark:text-slate-400 text-[10px] truncate">Jenis: {{ $item->type }} tanggal {{ $item->start_date->format('d M Y') }}.</p>
                                         </div>
                                     </a>
