@@ -261,6 +261,68 @@
                         </div>
                     @endforeach
                 </div>
+
+                @if(!empty($myActiveShifts))
+                    <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center gap-1.5 mb-3">
+                            <span class="w-5 h-5 rounded-md bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center shrink-0">
+                                <i data-lucide="calendar-clock" class="w-3 h-3 text-slate-500 dark:text-slate-400"></i>
+                            </span>
+                            <h4 class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Jadwal Shift Kerja Aktif Anda</h4>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            @foreach($myActiveShifts as $index => $shift)
+                                <div class="bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200/60 dark:border-slate-800 rounded-xl p-3.5 flex flex-col justify-between">
+                                    <div>
+                                        @php
+                                            $code = '';
+                                            if (stripos($shift['name'], 'malam') !== false) {
+                                                $code = 'M';
+                                            } elseif (stripos($shift['name'], 'pagi') !== false) {
+                                                $code = 'P';
+                                            } elseif (stripos($shift['name'], 'siang') !== false) {
+                                                $code = 'S';
+                                            } else {
+                                                $code = strtoupper(substr($shift['name'], 0, 1));
+                                            }
+                                        @endphp
+                                        <div class="font-bold text-xs text-slate-800 dark:text-slate-200 mb-1 flex items-center justify-between">
+                                            <span>{{ $shift['name'] }} ({{ $code }})</span>
+                                        </div>
+                                        @if(!empty($shift['description']))
+                                            <div class="text-[10px] text-slate-405 dark:text-slate-500 mb-2 leading-snug">{{ $shift['description'] }}</div>
+                                        @endif
+                                        
+                                        @php
+                                            $daysName = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 0 => 'Minggu'];
+                                            $groupedDetails = [];
+                                            foreach($shift['details'] as $dt) {
+                                                if(!$dt['is_off']) {
+                                                    $timeRange = substr($dt['start_time'], 0, 5) . ' - ' . substr($dt['end_time'], 0, 5);
+                                                    $groupedDetails[$timeRange][] = $dt['day_of_week'];
+                                                }
+                                            }
+                                        @endphp
+                                        @if(!empty($groupedDetails))
+                                            <div class="space-y-1.5 mt-2 border-t border-slate-200/40 dark:border-slate-800/60 pt-2">
+                                                @foreach($groupedDetails as $timeRange => $days)
+                                                    <div class="flex justify-between text-[10px] text-slate-500 dark:text-slate-400">
+                                                        <span class="font-medium">
+                                                            @foreach($days as $dIdx => $d)
+                                                                {{ $daysName[$d] }}{{ $dIdx < count($days) - 1 ? ', ' : '' }}
+                                                            @endforeach
+                                                        </span>
+                                                        <span class="font-bold text-slate-700 dark:text-slate-350">{{ $timeRange }}</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -303,61 +365,6 @@
                             </div>
                         </div>
                     </div>
-
-                    @if(!empty($myActiveShifts))
-                        <div class="mt-5 pt-4 border-t border-slate-200 dark:border-slate-800">
-                            <h4 class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Daftar Jam Kerja</h4>
-                            <div class="space-y-3">
-                                @foreach($myActiveShifts as $index => $shift)
-                                    <div class="{{ $index > 0 ? 'pt-3 border-t border-slate-100 dark:border-slate-800/50' : '' }}">
-                                        @php
-                                            $code = '';
-                                            if (stripos($shift['name'], 'malam') !== false) {
-                                                $code = 'M';
-                                            } elseif (stripos($shift['name'], 'pagi') !== false) {
-                                                $code = 'P';
-                                            } elseif (stripos($shift['name'], 'siang') !== false) {
-                                                $code = 'S';
-                                            } else {
-                                                $code = strtoupper(substr($shift['name'], 0, 1));
-                                            }
-                                        @endphp
-                                        <div class="font-bold text-xs text-slate-700 dark:text-slate-200 mb-1 flex items-center justify-between">
-                                            <span>{{ $shift['name'] }} ({{ $code }})</span>
-                                        </div>
-                                        @if(!empty($shift['description']))
-                                            <div class="text-[9px] text-slate-400 dark:text-slate-500 mb-1.5 leading-snug">{{ $shift['description'] }}</div>
-                                        @endif
-                                        
-                                        @php
-                                            $daysName = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 0 => 'Minggu'];
-                                            $groupedDetails = [];
-                                            foreach($shift['details'] as $dt) {
-                                                if(!$dt['is_off']) {
-                                                    $timeRange = substr($dt['start_time'], 0, 5) . ' - ' . substr($dt['end_time'], 0, 5);
-                                                    $groupedDetails[$timeRange][] = $dt['day_of_week'];
-                                                }
-                                            }
-                                        @endphp
-                                        @if(!empty($groupedDetails))
-                                            <div class="space-y-1 mt-1.5">
-                                                @foreach($groupedDetails as $timeRange => $days)
-                                                    <div class="flex justify-between text-[9px] text-slate-500 dark:text-slate-400">
-                                                        <span>
-                                                            @foreach($days as $dIdx => $d)
-                                                                {{ $daysName[$d] }}{{ $dIdx < count($days) - 1 ? ', ' : '' }}
-                                                            @endforeach
-                                                        </span>
-                                                        <span class="font-medium text-slate-700 dark:text-slate-350">{{ $timeRange }}</span>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
                 </div>
 
                 <div class="mt-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-3">
