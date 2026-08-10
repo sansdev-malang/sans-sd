@@ -117,7 +117,7 @@
                         <div>
                             <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Keterlambatan</p>
                             <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                                <span>{{ $myReport['total_late_minutes'] ?? 0 }}</span> Menit
+                                <span>{{ $totalLateDays ?? 0 }}</span> Hari
                             </h3>
                         </div>
                         <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
@@ -125,7 +125,7 @@
                         </div>
                     </div>
                     <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                        @if(($myReport['total_late_minutes'] ?? 0) > 0)
+                        @if(($totalLateDays ?? 0) > 0)
                             <span class="text-amber-500 font-bold">Terlambat</span> pada siklus aktif
                         @else
                             <span class="text-emerald-600 dark:text-emerald-400 font-bold">Tepat Waktu</span>

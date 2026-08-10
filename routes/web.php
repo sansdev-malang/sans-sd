@@ -104,7 +104,13 @@ Route::get('/dashboard', function () {
     // Prepare SVG Chart Points from HRD API daily_details
     $chartPoints = [];
     $dailyDetails = $myReport['daily_details'] ?? [];
+    $totalLateDays = 0;
     if (!empty($dailyDetails)) {
+        foreach ($dailyDetails as $det) {
+            if (isset($det['late_minutes']) && $det['late_minutes'] > 0) {
+                $totalLateDays++;
+            }
+        }
         ksort($dailyDetails);
         // Filter out Pending days
         $completedDetails = array_filter($dailyDetails, function ($day) {
@@ -152,7 +158,8 @@ Route::get('/dashboard', function () {
         'myReport',
         'totalLeavesThisYear',
         'myRecentLeaves',
-        'chartPoints'
+        'chartPoints',
+        'totalLateDays'
     ));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
