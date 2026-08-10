@@ -14,7 +14,7 @@ class PayslipController extends Controller
         $month = $request->input('month', Carbon::today()->format('Y-m'));
         $schoolUnit = config('app.school_unit', 'sd');
         
-        $hrdUrl = \App\Models\Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
+        $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
         
         $payslips = [];
         

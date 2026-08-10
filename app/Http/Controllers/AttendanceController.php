@@ -19,7 +19,7 @@ class AttendanceController extends Controller
         $perPage = $request->input('per_page', 15);
         $schoolUnit = config('app.school_unit', 'smp');
 
-        $hrdUrl = \App\Models\Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
+        $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
         $user = auth()->user();
 
         try {
@@ -129,7 +129,7 @@ class AttendanceController extends Controller
         $format = $request->input('format', 'excel');
         $schoolUnit = config('app.school_unit', 'smp');
 
-        $hrdUrl = \App\Models\Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
+        $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
 
         try {
             $response = \Illuminate\Support\Facades\Http::get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [

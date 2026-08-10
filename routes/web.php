@@ -82,7 +82,7 @@ Route::get('/dashboard', function () {
 
             // Fetch Presence & Bonus details from HRD for the top cards
             $schoolUnit = config('app.school_unit', 'sd');
-            $hrdUrl = \App\Models\Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
+            $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
             try {
                 $response = \Illuminate\Support\Facades\Http::timeout(15)->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                     'month' => date('Y-m'),

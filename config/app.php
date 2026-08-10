@@ -120,6 +120,8 @@ return [
 
     'school_unit' => env('SCHOOL_UNIT', null),
 
+    'hrd_url' => env('HRD_URL', 'http://sans-hrd.test'),
+
     'hrd_api_token' => env('HRD_API_TOKEN', 'sansdev_default_token'),
 
     'maintenance' => [

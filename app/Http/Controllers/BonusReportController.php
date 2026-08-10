@@ -19,7 +19,7 @@ class BonusReportController extends Controller
 
         $schoolUnit = config('app.school_unit', 'smp');
         $unitStr = strtoupper($schoolUnit);
-        $hrdUrl = Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
+        $hrdUrl = Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
 
         try {
             $response = Http::get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
@@ -100,7 +100,7 @@ class BonusReportController extends Controller
 
         $schoolUnit = config('app.school_unit', 'smp');
         $unitStr = strtoupper($schoolUnit);
-        $hrdUrl = Setting::get('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'));
+        $hrdUrl = Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
 
         try {
             $response = Http::get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [

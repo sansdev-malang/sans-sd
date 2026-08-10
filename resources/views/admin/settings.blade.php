@@ -212,7 +212,7 @@
                                     class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">URL
                                     Aplikasi HRD</label>
                                 <input type="url" name="hrd_api_url" id="hrd_api_url"
-                                    value="{{ old('hrd_api_url', setting('hrd_api_url', env('HRD_URL', 'http://sans-hrd.test'))) }}"
+                                    value="{{ old('hrd_api_url', setting('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'))) }}"
                                     placeholder="contoh: https://hrd.sekolahanaksaleh.sch.id"
                                     class="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700 transition-colors">
                             </div>
