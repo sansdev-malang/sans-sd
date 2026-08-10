@@ -198,6 +198,14 @@
                             .calendar-cell:focus .calendar-tooltip {
                                 display: block !important;
                             }
+                            @media (max-width: 639px) {
+                                .desktop-time { display: none !important; }
+                                .mobile-time { display: block !important; }
+                            }
+                            @media (min-width: 640px) {
+                                .desktop-time { display: inline-block !important; }
+                                .mobile-time { display: none !important; }
+                            }
                         </style>
                         <div class="mb-4 p-3.5 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800/80 rounded-lg text-xs">
                             <div class="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-300 mb-3">
@@ -617,11 +625,11 @@
                                     <div class="min-w-0">
                                         <p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">Pengajuan Izin / Cuti ({{ $leave->type }})</p>
                                         <!-- Time on mobile -->
-                                        <span class="sm:hidden text-[10px] text-slate-400 dark:text-slate-500 font-medium block mt-0.5">{{ $leave->created_at->diffForHumans() }}</span>
+                                        <span class="mobile-time text-[10px] text-slate-400 dark:text-slate-500 font-medium block mt-0.5">{{ $leave->created_at->format('H:i') }}</span>
                                     </div>
                                 </div>
                                 <!-- Time on desktop -->
-                                <span class="hidden sm:inline-block text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0 mt-0.5">{{ $leave->created_at->diffForHumans() }}</span>
+                                <span class="desktop-time text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0 mt-0.5">{{ $leave->created_at->format('H:i') }}</span>
                             </div>
                         @empty
                             <div class="text-xs text-slate-500 text-center py-4">Belum ada riwayat aktivitas pengajuan cuti/izin.</div>
