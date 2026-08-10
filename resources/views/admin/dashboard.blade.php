@@ -177,7 +177,7 @@
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             <!-- Graph Card (SVG) -->
-            <div class="animate-card lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 relative flex flex-col justify-between overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+            <div class="animate-card lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 relative flex flex-col justify-between overflow-visible shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <div>
@@ -193,7 +193,13 @@
 
                     <!-- Informational Box: Shift Active Summary (Concept 3) -->
                     @if(!$isAdmin && !empty($myActiveShifts))
-                        <div class="mb-4 p-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-lg text-xs">
+                        <style>
+                            .calendar-cell:hover .calendar-tooltip,
+                            .calendar-cell:focus .calendar-tooltip {
+                                display: block !important;
+                            }
+                        </style>
+                        <div class="mb-4 p-3.5 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800/80 rounded-lg text-xs">
                             <div class="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-300 mb-3">
                                 <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-500 shrink-0"></i>
                                 <span>Informasi Shift Kerja Bulan Ini:</span>
@@ -207,8 +213,20 @@
                                         <div class="space-y-3">
                                             @foreach($myActiveShifts as $index => $shift)
                                                 <div class="{{ $index > 0 ? 'pt-3 border-t border-slate-100 dark:border-slate-800/50' : '' }}">
+                                                    @php
+                                                        $code = '';
+                                                        if (stripos($shift['name'], 'malam') !== false) {
+                                                            $code = 'M';
+                                                        } elseif (stripos($shift['name'], 'pagi') !== false) {
+                                                            $code = 'P';
+                                                        } elseif (stripos($shift['name'], 'siang') !== false) {
+                                                            $code = 'S';
+                                                        } else {
+                                                            $code = strtoupper(substr($shift['name'], 0, 1));
+                                                        }
+                                                    @endphp
                                                     <div class="font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center justify-between">
-                                                        <span>{{ $shift['name'] }}</span>
+                                                        <span>{{ $shift['name'] }} ({{ $code }})</span>
                                                     </div>
                                                     @if(!empty($shift['description']))
                                                         <div class="text-[9px] text-slate-450 dark:text-slate-500 mb-1.5 leading-snug">{{ $shift['description'] }}</div>
@@ -256,51 +274,82 @@
                                         <div>
                                             <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Kalender Jadwal Anda Bulan Ini</p>
                                             
-                                            <!-- Calendar Grid Header -->
-                                            <div class="grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-slate-400 dark:text-slate-500 uppercase mb-1.5">
-                                                <div>Sen</div>
-                                                <div>Sel</div>
-                                                <div>Rab</div>
-                                                <div>Kam</div>
-                                                <div>Jum</div>
-                                                <div>Sab</div>
-                                                <div>Min</div>
-                                            </div>
-                                            
-                                            <!-- Calendar Days Grid -->
-                                            <div class="grid grid-cols-7 gap-1 items-start">
-                                                @foreach($myCalendarDays as $day)
-                                                    @if($day['is_empty'])
-                                                        <div class="aspect-square bg-slate-50/30 dark:bg-slate-900/10 rounded-md" style="aspect-ratio: 1 / 1;"></div>
-                                                    @else
-                                                        <div class="aspect-square flex flex-col justify-between p-1 border border-slate-100 dark:border-slate-800/60 rounded-md bg-white dark:bg-slate-900 shadow-sm relative group outline-none cursor-pointer" style="aspect-ratio: 1 / 1;" tabindex="0">
-                                                            <!-- Date Number -->
-                                                            <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-none">{{ $day['day_num'] }}</span>
-                                                            
-                                                            <!-- Shift Label Badge -->
-                                                            <span class="text-[8px] font-bold text-center py-0.5 rounded {{ $day['bg_color'] }} block w-full truncate leading-none">
-                                                                {{ $day['short_label'] }}
-                                                            </span>
-                                                            
-                                                            <!-- Tooltip on hover/tap -->
-                                                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-32 hidden group-hover:block group-focus:block z-50 pointer-events-none">
-                                                                <div class="bg-white/95 dark:bg-slate-955/95 text-slate-800 dark:text-white p-2 rounded-lg shadow-lg text-[9px] sm:text-[10px] leading-snug border border-slate-200 dark:border-slate-800/80 backdrop-blur-sm relative">
-                                                                    <div class="font-semibold border-b border-slate-200 dark:border-slate-800/50 pb-0.5 mb-1 flex justify-between">
-                                                                        <span class="text-slate-950 dark:text-white">{{ \Carbon\Carbon::parse($day['date'])->translatedFormat('d M Y') }}</span>
+                                            <div class="max-w-xs sm:max-w-sm">
+                                                <!-- Calendar Grid Header -->
+                                                <div class="grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-slate-400 dark:text-slate-500 uppercase mb-1.5">
+                                                    <div>Sen</div>
+                                                    <div>Sel</div>
+                                                    <div>Rab</div>
+                                                    <div>Kam</div>
+                                                    <div>Jum</div>
+                                                    <div>Sab</div>
+                                                    <div>Min</div>
+                                                </div>
+                                                
+                                                <!-- Calendar Days Grid -->
+                                                <div class="grid grid-cols-7 gap-1 items-start">
+                                                    @foreach($myCalendarDays as $day)
+                                                        @if($day['is_empty'])
+                                                            <div class="aspect-square bg-slate-50/30 dark:bg-slate-900/10 rounded-md" style="aspect-ratio: 1 / 1;"></div>
+                                                        @else
+                                                            @php
+                                                                $typeClass = 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500';
+                                                                switch($day['type'] ?? 'default') {
+                                                                    case 'malam':
+                                                                        $typeClass = 'bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400';
+                                                                        break;
+                                                                    case 'pagi':
+                                                                        $typeClass = 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400';
+                                                                        break;
+                                                                    case 'siang':
+                                                                        $typeClass = 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400';
+                                                                        break;
+                                                                    case 'other':
+                                                                        $typeClass = 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400';
+                                                                        break;
+                                                                    case 'off':
+                                                                        $typeClass = 'bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500';
+                                                                        break;
+                                                                    case 'sakit':
+                                                                        $typeClass = 'bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400';
+                                                                        break;
+                                                                    case 'izin':
+                                                                        $typeClass = 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400';
+                                                                        break;
+                                                                    case 'cuti':
+                                                                        $typeClass = 'bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400';
+                                                                        break;
+                                                                }
+                                                            @endphp
+                                                            <div class="calendar-cell aspect-square flex flex-col justify-between p-1 border border-slate-100 dark:border-slate-800/60 rounded-md bg-white dark:bg-slate-900 shadow-sm relative group outline-none cursor-pointer" style="aspect-ratio: 1 / 1;" tabindex="0">
+                                                                <!-- Date Number -->
+                                                                <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-none">{{ $day['day_num'] }}</span>
+                                                                
+                                                                <!-- Shift Label Badge -->
+                                                                <span class="text-[8px] font-bold text-center py-0.5 rounded {{ $typeClass }} block w-full truncate leading-none">
+                                                                    {{ $day['short_label'] }}
+                                                                </span>
+                                                                
+                                                                <!-- Tooltip on hover/tap -->
+                                                                <div class="calendar-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-32 hidden group-hover:block group-focus:block z-50 pointer-events-none">
+                                                                    <div class="bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-white p-2 rounded-lg shadow-lg text-[9px] sm:text-[10px] leading-snug border border-slate-200 dark:border-slate-800/80 backdrop-blur-sm relative">
+                                                                        <div class="font-semibold border-b border-slate-200 dark:border-slate-800/50 pb-0.5 mb-1 flex justify-between">
+                                                                            <span class="text-slate-950 dark:text-white">{{ \Carbon\Carbon::parse($day['date'])->translatedFormat('d M Y') }}</span>
+                                                                        </div>
+                                                                        @if($day['shift_name'])
+                                                                            <div class="font-semibold text-indigo-600 dark:text-indigo-400">{{ $day['shift_name'] }}</div>
+                                                                            <div class="text-[8px] text-slate-500 dark:text-slate-400">Jam: {{ $day['shift_start'] }} - {{ $day['shift_end'] }}</div>
+                                                                        @else
+                                                                            <div class="text-slate-400 dark:text-slate-500">Libur / Off</div>
+                                                                        @endif
+                                                                        <!-- Arrow -->
+                                                                        <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white dark:bg-slate-900 border-r border-b border-slate-200 dark:border-slate-800/80 rotate-45"></div>
                                                                     </div>
-                                                                    @if($day['shift_name'])
-                                                                        <div class="font-semibold text-indigo-600 dark:text-indigo-400">{{ $day['shift_name'] }}</div>
-                                                                        <div class="text-[8px] text-slate-500 dark:text-slate-400">Jam: {{ $day['shift_start'] }} - {{ $day['shift_end'] }}</div>
-                                                                    @else
-                                                                        <div class="text-slate-400 dark:text-slate-500">Libur / Off</div>
-                                                                    @endif
-                                                                    <!-- Arrow -->
-                                                                    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white dark:bg-slate-955 border-r border-b border-slate-200 dark:border-slate-800/80 rotate-45"></div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    @endif
-                                                @endforeach
+                                                        @endif
+                                                    @endforeach
+                                                </div>
                                             </div>
                                         </div>
                                         
