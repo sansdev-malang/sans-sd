@@ -33,6 +33,9 @@ class MyLeaveRequestController extends Controller
                 $newReadIds = array_unique(array_merge($readIds, $recentIds));
                 \Illuminate\Support\Facades\Cache::forever('read_leave_ids_' . $user->id, $newReadIds);
             }
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['success' => true]);
+            }
             return redirect()->route('my-leaves.index');
         }
 

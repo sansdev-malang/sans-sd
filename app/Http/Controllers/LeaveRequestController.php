@@ -30,6 +30,9 @@ class LeaveRequestController extends Controller
             $readIds = \Illuminate\Support\Facades\Cache::get('read_leave_ids_' . auth()->id(), []);
             $newReadIds = array_unique(array_merge($readIds, $recentIds));
             \Illuminate\Support\Facades\Cache::forever('read_leave_ids_' . auth()->id(), $newReadIds);
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['success' => true]);
+            }
             return redirect()->route('leaves.index');
         }
 

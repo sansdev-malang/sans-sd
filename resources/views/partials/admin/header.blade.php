@@ -42,7 +42,7 @@
                 
                 <!-- Display badge if there are notifications -->
                 @if($totalNotifs > 0)
-                    <span class="absolute top-1 right-1 w-2 h-2 bg-rose-600 dark:bg-rose-400 rounded-full ring-2 ring-white dark:ring-[#09090b]"></span>
+                    <span id="notification-badge" class="absolute top-1 right-1 w-2 h-2 bg-rose-600 dark:bg-rose-400 rounded-full ring-2 ring-white dark:ring-[#09090b]"></span>
                 @endif
             </button>
             
@@ -60,13 +60,13 @@
                 <div class="px-4 py-1.5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/20">
                     <span class="font-bold text-slate-900 dark:text-slate-100">Notifikasi</span>
                     @if($totalNotifs > 0)
-                        <span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40">
+                        <span id="notification-header-badge" class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40">
                             {{ $totalNotifs }} Baru
                         </span>
                     @endif
                 </div>
                 
-                <div class="max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
+                <div id="notification-list-container" class="max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
                     @if($totalNotifs == 0)
                         <div class="p-6 text-center text-slate-400">
                             <i data-lucide="bell-off" class="w-6 h-6 mx-auto mb-1 text-slate-300 dark:text-slate-700"></i>
@@ -122,13 +122,13 @@
                     @endif
                 </div>
                 @if($totalNotifs > 0)
-                    <div class="px-4 py-2 border-t border-slate-100 dark:border-slate-800 text-center bg-slate-50/30 dark:bg-slate-900/10">
+                    <div id="clear-all-notifs-container" class="px-4 py-2 border-t border-slate-100 dark:border-slate-800 text-center bg-slate-50/30 dark:bg-slate-900/10">
                         @php
                             $clearRoute = (auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin_sd') || auth()->user()->hasRole('admin_paud') || auth()->user()->hasRole('admin_smp') || auth()->user()->hasRole('kepala_sekolah') || auth()->user()->hasRole('waka'))
                                 ? route('leaves.index', ['clear_all' => 1])
                                 : route('my-leaves.index', ['clear_all' => 1]);
                         @endphp
-                        <a href="{{ $clearRoute }}" class="text-[10px] text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-bold hover:underline">
+                        <a href="javascript:void(0)" onclick="clearAllNotifications('{{ $clearRoute }}')" class="text-[10px] text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-bold hover:underline">
                             Tandai Semua Sudah Dibaca
                         </a>
                     </div>
@@ -136,4 +136,43 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        function clearAllNotifications(url) {
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const badge = document.getElementById('notification-badge');
+                    if (badge) badge.remove();
+                    
+                    const headerBadge = document.getElementById('notification-header-badge');
+                    if (headerBadge) headerBadge.remove();
+                    
+                    const footer = document.getElementById('clear-all-notifs-container');
+                    if (footer) footer.remove();
+                    
+                    const container = document.getElementById('notification-list-container');
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="p-6 text-center text-slate-400">
+                                <i data-lucide="bell-off" class="w-6 h-6 mx-auto mb-1 text-slate-300 dark:text-slate-700"></i>
+                                <p class="text-[10px]">Belum ada notifikasi baru.</p>
+                            </div>
+                        `;
+                        if (window.lucide) {
+                            window.lucide.createIcons();
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error clearing notifications:', error);
+            });
+        }
+    </script>
 </header>
