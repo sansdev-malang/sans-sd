@@ -75,18 +75,45 @@ class AttendanceController extends Controller
                     return ($item['employee']['id'] ?? 0) == $user->employee_id;
                 });
 
-                // Load local attendances to attach calculated_bonus
-                $localAttendances = \App\Models\Attendance::where('employee_id', $user->employee_id)
-                    ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-                    ->get()
-                    ->keyBy('date');
+                // Fetch bonus reports for both current and previous month from central HRD
+                $bonusResponse = \Illuminate\Support\Facades\Http::get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                    'month' => $month,
+                    'unit_id' => strtolower($schoolUnit)
+                ]);
+                $bonusJson = $bonusResponse->json();
+                $bonusReports = collect($bonusJson['data'] ?? []);
 
-                $reports = $reports->map(function ($report) use ($localAttendances) {
+                $prevBonusResponse = \Illuminate\Support\Facades\Http::get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                    'month' => $previousMonth,
+                    'unit_id' => strtolower($schoolUnit)
+                ]);
+                $prevBonusJson = $prevBonusResponse->json();
+                $previousBonusReports = collect($prevBonusJson['data'] ?? []);
+
+                $reports = $reports->map(function ($report) use ($bonusReports, $previousBonusReports) {
+                    $empId = $report['employee']['id'] ?? 0;
+                    
+                    $currentBonus = $bonusReports->first(function ($br) use ($empId) {
+                        return ($br['employee']['id'] ?? 0) == $empId;
+                    });
+                    
+                    $prevBonus = $previousBonusReports->first(function ($br) use ($empId) {
+                        return ($br['employee']['id'] ?? 0) == $empId;
+                    });
+                    
+                    $bonusDetails = [];
+                    if ($prevBonus && isset($prevBonus['daily_details'])) {
+                        $bonusDetails = $prevBonus['daily_details'];
+                    }
+                    if ($currentBonus && isset($currentBonus['daily_details'])) {
+                        $bonusDetails = $bonusDetails + $currentBonus['daily_details'];
+                    }
+
                     if (isset($report['daily_details'])) {
                         $details = $report['daily_details'];
                         foreach ($details as $dateStr => &$detail) {
-                            $localAtt = $localAttendances->get($dateStr);
-                            $detail['calculated_bonus'] = $localAtt ? (float)$localAtt->calculated_bonus : 0.00;
+                            $bonusDetail = $bonusDetails[$dateStr] ?? null;
+                            $detail['calculated_bonus'] = $bonusDetail ? (float)($bonusDetail['bonus_nominal'] ?? 0.00) : 0.00;
                         }
                         $report['daily_details'] = $details;
                     }
