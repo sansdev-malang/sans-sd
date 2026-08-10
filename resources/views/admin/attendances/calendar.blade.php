@@ -100,27 +100,27 @@
         <!-- MINIMAL CALENDAR -->
         <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="md:col-span-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[18px] shadow-sm w-full p-3 sm:p-4">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-center pb-3 border-b border-slate-200 dark:border-slate-800">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-3 border-b border-slate-200 dark:border-slate-800">
                     <!-- Kiri: Akumulasi Bonus -->
-                    <div class="flex items-center gap-2 sm:justify-self-start">
-                        <span class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 flex items-center justify-center shrink-0">
+                    <div class="flex items-center gap-2 order-2 md:order-1">
+                        <span class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 flex items-center justify-center shrink-0">
                             <i data-lucide="banknote" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
                         </span>
                         <div class="text-left">
-                            <span class="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none">Akumulasi Bonus</span>
-                            <span class="text-sm font-extrabold text-slate-900 dark:text-slate-50 leading-tight">Rp {{ number_format($totalBonus, 0, ',', '.') }}</span>
+                            <span class="block text-sm font-extrabold text-slate-900 dark:text-slate-50 leading-tight">Rp {{ number_format($totalBonus, 0, ',', '.') }}</span>
+                            <span class="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mt-0.5">Akumulasi Bonus</span>
                         </div>
                     </div>
                     
                     <!-- Tengah: Bulan Tahun -->
-                    <div class="sm:justify-self-center text-left sm:text-center">
-                        <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-50 leading-none">{{ $startMonthName }} {{ $startYear }}</h3>
-                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Kalender Roster Absensi</p>
+                    <div class="text-left md:text-center order-1 md:order-2">
+                        <h3 class="text-base md:text-lg font-bold text-slate-900 dark:text-slate-50 leading-tight">{{ $startMonthName }} {{ $startYear }}</h3>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Tampilan dua bulan kalender absensi</p>
                     </div>
                     
                     <!-- Kanan: Filter Periode -->
-                    <form method="GET" action="{{ route('attendances.index') }}" class="m-0 w-full sm:w-auto sm:justify-self-end">
-                        <input type="month" name="month" lang="id-ID" value="{{ $month }}" max="{{ now()->format('Y-m') }}" onchange="this.form.submit()" class="w-full sm:w-auto h-8 px-3 text-[11px] font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-slate-700 cursor-pointer">
+                    <form method="GET" action="{{ route('attendances.index') }}" class="m-0 w-full md:w-auto order-3 md:order-3">
+                        <input type="month" name="month" lang="id-ID" value="{{ $month }}" max="{{ now()->format('Y-m') }}" onchange="this.form.submit()" class="w-full md:w-auto h-9 px-3.5 text-xs font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-slate-700 cursor-pointer">
                     </form>
                 </div>
 
