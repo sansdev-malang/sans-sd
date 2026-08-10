@@ -32,6 +32,18 @@
                     <h3 class="text-base font-bold text-slate-900 dark:text-slate-50 leading-tight">
                         {{ $employee->name }}
                     </h3>
+                    @if($employee->position || $employee->additional_position)
+                        <p class="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-1">
+                            @if($employee->position)
+                                {{ $employee->position }}
+                                @if($employee->additional_position)
+                                    / {{ $employee->additional_position }}
+                                @endif
+                            @else
+                                {{ $employee->additional_position }}
+                            @endif
+                        </p>
+                    @endif
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                         {{ $employee->email ?? 'Email belum diisi' }}</p>
                 </div>
