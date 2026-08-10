@@ -17,7 +17,7 @@
 
 
 
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+        <div class="hidden sm:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left text-slate-500 dark:text-slate-400">
                     <thead class="text-xs text-slate-700 dark:text-slate-300 uppercase bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
@@ -163,7 +163,115 @@
                     </tbody>
                 </table>
             </div>
-            <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+        </div>
+
+        <!-- MOBILE LIST (Mobile View) -->
+        <div class="block sm:hidden space-y-4">
+            @forelse($announcements as $announcement)
+                @php
+                    if ($announcement->central_id) {
+                        $creatorName = 'Yayasan';
+                        $canEditDelete = auth()->user()->hasRole('super_admin');
+                    } else {
+                        $creator = $announcement->creator;
+                        if ($creator && $creator->role !== 'employee') {
+                            $creatorName = 'Admin';
+                        } else {
+                            $creatorName = $creator->name ?? 'Admin';
+                        }
+                        $canEditDelete = auth()->user()->hasRole('super_admin') || 
+                                         auth()->user()->hasRole('admin_sd') || 
+                                         auth()->user()->hasRole('admin_paud') || 
+                                         auth()->user()->hasRole('admin_smp') || 
+                                         auth()->user()->hasRole('kepala_sekolah') || 
+                                         auth()->user()->hasRole('waka');
+                    }
+                    $creatorInitials = strtoupper(substr($creatorName, 0, 2));
+
+                    $categoryColors = [
+                        'umum' => 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border-indigo-200/50 dark:border-indigo-900/30',
+                        'akademik' => 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200/55 dark:border-blue-900/30',
+                        'kepegawaian' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200/55 dark:border-emerald-900/30',
+                        'penting' => 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400 border-rose-200/55 dark:border-rose-900/30 animate-pulse',
+                    ];
+                    $catColor = $categoryColors[$announcement->category] ?? 'bg-slate-50 text-slate-700 dark:bg-slate-900 dark:text-slate-300 border-slate-200 dark:border-slate-800';
+
+                    $audienceMap = [
+                        'global' => 'Semua',
+                        'management' => 'Manajemen',
+                        'teacher' => 'Guru',
+                        'employee' => 'Pegawai',
+                        'student' => 'Siswa',
+                        'parent' => 'Orang Tua'
+                    ];
+                    $audiences = explode(',', $announcement->target_audience);
+                    $translatedAudiences = array_map(function($aud) use ($audienceMap) {
+                        return $audienceMap[trim($aud)] ?? trim($aud);
+                    }, $audiences);
+                    $displayText = implode(', ', $translatedAudiences);
+                @endphp
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm space-y-3.5 text-left">
+                    <div class="flex items-center justify-between">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium border {{ $catColor }} capitalize">
+                            {{ $announcement->category }}
+                        </span>
+                        <div>
+                            @if($announcement->is_active)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/20 shadow-xs">
+                                    Aktif
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 shadow-xs">
+                                    Draft
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white leading-snug">{{ $announcement->title }}</h3>
+                        <div class="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500">
+                            <span>Oleh: {{ $creatorName }}</span>
+                            <span>•</span>
+                            <span>{{ $announcement->publish_date ? $announcement->publish_date->format('d M Y') : '-' }}</span>
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500">Target:</span>
+                            <span class="text-[10px] font-semibold text-slate-600 dark:text-slate-400">{{ $displayText }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <!-- Detail View -->
+                            <button data-announcement="{{ json_encode($announcement) }}" @click.prevent="selectedAnnouncement = JSON.parse($el.dataset.announcement); selectedAnnouncement.attachment_url = '{{ $announcement->attachment ? (filter_var($announcement->attachment, FILTER_VALIDATE_URL) ? $announcement->attachment : Storage::url($announcement->attachment)) : '' }}'; selectedAnnouncement.creator_name = '{{ $creatorName }}'; selectedAnnouncement.formatted_publish_date = '{{ $announcement->publish_date ? $announcement->publish_date->format('d M Y, H:i') : '-' }}'; showDetailModal = true; $nextTick(() => lucide.createIcons())" class="inline-flex items-center justify-center p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                            @if($canEditDelete)
+                                <!-- Edit -->
+                                <a href="{{ route('announcements.edit', $announcement) }}" class="inline-flex items-center justify-center p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                </a>
+                                <!-- Hapus -->
+                                <form action="{{ route('announcements.destroy', $announcement) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengumuman ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center justify-center p-1.5 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg text-rose-600 dark:text-rose-400 hover:text-rose-700 transition-colors cursor-pointer">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center text-slate-500 dark:text-slate-400">
+                    <div class="flex flex-col items-center justify-center gap-2">
+                        <svg class="w-8 h-8 text-slate-300 dark:text-slate-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+                        <p class="text-xs">Belum ada data pengumuman yang dapat ditampilkan.</p>
+                    </div>
+                </div>
+            @endforelse
+            
+            <div class="mt-4">
                 {{ $announcements->links() }}
             </div>
         </div>
@@ -188,8 +296,8 @@
                             </span>
                         </div>
                     </div>
-                    <button @click="showDetailModal = false" class="p-1 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer">
-                        <i data-lucide="x" class="w-5 h-5"></i>
+                    <button @click="showDetailModal = false" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
                 <div class="flex-1 overflow-y-auto pr-1 text-slate-700 dark:text-slate-300 text-sm leading-relaxed whitespace-normal prose prose-slate dark:prose-invert max-w-none" x-html="selectedAnnouncement.content"></div>
