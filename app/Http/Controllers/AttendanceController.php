@@ -69,11 +69,28 @@ class AttendanceController extends Controller
                 }
             }
 
-                        // Apply Role-based filtering
             if ($user && $user->role === 'employee' && $user->employee_id) {
                 // If it's a regular employee, only show their own report
                 $reports = $reports->filter(function ($item) use ($user) {
                     return ($item['employee']['id'] ?? 0) == $user->employee_id;
+                });
+
+                // Load local attendances to attach calculated_bonus
+                $localAttendances = \App\Models\Attendance::where('employee_id', $user->employee_id)
+                    ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                    ->get()
+                    ->keyBy('date');
+
+                $reports = $reports->map(function ($report) use ($localAttendances) {
+                    if (isset($report['daily_details'])) {
+                        $details = $report['daily_details'];
+                        foreach ($details as $dateStr => &$detail) {
+                            $localAtt = $localAttendances->get($dateStr);
+                            $detail['calculated_bonus'] = $localAtt ? (float)$localAtt->calculated_bonus : 0.00;
+                        }
+                        $report['daily_details'] = $details;
+                    }
+                    return $report;
                 });
             } else {
                 // Filter Search

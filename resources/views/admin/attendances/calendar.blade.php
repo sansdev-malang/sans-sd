@@ -1,6 +1,6 @@
 <x-admin-layout>
     <div class="p-6 space-y-6 w-full relative" x-data="{
-        tooltip: {
+         tooltip: {
             show: false,
             date: '',
             status: '',
@@ -8,10 +8,11 @@
             checkOut: '',
             isLate: false,
             color: '',
+            bonus: 0,
             x: 0,
             y: 0
         },
-        showTooltip(e, date, status, checkIn, checkOut, isLate, color) {
+        showTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus) {
             if (!status) return;
             this.tooltip.date = date;
             this.tooltip.status = status;
@@ -19,6 +20,7 @@
             this.tooltip.checkOut = checkOut;
             this.tooltip.isLate = isLate;
             this.tooltip.color = color;
+            this.tooltip.bonus = bonus || 0;
             
             const containerRect = this.$refs.container.getBoundingClientRect();
             const targetRect = e.currentTarget.getBoundingClientRect();
@@ -181,8 +183,11 @@
                                         }
                                     @endphp
 
+                                    @php
+                                        $bonus = $detail['calculated_bonus'] ?? 0.00;
+                                    @endphp
                                     <div
-                                        @mouseenter="showTooltip($event, '{{ $date->translatedFormat('d F Y') }}', '{{ $status }}', '{{ $checkIn }}', '{{ $checkOut }}', {{ $isLate ? 'true' : 'false' }}, '{{ $modalColor }}')"
+                                        @mouseenter="showTooltip($event, '{{ $date->translatedFormat('d F Y') }}', '{{ $status }}', '{{ $checkIn }}', '{{ $checkOut }}', {{ $isLate ? 'true' : 'false' }}, '{{ $modalColor }}', {{ $bonus }})"
                                         @mouseleave="hideTooltip()"
                                         class="group relative flex min-h-[26px] sm:min-h-[34px] items-center justify-center px-0.5 sm:px-1 transition-colors {{ $isToday ? 'bg-slate-950 text-white dark:bg-slate-100 dark:text-slate-900 rounded-[200px]' : 'hover:bg-slate-100 dark:hover:bg-slate-900/60' }} cursor-pointer">
                                         <span class="text-[12px] sm:text-[13px] font-normal leading-none tracking-[0.01em] {{ $isToday ? 'text-inherit' : $numberColor }}">
@@ -285,17 +290,24 @@
 
             <!-- Details (Check In & Check Out) -->
             <template x-if="tooltip.status === 'Hadir'">
-                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <div class="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-lg p-1.5 border border-slate-100/50 dark:border-slate-800 text-center">
-                        <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Masuk</span>
-                        <span class="font-bold text-[11px]" :class="tooltip.isLate ? 'text-amber-600 dark:text-amber-500' : 'text-slate-700 dark:text-slate-200'" x-text="tooltip.checkIn"></span>
-                        <template x-if="tooltip.isLate">
-                            <span class="text-[8px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none">Telat</span>
-                        </template>
+                <div class="space-y-2">
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div class="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-lg p-1.5 border border-slate-100/50 dark:border-slate-800 text-center">
+                            <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Masuk</span>
+                            <span class="font-bold text-[11px]" :class="tooltip.isLate ? 'text-amber-600 dark:text-amber-500' : 'text-slate-700 dark:text-slate-200'" x-text="tooltip.checkIn"></span>
+                            <template x-if="tooltip.isLate">
+                                <span class="text-[8px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none">Telat</span>
+                            </template>
+                        </div>
+                        <div class="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-lg p-1.5 border border-slate-100/50 dark:border-slate-800 text-center">
+                            <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Pulang</span>
+                            <span class="font-bold text-[11px] text-slate-700 dark:text-slate-200" x-text="tooltip.checkOut"></span>
+                        </div>
                     </div>
-                    <div class="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-lg p-1.5 border border-slate-100/50 dark:border-slate-800 text-center">
-                        <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Pulang</span>
-                        <span class="font-bold text-[11px] text-slate-700 dark:text-slate-200" x-text="tooltip.checkOut"></span>
+                    <!-- Attendance Bonus Section -->
+                    <div class="flex items-center justify-between bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/30 dark:border-emerald-900/30 rounded-lg px-2 py-1.5 text-[10px]">
+                        <span class="text-slate-500 dark:text-slate-400 font-medium">Bonus Kehadiran</span>
+                        <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="tooltip.bonus > 0 ? 'Rp ' + Number(tooltip.bonus).toLocaleString('id-ID') : 'Rp 0'"></span>
                     </div>
                 </div>
             </template>
