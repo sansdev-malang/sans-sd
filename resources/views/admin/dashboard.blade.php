@@ -190,6 +190,42 @@
                             @endif
                         </div>
                     </div>
+
+                    <!-- Informational Box: Shift Active Summary (Concept 3) -->
+                    @if(!$isAdmin && !empty($myActiveShifts))
+                        <div class="mb-4 p-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-lg text-xs">
+                            <div class="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-300">
+                                <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-500 shrink-0"></i>
+                                <span>Informasi Shift Kerja Bulan Ini:</span>
+                            </div>
+                            <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-500 dark:text-slate-400">
+                                @foreach($myActiveShifts as $shift)
+                                    <div class="p-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/50 rounded-md shadow-sm">
+                                        <div class="font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center justify-between">
+                                            <span>{{ $shift['name'] }}</span>
+                                            <span class="px-1.5 py-0.5 text-[9px] bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 rounded font-semibold font-mono">Aktif</span>
+                                        </div>
+                                        @if(!empty($shift['description']))
+                                            <div class="text-[10px] text-slate-450 dark:text-slate-500 mb-1.5">{{ $shift['description'] }}</div>
+                                        @endif
+                                        <div class="space-y-1 text-[10px]">
+                                            @php
+                                                $daysName = [0 => 'Minggu', 1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu'];
+                                            @endphp
+                                            @foreach($shift['details'] as $dt)
+                                                @if(!$dt['is_off'])
+                                                    <div class="flex justify-between border-b border-slate-50 dark:border-slate-800/40 pb-0.5">
+                                                        <span>{{ $daysName[$dt['day_of_week']] ?? '-' }}</span>
+                                                        <span class="font-medium text-slate-600 dark:text-slate-300 font-mono">{{ $dt['start_time'] }} - {{ $dt['end_time'] }}</span>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                     <!-- Scrollable wrapper for chart and labels -->
                     <div class="overflow-x-auto hide-scrollbar pb-2 mt-4 w-full">
                         @php
@@ -248,7 +284,9 @@
                                         <!-- Circles & Text Labels on Points -->
                                         @foreach($chartPoints as $pt)
                                             <!-- Point Circle -->
-                                            <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="3.5" class="fill-indigo-600 dark:fill-indigo-400 stroke-white dark:stroke-slate-900" style="{{ !empty($pt['is_late']) ? 'fill: #f59e0b;' : '' }}" stroke-width="1" />
+                                            <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="3.5" class="fill-indigo-600 dark:fill-indigo-400 stroke-white dark:stroke-slate-900" style="{{ !empty($pt['is_late']) ? 'fill: #f59e0b;' : '' }}" stroke-width="1">
+                                                <title>Tanggal: {{ $pt['date'] }}&#10;Jam Masuk: {{ $pt['check_in'] !== '-' ? $pt['check_in'] : 'Belum absen' }}&#10;Jadwal Kerja: {{ $pt['shift_start'] ? $pt['shift_start'] . ' - ' . ($pt['shift_end'] ?? 'Selesai') : 'Libur/Off' }} {{ $pt['shift_name'] ? '(' . $pt['shift_name'] . ')' : '' }}</title>
+                                            </circle>
                                             
                                             <!-- Time Text -->
                                             <text x="{{ $pt['x'] }}" y="{{ $pt['y'] - 8 }}" text-anchor="middle" class="text-[8px] sm:text-[9px] font-bold fill-slate-600 dark:fill-slate-300" style="{{ !empty($pt['is_late']) ? 'fill: #f59e0b;' : '' }}">

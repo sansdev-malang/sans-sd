@@ -145,12 +145,17 @@ Route::get('/dashboard', function () {
                 'time' => $timeStr,
                 'status' => $det['status'] ?? '-',
                 'is_late' => isset($det['late_minutes']) && $det['late_minutes'] > 0,
+                'shift_name' => $det['shift_name'] ?? null,
+                'shift_start' => isset($det['shift_start']) ? substr($det['shift_start'], 0, 5) : null,
+                'shift_end' => isset($det['shift_end']) ? substr($det['shift_end'], 0, 5) : null,
                 'check_in' => $jamMasuk ? substr($jamMasuk, 0, 5) : '-',
                 'check_out' => isset($det['check_out']) && $det['check_out'] ? substr($det['check_out'], 0, 5) : '-'
             ];
             $idx++;
         }
     }
+
+    $myActiveShifts = $myReport['active_shifts'] ?? [];
 
     return view('admin.dashboard', compact(
         'isAdmin',
@@ -160,7 +165,8 @@ Route::get('/dashboard', function () {
         'totalLeavesThisYear',
         'myRecentLeaves',
         'chartPoints',
-        'totalLateDays'
+        'totalLateDays',
+        'myActiveShifts'
     ));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
