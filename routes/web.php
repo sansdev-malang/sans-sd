@@ -112,9 +112,17 @@ Route::get('/dashboard', function () {
             }
         }
         ksort($dailyDetails);
-        // Filter out Pending days
+        // Filter out Pending, Off, and Leave days from the presence chart
         $completedDetails = array_filter($dailyDetails, function ($day) {
-            return isset($day['status']) && $day['status'] !== 'Pending';
+            $status = $day['status'] ?? '';
+            return $status !== 'Pending' && 
+                   $status !== 'Off' && 
+                   $status !== 'Libur' && 
+                   $status !== 'Sakit' && 
+                   $status !== 'Izin' && 
+                   $status !== 'Cuti' &&
+                   $status !== 'Cuti Melahirkan' &&
+                   $status !== 'Cuti Tahunan';
         });
         
         $idx = 0;
