@@ -268,7 +268,7 @@
                                             </div>
                                             
                                             <!-- Calendar Days Grid -->
-                                            <div class="grid grid-cols-7 gap-1">
+                                            <div class="grid grid-cols-7 gap-1 items-start">
                                                 @foreach($myCalendarDays as $day)
                                                     @if($day['is_empty'])
                                                         <div class="aspect-square bg-slate-50/30 dark:bg-slate-900/10 rounded-md" style="aspect-ratio: 1 / 1;"></div>
