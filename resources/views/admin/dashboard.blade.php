@@ -271,9 +271,9 @@
                                             <div class="grid grid-cols-7 gap-1">
                                                 @foreach($myCalendarDays as $day)
                                                     @if($day['is_empty'])
-                                                        <div class="aspect-square bg-slate-50/30 dark:bg-slate-900/10 rounded-md"></div>
+                                                        <div class="aspect-square bg-slate-50/30 dark:bg-slate-900/10 rounded-md" style="aspect-ratio: 1 / 1;"></div>
                                                     @else
-                                                        <div class="aspect-square flex flex-col justify-between p-1 border border-slate-100 dark:border-slate-800/60 rounded-md bg-white dark:bg-slate-900 shadow-sm relative group outline-none cursor-pointer" tabindex="0">
+                                                        <div class="aspect-square flex flex-col justify-between p-1 border border-slate-100 dark:border-slate-800/60 rounded-md bg-white dark:bg-slate-900 shadow-sm relative group outline-none cursor-pointer" style="aspect-ratio: 1 / 1;" tabindex="0">
                                                             <!-- Date Number -->
                                                             <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-none">{{ $day['day_num'] }}</span>
                                                             
