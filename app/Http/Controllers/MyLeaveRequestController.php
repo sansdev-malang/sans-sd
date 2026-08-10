@@ -29,17 +29,17 @@ class MyLeaveRequestController extends Controller
                     ->where('created_at', '>=', now()->subDays(3))
                     ->pluck('id')
                     ->toArray();
-                $readIds = session('read_leave_ids_' . $user->id, []);
+                $readIds = \Illuminate\Support\Facades\Cache::get('read_leave_ids_' . $user->id, []);
                 $newReadIds = array_unique(array_merge($readIds, $recentIds));
-                session(['read_leave_ids_' . $user->id => $newReadIds]);
+                \Illuminate\Support\Facades\Cache::forever('read_leave_ids_' . $user->id, $newReadIds);
             }
             return redirect()->route('my-leaves.index');
         }
 
         if (request()->has('read_id')) {
-            $readIds = session('read_leave_ids_' . $user->id, []);
+            $readIds = \Illuminate\Support\Facades\Cache::get('read_leave_ids_' . $user->id, []);
             $readIds[] = (int) request('read_id');
-            session(['read_leave_ids_' . $user->id => array_unique($readIds)]);
+            \Illuminate\Support\Facades\Cache::forever('read_leave_ids_' . $user->id, array_unique($readIds));
         }
         $leaves = LeaveRequest::where('employee_id', $user->employee->id)
             ->with('leaveType')

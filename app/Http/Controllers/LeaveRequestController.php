@@ -27,16 +27,16 @@ class LeaveRequestController extends Controller
                 });
             }
             $recentIds = $recentLeavesQuery->pluck('id')->toArray();
-            $readIds = session('read_leave_ids_' . auth()->id(), []);
+            $readIds = \Illuminate\Support\Facades\Cache::get('read_leave_ids_' . auth()->id(), []);
             $newReadIds = array_unique(array_merge($readIds, $recentIds));
-            session(['read_leave_ids_' . auth()->id() => $newReadIds]);
+            \Illuminate\Support\Facades\Cache::forever('read_leave_ids_' . auth()->id(), $newReadIds);
             return redirect()->route('leaves.index');
         }
 
         if (request()->has('read_id')) {
-            $readIds = session('read_leave_ids_' . auth()->id(), []);
+            $readIds = \Illuminate\Support\Facades\Cache::get('read_leave_ids_' . auth()->id(), []);
             $readIds[] = (int) request('read_id');
-            session(['read_leave_ids_' . auth()->id() => array_unique($readIds)]);
+            \Illuminate\Support\Facades\Cache::forever('read_leave_ids_' . auth()->id(), array_unique($readIds));
         }
         $leaves = LeaveRequest::with(['employee', 'leaveType'])->orderBy('start_date', 'desc')->get();
         $employees = Employee::orderBy('name')->get();

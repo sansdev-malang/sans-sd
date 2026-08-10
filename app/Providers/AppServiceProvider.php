@@ -48,7 +48,7 @@ class AppServiceProvider extends ServiceProvider
                 $schoolUnit = config('app.school_unit');
                 
                 if (in_array($user->role, ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp', 'kepala_sekolah', 'waka'])) {
-                    $readIds = session('read_leave_ids_' . $user->id, []);
+                    $readIds = \Illuminate\Support\Facades\Cache::get('read_leave_ids_' . $user->id, []);
                     $pendingLeavesQuery = \App\Models\LeaveRequest::with('employee')
                         ->where('created_at', '>=', now()->subDays(3))
                         ->whereNotIn('id', $readIds);
@@ -62,7 +62,7 @@ class AppServiceProvider extends ServiceProvider
                     
                     $view->with(compact('pendingLeaves', 'pendingLeavesCount'));
                 } else {
-                    $readIds = session('read_leave_ids_' . $user->id, []);
+                    $readIds = \Illuminate\Support\Facades\Cache::get('read_leave_ids_' . $user->id, []);
                     $myNotificationsQuery = \App\Models\LeaveRequest::where('employee_id', $user->employee_id)
                         ->whereIn('status', ['Approved', 'Rejected'])
                         ->where('created_at', '>=', now()->subDays(3))
