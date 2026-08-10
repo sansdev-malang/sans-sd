@@ -29,8 +29,8 @@
                         </div>
                         <!-- Nama Lengkap -->
                         <div class="md:col-span-2">
-                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Nama Lengkap</label>
-                            <input type="text" name="name" value="{{ old('name') }}" placeholder="Eko Wibowo" required
+                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Nama Lengkap <span class="text-[9px] text-slate-400 dark:text-slate-500 normal-case">(Tanpa Gelar)</span></label>
+                            <input type="text" name="name" value="{{ old('name') }}" placeholder="Nurul Akhyar" required
                                 class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 @error('name') border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-900/40 @else border-slate-200 dark:border-slate-800 focus:ring-slate-100 @enderror">
                             @error('name')
                                 <span class="text-[10px] text-rose-500 mt-1 block font-medium">{{ $message }}</span>
@@ -362,8 +362,8 @@
                         </div>
                         <!-- Nama Lengkap -->
                         <div class="md:col-span-2">
-                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Nama Lengkap</label>
-                            <input type="text" name="name" :value="selectedTeacher ? selectedTeacher.name : '{{ old('name') }}'" placeholder="Eko Wibowo" required
+                            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Nama Lengkap <span class="text-[9px] text-slate-400 dark:text-slate-500 normal-case">(Tanpa Gelar)</span></label>
+                            <input type="text" name="name" :value="selectedTeacher ? selectedTeacher.raw_name : '{{ old('name') }}'" placeholder="Nurul Akhyar" required
                                 class="w-full h-9 px-3 bg-white dark:bg-slate-900 border rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 @error('name') border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-900/40 @else border-slate-200 dark:border-slate-800 focus:ring-slate-100 @enderror">
                             @error('name')
                                 <span class="text-[10px] text-rose-500 mt-1 block font-medium">{{ $message }}</span>

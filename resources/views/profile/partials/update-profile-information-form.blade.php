@@ -19,7 +19,12 @@
 
         <div class="space-y-1.5">
             <label for="name" class="block font-semibold text-slate-700 dark:text-slate-300">Nama Lengkap <span class="text-red-500">*</span></label>
-            <input id="name" name="name" type="text" value="{{ old('name', $user->name) }}" required autofocus autocomplete="name" class="w-full text-xs h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+            @if($user->employee_id)
+                <input id="name" name="name" type="text" value="{{ old('name', $user->name) }}" required readonly class="w-full text-xs h-10 px-3 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-500 dark:text-slate-400 cursor-not-allowed focus:outline-none">
+                <p class="text-[10px] text-slate-400 mt-1">Nama lengkap disinkronkan dari data profil pegawai/guru Anda.</p>
+            @else
+                <input id="name" name="name" type="text" value="{{ old('name', $user->name) }}" required autofocus autocomplete="name" class="w-full text-xs h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+            @endif
             @error('name')
                 <p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p>
             @enderror

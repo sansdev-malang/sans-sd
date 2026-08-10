@@ -264,7 +264,10 @@
                         <div class="space-y-1.5">
                             <label class="block font-bold text-slate-700 dark:text-slate-300">Nama Lengkap</label>
                             <input type="text" name="name" x-model="editUser.name" required 
-                                class="w-full h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                                :readonly="editUser.employee_id !== null"
+                                :class="editUser.employee_id !== null ? 'bg-slate-100 dark:bg-slate-800/50 cursor-not-allowed border-slate-200 text-slate-500 dark:text-slate-400' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100'"
+                                class="w-full h-9 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                            <p x-show="editUser.employee_id !== null" class="text-[10px] text-slate-400 mt-1">Nama lengkap disinkronkan dari data pegawai/guru yang terhubung.</p>
                         </div>
 
                         <!-- Email -->
