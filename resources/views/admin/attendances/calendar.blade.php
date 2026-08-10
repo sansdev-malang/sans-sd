@@ -101,13 +101,13 @@
         <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="md:col-span-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[18px] shadow-sm w-full p-3 sm:p-4">
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-center pb-3 border-b border-slate-200 dark:border-slate-800">
-                    <!-- Kiri: Total Bonus -->
+                    <!-- Kiri: Akumulasi Bonus -->
                     <div class="flex items-center gap-2 sm:justify-self-start">
                         <span class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 flex items-center justify-center shrink-0">
                             <i data-lucide="banknote" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
                         </span>
                         <div class="text-left">
-                            <span class="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none">Total Bonus</span>
+                            <span class="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none">Akumulasi Bonus</span>
                             <span class="text-sm font-extrabold text-slate-900 dark:text-slate-50 leading-tight">Rp {{ number_format($totalBonus, 0, ',', '.') }}</span>
                         </div>
                     </div>
