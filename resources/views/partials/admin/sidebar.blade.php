@@ -1,3 +1,13 @@
+@php
+    $isAdmin = auth()->user() && (
+        auth()->user()->hasRole('super_admin') || 
+        auth()->user()->hasRole('admin_sd') || 
+        auth()->user()->hasRole('admin_paud') || 
+        auth()->user()->hasRole('admin_smp') || 
+        auth()->user()->hasRole('kepala_sekolah') || 
+        auth()->user()->hasRole('waka')
+    );
+@endphp
 <aside id="sidebar"
     class="fixed inset-y-0 left-0 z-40 flex flex-col w-64 bg-white dark:bg-[#09090b] border-r border-slate-200 dark:border-slate-800 p-3 shrink-0 transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative md:z-20 shadow-sm md:shadow-none">
 
@@ -62,6 +72,7 @@
                     </span>
                 </a>
                 @endif
+                @if($isAdmin)
                 <a href="{{ route('coming-soon') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg
                     {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
                     text-xs relative group">
@@ -75,6 +86,7 @@
                         Data Siswa
                     </span>
                 </a>
+                @endif
                 @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin_sd') || auth()->user()->hasRole('admin_paud') || auth()->user()->hasRole('admin_smp') || auth()->user()->hasRole('kepala_sekolah') || auth()->user()->hasRole('waka'))
                 <a href="{{ route('teachers.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg
                     {{ Request::routeIs('teachers.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
@@ -87,6 +99,7 @@
                     </span>
                 </a>
                 @endif
+                @if($isAdmin)
                 <a href="{{ route('coming-soon') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg 
                     {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
                     text-xs font-medium relative group">
@@ -100,9 +113,11 @@
                         Rombongan Belajar
                     </span>
                 </a>
+                @endif
             </nav>
         </div>
 
+        @if($isAdmin)
         <!-- Group 2: Homebase (Dropdown style) -->
         <div>
             <h3
@@ -193,6 +208,7 @@
             </a>
             </div>
         </div>
+        @endif
 
                         <!-- Group: Layanan Pegawai -->
         <div>
@@ -293,6 +309,7 @@
                 class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
                 Manajemen</h3>
             <nav class="space-y-1">
+                @if($isAdmin)
                 <a href="{{ route('coming-soon') }}"
                     class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} transition-colors text-xs relative group">
                     <div class="flex items-center gap-3">
@@ -305,6 +322,7 @@
                         Jadwal Kelas
                     </span>
                 </a>
+                @endif
                 <a href="{{ route('announcements.index') }}"
                     class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('announcements.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} transition-colors text-xs relative group">
                     <i data-lucide="bell" class="menu-icon w-4 h-4"></i>
