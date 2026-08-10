@@ -545,13 +545,13 @@
                             <i data-lucide="file-text" class="w-4 h-4 text-indigo-600 dark:text-indigo-400 group-hover:scale-105 transition-transform"></i>
                             <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5">Ajukan Cuti/Izin</span>
                         </button>
-                        <button onclick="window.location='{{ route('coming-soon') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer relative">
-                            <i data-lucide="clipboard-list" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
-                            <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5 flex items-center gap-1">Input Nilai Siswa <span class="text-[8px] font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 px-1 py-0.2 rounded uppercase">Dev</span></span>
+                        <button onclick="window.location='{{ route('attendances.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
+                            <i data-lucide="calendar-check" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
+                            <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5">Data Absensi</span>
                         </button>
-                        <button onclick="window.location='{{ route('coming-soon') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer relative">
-                            <i data-lucide="calendar" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
-                            <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5 flex items-center gap-1">Lihat Jadwal <span class="text-[8px] font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 px-1 py-0.2 rounded uppercase">Dev</span></span>
+                        <button onclick="window.location='{{ route('my-employee-profile.edit') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
+                            <i data-lucide="user" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
+                            <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5">Profile</span>
                         </button>
                         <button onclick="window.location='{{ route('payslips.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
                             <i data-lucide="receipt" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
