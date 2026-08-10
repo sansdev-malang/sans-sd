@@ -506,9 +506,13 @@
                                         <a href="{{ route('announcements.show', $announcement) }}" class="hover:underline">{{ $announcement->title }}</a>
                                     </h4>
                                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{{ Str::limit(strip_tags($announcement->content), 100) }}</p>
-                                    @if($announcement->attachment)
-                                        <a href="{{ Storage::url($announcement->attachment) }}" target="_blank" class="text-[10px] text-blue-500 hover:underline mt-1 inline-block"><i data-lucide="paperclip" class="w-3 h-3 inline"></i> Lampiran</a>
-                                    @endif
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ $announcement->created_at->translatedFormat('d M Y, H:i') }}</span>
+                                        @if($announcement->attachment)
+                                            <span class="text-[9px] text-slate-350 dark:text-slate-700 select-none">•</span>
+                                            <a href="{{ Storage::url($announcement->attachment) }}" target="_blank" class="text-[10px] text-blue-500 hover:underline inline-flex items-center gap-0.5"><i data-lucide="paperclip" class="w-3 h-3"></i> Lampiran</a>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         @empty
@@ -625,11 +629,11 @@
                                     <div class="min-w-0">
                                         <p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">Pengajuan Izin / Cuti ({{ $leave->type }})</p>
                                         <!-- Time on mobile -->
-                                        <span class="mobile-time text-[10px] text-slate-400 dark:text-slate-500 font-medium block mt-0.5">{{ $leave->created_at->translatedFormat('d M, H:i') }}</span>
+                                        <span class="mobile-time text-[10px] text-slate-400 dark:text-slate-500 font-medium block mt-0.5">{{ $leave->created_at->translatedFormat('d M Y, H:i') }}</span>
                                     </div>
                                 </div>
                                 <!-- Time on desktop -->
-                                <span class="desktop-time text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0 mt-0.5">{{ $leave->created_at->translatedFormat('d M, H:i') }}</span>
+                                <span class="desktop-time text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0 mt-0.5">{{ $leave->created_at->translatedFormat('d M Y, H:i') }}</span>
                             </div>
                         @empty
                             <div class="text-xs text-slate-500 text-center py-4">Belum ada riwayat aktivitas pengajuan cuti/izin.</div>
