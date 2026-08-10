@@ -248,10 +248,10 @@
                                         <!-- Circles & Text Labels on Points -->
                                         @foreach($chartPoints as $pt)
                                             <!-- Point Circle -->
-                                            <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="3.5" class="{{ !empty($pt['is_late']) ? 'fill-amber-500' : 'fill-indigo-600 dark:fill-indigo-400' }} stroke-white dark:stroke-slate-900" stroke-width="1" />
+                                            <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="3.5" class="fill-indigo-600 dark:fill-indigo-400 stroke-white dark:stroke-slate-900" style="{{ !empty($pt['is_late']) ? 'fill: #f59e0b;' : '' }}" stroke-width="1" />
                                             
                                             <!-- Time Text -->
-                                            <text x="{{ $pt['x'] }}" y="{{ $pt['y'] - 8 }}" text-anchor="middle" class="text-[8px] sm:text-[9px] font-bold {{ !empty($pt['is_late']) ? 'fill-amber-500' : 'fill-slate-600 dark:fill-slate-300' }}">
+                                            <text x="{{ $pt['x'] }}" y="{{ $pt['y'] - 8 }}" text-anchor="middle" class="text-[8px] sm:text-[9px] font-bold fill-slate-600 dark:fill-slate-300" style="{{ !empty($pt['is_late']) ? 'fill: #f59e0b;' : '' }}">
                                                 {{ $pt['time'] }}
                                             </text>
                                         @endforeach
