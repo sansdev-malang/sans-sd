@@ -481,7 +481,7 @@
                 </div>
                 </div>
                 <!-- Announcements / Information System -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col justify-between shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 flex flex-col justify-between shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50">Pengumuman Sekolah</h3>
@@ -520,7 +520,7 @@
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             <!-- Quick Actions Grid -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                 <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">Aksi Cepat</h3>
                 <div class="grid grid-cols-2 gap-2">
                     @if($isAdmin)
@@ -564,58 +564,58 @@
             </div>
 
             <!-- Recent Activity Logs -->
-            <div class="animate-card lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+            <div class="animate-card lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                 @if($isAdmin)
                     <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">Log Aktivitas Terbaru</h3>
-                    <div class="space-y-3.5">
-                        <div class="flex items-center justify-between py-1 border-b border-slate-50 dark:border-slate-900/60 pb-3">
+                     <div class="space-y-3.5">
+                        <div class="flex items-center justify-between gap-3 py-1 border-b border-slate-50 dark:border-slate-900/60 pb-3 flex-wrap sm:flex-nowrap">
                             <div class="flex items-center gap-3">
                                 <div class="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-400">
                                     <i data-lucide="key" class="w-3.5 h-3.5"></i>
                                 </div>
-                                <div>
+                                <div class="min-w-0">
                                     <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">Login Wali Kelas XI-IPA</p>
                                     <p class="text-xs text-slate-500">Guru: Drs. Eko Prasetyo</p>
                                 </div>
                             </div>
-                            <span class="text-xs text-slate-400">10 mnt yang lalu</span>
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0 mt-0.5">10 mnt yang lalu</span>
                         </div>
-                        <div class="flex items-center justify-between py-1 border-b border-slate-50 dark:border-slate-900/60 pb-3">
+                        <div class="flex items-start justify-between gap-3 py-1 border-b border-slate-50 dark:border-slate-900/60 pb-3">
                             <div class="flex items-center gap-3">
                                 <div class="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-400">
                                     <i data-lucide="file-plus" class="w-3.5 h-3.5"></i>
                                 </div>
-                                <div>
+                                <div class="min-w-0">
                                     <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">Unggah Materi Fisika Kuantum</p>
                                     <p class="text-xs text-slate-500">Kelas: XII-IPA</p>
                                 </div>
                             </div>
-                            <span class="text-xs text-slate-400">24 mnt yang lalu</span>
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0 mt-0.5">24 mnt yang lalu</span>
                         </div>
-                        <div class="flex items-center justify-between py-1">
+                        <div class="flex items-start justify-between gap-3 py-1">
                             <div class="flex items-center gap-3">
                                 <div class="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-400">
                                     <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
                                 </div>
-                                <div>
+                                <div class="min-w-0">
                                     <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">Verifikasi Berkas Pendaftaran</p>
                                     <p class="text-xs text-slate-500">Gelombang 2 SANS Malang</p>
                                 </div>
                             </div>
-                            <span class="text-xs text-slate-400">45 mnt yang lalu</span>
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0 mt-0.5">45 mnt yang lalu</span>
                         </div>
                     </div>
                 @else
                     <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4 font-nasalization">Aktivitas Saya (Pengajuan Terakhir)</h3>
-                    <div class="space-y-3.5">
+                     <div class="space-y-3.5">
                         @forelse($myRecentLeaves as $leave)
-                            <div class="flex items-center justify-between py-1 border-b border-slate-50 dark:border-slate-900/60 pb-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-400">
+                            <div class="flex items-start justify-between gap-3 py-1 border-b border-slate-50 dark:border-slate-900/60 pb-3">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-400 shrink-0">
                                         <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
                                     </div>
-                                    <div>
-                                        <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">Pengajuan Izin / Cuti ({{ $leave->type }})</p>
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">Pengajuan Izin / Cuti ({{ $leave->type }})</p>
                                         <p class="text-xs text-slate-500">Status: 
                                             <span class="font-bold {{ $leave->status == 'Approved' ? 'text-emerald-600 dark:text-emerald-400' : ($leave->status == 'Rejected' ? 'text-rose-600 dark:text-rose-400' : 'text-amber-500') }}">
                                                 {{ $leave->status }}
@@ -623,7 +623,7 @@
                                         </p>
                                     </div>
                                 </div>
-                                <span class="text-xs text-slate-400">{{ $leave->created_at->diffForHumans() }}</span>
+                                <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0 mt-0.5">{{ $leave->created_at->diffForHumans() }}</span>
                             </div>
                         @empty
                             <div class="text-xs text-slate-500 text-center py-4">Belum ada riwayat aktivitas pengajuan cuti/izin.</div>
