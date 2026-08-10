@@ -91,6 +91,21 @@ class Employee extends Model
     {
         return $this->hasMany(LeaveRequest::class);
     }
+
+    protected static function booted()
+    {
+        static::updated(function ($employee) {
+            if ($employee->isDirty('name') || $employee->isDirty('email')) {
+                $user = \App\Models\User::where('employee_id', $employee->id)->first();
+                if ($user) {
+                    $user->updateQuietly([
+                        'name' => $employee->raw_name ?? $employee->getAttributes()['name'],
+                        'email' => $employee->email,
+                    ]);
+                }
+            }
+        });
+    }
 }
 
 

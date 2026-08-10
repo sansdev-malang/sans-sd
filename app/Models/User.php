@@ -37,4 +37,19 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Employee::class);
     }
+
+    protected static function booted()
+    {
+        static::updated(function ($user) {
+            if ($user->employee_id && ($user->isDirty('name') || $user->isDirty('email'))) {
+                $employee = \App\Models\Employee::find($user->employee_id);
+                if ($employee) {
+                    $employee->updateQuietly([
+                        'name' => $user->name,
+                        'email' => $user->email,
+                    ]);
+                }
+            }
+        });
+    }
 }
