@@ -272,19 +272,54 @@
                         <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Jam Kerja:</span>
                         @foreach($myActiveShifts as $index => $shift)
                             @php
-                                // Get primary active time range (since the hours are the same/similar)
-                                $timeRange = '';
+                                $daysName = [1 => 'Sen', 2 => 'Sel', 3 => 'Rab', 4 => 'Kam', 5 => 'Jum', 6 => 'Sab', 0 => 'Min'];
+                                
+                                // Group active details by time range
+                                $groupedDetails = [];
                                 foreach($shift['details'] as $dt) {
                                     if(!$dt['is_off']) {
                                         $timeRange = substr($dt['start_time'], 0, 5) . ' - ' . substr($dt['end_time'], 0, 5);
-                                        break;
+                                        $groupedDetails[$timeRange][] = $dt['day_of_week'];
                                     }
                                 }
+                                
+                                $scheduleParts = [];
+                                foreach($groupedDetails as $timeRange => $days) {
+                                    // Map Sunday to 7 to sort chronologically from Monday (1) to Sunday (7)
+                                    $sortableDays = array_map(function($d) {
+                                        return $d == 0 ? 7 : $d;
+                                    }, $days);
+                                    sort($sortableDays);
+                                    
+                                    // Check if consecutive
+                                    $isConsecutive = true;
+                                    for ($i = 0; $i < count($sortableDays) - 1; $i++) {
+                                        if ($sortableDays[$i+1] - $sortableDays[$i] !== 1) {
+                                            $isConsecutive = false;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    // Map back to original values
+                                    $originalDays = array_map(function($sd) {
+                                        return $sd == 7 ? 0 : $sd;
+                                    }, $sortableDays);
+                                    
+                                    if (count($originalDays) >= 3 && $isConsecutive) {
+                                        $dayStr = $daysName[$originalDays[0]] . ' - ' . $daysName[$originalDays[count($originalDays)-1]];
+                                    } else {
+                                        $dayStr = implode(',', array_map(function($d) use ($daysName) {
+                                            return $daysName[$d];
+                                        }, $originalDays));
+                                    }
+                                    
+                                    $scheduleParts[] = $dayStr . ' ' . $timeRange;
+                                }
                             @endphp
-                            @if(!empty($timeRange))
+                            @if(!empty($scheduleParts))
                                 <div class="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 font-medium">
                                     <span class="font-bold text-slate-800 dark:text-slate-200">{{ $shift['name'] }}</span>
-                                    <span class="text-slate-450 dark:text-slate-500">({{ $timeRange }})</span>
+                                    <span class="text-slate-450 dark:text-slate-500">({{ implode(', ', $scheduleParts) }})</span>
                                 </div>
                             @endif
                             @if($index < count($myActiveShifts) - 1)
