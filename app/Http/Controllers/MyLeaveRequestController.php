@@ -69,6 +69,18 @@ class MyLeaveRequestController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'nullable|string',
             'attachment' => 'nullable|file|mimes:pdf,png,jpg,jpeg,doc,docx|max:2048',
+        ], [
+            'leave_type_id.required' => 'Jenis izin / cuti wajib dipilih.',
+            'leave_type_id.exists' => 'Jenis izin / cuti yang dipilih tidak valid.',
+            'start_date.required' => 'Tanggal mulai wajib diisi.',
+            'start_date.date' => 'Tanggal mulai harus berupa tanggal yang valid.',
+            'start_date.after_or_equal' => 'Tanggal mulai tidak boleh sebelum hari ini.',
+            'end_date.required' => 'Tanggal selesai wajib diisi.',
+            'end_date.date' => 'Tanggal selesai harus berupa tanggal yang valid.',
+            'end_date.after_or_equal' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.',
+            'attachment.file' => 'Berkas lampiran harus berupa file.',
+            'attachment.mimes' => 'Format file lampiran harus berupa: pdf, png, jpg, jpeg, doc, docx.',
+            'attachment.max' => 'Ukuran file lampiran tidak boleh lebih dari 2MB.',
         ]);
 
         $leaveType = \App\Models\LeaveType::findOrFail($validated['leave_type_id']);
