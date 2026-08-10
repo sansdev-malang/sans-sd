@@ -1,3 +1,13 @@
+@php
+    $isAdmin = auth()->user() && (
+        auth()->user()->hasRole('super_admin') || 
+        auth()->user()->hasRole('admin_sd') || 
+        auth()->user()->hasRole('admin_paud') || 
+        auth()->user()->hasRole('admin_smp') || 
+        auth()->user()->hasRole('kepala_sekolah') || 
+        auth()->user()->hasRole('waka')
+    );
+@endphp
 <x-admin-layout>
     <style>
         .dark input[type="month"] {
@@ -14,7 +24,7 @@
     </div>
 
     <!-- Filters -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm mb-6 flex flex-col md:flex-row md:items-end gap-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm mb-6 flex flex-col md:flex-row md:items-end gap-4">
         @if(in_array(auth()->user()->role, ['admin', 'super_admin']))
         <div class="w-full md:w-64">
             <label for="searchInput" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Cari Pegawai</label>
@@ -23,14 +33,13 @@
         @endif
         <form method="GET" action="{{ route('payslips.index') }}" class="flex flex-col sm:flex-row gap-4 flex-1">
             <div class="w-full sm:w-64">
-                <label for="month" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Periode Bulan</label>
                 <input type="month" id="month" name="month" value="{{ $month }}" class="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-blue-500 focus:border-blue-500" onchange="this.form.submit()">
             </div>
         </form>
     </div>
 
     <!-- Table List -->
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full text-left">
+    <div class="{{ !$isAdmin ? 'hidden sm:block' : '' }} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full text-left">
         <div class="overflow-x-auto" style="max-height: calc(100vh - 280px); overflow-y: auto;">
             <table class="w-full text-sm text-left">
                 <thead class="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 uppercase font-semibold border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
@@ -92,6 +101,71 @@
             </table>
         </div>
     </div>
+
+    @if(!$isAdmin)
+        <!-- Mobile View for Regular Employee -->
+        <div class="block sm:hidden space-y-4">
+            @forelse($employees as $emp)
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm space-y-4 text-left">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-slate-50">{{ $emp->name }}</h3>
+                            <p class="text-xs text-slate-500 mt-1">NIK: {{ $emp->nik ?? '-' }}</p>
+                        </div>
+                        <div>
+                            @if($emp->payslip_url)
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/20">
+                                    Tersedia
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-200/20">
+                                    Belum Ada
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-100 dark:border-slate-800/60 pt-3.5 space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400 dark:text-slate-500">Tipe Pegawai:</span>
+                            <span class="font-medium text-slate-800 dark:text-slate-200">{{ $emp->employeeType->name ?? '-' }}</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400 dark:text-slate-500">Jabatan Utama:</span>
+                            <span class="font-medium text-slate-800 dark:text-slate-200">{{ $emp->position ?? '-' }}</span>
+                        </div>
+                        @if(!empty($emp->additional_position))
+                            <div class="flex justify-between text-xs">
+                                <span class="text-slate-400 dark:text-slate-500">Jabatan Tambahan:</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200">{{ $emp->additional_position }}</span>
+                            </div>
+                        @endif
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400 dark:text-slate-500">Periode:</span>
+                            <span class="font-semibold text-slate-800 dark:text-slate-200">{{ \Carbon\Carbon::parse($month . '-01')->translatedFormat('F Y') }}</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800/60">
+                        @if($emp->payslip_url)
+                            <a href="{{ $emp->payslip_url }}" target="_blank" class="w-full inline-flex items-center justify-center h-10 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Download Slip Gaji (PDF)
+                            </a>
+                        @else
+                            <button disabled class="w-full inline-flex items-center justify-center h-10 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-xs font-semibold rounded-lg cursor-not-allowed">
+                                Menunggu Pengiriman dari HRD
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center text-slate-500 dark:text-slate-400">
+                    Tidak ada data pegawai.
+                </div>
+            @endforelse
+        </div>
+    @endif
 </div>
 
 <script>
