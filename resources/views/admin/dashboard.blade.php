@@ -201,101 +201,113 @@
                             
                             <div class="grid grid-cols-1 {{ count($myActiveShifts) > 1 && !empty($myCalendarDays) ? 'md:grid-cols-3' : '' }} gap-4">
                                 <!-- Left Column: Shift List (List Jam Kerja) -->
-                                <div class="{{ count($myActiveShifts) > 1 && !empty($myCalendarDays) ? 'md:col-span-1' : '' }} space-y-2">
-                                    <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Daftar Jam Kerja</p>
-                                    @foreach($myActiveShifts as $shift)
-                                        <div class="p-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/50 rounded-md shadow-sm">
-                                            <div class="font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center justify-between">
-                                                <span>{{ $shift['name'] }}</span>
-                                            </div>
-                                            @if(!empty($shift['description']))
-                                                <div class="text-[9px] text-slate-400 dark:text-slate-500 mb-1.5 leading-snug">{{ $shift['description'] }}</div>
-                                            @endif
-                                            
-                                            @php
-                                                $daysName = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 0 => 'Minggu'];
-                                                $groupedDetails = [];
-                                                foreach($shift['details'] as $dt) {
-                                                    if(!$dt['is_off']) {
-                                                        $timeRange = $dt['start_time'] . ' - ' . $dt['end_time'];
-                                                        $groupedDetails[$timeRange][] = $dt['day_of_week'];
-                                                    }
-                                                }
-                                            @endphp
-                                            
-                                            <div class="space-y-1 mt-1">
-                                                @foreach($groupedDetails as $timeRange => $days)
-                                                    @php
-                                                        usort($days, function($a, $b) {
-                                                            $valA = $a == 0 ? 7 : $a;
-                                                            $valB = $b == 0 ? 7 : $b;
-                                                            return $valA <=> $valB;
-                                                        });
-                                                        $dayLabels = array_map(function($d) use ($daysName) {
-                                                            return $daysName[$d] ?? '';
-                                                        }, $days);
-                                                        $daysStr = implode(', ', $dayLabels);
-                                                    @endphp
-                                                    <div class="flex flex-col gap-0.5 pb-1 border-b border-slate-50 dark:border-slate-800/40 last:border-0 last:pb-0">
-                                                        <span class="text-[9px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{{ $daysStr }}</span>
-                                                        <span class="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 font-mono">{{ $timeRange }}</span>
+                                <div class="{{ count($myActiveShifts) > 1 && !empty($myCalendarDays) ? 'md:col-span-1' : '' }} bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/50 rounded-md p-3 shadow-sm flex flex-col justify-between">
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Daftar Jam Kerja</p>
+                                        <div class="space-y-3">
+                                            @foreach($myActiveShifts as $index => $shift)
+                                                <div class="{{ $index > 0 ? 'pt-3 border-t border-slate-100 dark:border-slate-800/50' : '' }}">
+                                                    <div class="font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center justify-between">
+                                                        <span>{{ $shift['name'] }}</span>
                                                     </div>
-                                                @endforeach
-                                            </div>
+                                                    @if(!empty($shift['description']))
+                                                        <div class="text-[9px] text-slate-450 dark:text-slate-500 mb-1.5 leading-snug">{{ $shift['description'] }}</div>
+                                                    @endif
+                                                    
+                                                    @php
+                                                        $daysName = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 0 => 'Minggu'];
+                                                        $groupedDetails = [];
+                                                        foreach($shift['details'] as $dt) {
+                                                            if(!$dt['is_off']) {
+                                                                $timeRange = $dt['start_time'] . ' - ' . $dt['end_time'];
+                                                                $groupedDetails[$timeRange][] = $dt['day_of_week'];
+                                                            }
+                                                        }
+                                                    @endphp
+                                                    
+                                                    <div class="space-y-1 mt-1">
+                                                        @foreach($groupedDetails as $timeRange => $days)
+                                                            @php
+                                                                usort($days, function($a, $b) {
+                                                                    $valA = $a == 0 ? 7 : $a;
+                                                                    $valB = $b == 0 ? 7 : $b;
+                                                                    return $valA <=> $valB;
+                                                                });
+                                                                $dayLabels = array_map(function($d) use ($daysName) {
+                                                                    return $daysName[$d] ?? '';
+                                                                }, $days);
+                                                                $daysStr = implode(', ', $dayLabels);
+                                                            @endphp
+                                                            <div class="flex flex-col gap-0.5 pb-1 border-b border-slate-50 dark:border-slate-800/40 last:border-0 last:pb-0">
+                                                                <span class="text-[9px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{{ $daysStr }}</span>
+                                                                <span class="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 font-mono">{{ $timeRange }}</span>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @endforeach
                                         </div>
-                                    @endforeach
+                                    </div>
                                 </div>
                                 
                                 <!-- Right Column: Calendar Roster (Kalender Jadwal Kerja Roster) -->
                                 @if(count($myActiveShifts) > 1 && !empty($myCalendarDays))
-                                    <div class="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/50 rounded-md p-3 shadow-sm">
-                                        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Kalender Jadwal Roster Bulan Ini</p>
-                                        
-                                        <!-- Calendar Grid Header -->
-                                        <div class="grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-slate-400 dark:text-slate-500 uppercase mb-1.5">
-                                            <div>Sen</div>
-                                            <div>Sel</div>
-                                            <div>Rab</div>
-                                            <div>Kam</div>
-                                            <div>Jum</div>
-                                            <div>Sab</div>
-                                            <div>Min</div>
-                                        </div>
-                                        
-                                        <!-- Calendar Days Grid -->
-                                        <div class="grid grid-cols-7 gap-1">
-                                            @foreach($myCalendarDays as $day)
-                                                @if($day['is_empty'])
-                                                    <div class="aspect-square bg-slate-50/30 dark:bg-slate-900/10 rounded-md"></div>
-                                                @else
-                                                    <div class="aspect-square flex flex-col justify-between p-1 border border-slate-100 dark:border-slate-800/60 rounded-md bg-white dark:bg-slate-900 shadow-sm relative group outline-none cursor-pointer" tabindex="0">
-                                                        <!-- Date Number -->
-                                                        <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-none">{{ $day['day_num'] }}</span>
-                                                        
-                                                        <!-- Shift Label Badge -->
-                                                        <span class="text-[8px] font-bold text-center py-0.5 rounded {{ $day['bg_color'] }} block w-full truncate leading-none">
-                                                            {{ $day['short_label'] }}
-                                                        </span>
-                                                        
-                                                        <!-- Tooltip on hover/tap -->
-                                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-32 hidden group-hover:block group-focus:block z-50 pointer-events-none">
-                                                            <div class="bg-white/95 dark:bg-slate-950/95 text-slate-800 dark:text-white p-2 rounded-lg shadow-lg text-[9px] sm:text-[10px] leading-snug border border-slate-200 dark:border-slate-800/80 backdrop-blur-sm relative">
-                                                                <div class="font-semibold border-b border-slate-200 dark:border-slate-800/50 pb-0.5 mb-1 flex justify-between">
-                                                                    <span class="text-slate-950 dark:text-white">{{ \Carbon\Carbon::parse($day['date'])->translatedFormat('d M Y') }}</span>
+                                    <div class="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/50 rounded-md p-3 shadow-sm flex flex-col justify-between">
+                                        <div>
+                                            <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Kalender Jadwal Anda Bulan Ini</p>
+                                            
+                                            <!-- Calendar Grid Header -->
+                                            <div class="grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-slate-400 dark:text-slate-500 uppercase mb-1.5">
+                                                <div>Sen</div>
+                                                <div>Sel</div>
+                                                <div>Rab</div>
+                                                <div>Kam</div>
+                                                <div>Jum</div>
+                                                <div>Sab</div>
+                                                <div>Min</div>
+                                            </div>
+                                            
+                                            <!-- Calendar Days Grid -->
+                                            <div class="grid grid-cols-7 gap-1">
+                                                @foreach($myCalendarDays as $day)
+                                                    @if($day['is_empty'])
+                                                        <div class="aspect-square bg-slate-50/30 dark:bg-slate-900/10 rounded-md"></div>
+                                                    @else
+                                                        <div class="aspect-square flex flex-col justify-between p-1 border border-slate-100 dark:border-slate-800/60 rounded-md bg-white dark:bg-slate-900 shadow-sm relative group outline-none cursor-pointer" tabindex="0">
+                                                            <!-- Date Number -->
+                                                            <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-none">{{ $day['day_num'] }}</span>
+                                                            
+                                                            <!-- Shift Label Badge -->
+                                                            <span class="text-[8px] font-bold text-center py-0.5 rounded {{ $day['bg_color'] }} block w-full truncate leading-none">
+                                                                {{ $day['short_label'] }}
+                                                            </span>
+                                                            
+                                                            <!-- Tooltip on hover/tap -->
+                                                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-32 hidden group-hover:block group-focus:block z-50 pointer-events-none">
+                                                                <div class="bg-white/95 dark:bg-slate-955/95 text-slate-800 dark:text-white p-2 rounded-lg shadow-lg text-[9px] sm:text-[10px] leading-snug border border-slate-200 dark:border-slate-800/80 backdrop-blur-sm relative">
+                                                                    <div class="font-semibold border-b border-slate-200 dark:border-slate-800/50 pb-0.5 mb-1 flex justify-between">
+                                                                        <span class="text-slate-950 dark:text-white">{{ \Carbon\Carbon::parse($day['date'])->translatedFormat('d M Y') }}</span>
+                                                                    </div>
+                                                                    @if($day['shift_name'])
+                                                                        <div class="font-semibold text-indigo-600 dark:text-indigo-400">{{ $day['shift_name'] }}</div>
+                                                                        <div class="text-[8px] text-slate-500 dark:text-slate-400">Jam: {{ $day['shift_start'] }} - {{ $day['shift_end'] }}</div>
+                                                                    @else
+                                                                        <div class="text-slate-400 dark:text-slate-500">Libur / Off</div>
+                                                                    @endif
+                                                                    <!-- Arrow -->
+                                                                    <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white dark:bg-slate-955 border-r border-b border-slate-200 dark:border-slate-800/80 rotate-45"></div>
                                                                 </div>
-                                                                @if($day['shift_name'])
-                                                                    <div class="font-semibold text-indigo-600 dark:text-indigo-400">{{ $day['shift_name'] }}</div>
-                                                                    <div class="text-[8px] text-slate-500 dark:text-slate-400">Jam: {{ $day['shift_start'] }} - {{ $day['shift_end'] }}</div>
-                                                                @else
-                                                                    <div class="text-slate-400 dark:text-slate-500">Libur / Off</div>
-                                                                @endif
-                                                                <!-- Arrow -->
-                                                                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white dark:bg-slate-955 border-r border-b border-slate-200 dark:border-slate-800/80 rotate-45"></div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                @endif
-                                            @endforeach
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Footer Note -->
+                                        <div class="mt-4 pt-2 border-t border-slate-100 dark:border-slate-800/50 flex items-center gap-1.5 text-[9px] text-slate-500 dark:text-slate-400 leading-normal">
+                                            <i data-lucide="info" class="w-3 h-3 text-amber-500 shrink-0"></i>
+                                            <span><strong>Catatan:</strong> Pengajuan tukar shift minimal dilakukan 1 hari sebelumnya.</span>
                                         </div>
                                     </div>
                                 @endif
