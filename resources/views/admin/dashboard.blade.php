@@ -127,6 +127,8 @@
                     <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
                         @if(($totalLateDays ?? 0) > 0)
                             <span class="text-amber-500 font-bold">Terlambat</span> pada siklus aktif
+                        @elseif(($myReport['total_present'] ?? 0) == 0)
+                            <span class="text-slate-400 dark:text-slate-500 font-medium">Belum ada presensi</span>
                         @else
                             <span class="text-emerald-600 dark:text-emerald-400 font-bold">Tepat Waktu</span>
                         @endif
@@ -246,10 +248,10 @@
                                         <!-- Circles & Text Labels on Points -->
                                         @foreach($chartPoints as $pt)
                                             <!-- Point Circle -->
-                                            <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="3.5" class="fill-indigo-600 dark:fill-indigo-400 stroke-white dark:stroke-slate-900" stroke-width="1" />
+                                            <circle cx="{{ $pt['x'] }}" cy="{{ $pt['y'] }}" r="3.5" class="{{ !empty($pt['is_late']) ? 'fill-amber-500' : 'fill-indigo-600 dark:fill-indigo-400' }} stroke-white dark:stroke-slate-900" stroke-width="1" />
                                             
                                             <!-- Time Text -->
-                                            <text x="{{ $pt['x'] }}" y="{{ $pt['y'] - 8 }}" text-anchor="middle" class="text-[8px] sm:text-[9px] font-bold fill-slate-600 dark:fill-slate-300">
+                                            <text x="{{ $pt['x'] }}" y="{{ $pt['y'] - 8 }}" text-anchor="middle" class="text-[8px] sm:text-[9px] font-bold {{ !empty($pt['is_late']) ? 'fill-amber-500' : 'fill-slate-600 dark:fill-slate-300' }}">
                                                 {{ $pt['time'] }}
                                             </text>
                                         @endforeach

@@ -144,6 +144,7 @@ Route::get('/dashboard', function () {
                 'short_date' => \Carbon\Carbon::parse($dateStr)->format('d/m'), // Added shorter date format for tight spaces
                 'time' => $timeStr,
                 'status' => $det['status'] ?? '-',
+                'is_late' => isset($det['late_minutes']) && $det['late_minutes'] > 0,
                 'check_in' => $jamMasuk ? substr($jamMasuk, 0, 5) : '-',
                 'check_out' => isset($det['check_out']) && $det['check_out'] ? substr($det['check_out'], 0, 5) : '-'
             ];
