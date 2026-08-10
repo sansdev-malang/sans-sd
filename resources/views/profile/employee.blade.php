@@ -30,7 +30,7 @@
                 </div>
                 <div>
                     <h3 class="text-base font-bold text-slate-900 dark:text-slate-50 leading-tight">
-                        {{ $employee->front_title ? $employee->front_title . ' ' : '' }}{{ $employee->name }}{{ $employee->back_title ? ', ' . $employee->back_title : '' }}
+                        {{ $employee->name }}
                     </h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                         {{ $employee->email ?? 'Email belum diisi' }}</p>
@@ -234,7 +234,7 @@
                                                     class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Nama
                                                     Lengkap</label>
                                                 <input type="text" name="name"
-                                                    value="{{ old('name', $employee->name) }}" required
+                                                    value="{{ old('name', $employee->raw_name) }}" required
                                                     class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
                                                 @error('name') <span
                                                     class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span>

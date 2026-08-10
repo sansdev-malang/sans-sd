@@ -98,6 +98,14 @@ class MyEmployeeProfileController extends Controller
 
         $employee->update($validated);
 
+        // Sync with associated User account
+        if ($employee->user) {
+            $employee->user->update([
+                'name' => $employee->name, // Formatted name with titles
+                'email' => $employee->email,
+            ]);
+        }
+
         return redirect()->route('my-employee-profile.edit')->with('success', 'Profil pegawai berhasil diperbarui.');
     }
 }
