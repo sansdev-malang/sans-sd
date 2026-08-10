@@ -268,9 +268,9 @@
 
             @if(!empty($myActiveShifts))
                 <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
-                    <div class="flex flex-col sm:flex-row sm:items-start gap-y-2 sm:gap-x-5">
+                    <div class="flex flex-col sm:flex-row sm:items-start gap-y-2" style="gap: 12px 16px;">
                         <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5 shrink-0">Jam Kerja:</span>
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:flex-wrap gap-y-1.5 sm:gap-x-5">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:flex-wrap gap-y-1.5" style="gap: 8px 20px;">
                             @foreach($myActiveShifts as $index => $shift)
                                 @php
                                     $daysName = [1 => 'Sen', 2 => 'Sel', 3 => 'Rab', 4 => 'Kam', 5 => 'Jum', 6 => 'Sab', 0 => 'Min'];
