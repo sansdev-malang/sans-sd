@@ -157,6 +157,69 @@ Route::get('/dashboard', function () {
 
     $myActiveShifts = $myReport['active_shifts'] ?? [];
 
+    $myCalendarDays = [];
+    if (!empty($dailyDetails)) {
+        ksort($dailyDetails);
+        $dates = array_keys($dailyDetails);
+        $firstDateStr = reset($dates);
+        $firstDate = \Carbon\Carbon::parse($firstDateStr);
+        
+        $startDayOfWeek = $firstDate->dayOfWeek;
+        $startDayOfWeek = $startDayOfWeek == 0 ? 7 : $startDayOfWeek;
+        
+        for ($i = 1; $i < $startDayOfWeek; $i++) {
+            $myCalendarDays[] = [
+                'is_empty' => true,
+                'date' => null,
+                'day_num' => null,
+                'shift_name' => null,
+                'shift_start' => null,
+                'shift_end' => null,
+                'status' => null,
+            ];
+        }
+        
+        foreach ($dailyDetails as $dateStr => $det) {
+            $dateCarbon = \Carbon\Carbon::parse($dateStr);
+            $shiftName = $det['shift_name'] ?? null;
+            $shortLabel = '-';
+            $bgColor = 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500';
+            
+            if ($shiftName) {
+                if (stripos($shiftName, 'malam') !== false) {
+                    $shortLabel = 'Malam';
+                    $bgColor = 'bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400';
+                } elseif (stripos($shiftName, 'pagi') !== false) {
+                    $shortLabel = 'Pagi';
+                    $bgColor = 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400';
+                } elseif (stripos($shiftName, 'siang') !== false) {
+                    $shortLabel = 'Siang';
+                    $bgColor = 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400';
+                } else {
+                    $shortLabel = \Illuminate\Support\Str::limit($shiftName, 6, '');
+                    $bgColor = 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400';
+                }
+            } else {
+                if (($det['status'] ?? '') === 'Off' || ($det['status'] ?? '') === 'Libur') {
+                    $shortLabel = 'Off';
+                    $bgColor = 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500';
+                }
+            }
+            
+            $myCalendarDays[] = [
+                'is_empty' => false,
+                'date' => $dateStr,
+                'day_num' => $dateCarbon->day,
+                'shift_name' => $shiftName,
+                'short_label' => $shortLabel,
+                'bg_color' => $bgColor,
+                'shift_start' => isset($det['shift_start']) ? substr($det['shift_start'], 0, 5) : null,
+                'shift_end' => isset($det['shift_end']) ? substr($det['shift_end'], 0, 5) : null,
+                'status' => $det['status'] ?? '-',
+            ];
+        }
+    }
+
     return view('admin.dashboard', compact(
         'isAdmin',
         'employeeCount',
@@ -166,7 +229,8 @@ Route::get('/dashboard', function () {
         'myRecentLeaves',
         'chartPoints',
         'totalLateDays',
-        'myActiveShifts'
+        'myActiveShifts',
+        'myCalendarDays'
     ));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
