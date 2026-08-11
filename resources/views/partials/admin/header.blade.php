@@ -77,9 +77,17 @@
                         <!-- General Database Notifications (Announcements, etc) -->
                         @if(auth()->user() && auth()->user()->unreadNotifications->count() > 0)
                             @foreach(auth()->user()->unreadNotifications as $notification)
+                                @php
+                                    $icon = 'megaphone';
+                                    $iconBg = 'bg-indigo-50/60 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border-indigo-100/40 dark:border-indigo-900/20';
+                                    if (str_contains($notification->type, 'LeaveDecisionNotification')) {
+                                        $icon = 'file-signature';
+                                        $iconBg = 'bg-amber-50/60 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-100/40 dark:border-amber-900/20';
+                                    }
+                                @endphp
                                 <a href="{{ route('notifications.read', $notification->id) }}" class="flex items-start gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
-                                    <div class="w-8 h-8 rounded-lg bg-indigo-50/60 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100/40 dark:border-indigo-900/20">
-                                        <i data-lucide="megaphone" class="w-4 h-4"></i>
+                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border {{ $iconBg }}">
+                                        <i data-lucide="{{ $icon }}" class="w-4 h-4"></i>
                                     </div>
                                     <div class="space-y-0.5 overflow-hidden">
                                         <p class="font-bold text-slate-800 dark:text-slate-200 truncate">{{ $notification->data['message'] ?? 'Notifikasi Baru' }}</p>

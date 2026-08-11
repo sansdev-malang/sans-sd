@@ -429,7 +429,7 @@ class HrdApiController extends Controller
     {
         $request->validate([
             'leave_id' => 'required|integer',
-            'status' => 'required|string|in:Approved,Rejected',
+            'status' => 'required|string|in:Pending,Approved,Rejected',
             'notes' => 'nullable|string',
         ]);
 
@@ -438,9 +438,42 @@ class HrdApiController extends Controller
             return response()->json(['success' => false, 'message' => 'Leave request not found.'], 404);
         }
 
+        $oldStatus = $leave->status;
         $leave->status = $request->input('status');
         $leave->notes = $request->input('notes');
         $leave->save();
+
+        try {
+            $employee = $leave->employee;
+            if ($employee && $employee->user) {
+                $employee->user->notify(new \App\Notifications\LeaveDecisionNotification($leave));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to notify employee for leave decision in unit: " . $e->getMessage());
+        }
+
+        // If changed from Approved to Pending/Rejected, remove/reset automatic attendance
+        if ($oldStatus === 'Approved' && $leave->status !== 'Approved') {
+            $startDate = Carbon::parse($leave->start_date);
+            $endDate = Carbon::parse($leave->end_date);
+            
+            for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                $attendance = Attendance::where('employee_id', $leave->employee_id)
+                    ->where('date', $date->format('Y-m-d'))
+                    ->first();
+                
+                if ($attendance) {
+                    if (is_null($attendance->clock_in) && is_null($attendance->clock_out)) {
+                        $attendance->delete();
+                    } else {
+                        $attendance->update([
+                            'status' => 'Present',
+                            'calculated_bonus' => 0.00,
+                        ]);
+                    }
+                }
+            }
+        }
 
         // If approved, update attendance table automatically for those days
         if ($leave->status === 'Approved') {
