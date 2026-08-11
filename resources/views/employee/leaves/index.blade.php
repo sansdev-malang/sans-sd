@@ -37,7 +37,6 @@
                 <table class="w-full text-xs">
                     <thead class="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[10px]">
                         <tr>
-                            <th class="px-6 py-3 text-center">Tgl Pengajuan</th>
                             <th class="px-6 py-3 text-center">Jenis Izin</th>
                             <th class="px-6 py-3 text-center">Tanggal Mulai</th>
                             <th class="px-6 py-3 text-center">Tanggal Selesai</th>
@@ -49,6 +48,9 @@
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-900 text-slate-700 dark:text-slate-300 font-medium">
                         @forelse($leaves as $leave)
                             @php
+                                $leaveName = $leave->leaveType ? $leave->leaveType->name : $leave->type;
+                                $statusCode = $leave->leaveType ? $leave->leaveType->status_code : ($leave->type === 'Sakit' ? 'S' : ($leave->type === 'Cuti' ? 'C' : ($leave->type === 'Dinas' ? 'H' : 'I')));
+
                                 $processedBy = '-';
                                 if ($leave->processedBy) {
                                     $roleLabels = [
@@ -91,13 +93,20 @@
                                 }
                             @endphp
                             <tr>
-                                <td class="px-6 py-4 text-center font-mono text-[11px]">
-                                    {{ $leave->created_at->format('d M Y') }}
-                                </td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/40 dark:border-slate-700/50 uppercase">
-                                        {{ $leave->leaveType ? $leave->leaveType->name : $leave->type }}
-                                    </span>
+                                    <div class="flex flex-col items-center gap-1">
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/40 dark:border-slate-700/50 uppercase">
+                                                {{ $statusCode }}
+                                            </span>
+                                            <span class="font-bold text-slate-800 dark:text-slate-200 uppercase">
+                                                {{ $leaveName }}
+                                            </span>
+                                        </div>
+                                        <span class="text-[9px] text-slate-400 dark:text-slate-500 font-medium">
+                                            Diajukan: {{ $leave->created_at ? $leave->created_at->format('d M Y H:i') : '-' }}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 text-center font-mono">
                                     {{ $leave->start_date->format('d M Y') }}
@@ -143,7 +152,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-10 text-center text-slate-500 dark:text-slate-400">
+                                <td colspan="6" class="px-6 py-10 text-center text-slate-500 dark:text-slate-400">
                                     Anda belum memiliki riwayat pengajuan izin/cuti.
                                 </td>
                             </tr>
@@ -157,6 +166,9 @@
         <div class="block sm:hidden space-y-4">
             @forelse($leaves as $leave)
                 @php
+                    $leaveName = $leave->leaveType ? $leave->leaveType->name : $leave->type;
+                    $statusCode = $leave->leaveType ? $leave->leaveType->status_code : ($leave->type === 'Sakit' ? 'S' : ($leave->type === 'Cuti' ? 'C' : ($leave->type === 'Dinas' ? 'H' : 'I')));
+
                     $processedBy = '-';
                     if ($leave->processedBy) {
                         $roleLabels = [
@@ -201,7 +213,7 @@
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm space-y-3 text-left">
                     <div class="flex items-center justify-between gap-4">
                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/40 dark:border-slate-700/50 uppercase">
-                            {{ $leave->leaveType ? $leave->leaveType->name : $leave->type }}
+                            [{{ $statusCode }}] {{ $leaveName }}
                         </span>
                         <div class="flex flex-col items-end gap-0.5">
                             @if($leave->status === 'Pending')
@@ -226,7 +238,7 @@
                     <div class="space-y-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-800/60">
                         <div class="flex justify-between text-xs">
                             <span class="text-slate-400 dark:text-slate-500">Tgl Pengajuan:</span>
-                            <span class="font-mono font-medium text-slate-800 dark:text-slate-200">{{ $leave->created_at->format('d M Y') }}</span>
+                            <span class="font-mono font-medium text-slate-800 dark:text-slate-200">{{ $leave->created_at ? $leave->created_at->format('d M Y H:i') : '-' }}</span>
                         </div>
                         <div class="flex justify-between text-xs">
                             <span class="text-slate-400 dark:text-slate-500">Mulai:</span>
