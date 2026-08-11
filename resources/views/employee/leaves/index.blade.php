@@ -41,10 +41,54 @@
                             <th class="px-6 py-3 text-center">Tanggal Mulai</th>
                             <th class="px-6 py-3 text-center">Tanggal Selesai</th>
                             <th class="px-6 py-3 text-left">Keterangan</th>
+                            <th class="px-6 py-3 text-left">Catatan / Alasan</th>
+                            <th class="px-6 py-3 text-center w-36">Status</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-900 text-slate-700 dark:text-slate-300 font-medium">
                         @forelse($leaves as $leave)
+                            @php
+                                $processedBy = '-';
+                                if ($leave->processedBy) {
+                                    $roleLabels = [
+                                        'super_admin' => 'Super Admin',
+                                        'admin_paud' => 'Admin PAUD',
+                                        'admin_sd' => 'Admin SD',
+                                        'admin_smp' => 'Admin SMP',
+                                        'kepala_sekolah' => 'Kepala Sekolah',
+                                        'waka' => 'Wakil Kepala Sekolah',
+                                    ];
+                                    $roleLabel = $roleLabels[$leave->processedBy->role] ?? $leave->processedBy->role;
+                                    $processedBy = "{$leave->processedBy->name} ({$roleLabel})";
+                                } elseif ($leave->processed_by_name) {
+                                    $processedBy = $leave->processed_by_name;
+                                } else {
+                                    $noteText = $leave->notes ?? '';
+                                    $lowerNote = strtolower($noteText);
+                                    if (
+                                        str_starts_with($lowerNote, 'disetujui oleh ') ||
+                                        str_starts_with($lowerNote, 'ditolak oleh ') ||
+                                        str_starts_with($lowerNote, 'disetujui otomatis oleh ')
+                                    ) {
+                                        $parts = explode('oleh ', $noteText);
+                                        $processedBy = preg_replace('/[\s.]+$/', '', end($parts));
+                                    } elseif (preg_match('/\((Keputusan|Ditolak|Disetujui)\s+oleh\s+(.*?)\)/i', $noteText, $matches)) {
+                                        $processedBy = $matches[2];
+                                    }
+                                }
+
+                                $displayNotes = $leave->notes ?? '';
+                                $lowerNotes = strtolower($displayNotes);
+                                if (
+                                    str_starts_with($lowerNotes, 'disetujui oleh') || 
+                                    str_starts_with($lowerNotes, 'ditolak oleh') || 
+                                    str_starts_with($lowerNotes, 'disetujui otomatis oleh')
+                                ) {
+                                    $displayNotes = '';
+                                } else {
+                                    $displayNotes = preg_replace('/\s*\((Keputusan|Ditolak|Disetujui)\s+oleh.*?\)/i', '', $displayNotes);
+                                }
+                            @endphp
                             <tr>
                                 <td class="px-6 py-4 text-center">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/40 dark:border-slate-700/50 uppercase">
@@ -68,10 +112,34 @@
                                         </div>
                                     @endif
                                 </td>
+                                <td class="px-6 py-4 text-left">
+                                    <span class="text-slate-600 dark:text-slate-400 block">{{ $displayNotes ?: '-' }}</span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="flex flex-col items-center gap-1">
+                                        @if($leave->status === 'Pending')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-955/30 text-amber-700 dark:text-amber-400 border border-amber-200/30 dark:border-amber-900/30 uppercase">
+                                                Pending
+                                            </span>
+                                        @elseif($leave->status === 'Approved')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-955/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-900/30 uppercase">
+                                                Disetujui
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-955/30 text-rose-700 dark:text-rose-455 border border-rose-200/30 dark:border-rose-900/30 uppercase">
+                                                Ditolak
+                                            </span>
+                                        @endif
+
+                                        @if($leave->status !== 'Pending' && $processedBy !== '-')
+                                            <div class="text-[9px] text-slate-405 dark:text-slate-500 font-semibold mt-0.5 leading-tight">oleh: {{ $processedBy }}</div>
+                                        @endif
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-10 text-center text-slate-500 dark:text-slate-400">
+                                <td colspan="6" class="px-6 py-10 text-center text-slate-500 dark:text-slate-400">
                                     Anda belum memiliki riwayat pengajuan izin/cuti.
                                 </td>
                             </tr>
@@ -84,13 +152,71 @@
         <!-- MOBILE CARD LIST -->
         <div class="block sm:hidden space-y-4">
             @forelse($leaves as $leave)
+                @php
+                    $processedBy = '-';
+                    if ($leave->processedBy) {
+                        $roleLabels = [
+                            'super_admin' => 'Super Admin',
+                            'admin_paud' => 'Admin PAUD',
+                            'admin_sd' => 'Admin SD',
+                            'admin_smp' => 'Admin SMP',
+                            'kepala_sekolah' => 'Kepala Sekolah',
+                            'waka' => 'Wakil Kepala Sekolah',
+                        ];
+                        $roleLabel = $roleLabels[$leave->processedBy->role] ?? $leave->processedBy->role;
+                        $processedBy = "{$leave->processedBy->name} ({$roleLabel})";
+                    } elseif ($leave->processed_by_name) {
+                        $processedBy = $leave->processed_by_name;
+                    } else {
+                        $noteText = $leave->notes ?? '';
+                        $lowerNote = strtolower($noteText);
+                        if (
+                            str_starts_with($lowerNote, 'disetujui oleh ') ||
+                            str_starts_with($lowerNote, 'ditolak oleh ') ||
+                            str_starts_with($lowerNote, 'disetujui otomatis oleh ')
+                        ) {
+                            $parts = explode('oleh ', $noteText);
+                            $processedBy = preg_replace('/[\s.]+$/', '', end($parts));
+                        } elseif (preg_match('/\((Keputusan|Ditolak|Disetujui)\s+oleh\s+(.*?)\)/i', $noteText, $matches)) {
+                            $processedBy = $matches[2];
+                        }
+                    }
+
+                    $displayNotes = $leave->notes ?? '';
+                    $lowerNotes = strtolower($displayNotes);
+                    if (
+                        str_starts_with($lowerNotes, 'disetujui oleh') || 
+                        str_starts_with($lowerNotes, 'ditolak oleh') || 
+                        str_starts_with($lowerNotes, 'disetujui otomatis oleh')
+                    ) {
+                        $displayNotes = '';
+                    } else {
+                        $displayNotes = preg_replace('/\s*\((Keputusan|Ditolak|Disetujui)\s+oleh.*?\)/i', '', $displayNotes);
+                    }
+                @endphp
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm space-y-3 text-left">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between gap-4">
                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/40 dark:border-slate-700/50 uppercase">
                             {{ $leave->leaveType ? $leave->leaveType->name : $leave->type }}
                         </span>
-                        <div class="text-xs text-slate-400 dark:text-slate-500 font-medium">
-                            <!-- Status: <span class="text-emerald-600 dark:text-emerald-400 font-bold uppercase">Approved</span> -->
+                        <div class="flex flex-col items-end gap-0.5">
+                            @if($leave->status === 'Pending')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 dark:bg-amber-955/30 text-amber-700 dark:text-amber-400 border border-amber-200/30 dark:border-amber-900/30 uppercase">
+                                    Pending
+                                </span>
+                            @elseif($leave->status === 'Approved')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 dark:bg-emerald-955/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-900/30 uppercase">
+                                    Disetujui
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-rose-50 dark:bg-rose-955/30 text-rose-700 dark:text-rose-455 border border-rose-200/30 dark:border-rose-900/30 uppercase">
+                                    Ditolak
+                                </span>
+                            @endif
+
+                            @if($leave->status !== 'Pending' && $processedBy !== '-')
+                                <div class="text-[8px] text-slate-405 dark:text-slate-500 font-semibold mt-0.5 leading-tight">oleh: {{ $processedBy }}</div>
+                            @endif
                         </div>
                     </div>
                     <div class="space-y-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-800/60">
@@ -106,6 +232,12 @@
                             <span class="text-xs text-slate-400 dark:text-slate-500">Keterangan:</span>
                             <p class="text-xs text-slate-700 dark:text-slate-300 leading-normal">{{ $leave->reason ?? '-' }}</p>
                         </div>
+                        @if($displayNotes)
+                            <div class="flex flex-col gap-0.5 pt-1">
+                                <span class="text-xs text-slate-400 dark:text-slate-500">Catatan / Alasan:</span>
+                                <p class="text-xs text-slate-750 dark:text-slate-300 leading-normal">{{ $displayNotes }}</p>
+                            </div>
+                        @endif
                     </div>
                     @if($leave->attachment)
                         <div class="pt-2.5 border-t border-slate-100 dark:border-slate-800/60 flex justify-end">
