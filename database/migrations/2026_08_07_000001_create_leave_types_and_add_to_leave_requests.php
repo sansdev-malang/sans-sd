@@ -42,7 +42,7 @@ return new class extends Migration
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Izin Sakit Keluarga (Anak/Orangtua/Suami/Istri)',
+                'name' => 'Izin Sakit Keluarga (Anak/Orangtua Kandung/Suami/Istri)',
                 'code' => 'sakit-keluarga',
                 'status_code' => 'I',
                 'gets_presence_bonus' => false,
@@ -74,7 +74,7 @@ return new class extends Migration
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Izin Keluar Pada Jam Efektif',
+                'name' => 'ijin keluar pada jam efektif (urusan sekolah/yayasan)',
                 'code' => 'keluar-jam-efektif',
                 'status_code' => 'H',
                 'gets_presence_bonus' => true,
@@ -90,7 +90,7 @@ return new class extends Migration
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Izin Kedinasan Pagi',
+                'name' => 'ijin kedinasan pagi ( kembali ke sekolah, by instruksi)',
                 'code' => 'dinas-pagi',
                 'status_code' => 'H',
                 'gets_presence_bonus' => true,
@@ -98,7 +98,7 @@ return new class extends Migration
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Izin Kedinasan Siang',
+                'name' => 'ijin kedinasan siang ( kembali ke sekolah, by instruksi)',
                 'code' => 'dinas-siang',
                 'status_code' => 'H',
                 'gets_presence_bonus' => true,
@@ -106,10 +106,18 @@ return new class extends Migration
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Izin Kedinasan Luar',
+                'name' => 'ijin kedinasan luar ( tidak kembali ke sekolah, by instruksi)',
                 'code' => 'dinas-luar',
                 'status_code' => 'H',
                 'gets_presence_bonus' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'ijin duka (keluarga meninggal)',
+                'code' => 'duka',
+                'status_code' => 'I',
+                'gets_presence_bonus' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

@@ -86,11 +86,11 @@
             @forelse($leaves as $leave)
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm space-y-3 text-left">
                     <div class="flex items-center justify-between">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/40 dark:border-slate-700/50 uppercase">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/40 dark:border-slate-700/50 uppercase">
                             {{ $leave->leaveType ? $leave->leaveType->name : $leave->type }}
                         </span>
-                        <div class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                            Status: <span class="text-emerald-600 dark:text-emerald-400 font-bold uppercase">Approved</span>
+                        <div class="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                            <!-- Status: <span class="text-emerald-600 dark:text-emerald-400 font-bold uppercase">Approved</span> -->
                         </div>
                     </div>
                     <div class="space-y-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-800/60">
@@ -103,7 +103,7 @@
                             <span class="font-mono font-medium text-slate-800 dark:text-slate-200">{{ $leave->end_date->format('d M Y') }}</span>
                         </div>
                         <div class="flex flex-col gap-0.5 pt-1">
-                            <span class="text-[10px] text-slate-400 dark:text-slate-500">Keterangan:</span>
+                            <span class="text-xs text-slate-400 dark:text-slate-500">Keterangan:</span>
                             <p class="text-xs text-slate-700 dark:text-slate-300 leading-normal">{{ $leave->reason ?? '-' }}</p>
                         </div>
                     </div>
@@ -134,7 +134,7 @@
                     </button>
                 </div>
 
-                <form method="POST" action="{{ route('my-leaves.store') }}" enctype="multipart/form-data" id="leaveForm" class="p-5 space-y-4 text-xs">
+                <form method="POST" action="{{ route('my-leaves.store') }}" enctype="multipart/form-data" id="leaveForm" class="p-5 pt-0 pb-5 space-y-4 text-xs">
                     @csrf
                     
                     @if($errors->any())
@@ -155,47 +155,47 @@
                     
                     <div>
                         <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Jenis Izin / Cuti</label>
-                        <select name="leave_type_id" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border @error('leave_type_id') border-rose-500 focus:border-rose-500 @else border-slate-200 dark:border-slate-800 @enderror rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-sans">
+                        <select name="leave_type_id" required class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-900 border @error('leave_type_id') border-rose-500 focus:border-rose-500 @else border-slate-200 dark:border-slate-800 @enderror rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-sans">
                             @foreach($leaveTypes as $lt)
                                 <option value="{{ $lt->id }}" @selected(old('leave_type_id') == $lt->id)>{{ $lt->name }} - {{ $lt->status_code }}</option>
                             @endforeach
                         </select>
                         @error('leave_type_id')
-                            <span class="text-[10px] text-rose-600 dark:text-rose-400 block mt-1">{{ $message }}</span>
+                            <span class="text-xs text-rose-600 dark:text-rose-400 block mt-1">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Mulai Tanggal</label>
-                            <input type="date" name="start_date" required min="{{ date('Y-m-d') }}" value="{{ old('start_date') }}" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border @error('start_date') border-rose-500 focus:border-rose-500 @else border-slate-200 dark:border-slate-800 @enderror rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-mono">
+                            <input type="date" name="start_date" required min="{{ date('Y-m-d') }}" value="{{ old('start_date') }}" class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-900 border @error('start_date') border-rose-500 focus:border-rose-500 @else border-slate-200 dark:border-slate-800 @enderror rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-mono">
                             @error('start_date')
-                                <span class="text-[10px] text-rose-600 dark:text-rose-400 block mt-1">{{ $message }}</span>
+                                <span class="text-xs text-rose-600 dark:text-rose-400 block mt-1">{{ $message }}</span>
                             @enderror
                         </div>
                         <div>
                             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Selesai Tanggal</label>
-                            <input type="date" name="end_date" required min="{{ date('Y-m-d') }}" value="{{ old('end_date') }}" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border @error('end_date') border-rose-500 focus:border-rose-500 @else border-slate-200 dark:border-slate-800 @enderror rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-mono font-nasalization">
+                            <input type="date" name="end_date" required min="{{ date('Y-m-d') }}" value="{{ old('end_date') }}" class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-900 border @error('end_date') border-rose-500 focus:border-rose-500 @else border-slate-200 dark:border-slate-800 @enderror rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-mono font-nasalization">
                             @error('end_date')
-                                <span class="text-[10px] text-rose-600 dark:text-rose-400 block mt-1">{{ $message }}</span>
+                                <span class="text-xs text-rose-600 dark:text-rose-400 block mt-1">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
 
                     <div>
                         <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Keterangan</label>
-                        <textarea name="reason" rows="3" placeholder="Tuliskan keterangan detail..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border @error('reason') border-rose-500 focus:border-rose-500 @else border-slate-200 dark:border-slate-800 @enderror rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500">{{ old('reason') }}</textarea>
+                        <textarea name="reason" rows="3" placeholder="Tuliskan keterangan detail..." class="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-900 border @error('reason') border-rose-500 focus:border-rose-500 @else border-slate-200 dark:border-slate-800 @enderror rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500">{{ old('reason') }}</textarea>
                         @error('reason')
-                            <span class="text-[10px] text-rose-600 dark:text-rose-400 block mt-1">{{ $message }}</span>
+                            <span class="text-xs text-rose-600 dark:text-rose-400 block mt-1">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div>
                         <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">File Lampiran (Surat Dokter / Bukti Pendukung)</label>
                         <input type="file" name="attachment" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border @error('attachment') border-rose-500 focus:border-rose-500 @else border-slate-200 dark:border-slate-800 @enderror rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
-                        <span class="text-[10px] text-slate-400 dark:text-slate-500 block mt-1">Format: PDF, PNG, JPG, JPEG, DOC, DOCX. Maksimal 2MB.</span>
+                        <span class="text-xs text-slate-400 dark:text-slate-500 block mt-1">Format: PDF, PNG, JPG, JPEG, DOC, DOCX. Maksimal 2MB.</span>
                         @error('attachment')
-                            <span class="text-[10px] text-rose-600 dark:text-rose-400 block mt-1">{{ $message }}</span>
+                            <span class="text-xs text-rose-600 dark:text-rose-400 block mt-1">{{ $message }}</span>
                         @enderror
                     </div>
 

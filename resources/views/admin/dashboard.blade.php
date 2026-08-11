@@ -208,7 +208,7 @@
                             }
                         </style>
                         <div class="mb-4 p-3.5 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800/80 rounded-lg text-xs">
-                            <div class="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                            <div class="flex items-center gap-1.5 font-semibold text-slate-900 dark:text-slate-700 mb-3">
                                 <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-500 shrink-0"></i>
                                 <span>Informasi Shift Kerja Bulan Ini:</span>
                             </div>
