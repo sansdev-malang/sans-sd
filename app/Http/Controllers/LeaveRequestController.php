@@ -41,10 +41,70 @@ class LeaveRequestController extends Controller
             $readIds[] = (int) request('read_id');
             \Illuminate\Support\Facades\Cache::forever('read_leave_ids_' . auth()->id(), array_unique($readIds));
         }
-        $leaves = LeaveRequest::with(['employee', 'leaveType'])->orderBy('start_date', 'desc')->get();
+
+        $schoolUnit = config('app.school_unit');
+        
+        // Base query for stats
+        $statsQuery = LeaveRequest::query();
+        if ($schoolUnit) {
+            $statsQuery->whereHas('employee', function ($q) use ($schoolUnit) {
+                $q->where('unit', $schoolUnit);
+            });
+        }
+        $allLeaves = $statsQuery->get();
+        $pendingCount = $allLeaves->where('status', 'Pending')->count();
+        $approvedCount = $allLeaves->where('status', 'Approved')->count();
+        $rejectedCount = $allLeaves->where('status', 'Rejected')->count();
+        $processedCount = $approvedCount + $rejectedCount;
+        $approvalRate = $processedCount > 0 ? round(($approvedCount / $processedCount) * 100, 1) : 0;
+
+        // Base query for list
+        $query = LeaveRequest::with(['employee', 'leaveType'])->orderBy('start_date', 'desc');
+        if ($schoolUnit) {
+            $query->whereHas('employee', function ($q) use ($schoolUnit) {
+                $q->where('unit', $schoolUnit);
+            });
+        }
+
+        // Apply filters
+        if (request()->filled('search')) {
+            $search = request('search');
+            $query->whereHas('employee', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
+            });
+        }
+
+        if (request()->filled('type')) {
+            $typeFilter = request('type');
+            $query->where(function($q) use ($typeFilter) {
+                $q->where('leave_type_id', $typeFilter)
+                  ->orWhere('type', $typeFilter);
+            });
+        }
+
+        if (request()->filled('status')) {
+            $query->where('status', request('status'));
+        }
+
+        // Pagination
+        $perPage = request('per_page', 50);
+        if ($perPage === 'all') {
+            $paginatedLeaves = $query->paginate($query->count())->appends(request()->query());
+        } else {
+            $paginatedLeaves = $query->paginate((int) $perPage)->appends(request()->query());
+        }
+
         $employees = Employee::orderBy('name')->get();
         $leaveTypes = \App\Models\LeaveType::orderBy('name')->get();
-        return view('admin.leaves.index', compact('leaves', 'employees', 'leaveTypes'));
+
+        return view('admin.leaves.index', compact(
+            'paginatedLeaves',
+            'employees',
+            'leaveTypes',
+            'pendingCount',
+            'processedCount',
+            'approvalRate'
+        ));
     }
 
     /**
