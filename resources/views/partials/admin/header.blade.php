@@ -8,6 +8,7 @@
             <i data-lucide="panel-left" class="w-4 h-4"></i>
         </button>
         <!-- Breadcrumbs display (sidebar-07 look) -->
+        <button class="sm:hidden text-sm font-medium text-slate-500 dark:text-slate-400" data-sidebar-toggle>Menu</button>
         <nav
             class="hidden sm:flex items-center space-x-1.5 text-xs font-medium text-slate-400 dark:text-slate-500 select-none">
             <span class="hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer">{{ setting('unit_name', 'SANS Malang') }}</span>

@@ -77,7 +77,7 @@
         <!-- DATA RIWAYAT ABSENSI / PAGE TITLE -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex flex-col gap-0.5">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Data Riwayat Absensi</h2>
+                <h2 class="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-50">Data Riwayat Absensi</h2>
                 <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Memantau waktu kedatangan dan
                     kepulangan Anda secara komprehensif.</p>
             </div>
@@ -149,7 +149,7 @@
                         </span>
                         <div class="text-left">
                             <span class="block text-sm font-extrabold text-slate-900 dark:text-slate-50 leading-tight">Rp {{ number_format($totalBonus, 0, ',', '.') }}</span>
-                            <span class="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mt-0.5">Akumulasi Bonus</span>
+                            <span class="block text-xs text-slate-400 dark:text-slate-500 tracking-wider leading-none mt-0.5">Akumulasi Bonus</span>
                         </div>
                     </div>
                     
@@ -268,9 +268,9 @@
 
             @if(!empty($myActiveShifts))
                 <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
-                    <div class="flex flex-col sm:flex-row sm:items-start gap-y-2" style="gap: 12px 16px;">
-                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5 shrink-0">Jam Kerja:</span>
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:flex-wrap gap-y-1.5" style="gap: 8px 20px;">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-y-2" style="gap: 12px 16px;">
+                        <span class="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wider shrink-0">Jam Kerja:</span>
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:flex-wrap" style="gap: 8px 20px;">
                             @foreach($myActiveShifts as $index => $shift)
                                 @php
                                     $daysName = [1 => 'Sen', 2 => 'Sel', 3 => 'Rab', 4 => 'Kam', 5 => 'Jum', 6 => 'Sab', 0 => 'Min'];
@@ -338,7 +338,7 @@
                     <div class="flex items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
                         <div>
                             <h4 class="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-50">Keterangan</h4>
-                            <p class="text-[11px] text-slate-400 dark:text-slate-500">Panduan warna dan detail absensi</p>
+                            <p class="text-xs text-slate-400 dark:text-slate-500">Panduan warna dan detail absensi</p>
                         </div>
                     </div>
 
@@ -347,36 +347,36 @@
                             <span class="mt-0.5 inline-flex h-2.5 w-2.5 rounded-full bg-slate-950 dark:bg-slate-100"></span>
                             <div>
                                 <p class="text-xs font-medium text-slate-900 dark:text-slate-50">Tanggal hari ini</p>
-                                <p class="text-[11px] leading-5 text-slate-500 dark:text-slate-400">Ditandai dengan blok gelap seperti pada template.</p>
+                                <p class="text-xs leading-5 text-slate-500 dark:text-slate-400">Ditandai dengan blok gelap seperti pada template.</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-3">
                             <span class="mt-0.5 inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
                             <div>
                                 <p class="text-xs font-medium text-slate-900 dark:text-slate-50">Hadir</p>
-                                <p class="text-[11px] leading-5 text-slate-500 dark:text-slate-400">Arahkan kursor untuk melihat jam masuk dan jam pulang.</p>
+                                <p class="text-xs leading-5 text-slate-500 dark:text-slate-400">Arahkan kursor untuk melihat jam masuk dan jam pulang.</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-3">
                             <span class="mt-0.5 inline-flex h-2.5 w-2.5 rounded-full bg-amber-500"></span>
                             <div>
                                 <p class="text-xs font-medium text-slate-900 dark:text-slate-50">Terlambat</p>
-                                <p class="text-[11px] leading-5 text-slate-500 dark:text-slate-400">Jam masuk terlambat akan ditandai warna amber.</p>
+                                <p class="text-xs leading-5 text-slate-500 dark:text-slate-400">Jam masuk terlambat akan ditandai warna amber.</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-3">
                             <span class="mt-0.5 inline-flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
                             <div>
                                 <p class="text-xs font-medium text-slate-900 dark:text-slate-50">Minggu / Libur</p>
-                                <p class="text-[11px] leading-5 text-slate-500 dark:text-slate-400">Warna merah dipakai untuk hari Minggu atau status libur.</p>
+                                <p class="text-xs leading-5 text-slate-500 dark:text-slate-400">Warna merah dipakai untuk hari Minggu atau status libur.</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-3">
-                    <p class="text-[11px] font-medium text-slate-900 dark:text-slate-50">Tooltip tanggal</p>
-                    <p class="text-[11px] leading-5 text-slate-500 dark:text-slate-400 mt-1">
+                    <p class="text-xs font-medium text-slate-900 dark:text-slate-50">Tooltip tanggal</p>
+                    <p class="text-xs leading-5 text-slate-500 dark:text-slate-400 mt-1">
                         Detail jam masuk dan jam pulang muncul saat kursor diarahkan ke tanggal.
                     </p>
                 </div>
@@ -402,7 +402,7 @@
             <!-- Status Badge -->
             <div class="flex items-center justify-between gap-4 mb-2.5">
                 <span class="text-slate-400 dark:text-slate-500 font-medium">Status</span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider"
                       :class="{
                           'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400': tooltip.color === 'emerald',
                           'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': tooltip.color === 'red',
@@ -420,7 +420,7 @@
                 <div class="space-y-2">
                     <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                         <div class="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-lg p-1.5 border border-slate-100/50 dark:border-slate-800 text-center">
-                            <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Masuk</span>
+                            <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Masuk</span>
                             <span class="font-bold text-[11px]" :class="tooltip.isLate ? 'text-amber-600 dark:text-amber-500' : 'text-slate-700 dark:text-slate-200'" x-text="tooltip.checkIn"></span>
                             <template x-if="tooltip.isLate">
                                 <span class="text-[8px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none">Telat</span>

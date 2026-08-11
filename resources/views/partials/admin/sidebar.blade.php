@@ -13,7 +13,7 @@
 
     <!-- Workspace / School Selector (dropdown lookalike) -->
     <div
-        class="workspace-selector flex items-center justify-between p-2 mb-4 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg cursor-pointer transition-colors relative group">
+        class="workspace-selector flex items-center justify-between p-2 mb-4 rounded-lg transition-colors relative group">
         <div class="flex items-center gap-2.5">
             @if (setting('app_logo'))
                 <img src="{{ asset('storage/' . setting('app_logo')) }}" alt="Logo" class="w-8 h-8 rounded-lg object-cover shrink-0 shadow-sm">
@@ -31,7 +31,7 @@
             </div>
         </div>
         <!-- Dropdown selector arrow -->
-        <i data-lucide="chevrons-up-down" class="chevron-icon w-4 h-4 text-slate-400 shrink-0 ml-1"></i>
+        <!-- <i data-lucide="chevrons-up-down" class="chevron-icon w-4 h-4 text-slate-400 shrink-0 ml-1"></i> -->
 
         <!-- Tooltip for collapsed view -->
         <span

@@ -243,6 +243,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 toggleBtn.addEventListener('click', toggleSidebar);
             }
 
+            // Tambahan: tombol "Menu" mobile (data-sidebar-toggle)
+            document.querySelectorAll('[data-sidebar-toggle]').forEach(btn => {
+                btn.addEventListener('click', toggleSidebar);
+            });
+
             if (closeBtn) {
                 closeBtn.addEventListener('click', () => {
                     if (isDesktop()) {
