@@ -51,7 +51,8 @@
                                 $leaveName = $leave->leaveType ? $leave->leaveType->name : $leave->type;
                                 $statusCode = $leave->leaveType ? $leave->leaveType->status_code : ($leave->type === 'Sakit' ? 'S' : ($leave->type === 'Cuti' ? 'C' : ($leave->type === 'Dinas' ? 'H' : 'I')));
 
-                                $processedBy = '-';
+                                $processedByName = '';
+                                $processedByRole = '';
                                 if ($leave->processedBy) {
                                     $roleLabels = [
                                         'super_admin' => 'Super Admin',
@@ -61,22 +62,36 @@
                                         'kepala_sekolah' => 'Kepala Sekolah',
                                         'waka' => 'Wakil Kepala Sekolah',
                                     ];
-                                    $roleLabel = $roleLabels[$leave->processedBy->role] ?? $leave->processedBy->role;
-                                    $processedBy = "{$leave->processedBy->name} ({$roleLabel})";
+                                    $processedByName = $leave->processedBy->name;
+                                    $processedByRole = $roleLabels[$leave->processedBy->role] ?? $leave->processedBy->role;
                                 } elseif ($leave->processed_by_name) {
-                                    $processedBy = $leave->processed_by_name;
+                                    $processedByName = $leave->processed_by_name;
+                                    if (preg_match('/^(.*?)\s*\((.*?)\)$/', $processedByName, $matches)) {
+                                        $processedByName = trim($matches[1]);
+                                        $processedByRole = trim($matches[2]);
+                                    }
                                 } else {
                                     $noteText = $leave->notes ?? '';
                                     $lowerNote = strtolower($noteText);
+                                    $rawProcessed = '';
                                     if (
                                         str_starts_with($lowerNote, 'disetujui oleh ') ||
                                         str_starts_with($lowerNote, 'ditolak oleh ') ||
                                         str_starts_with($lowerNote, 'disetujui otomatis oleh ')
                                     ) {
                                         $parts = explode('oleh ', $noteText);
-                                        $processedBy = preg_replace('/[\s.]+$/', '', end($parts));
+                                        $rawProcessed = preg_replace('/[\s.]+$/', '', end($parts));
                                     } elseif (preg_match('/\((Keputusan|Ditolak|Disetujui)\s+oleh\s+(.*?)\)/i', $noteText, $matches)) {
-                                        $processedBy = $matches[2];
+                                        $rawProcessed = $matches[2];
+                                    }
+                                    
+                                    if ($rawProcessed) {
+                                        if (preg_match('/^(.*?)\s*\((.*?)\)$/', $rawProcessed, $matches)) {
+                                            $processedByName = trim($matches[1]);
+                                            $processedByRole = trim($matches[2]);
+                                        } else {
+                                            $processedByName = $rawProcessed;
+                                        }
                                     }
                                 }
 
@@ -144,8 +159,13 @@
                                             </span>
                                         @endif
 
-                                        @if($leave->status !== 'Pending' && $processedBy !== '-')
-                                            <div class="text-[9px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5 leading-tight">oleh: {{ $processedBy }}</div>
+                                        @if($leave->status !== 'Pending' && $processedByName)
+                                            <div class="text-[9px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5 leading-tight">
+                                                oleh: {{ $processedByName }}
+                                                @if($processedByRole)
+                                                    <span class="block text-[8px] text-slate-400/80 font-normal">({{ $processedByRole }})</span>
+                                                @endif
+                                            </div>
                                         @endif
                                     </div>
                                 </td>
@@ -169,7 +189,8 @@
                     $leaveName = $leave->leaveType ? $leave->leaveType->name : $leave->type;
                     $statusCode = $leave->leaveType ? $leave->leaveType->status_code : ($leave->type === 'Sakit' ? 'S' : ($leave->type === 'Cuti' ? 'C' : ($leave->type === 'Dinas' ? 'H' : 'I')));
 
-                    $processedBy = '-';
+                    $processedByName = '';
+                    $processedByRole = '';
                     if ($leave->processedBy) {
                         $roleLabels = [
                             'super_admin' => 'Super Admin',
@@ -179,22 +200,36 @@
                             'kepala_sekolah' => 'Kepala Sekolah',
                             'waka' => 'Wakil Kepala Sekolah',
                         ];
-                        $roleLabel = $roleLabels[$leave->processedBy->role] ?? $leave->processedBy->role;
-                        $processedBy = "{$leave->processedBy->name} ({$roleLabel})";
+                        $processedByName = $leave->processedBy->name;
+                        $processedByRole = $roleLabels[$leave->processedBy->role] ?? $leave->processedBy->role;
                     } elseif ($leave->processed_by_name) {
-                        $processedBy = $leave->processed_by_name;
+                        $processedByName = $leave->processed_by_name;
+                        if (preg_match('/^(.*?)\s*\((.*?)\)$/', $processedByName, $matches)) {
+                            $processedByName = trim($matches[1]);
+                            $processedByRole = trim($matches[2]);
+                        }
                     } else {
                         $noteText = $leave->notes ?? '';
                         $lowerNote = strtolower($noteText);
+                        $rawProcessed = '';
                         if (
                             str_starts_with($lowerNote, 'disetujui oleh ') ||
                             str_starts_with($lowerNote, 'ditolak oleh ') ||
                             str_starts_with($lowerNote, 'disetujui otomatis oleh ')
                         ) {
                             $parts = explode('oleh ', $noteText);
-                            $processedBy = preg_replace('/[\s.]+$/', '', end($parts));
+                            $rawProcessed = preg_replace('/[\s.]+$/', '', end($parts));
                         } elseif (preg_match('/\((Keputusan|Ditolak|Disetujui)\s+oleh\s+(.*?)\)/i', $noteText, $matches)) {
-                            $processedBy = $matches[2];
+                            $rawProcessed = $matches[2];
+                        }
+                        
+                        if ($rawProcessed) {
+                            if (preg_match('/^(.*?)\s*\((.*?)\)$/', $rawProcessed, $matches)) {
+                                $processedByName = trim($matches[1]);
+                                $processedByRole = trim($matches[2]);
+                            } else {
+                                $processedByName = $rawProcessed;
+                            }
                         }
                     }
 
@@ -244,10 +279,15 @@
                             <span class="text-slate-400 dark:text-slate-500 shrink-0">Selesai:</span>
                             <span class="font-mono font-medium text-slate-800 dark:text-slate-200 text-right">{{ $leave->end_date->format('d M Y') }}</span>
                         </div>
-                        @if($leave->status !== 'Pending' && $processedBy !== '-')
-                            <div class="flex justify-between text-xs gap-4">
+                        @if($leave->status !== 'Pending' && $processedByName)
+                            <div class="flex justify-between text-xs gap-4 items-start">
                                 <span class="text-slate-400 dark:text-slate-500 shrink-0">Diproses Oleh:</span>
-                                <span class="font-medium text-slate-850 dark:text-slate-200 text-right leading-normal">{{ $processedBy }}</span>
+                                <div class="text-right">
+                                    <span class="font-medium text-slate-850 dark:text-slate-200 block leading-tight">{{ $processedByName }}</span>
+                                    @if($processedByRole)
+                                        <span class="text-[10px] text-slate-400 dark:text-slate-500 block mt-0.5 leading-tight">({{ $processedByRole }})</span>
+                                    @endif
+                                </div>
                             </div>
                         @endif
                         <div class="flex flex-col gap-0.5 pt-1">
