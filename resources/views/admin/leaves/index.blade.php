@@ -592,7 +592,7 @@
                     </div>
 
                     <!-- Form -->
-                    <form method="POST" :action="`{{ url('leaves') }}/${editLeave.id}`" class="space-y-4 text-xs">
+                    <form method="POST" :action="`{{ url('leaves') }}/${editLeave.id}`" class="space-y-4 text-xs p-5">
                         @csrf
                         @method('PUT')
 
