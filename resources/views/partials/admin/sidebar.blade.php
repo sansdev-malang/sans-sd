@@ -71,8 +71,7 @@
                         Profil Pegawai
                     </span>
                 </a>
-                @endif
-                @if($isAdmin)
+                @if(auth()->user()->hasRole('super_admin'))
                 <a href="{{ route('coming-soon') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg
                     {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
                     text-xs relative group">
@@ -98,8 +97,7 @@
                         Data Guru
                     </span>
                 </a>
-                @endif
-                @if($isAdmin)
+                @if(auth()->user()->hasRole('super_admin'))
                 <a href="{{ route('coming-soon') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg 
                     {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
                     text-xs font-medium relative group">
@@ -117,7 +115,7 @@
             </nav>
         </div>
 
-        @if($isAdmin)
+        @if(auth()->user()->hasRole('super_admin'))
         <!-- Group 2: Homebase (Dropdown style) -->
         <div>
             <h3
@@ -311,9 +309,9 @@
                 class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
                 Manajemen</h3>
             <nav class="space-y-1">
-                @if($isAdmin)
+                @if(auth()->user()->hasRole('super_admin'))
                 <a href="{{ route('coming-soon') }}"
-                    class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} transition-colors text-xs relative group">
+                    class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-550 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} transition-colors text-xs relative group">
                     <div class="flex items-center gap-3">
                         <i data-lucide="calendar" class="menu-icon w-4 h-4"></i>
                         <span class="menu-text">Jadwal Kelas</span>
