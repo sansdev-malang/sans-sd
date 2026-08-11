@@ -37,12 +37,12 @@
                 <table class="w-full text-xs">
                     <thead class="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[10px]">
                         <tr>
-                            <th class="px-6 py-3 text-center">Jenis Izin</th>
+                            <th class="px-6 py-3 text-left w-64 min-w-[200px]">Jenis Izin</th>
                             <th class="px-6 py-3 text-center">Tanggal Mulai</th>
                             <th class="px-6 py-3 text-center">Tanggal Selesai</th>
                             <th class="px-6 py-3 text-left">Keterangan</th>
                             <th class="px-6 py-3 text-left">Catatan / Alasan</th>
-                            <th class="px-6 py-3 text-center w-36">Status</th>
+                            <th class="px-6 py-3 text-center w-48 min-w-[185px]">Status</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-900 text-slate-700 dark:text-slate-300 font-medium">
@@ -93,9 +93,9 @@
                                 }
                             @endphp
                             <tr>
-                                <td class="px-6 py-4 text-center">
-                                    <div class="flex flex-col items-center gap-1">
-                                        <div class="flex items-center justify-center gap-1.5">
+                                <td class="px-6 py-4 text-left">
+                                    <div class="flex flex-col items-start gap-1">
+                                        <div class="flex items-center justify-start gap-1.5">
                                             <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/40 dark:border-slate-700/50 uppercase">
                                                 {{ $statusCode }}
                                             </span>
@@ -145,7 +145,7 @@
                                         @endif
 
                                         @if($leave->status !== 'Pending' && $processedBy !== '-')
-                                            <div class="text-[9px] text-slate-405 dark:text-slate-500 font-semibold mt-0.5 leading-tight">oleh: {{ $processedBy }}</div>
+                                            <div class="text-[9px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5 leading-tight">oleh: {{ $processedBy }}</div>
                                         @endif
                                     </div>
                                 </td>
@@ -215,7 +215,7 @@
                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/40 dark:border-slate-700/50 uppercase">
                             [{{ $statusCode }}] {{ $leaveName }}
                         </span>
-                        <div class="flex flex-col items-end gap-0.5">
+                        <div>
                             @if($leave->status === 'Pending')
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 dark:bg-amber-955/30 text-amber-700 dark:text-amber-400 border border-amber-200/30 dark:border-amber-900/30 uppercase">
                                     Pending
@@ -229,32 +229,34 @@
                                     Ditolak
                                 </span>
                             @endif
-
-                            @if($leave->status !== 'Pending' && $processedBy !== '-')
-                                <div class="text-[8px] text-slate-405 dark:text-slate-500 font-semibold mt-0.5 leading-tight">oleh: {{ $processedBy }}</div>
-                            @endif
                         </div>
                     </div>
                     <div class="space-y-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-800/60">
-                        <div class="flex justify-between text-xs">
-                            <span class="text-slate-400 dark:text-slate-500">Tgl Pengajuan:</span>
-                            <span class="font-mono font-medium text-slate-800 dark:text-slate-200">{{ $leave->created_at ? $leave->created_at->format('d M Y H:i') : '-' }}</span>
+                        <div class="flex justify-between text-xs gap-4">
+                            <span class="text-slate-400 dark:text-slate-500 shrink-0">Tgl Pengajuan:</span>
+                            <span class="font-mono font-medium text-slate-800 dark:text-slate-200 text-right">{{ $leave->created_at ? $leave->created_at->format('d M Y H:i') : '-' }}</span>
                         </div>
-                        <div class="flex justify-between text-xs">
-                            <span class="text-slate-400 dark:text-slate-500">Mulai:</span>
-                            <span class="font-mono font-medium text-slate-800 dark:text-slate-200">{{ $leave->start_date->format('d M Y') }}</span>
+                        <div class="flex justify-between text-xs gap-4">
+                            <span class="text-slate-400 dark:text-slate-500 shrink-0">Mulai:</span>
+                            <span class="font-mono font-medium text-slate-800 dark:text-slate-200 text-right">{{ $leave->start_date->format('d M Y') }}</span>
                         </div>
-                        <div class="flex justify-between text-xs">
-                            <span class="text-slate-400 dark:text-slate-500">Selesai:</span>
-                            <span class="font-mono font-medium text-slate-800 dark:text-slate-200">{{ $leave->end_date->format('d M Y') }}</span>
+                        <div class="flex justify-between text-xs gap-4">
+                            <span class="text-slate-400 dark:text-slate-500 shrink-0">Selesai:</span>
+                            <span class="font-mono font-medium text-slate-800 dark:text-slate-200 text-right">{{ $leave->end_date->format('d M Y') }}</span>
                         </div>
+                        @if($leave->status !== 'Pending' && $processedBy !== '-')
+                            <div class="flex justify-between text-xs gap-4">
+                                <span class="text-slate-400 dark:text-slate-500 shrink-0">Diproses Oleh:</span>
+                                <span class="font-medium text-slate-850 dark:text-slate-200 text-right leading-normal">{{ $processedBy }}</span>
+                            </div>
+                        @endif
                         <div class="flex flex-col gap-0.5 pt-1">
-                            <span class="text-xs text-slate-400 dark:text-slate-500">Keterangan:</span>
+                            <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">Keterangan:</span>
                             <p class="text-xs text-slate-700 dark:text-slate-300 leading-normal">{{ $leave->reason ?? '-' }}</p>
                         </div>
                         @if($displayNotes)
                             <div class="flex flex-col gap-0.5 pt-1">
-                                <span class="text-xs text-slate-400 dark:text-slate-500">Catatan / Alasan:</span>
+                                <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">Catatan / Alasan:</span>
                                 <p class="text-xs text-slate-750 dark:text-slate-300 leading-normal">{{ $displayNotes }}</p>
                             </div>
                         @endif
