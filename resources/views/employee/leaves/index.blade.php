@@ -37,6 +37,7 @@
                 <table class="w-full text-xs">
                     <thead class="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[10px]">
                         <tr>
+                            <th class="px-6 py-3 text-center">Tgl Pengajuan</th>
                             <th class="px-6 py-3 text-center">Jenis Izin</th>
                             <th class="px-6 py-3 text-center">Tanggal Mulai</th>
                             <th class="px-6 py-3 text-center">Tanggal Selesai</th>
@@ -90,6 +91,9 @@
                                 }
                             @endphp
                             <tr>
+                                <td class="px-6 py-4 text-center font-mono text-[11px]">
+                                    {{ $leave->created_at->format('d M Y') }}
+                                </td>
                                 <td class="px-6 py-4 text-center">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/40 dark:border-slate-700/50 uppercase">
                                         {{ $leave->leaveType ? $leave->leaveType->name : $leave->type }}
@@ -139,7 +143,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-10 text-center text-slate-500 dark:text-slate-400">
+                                <td colspan="7" class="px-6 py-10 text-center text-slate-500 dark:text-slate-400">
                                     Anda belum memiliki riwayat pengajuan izin/cuti.
                                 </td>
                             </tr>
@@ -220,6 +224,10 @@
                         </div>
                     </div>
                     <div class="space-y-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-800/60">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400 dark:text-slate-500">Tgl Pengajuan:</span>
+                            <span class="font-mono font-medium text-slate-800 dark:text-slate-200">{{ $leave->created_at->format('d M Y') }}</span>
+                        </div>
                         <div class="flex justify-between text-xs">
                             <span class="text-slate-400 dark:text-slate-500">Mulai:</span>
                             <span class="font-mono font-medium text-slate-800 dark:text-slate-200">{{ $leave->start_date->format('d M Y') }}</span>
