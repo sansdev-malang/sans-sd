@@ -26,7 +26,6 @@
                     'teachers.index' => 'Data Guru',
                     'employees.index' => 'Data Pegawai',
                     'announcements.index' => 'Pengumuman',
-                    'leave-approvals.index' => 'Persetujuan Izin & Cuti',
                     'absensi_hari_ini' => 'Absensi Hari Ini',
                     'absensi_laporan' => 'Laporan Absensi',
                     'absensi_izin_cuti' => 'Izin & Cuti',

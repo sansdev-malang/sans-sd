@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\LeaveRequest;
 use App\Models\Employee;
+use App\Models\Attendance;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 
@@ -59,7 +61,7 @@ class LeaveRequestController extends Controller
         $approvalRate = $processedCount > 0 ? round(($approvedCount / $processedCount) * 100, 1) : 0;
 
         // Base query for list
-        $query = LeaveRequest::with(['employee', 'leaveType'])->orderBy('start_date', 'desc');
+        $query = LeaveRequest::with(['employee', 'leaveType', 'processedBy'])->orderBy('start_date', 'desc');
         if ($schoolUnit) {
             $query->whereHas('employee', function ($q) use ($schoolUnit) {
                 $q->where('unit', $schoolUnit);
@@ -171,61 +173,218 @@ class LeaveRequestController extends Controller
     }
 
     /**
-     * Remove the specified leave request.
+     * Approve the specified leave request.
+     */
+    public function approve(Request $request, $id)
+    {
+        $leave = LeaveRequest::with('leaveType')->findOrFail($id);
+        
+        $user = auth()->user();
+
+        $leave->status = 'Approved';
+        $leave->notes = $request->input('notes');
+        $leave->processed_by_id = auth()->id();
+        $leave->processed_by_name = null;
+        $leave->save();
+
+        // Update attendance table automatically for those days
+        $startDate = Carbon::parse($leave->start_date);
+        $endDate = Carbon::parse($leave->end_date);
+        
+        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+            $attendance = Attendance::where('employee_id', $leave->employee_id)
+                ->where('date', $date->format('Y-m-d'))
+                ->first();
+
+            $status = 'Leave';
+            if ($leave->leaveType) {
+                if ($leave->leaveType->status_code === 'S') {
+                    $status = 'Sick';
+                }
+            } else {
+                if ($leave->type === 'Sakit') {
+                    $status = 'Sick';
+                }
+            }
+
+            $getsBonus = $leave->leaveType ? $leave->leaveType->gets_presence_bonus : ($leave->type === 'Dinas');
+            $calculatedBonus = 0.00;
+            if ($getsBonus) {
+                $activeSchema = \App\Models\BonusSchema::where('is_active', true)->first();
+                if ($activeSchema) {
+                    $maxTier = \App\Models\BonusTier::where('bonus_schema_id', $activeSchema->id)
+                        ->orderBy('nominal', 'desc')
+                        ->first();
+                    if ($maxTier) {
+                        $calculatedBonus = $maxTier->nominal;
+                    }
+                }
+            }
+
+            if ($attendance) {
+                $attendance->update([
+                    'status' => $status,
+                    'calculated_bonus' => $calculatedBonus,
+                ]);
+            } else {
+                Attendance::create([
+                    'employee_id' => $leave->employee_id,
+                    'date' => $date->format('Y-m-d'),
+                    'clock_in' => null,
+                    'clock_out' => null,
+                    'status' => $status,
+                    'calculated_bonus' => $calculatedBonus,
+                ]);
+            }
+        }
+
+        return redirect()->back()
+            ->with('success', 'Pengajuan izin berhasil disetujui.');
+    }
+
+    /**
+     * Reject the specified leave request.
+     */
+    public function reject(Request $request, $id)
+    {
+        $leave = LeaveRequest::findOrFail($id);
+
+        $leave->status = 'Rejected';
+        $leave->notes = $request->input('notes');
+        $leave->processed_by_id = auth()->id();
+        $leave->processed_by_name = null;
+        $leave->save();
+
+        return redirect()->back()
+            ->with('success', 'Pengajuan izin berhasil ditolak.');
+    }
+
+    /**
+     * Update the decision (status/notes) for the specified leave request.
+     */
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string|in:Pending,Approved,Rejected',
+            'notes' => 'nullable|string',
+            'leave_type_id' => 'required|exists:leave_types,id',
+        ]);
+
+        $leave = LeaveRequest::findOrFail($id);
+        $oldStatus = $leave->status;
+
+        $leaveType = \App\Models\LeaveType::findOrFail($validated['leave_type_id']);
+        $leave->leave_type_id = $leaveType->id;
+        $leave->type = $leaveType->name;
+
+        $leave->status = $validated['status'];
+        $leave->notes = $validated['notes'] ?? null;
+        $leave->processed_by_id = auth()->id();
+        $leave->processed_by_name = null;
+        $leave->save();
+
+        // Handle attendance changes if changed from Approved or to Approved
+        if ($oldStatus === 'Approved' && $leave->status !== 'Approved') {
+            $startDate = Carbon::parse($leave->start_date);
+            $endDate = Carbon::parse($leave->end_date);
+            
+            for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                $attendance = Attendance::where('employee_id', $leave->employee_id)
+                    ->where('date', $date->format('Y-m-d'))
+                    ->first();
+                
+                if ($attendance) {
+                    if (is_null($attendance->clock_in) && is_null($attendance->clock_out)) {
+                        $attendance->delete();
+                    } else {
+                        $attendance->update([
+                            'status' => 'Present',
+                            'calculated_bonus' => 0.00,
+                        ]);
+                    }
+                }
+            }
+        } elseif ($oldStatus !== 'Approved' && $leave->status === 'Approved') {
+            $startDate = Carbon::parse($leave->start_date);
+            $endDate = Carbon::parse($leave->end_date);
+            
+            for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                $attendance = Attendance::where('employee_id', $leave->employee_id)
+                    ->where('date', $date->format('Y-m-d'))
+                    ->first();
+
+                $status = 'Leave';
+                if ($leave->leaveType) {
+                    if ($leave->leaveType->status_code === 'S') {
+                        $status = 'Sick';
+                    }
+                } else {
+                    if ($leave->type === 'Sakit') {
+                        $status = 'Sick';
+                    }
+                }
+
+                $getsBonus = $leave->leaveType ? $leave->leaveType->gets_presence_bonus : ($leave->type === 'Dinas');
+                $calculatedBonus = 0.00;
+                if ($getsBonus) {
+                    $activeSchema = \App\Models\BonusSchema::where('is_active', true)->first();
+                    if ($activeSchema) {
+                        $maxTier = \App\Models\BonusTier::where('bonus_schema_id', $activeSchema->id)
+                            ->orderBy('nominal', 'desc')
+                            ->first();
+                        if ($maxTier) {
+                            $calculatedBonus = $maxTier->nominal;
+                        }
+                    }
+                }
+
+                if ($attendance) {
+                    $attendance->update([
+                        'status' => $status,
+                        'calculated_bonus' => $calculatedBonus,
+                    ]);
+                } else {
+                    Attendance::create([
+                        'employee_id' => $leave->employee_id,
+                        'date' => $date->format('Y-m-d'),
+                        'clock_in' => null,
+                        'clock_out' => null,
+                        'status' => $status,
+                        'calculated_bonus' => $calculatedBonus,
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->back()
+            ->with('success', 'Keputusan izin berhasil diperbarui.');
+    }
+
+    /**
+     * Remove the specified leave request and its automatic attendance logs.
      */
     public function destroy($id)
     {
         $leave = LeaveRequest::findOrFail($id);
 
-        if ($leave->status !== 'Pending') {
-            return redirect()->route('leaves.index')
-                ->with('error', 'Tidak dapat menghapus pengajuan izin yang sudah diproses.');
+        if ($leave->status === 'Approved') {
+            $startDate = Carbon::parse($leave->start_date);
+            $endDate = Carbon::parse($leave->end_date);
+            
+            for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                $attendance = Attendance::where('employee_id', $leave->employee_id)
+                    ->where('date', $date->format('Y-m-d'))
+                    ->first();
+                
+                if ($attendance && is_null($attendance->clock_in) && is_null($attendance->clock_out)) {
+                    $attendance->delete();
+                }
+            }
         }
 
         $leave->delete();
 
         return redirect()->route('leaves.index')
-            ->with('success', 'Pengajuan izin berhasil dibatalkan.');
-    }
-
-    /**
-     * Display the history of leave requests.
-     */
-    public function history(Request $request)
-    {
-        $schoolUnit = config('app.school_unit');
-        
-        $query = LeaveRequest::with(['employee', 'leaveType'])->orderBy('start_date', 'desc');
-
-        if ($schoolUnit) {
-            $query->whereHas('employee', function ($q) use ($schoolUnit) {
-                $q->where('unit', $schoolUnit);
-            });
-        }
-
-        // Add search filters
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->whereHas('employee', function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%');
-            });
-        }
-
-        if ($request->filled('type')) {
-            $typeFilter = $request->input('type');
-            $query->where(function($q) use ($typeFilter) {
-                $q->where('leave_type_id', $typeFilter)
-                  ->orWhere('type', $typeFilter);
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
-        }
-
-        $leaves = $query->get();
-        $leaveTypes = \App\Models\LeaveType::orderBy('name')->get();
-
-        return view('admin.leaves.history', compact('leaves', 'leaveTypes'));
+            ->with('success', 'Data izin berhasil dihapus.');
     }
 }

@@ -271,11 +271,8 @@ Route::get('/absensi_izin_cuti', function () {
     return view('admin.absensi_izin_cuti');
 })->middleware(['auth', 'verified'])->name('absensi_izin_cuti');
 
-Route::get('/leave-approvals', [\App\Http\Controllers\LeaveApprovalController::class, 'index'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leave-approvals.index');
-Route::post('/leave-approvals/{id}/approve', [\App\Http\Controllers\LeaveApprovalController::class, 'approve'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leave-approvals.approve');
-Route::post('/leave-approvals/{id}/reject', [\App\Http\Controllers\LeaveApprovalController::class, 'reject'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leave-approvals.reject');
-Route::put('/leave-approvals/{id}', [\App\Http\Controllers\LeaveApprovalController::class, 'update'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leave-approvals.update');
-Route::delete('/leave-approvals/{id}', [\App\Http\Controllers\LeaveApprovalController::class, 'destroy'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leave-approvals.destroy');
+Route::post('/leaves/{id}/approve', [\App\Http\Controllers\LeaveRequestController::class, 'approve'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leaves.approve');
+Route::post('/leaves/{id}/reject', [\App\Http\Controllers\LeaveRequestController::class, 'reject'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leaves.reject');
 
 Route::get('/absensi_mesin', function () {
     return view('admin.absensi_mesin');
@@ -354,7 +351,6 @@ Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepal
     Route::resource('leave-types', \App\Http\Controllers\LeaveTypeController::class);
     Route::resource('attendances', AttendanceController::class)->except(['index', 'show']);
     Route::resource('leaves', \App\Http\Controllers\LeaveRequestController::class);
-    Route::get('leave-history', [\App\Http\Controllers\LeaveRequestController::class, 'history'])->name('leave-history.index');
     Route::resource('announcements', \App\Http\Controllers\AnnouncementController::class)->except(['index', 'show']);
 });
 
@@ -384,6 +380,7 @@ Route::middleware('hrd.api')->prefix('api/v1/hrd')->group(function () {
     Route::delete('employees/{id}', [\App\Http\Controllers\Api\HrdApiController::class, 'destroy']);
     Route::get('attendances', [\App\Http\Controllers\Api\HrdApiController::class, 'attendances']);
     Route::get('employee-types', [\App\Http\Controllers\Api\HrdApiController::class, 'employeeTypes']);
+    Route::get('leave-types', [\App\Http\Controllers\Api\HrdApiController::class, 'leaveTypes']);
     
     // Shifts, schedules, holidays, bonuses, and leaves sync endpoints
     Route::post('sync/shifts', [\App\Http\Controllers\Api\HrdApiController::class, 'syncShifts']);

@@ -19,6 +19,8 @@ class LeaveRequest extends Model
         'status',
         'notes',
         'attachment',
+        'processed_by_id',
+        'processed_by_name',
     ];
 
     protected $casts = [
@@ -34,6 +36,11 @@ class LeaveRequest extends Model
     public function leaveType()
     {
         return $this->belongsTo(LeaveType::class);
+    }
+
+    public function processedBy()
+    {
+        return $this->belongsTo(User::class, 'processed_by_id');
     }
 
     protected static function booted()

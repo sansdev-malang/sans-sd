@@ -6,7 +6,7 @@
         showEmpDetailModal: false,
         selectedEmp: null,
         showEditModal: false,
-        editLeave: { id: '', status: '', notes: '', name: '' },
+        editLeave: { id: '', status: '', notes: '', name: '', leave_type_id: '' },
         showAddModal: {{ $errors->any() ? 'true' : 'false' }}
     }">
 
@@ -155,6 +155,7 @@
                             <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-center w-32">Tanggal Mulai</th>
                             <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-center w-32">Tanggal Selesai</th>
                             <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-left w-auto min-w-[120px]">Keterangan</th>
+                            <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-left w-auto min-w-[120px]">Catatan / Alasan</th>
                             <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-center w-28">Status</th>
                             <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-center w-28">Aksi</th>
                         </tr>
@@ -169,9 +170,44 @@
                                 $unitName = $emp ? $emp->unit : '-';
                                 
                                 $processedBy = '-';
-                                if ($leave->notes && str_contains($leave->notes, 'oleh ')) {
-                                    $parts = explode('oleh ', $leave->notes);
-                                    $processedBy = rtrim(end($parts), '.) ');
+                                if ($leave->processedBy) {
+                                    $roleLabels = [
+                                        'super_admin' => 'Super Admin',
+                                        'admin_paud' => 'Admin PAUD',
+                                        'admin_sd' => 'Admin SD',
+                                        'admin_smp' => 'Admin SMP',
+                                        'kepala_sekolah' => 'Kepala Sekolah',
+                                        'waka' => 'Wakil Kepala Sekolah',
+                                    ];
+                                    $roleLabel = $roleLabels[$leave->processedBy->role] ?? $leave->processedBy->role;
+                                    $processedBy = "{$leave->processedBy->name} ({$roleLabel})";
+                                } elseif ($leave->processed_by_name) {
+                                    $processedBy = $leave->processed_by_name;
+                                } else {
+                                    $noteText = $leave->notes ?? '';
+                                    $lowerNote = strtolower($noteText);
+                                    if (
+                                        str_starts_with($lowerNote, 'disetujui oleh ') ||
+                                        str_starts_with($lowerNote, 'ditolak oleh ') ||
+                                        str_starts_with($lowerNote, 'disetujui otomatis oleh ')
+                                    ) {
+                                        $parts = explode('oleh ', $noteText);
+                                        $processedBy = preg_replace('/[\s.]+$/', '', end($parts));
+                                    } elseif (preg_match('/\((Keputusan|Ditolak|Disetujui)\s+oleh\s+(.*?)\)/i', $noteText, $matches)) {
+                                        $processedBy = $matches[2];
+                                    }
+                                }
+
+                                $displayNotes = $leave->notes ?? '';
+                                $lowerNotes = strtolower($displayNotes);
+                                if (
+                                    str_starts_with($lowerNotes, 'disetujui oleh') || 
+                                    str_starts_with($lowerNotes, 'ditolak oleh') || 
+                                    str_starts_with($lowerNotes, 'disetujui otomatis oleh')
+                                ) {
+                                    $displayNotes = '';
+                                } else {
+                                    $displayNotes = preg_replace('/\s*\((Keputusan|Ditolak|Disetujui)\s+oleh.*?\)/i', '', $displayNotes);
                                 }
 
                                 $leaveData = [
@@ -260,25 +296,32 @@
                                         {{ \Illuminate\Support\Str::limit($leave->reason ?? '-', 40) }}
                                     </span>
                                 </td>
+                                <td class="px-6 py-3 text-left">
+                                    <span class="text-slate-600 dark:text-slate-400 block truncate max-w-[150px] lg:max-w-[200px]"
+                                          title="{{ $leave->notes ?? '-' }}">
+                                        {{ $leave->notes ?? '-' }}
+                                    </span>
+                                </td>
                                 <td class="px-6 py-3 text-center">
-                                    @if($leave->status === 'Pending')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200/30 dark:border-amber-900/30 uppercase">
-                                            Pending
-                                        </span>
-                                    @elseif($leave->status === 'Approved')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-900/30 uppercase">
-                                            Disetujui
-                                        </span>
-                                    @else
-                                        <div class="flex flex-col items-center gap-0.5">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-455 border border-rose-200/30 dark:border-rose-900/30 uppercase" title="Alasan: {{ $leave->notes ?? '-' }}">
+                                    <div class="flex flex-col items-center gap-1">
+                                        @if($leave->status === 'Pending')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-955/30 text-amber-700 dark:text-amber-400 border border-amber-200/30 dark:border-amber-900/30 uppercase">
+                                                Pending
+                                            </span>
+                                        @elseif($leave->status === 'Approved')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-955/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-900/30 uppercase">
+                                                Disetujui
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-955/30 text-rose-700 dark:text-rose-455 border border-rose-200/30 dark:border-rose-900/30 uppercase">
                                                 Ditolak
                                             </span>
-                                            @if($leave->notes)
-                                                <span class="text-[9px] text-slate-400 dark:text-slate-500 italic max-w-[100px] truncate" title="{{ $leave->notes }}">{{ $leave->notes }}</span>
-                                            @endif
-                                        </div>
-                                    @endif
+                                        @endif
+
+                                        @if($leave->status !== 'Pending' && $processedBy !== '-')
+                                            <div class="text-[9px] text-slate-405 dark:text-slate-500 font-semibold mt-0.5 leading-tight">oleh: {{ $processedBy }}</div>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-6 py-3 text-center">
                                     <div class="flex items-center justify-center gap-1.5">
@@ -286,9 +329,9 @@
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"/><circle cx="12" cy="12" r="3"/></svg>
                                         </button>
                                         @if($leave->status === 'Pending')
-                                            <form action="{{ route('leave-approvals.approve', $leave->id) }}" method="POST" class="inline">
+                                            <form action="{{ route('leaves.approve', $leave->id) }}" method="POST" class="inline">
                                                 @csrf
-                                                <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold rounded-lg border border-emerald-200/30 dark:border-emerald-900/30 transition-all cursor-pointer shadow-2xs hover:shadow-xs">
+                                                <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-955/30 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold rounded-lg border border-emerald-200/30 dark:border-emerald-900/30 transition-all cursor-pointer shadow-2xs hover:shadow-xs">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                                                     Setujui
                                                 </button>
@@ -298,14 +341,14 @@
                                                 Tolak
                                             </button>
                                         @else
-                                            <button @click="editLeave = { id: '{{ $leave->id }}', status: '{{ $leave->status }}', notes: {{ json_encode($leave->notes ?? '') }}, name: {{ json_encode($empName) }} }; showEditModal = true" class="inline-flex items-center justify-center w-6 h-6 bg-amber-50/60 hover:bg-amber-100/60 dark:bg-amber-950/20 dark:hover:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-lg border border-amber-200/30 dark:border-amber-900/30 transition-all cursor-pointer shadow-2xs hover:shadow-xs" title="Edit Keputusan">
+                                            <button @click="editLeave = { id: '{{ $leave->id }}', status: '{{ $leave->status }}', notes: {{ json_encode($displayNotes) }}, name: {{ json_encode($empName) }}, leave_type_id: '{{ $leave->leave_type_id }}' }; showEditModal = true" class="inline-flex items-center justify-center w-6 h-6 bg-amber-50/60 hover:bg-amber-100/60 dark:bg-amber-955/20 dark:hover:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-lg border border-amber-200/30 dark:border-amber-900/30 transition-all cursor-pointer shadow-2xs hover:shadow-xs" title="Edit Keputusan">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                                             </button>
                                         @endif
-                                        <form action="{{ route('leave-approvals.destroy', $leave->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data izin ini?')" class="inline">
+                                        <form action="{{ route('leaves.destroy', $leave->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data izin ini?')" class="inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="inline-flex items-center justify-center w-6 h-6 bg-rose-50/50 hover:bg-rose-100/60 dark:bg-rose-950/20 dark:hover:bg-rose-900/30 text-rose-600 dark:text-rose-455 rounded-lg border border-rose-200/30 dark:border-rose-900/30 transition-all cursor-pointer shadow-2xs hover:shadow-xs" title="Hapus Izin">
+                                            <button type="submit" class="inline-flex items-center justify-center w-6 h-6 bg-rose-50/50 hover:bg-rose-100/60 dark:bg-rose-955/20 dark:hover:bg-rose-900/30 text-rose-600 dark:text-rose-455 rounded-lg border border-rose-200/30 dark:border-rose-900/30 transition-all cursor-pointer shadow-2xs hover:shadow-xs" title="Hapus Izin">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                                             </button>
                                         </form>
@@ -513,7 +556,7 @@
                     </button>
                 </div>
 
-                <form method="POST" :action="`{{ url('leave-approvals') }}/${selectedLeaveId}/reject`" class="space-y-4 text-xs">
+                <form method="POST" :action="`{{ url('leaves') }}/${selectedLeaveId}/reject`" class="space-y-4 text-xs">
                     @csrf
                     <div>
                         <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Alasan Penolakan</label>
@@ -549,19 +592,29 @@
                     </div>
 
                     <!-- Form -->
-                    <form method="POST" :action="`{{ url('leave-approvals') }}/${editLeave.id}`" class="p-5 space-y-4">
+                    <form method="POST" :action="`{{ url('leaves') }}/${editLeave.id}`" class="space-y-4 text-xs">
                         @csrf
                         @method('PUT')
 
                         <div>
-                            <span class="block text-[10px] text-slate-400 dark:text-slate-500 font-semibold mb-1">Nama Pegawai</span>
+                            <span class="block text-[10px] text-slate-400 dark:text-slate-505 font-semibold mb-1">Nama Pegawai</span>
                             <span class="font-bold text-slate-800 dark:text-slate-200" x-text="editLeave.name"></span>
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Jenis Izin</label>
+                            <select name="leave_type_id" x-model="editLeave.leave_type_id" 
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 font-sans text-xs">
+                                @foreach($leaveTypes as $lt)
+                                    <option value="{{ $lt->id }}">{{ $lt->name }} - {{ $lt->status_code }}</option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div>
                             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Keputusan Status</label>
                             <select name="status" x-model="editLeave.status" 
-                                class="w-full h-9 px-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-indigo-500">
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 font-sans text-xs">
                                 <option value="Pending">Menunggu Persetujuan (Pending)</option>
                                 <option value="Approved">Disetujui (Approved)</option>
                                 <option value="Rejected">Ditolak (Rejected)</option>
@@ -571,7 +624,7 @@
                         <div>
                             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Catatan / Alasan</label>
                             <textarea name="notes" x-model="editLeave.notes" rows="3" placeholder="Masukkan catatan atau alasan keputusan..."
-                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 resize-none"></textarea>
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 resize-none font-sans text-xs"></textarea>
                         </div>
 
                         <div class="flex gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-800 justify-end">

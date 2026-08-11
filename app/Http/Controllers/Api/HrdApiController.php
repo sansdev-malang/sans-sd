@@ -262,6 +262,15 @@ class HrdApiController extends Controller
     }
 
     /**
+     * Get all leave types in the database.
+     */
+    public function leaveTypes()
+    {
+        $types = \App\Models\LeaveType::all(['id', 'name', 'code', 'status_code', 'gets_presence_bonus']);
+        return response()->json($types);
+    }
+
+    /**
      * Sync working shifts from central HRD.
      */
     public function syncShifts(Request $request)
@@ -401,7 +410,7 @@ class HrdApiController extends Controller
      */
     public function leaveRequests()
     {
-        $requests = LeaveRequest::with(['employee', 'leaveType'])->get()->map(function ($req) {
+        $requests = LeaveRequest::with(['employee', 'leaveType', 'processedBy'])->get()->map(function ($req) {
             return [
                 'id' => $req->id,
                 'employee_id' => $req->employee_id,
@@ -416,6 +425,16 @@ class HrdApiController extends Controller
                 'status' => $req->status,
                 'notes' => $req->notes,
                 'attachment' => $req->attachment ? asset('storage/' . $req->attachment) : null,
+                'processed_by' => $req->processedBy ? ($req->processedBy->name . ' (' . (
+                    [
+                        'super_admin' => 'Super Admin',
+                        'admin_paud' => 'Admin PAUD',
+                        'admin_sd' => 'Admin SD',
+                        'admin_smp' => 'Admin SMP',
+                        'kepala_sekolah' => 'Kepala Sekolah',
+                        'waka' => 'Wakil Kepala Sekolah',
+                    ][$req->processedBy->role] ?? $req->processedBy->role
+                ) . ')') : $req->processed_by_name,
             ];
         });
 
@@ -431,6 +450,8 @@ class HrdApiController extends Controller
             'leave_id' => 'required|integer',
             'status' => 'required|string|in:Pending,Approved,Rejected',
             'notes' => 'nullable|string',
+            'type' => 'nullable|string',
+            'processed_by' => 'nullable|string',
         ]);
 
         $leave = LeaveRequest::with('leaveType')->find($request->input('leave_id'));
@@ -441,6 +462,28 @@ class HrdApiController extends Controller
         $oldStatus = $leave->status;
         $leave->status = $request->input('status');
         $leave->notes = $request->input('notes');
+        $leave->processed_by_id = null;
+        $leave->processed_by_name = $request->input('processed_by');
+
+        if ($request->filled('type')) {
+            $newType = $request->input('type');
+            $leave->type = $newType;
+            
+            // Sync leave_type_id
+            $matchedLeaveType = \App\Models\LeaveType::where('name', $newType)->first();
+            if ($matchedLeaveType) {
+                $leave->leave_type_id = $matchedLeaveType->id;
+            } else {
+                $codeMap = ['Sakit' => 'S', 'Izin' => 'I', 'Cuti' => 'C', 'Dinas' => 'H'];
+                if (isset($codeMap[$newType])) {
+                    $matchedByCode = \App\Models\LeaveType::where('status_code', $codeMap[$newType])->first();
+                    if ($matchedByCode) {
+                        $leave->leave_type_id = $matchedByCode->id;
+                    }
+                }
+            }
+        }
+
         $leave->save();
 
         try {
