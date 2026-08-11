@@ -160,7 +160,13 @@ class LeaveApprovalController extends Controller
         $decisionMaker = "{$user->name} ({$roleLabel})";
 
         $leave->status = $validated['status'];
-        $leave->notes = $validated['notes'] ?? ($validated['status'] === 'Approved' ? "Disetujui oleh {$decisionMaker}." : ($validated['status'] === 'Rejected' ? "Ditolak oleh {$decisionMaker}." : null));
+        if (empty($validated['notes'])) {
+            $leave->notes = $validated['status'] === 'Approved' 
+                ? "Disetujui oleh {$decisionMaker}." 
+                : ($validated['status'] === 'Rejected' ? "Ditolak oleh {$decisionMaker}." : null);
+        } else {
+            $leave->notes = $validated['notes'] . " (Keputusan oleh {$decisionMaker})";
+        }
         $leave->save();
 
         // Handle attendance changes if changed from Approved or to Approved
