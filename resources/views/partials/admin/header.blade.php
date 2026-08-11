@@ -107,7 +107,7 @@
                                         </div>
                                         <div class="space-y-0.5 overflow-hidden">
                                             <p class="font-bold text-slate-800 dark:text-slate-200 truncate">{{ $item->employee->name ?? 'Pegawai' }}</p>
-                                            <p class="text-slate-500 dark:text-slate-400 text-[10px]">Menginput {{ $item->type }} ({{ $item->start_date->format('d M Y') }})</p>
+                                            <p class="text-slate-500 dark:text-slate-400 text-[10px]">Mengajukan {{ $item->type }} ({{ $item->start_date->format('d M Y') }})</p>
                                         </div>
                                     </a>
                                 @endforeach
