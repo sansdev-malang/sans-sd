@@ -274,6 +274,8 @@ Route::get('/absensi_izin_cuti', function () {
 Route::get('/leave-approvals', [\App\Http\Controllers\LeaveApprovalController::class, 'index'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leave-approvals.index');
 Route::post('/leave-approvals/{id}/approve', [\App\Http\Controllers\LeaveApprovalController::class, 'approve'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leave-approvals.approve');
 Route::post('/leave-approvals/{id}/reject', [\App\Http\Controllers\LeaveApprovalController::class, 'reject'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leave-approvals.reject');
+Route::put('/leave-approvals/{id}', [\App\Http\Controllers\LeaveApprovalController::class, 'update'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leave-approvals.update');
+Route::delete('/leave-approvals/{id}', [\App\Http\Controllers\LeaveApprovalController::class, 'destroy'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leave-approvals.destroy');
 
 Route::get('/absensi_mesin', function () {
     return view('admin.absensi_mesin');
