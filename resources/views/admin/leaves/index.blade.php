@@ -386,11 +386,9 @@
                                 </template>
                             </div>
                             <div class="space-y-1 text-left flex-1 min-w-0">
-                                <h4 class="text-sm font-bold text-slate-900 dark:text-slate-205 font-nasalization truncate" x-text="selectedEmp ? selectedEmp.name : ''"></h4>
+                                <h4 class="text-sm font-bold text-slate-900 dark:text-slate-200 font-nasalization truncate" x-text="selectedEmp ? selectedEmp.name : ''"></h4>
                                 <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate" x-text="selectedEmp ? selectedEmp.email : ''"></p>
-                                <div class="flex items-center gap-2 flex-wrap pt-0.5">
-                                    <span class="inline-flex px-2 py-0.5 rounded text-[9px] font-bold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30 uppercase" x-text="selectedEmp ? selectedEmp.subject_position : ''"></span>
-                                </div>
+                                <p class="text-[10px] text-slate-600 dark:text-slate-400 font-semibold truncate mt-0.5" x-text="selectedEmp ? selectedEmp.subject_position : ''"></p>
                             </div>
                         </div>
 

@@ -127,7 +127,12 @@ class LeaveApprovalController extends Controller
         $decisionMaker = "{$user->name} ({$roleLabel})";
 
         $leave->status = 'Rejected';
-        $leave->notes = $request->input('notes', "Ditolak oleh {$decisionMaker}.");
+        $customNotes = $request->input('notes');
+        if (empty($customNotes)) {
+            $leave->notes = "Ditolak oleh {$decisionMaker}.";
+        } else {
+            $leave->notes = $customNotes . " (Ditolak oleh {$decisionMaker})";
+        }
         $leave->save();
 
         return redirect()->route('leave-approvals.index')
