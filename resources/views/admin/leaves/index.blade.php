@@ -1,5 +1,19 @@
 <x-admin-layout>
-    <div class="p-6 space-y-6" x-data="{ showAddModal: {{ $errors->any() ? 'true' : 'false' }}, showEmpDetailModal: false, selectedEmp: null }">
+    <div class="p-6 space-y-6" x-data="{
+        showAddModal: {{ $errors->any() ? 'true' : 'false' }},
+        showEmpDetailModal: false,
+        showEditModal: false,
+        selectedEmp: null,
+        editAction: '',
+        editStatus: '',
+        editNotes: '',
+        openEditModal(leave) {
+            this.editAction = '/leave-approvals/' + leave.id;
+            this.editStatus = leave.status;
+            this.editNotes = leave.notes || '';
+            this.showEditModal = true;
+        }
+    }">
 
 
 
@@ -28,11 +42,14 @@
                             <th class="px-6 py-3 text-center">Tanggal Mulai</th>
                             <th class="px-6 py-3 text-center">Tanggal Selesai</th>
                             <th class="px-6 py-3 text-left">Keterangan</th>
+                            <th class="px-6 py-3 text-center">Status Decision</th>
+                            <th class="px-6 py-3 text-left">Catatan Admin</th>
+                            <th class="px-6 py-3 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-900 text-slate-700 dark:text-slate-300 font-medium">
                         @forelse($leaves as $leave)
-                            <tr>
+                            <tr class="hover:bg-slate-50/40 dark:hover:bg-slate-900/10 transition-colors">
                                 <td class="px-6 py-4 text-left">
                                     <div class="flex items-center gap-3">
                                         @if($leave->employee && $leave->employee->photo)
@@ -57,8 +74,8 @@
                                                 leave_end: '{{ $leave->end_date->format("d M Y") }}',
                                                 leave_reason: '{{ addslashes($leave->reason ?? "-") }}',
                                                 leave_attachment: '{{ $leave->attachment ? asset("storage/" . $leave->attachment) : "" }}'
-                                            }; showEmpDetailModal = true" class="text-slate-900 dark:text-slate-50 font-bold tracking-tight block cursor-pointer hover:underline hover:text-indigo-600 dark:hover:text-indigo-400">{{ $leave->employee ? $leave->employee->name : '-' }}</span>
-                                            <span class="text-[10px] text-slate-405 dark:text-slate-500 font-mono block">NIP: {{ $leave->employee ? $leave->employee->nuptk_nip_nik : '-' }}</span>
+                                            }; showEmpDetailModal = true" class="text-slate-900 dark:text-slate-55 font-bold block cursor-pointer hover:underline hover:text-indigo-600 dark:hover:text-indigo-400">{{ $leave->employee ? $leave->employee->name : '-' }}</span>
+                                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono block">NIP: {{ $leave->employee ? $leave->employee->nuptk_nip_nik : '-' }}</span>
                                         </div>
                                     </div>
                                 </td>
@@ -74,7 +91,7 @@
                                     {{ $leave->end_date->format('d M Y') }}
                                 </td>
                                 <td class="px-6 py-4 text-left">
-                                    <span class="text-slate-600 dark:text-slate-400 block">{{ $leave->reason ?? '-' }}</span>
+                                    <span class="text-slate-600 dark:text-slate-400 block line-clamp-1 hover:text-clip" title="{{ $leave->reason }}">{{ $leave->reason ?? '-' }}</span>
                                     @if($leave->attachment)
                                         <div class="mt-1">
                                             <a href="{{ asset('storage/' . $leave->attachment) }}" target="_blank" class="inline-flex items-center gap-1 text-[10px] text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold underline">
@@ -84,10 +101,36 @@
                                         </div>
                                     @endif
                                 </td>
+                                <td class="px-6 py-4 text-center">
+                                    @if($leave->status === 'Approved')
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30">Disetujui</span>
+                                    @elseif($leave->status === 'Rejected')
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30">Ditolak</span>
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30">Pending</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-left text-slate-500 dark:text-slate-400">
+                                    <span>{{ $leave->notes ?? '-' }}</span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <button @click="openEditModal({{ $leave }})" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-amber-600 hover:text-amber-700 transition-colors cursor-pointer" title="Edit Keputusan">
+                                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                                        </button>
+                                        <form action="{{ route('leave-approvals.destroy', $leave->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengajuan izin ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-rose-600 hover:text-rose-700 transition-colors cursor-pointer" title="Hapus Pengajuan">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-10 text-center text-slate-500 dark:text-slate-400">
+                                <td colspan="8" class="px-6 py-10 text-center text-slate-500 dark:text-slate-400">
                                     Belum ada data pengajuan izin.
                                 </td>
                             </tr>
@@ -315,6 +358,45 @@
                     <button @click="showEmpDetailModal = false" class="h-9 px-4 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-semibold rounded-lg shadow-sm transition-colors cursor-pointer">Tutup</button>
                 </div>
             </div>
-        </template>
+    </template>
+
+    <!-- MODAL: EDIT KEPUTUSAN -->
+    <template x-teleport="body">
+        <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm transition-opacity" style="display: none; margin-top: 0px !important; z-index: 9999;" x-transition>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden" @click.away="showEditModal = false">
+                <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-55 flex items-center gap-2">
+                        <i data-lucide="edit-3" class="w-4 h-4 text-amber-500 font-bold"></i>
+                        Ubah Keputusan Izin
+                    </h3>
+                    <button @click="showEditModal = false" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <form :action="editAction" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="p-6 space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Pilih Keputusan</label>
+                            <select name="status" x-model="editStatus" required class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
+                                <option value="Pending">Pending (Menunggu Persetujuan)</option>
+                                <option value="Approved">Approved (Disetujui)</option>
+                                <option value="Rejected">Rejected (Ditolak)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Catatan / Alasan</label>
+                            <textarea name="notes" x-model="editNotes" rows="3" class="w-full text-xs p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800" placeholder="Masukkan alasan atau catatan tambahan..."></textarea>
+                        </div>
+                    </div>
+                    <div class="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+                        <button type="button" @click="showEditModal = false" class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer">Batal</button>
+                        <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-slate-900 dark:bg-slate-100 dark:text-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
     </div>
 </x-admin-layout>
