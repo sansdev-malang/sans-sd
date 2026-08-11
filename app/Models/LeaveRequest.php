@@ -38,6 +38,21 @@ class LeaveRequest extends Model
 
     protected static function booted()
     {
+        static::created(function ($leave) {
+            try {
+                $roles = ['super_admin', 'admin_sd', 'kepala_sekolah', 'waka'];
+                $admins = \App\Models\User::whereIn('role', $roles)->get();
+                foreach ($admins as $admin) {
+                    if ($leave->employee && $admin->employee_id === $leave->employee_id) {
+                        continue;
+                    }
+                    $admin->notify(new \App\Notifications\NewLeaveRequestNotification($leave));
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to notify admins of new leave request: " . $e->getMessage());
+            }
+        });
+
         static::saved(function ($leave) {
             if ($leave->status === 'Approved') {
                 $startDate = \Carbon\Carbon::parse($leave->start_date);

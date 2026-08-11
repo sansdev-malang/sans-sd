@@ -83,6 +83,9 @@
                                     if (str_contains($notification->type, 'LeaveDecisionNotification')) {
                                         $icon = 'file-signature';
                                         $iconBg = 'bg-amber-50/60 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-100/40 dark:border-amber-900/20';
+                                    } elseif (str_contains($notification->type, 'NewLeaveRequestNotification')) {
+                                        $icon = 'file-plus';
+                                        $iconBg = 'bg-emerald-50/60 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-100/40 dark:border-emerald-900/20';
                                     }
                                 @endphp
                                 <a href="{{ route('notifications.read', $notification->id) }}" class="flex items-start gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
