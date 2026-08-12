@@ -7,77 +7,84 @@
             color-scheme: dark;
         }
     </style>
-<div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-    <!-- Page Header -->
-    <div class="sm:flex sm:justify-between sm:items-center mb-8">
-        <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold">Slip Gaji Pegawai ✨</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Unduh slip gaji bulanan dari HRD pusat.</p>
-        </div>
-    </div>
+    <div class="p-6 space-y-6">
+        <!-- HEADER -->
+        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex flex-col gap-0.5">
+                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Slip Gaji Pegawai</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Unduh slip gaji bulanan dari HRD pusat.</p>
+            </div>
+            <div class="flex items-center gap-2"></div>
+        </section>
+
 
     <!-- Filters -->
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm mb-6 flex flex-col md:flex-row md:items-end gap-4">
         @if($isSuperAdmin)
         <div class="w-full md:w-64">
             <label for="searchInput" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Cari Pegawai</label>
-            <input type="text" id="searchInput" placeholder="Ketik nama..." class="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-blue-500 focus:border-blue-500">
+            <input type="text" id="searchInput" placeholder="Ketik nama..." class="w-full text-xs rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-blue-500 focus:border-blue-500">
         </div>
         @endif
         <form method="GET" action="{{ route('payslips.index') }}" class="flex flex-col sm:flex-row gap-4 flex-1">
             <div class="w-full sm:w-64">
-                <input type="month" id="month" name="month" value="{{ $month }}" class="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-blue-500 focus:border-blue-500" onchange="this.form.submit()">
+                <input type="month" id="month" name="month" value="{{ $month }}" class="w-full text-xs rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-blue-500 focus:border-blue-500" onchange="this.form.submit()">
             </div>
         </form>
     </div>
 
-    <!-- Table List -->
-    <div class="{{ !$isSuperAdmin ? 'hidden sm:block' : '' }} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full text-left">
-        <div class="overflow-x-auto" style="max-height: calc(100vh - 280px); overflow-y: auto;">
-            <table class="w-full text-sm text-left">
-                <thead class="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 uppercase font-semibold border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
-                    <tr>
-                        <th class="px-6 py-4">Nama Pegawai</th>
-                        <th class="px-6 py-4">Tipe Pegawai</th>
-                        <th class="px-6 py-4">Periode</th>
-                        <th class="px-6 py-4 text-center">Status Slip</th>
-                        <th class="px-6 py-4 text-right">Aksi</th>
+    <!-- TABLE LIST -->
+    <div class="{{ !$isSuperAdmin ? 'hidden sm:block' : '' }} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden text-left w-full flex flex-col justify-between">
+        <!-- <div class="p-5 border-b border-slate-100 dark:border-slate-900 flex justify-between items-center flex-wrap gap-2 bg-white dark:bg-slate-900">
+            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Daftar Slip Gaji
+            </h3>
+        </div> -->
+        <div class="overflow-x-auto overflow-y-auto custom-scrollbar" style="max-height: calc(100vh - 240px);">
+            <table class="w-full text-xs border-collapse">
+                <thead class="z-10">
+                    <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                        <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-left w-64 min-w-[200px]">Nama Pegawai</th>
+                        <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-left w-48 min-w-[150px]">Tipe Pegawai</th>
+                        <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-center w-40">Periode</th>
+                        <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-center w-32">Status Slip</th>
+                        <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-right w-36">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-900 text-slate-700 dark:text-slate-300 font-medium">
                     @forelse($employees as $emp)
-                        <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-900/30 transition-colors">
-                            <td class="px-6 py-4">
-                                <div class="font-medium text-slate-800 dark:text-slate-200">{{ $emp->name }}</div>
-                                <div class="text-xs text-slate-500 mt-1">{{ $emp->nik ?? '-' }}</div>
+                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition-colors">
+                            <td class="px-6 py-3 text-left">
+                                <div class="flex flex-col min-w-0">
+                                    <span class="text-slate-900 dark:text-slate-200 font-bold tracking-tight truncate">{{ $emp->name }}</span>
+                                    <span class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold truncate">{{ $emp->nik ?? '-' }}</span>
+                                </div>
                             </td>
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                            <td class="px-6 py-3 text-left text-slate-600 dark:text-slate-300">
                                 {{ $emp->employeeType->name ?? '-' }}
                             </td>
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-300">
+                            <td class="px-6 py-3 text-center text-slate-600 dark:text-slate-300">
                                 {{ \Carbon\Carbon::parse($month . '-01')->translatedFormat('F Y') }}
                             </td>
-                            <td class="px-6 py-4 text-center">
+                            <td class="px-6 py-3 text-center">
                                 @if($emp->payslip_url)
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700/30 uppercase">
                                         Tersedia
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-700/30 uppercase">
                                         Belum Ada
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-6 py-3 text-right">
                                 @if($emp->payslip_url)
-                                    <a href="{{ $emp->payslip_url }}" target="_blank" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                    <a href="{{ $emp->payslip_url }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 h-8 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-lg transition-colors">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                                         Download PDF
                                     </a>
                                 @else
-                                    <button disabled class="inline-flex items-center justify-center px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-sm font-medium rounded-lg cursor-not-allowed">
+                                    <button disabled class="inline-flex items-center justify-center h-8 px-3 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-bold rounded-lg cursor-not-allowed">
                                         Menunggu HRD
                                     </button>
                                 @endif

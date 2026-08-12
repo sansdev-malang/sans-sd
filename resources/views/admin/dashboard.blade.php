@@ -207,7 +207,7 @@
                                 .mobile-time { display: none !important; }
                             }
                         </style>
-                        <div class="mb-4 p-3.5 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800/80 rounded-lg text-xs">
+                        <div class="mb-4 p-3.5 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800/80 rounded-lg text-sm">
                             <div class="flex items-center gap-1.5 font-semibold text-slate-900 dark:text-slate-700 mb-3">
                                 <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-500 shrink-0"></i>
                                 <span>Informasi Shift Kerja Bulan Ini:</span>
@@ -217,7 +217,7 @@
                                 <!-- Left Column: Shift List (List Jam Kerja) -->
                                 <div class="{{ count($myActiveShifts) > 1 && !empty($myCalendarDays) ? 'md:col-span-1' : '' }} bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/50 rounded-md p-3 shadow-sm flex flex-col justify-between">
                                     <div>
-                                        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Daftar Jam Kerja</p>
+                                        <p class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Daftar Jam Kerja</p>
                                         <div class="space-y-3">
                                             @foreach($myActiveShifts as $index => $shift)
                                                 <div class="{{ $index > 0 ? 'pt-3 border-t border-slate-100 dark:border-slate-800/50' : '' }}">
@@ -237,7 +237,7 @@
                                                         <span>{{ $shift['name'] }} ({{ $code }})</span>
                                                     </div>
                                                     @if(!empty($shift['description']))
-                                                        <div class="text-[9px] text-slate-450 dark:text-slate-500 mb-1.5 leading-snug">{{ $shift['description'] }}</div>
+                                                        <div class="text-xs text-slate-450 dark:text-slate-500 mb-1.5 leading-snug">{{ $shift['description'] }}</div>
                                                     @endif
                                                     
                                                     @php
@@ -265,8 +265,8 @@
                                                                 $daysStr = implode(', ', $dayLabels);
                                                             @endphp
                                                             <div class="flex flex-col gap-0.5 pb-1 border-b border-slate-50 dark:border-slate-800/40 last:border-0 last:pb-0">
-                                                                <span class="text-[9px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{{ $daysStr }}</span>
-                                                                <span class="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 font-mono">{{ $timeRange }}</span>
+                                                                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{{ $daysStr }}</span>
+                                                                <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 font-mono">{{ $timeRange }}</span>
                                                             </div>
                                                         @endforeach
                                                     </div>

@@ -17,20 +17,22 @@
 
 
 
-        <div class="hidden sm:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-slate-500 dark:text-slate-400">
-                    <thead class="text-xs text-slate-700 dark:text-slate-300 uppercase bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-                        <tr>
-                            <th scope="col" class="px-6 py-3.5 font-semibold">Judul & Kategori</th>
-                            <th scope="col" class="px-6 py-3.5 font-semibold">Target</th>
-                            <th scope="col" class="px-6 py-3.5 font-semibold">Masa Berlaku</th>
-                            <th scope="col" class="px-6 py-3.5 font-semibold">Pembuat</th>
-                            <th scope="col" class="px-6 py-3.5 font-semibold">Status</th>
-                            <th scope="col" class="px-6 py-3.5 font-semibold text-right">Aksi</th>
+
+        <!-- TABLE LIST -->
+        <div class="hidden sm:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden text-left w-full flex flex-col justify-between">
+            <div class="overflow-x-auto overflow-y-auto custom-scrollbar" style="max-height: calc(100vh - 240px);">
+                <table class="w-full text-xs border-collapse">
+                    <thead class="z-10">
+                        <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                            <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-left min-w-[220px]">Judul &amp; Kategori</th>
+                            <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-left w-32">Target</th>
+                            <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-left w-44">Masa Berlaku</th>
+                            <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-left w-36">Pembuat</th>
+                            <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-center w-24">Status</th>
+                            <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-right w-28">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-900 text-slate-700 dark:text-slate-300 font-medium">
                         @forelse($announcements as $announcement)
                             @php
                                 if ($announcement->central_id) {
@@ -52,17 +54,19 @@
                                 }
                                 $creatorInitials = strtoupper(substr($creatorName, 0, 2));
                             @endphp
-                            <tr class="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
-                                <td class="px-6 py-4">
-                                    <div class="font-semibold text-slate-900 dark:text-white mb-1.5" title="{{ $announcement->title }}">{{ \Illuminate\Support\Str::limit($announcement->title, 50) }}</div>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 capitalize">
-                                        <i data-lucide="tag" class="w-3 h-3 mr-1"></i>
-                                        {{ $announcement->category }}
-                                    </span>
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition-colors">
+                                <td class="px-6 py-3 text-left">
+                                    <div class="flex flex-col min-w-0">
+                                        <span class="text-slate-900 dark:text-slate-200 font-bold tracking-tight truncate max-w-[280px]" title="{{ $announcement->title }}">{{ \Illuminate\Support\Str::limit($announcement->title, 50) }}</span>
+                                        <span class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 capitalize w-fit">
+                                            <i data-lucide="tag" class="w-3 h-3"></i>
+                                            {{ $announcement->category }}
+                                        </span>
+                                    </div>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30">
-                                        <i data-lucide="users" class="w-3 h-3 mr-1"></i>
+                                <td class="px-6 py-3 text-left">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30">
+                                        <i data-lucide="users" class="w-3 h-3"></i>
                                         @php
                                             $audienceMap = [
                                                 'global' => 'Semua',
@@ -81,40 +85,40 @@
                                         {{ $displayText }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-xs text-slate-600 dark:text-slate-400">
+                                <td class="px-6 py-3 text-left text-slate-600 dark:text-slate-400">
                                     <div class="flex items-center gap-1.5 mb-1">
-                                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i>
+                                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
                                         <span>{{ $announcement->publish_date ? $announcement->publish_date->format('d M Y, H:i') : '-' }}</span>
                                     </div>
-                                    <div class="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500">
-                                        <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                                    <div class="flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-500">
+                                        <i data-lucide="clock" class="w-3.5 h-3.5 shrink-0"></i>
                                         <span>s/d {{ $announcement->expiry_date ? $announcement->expiry_date->format('d M Y, H:i') : 'Selamanya' }}</span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-6 py-3 text-left">
                                     <div class="flex items-center gap-2">
-                                        <div class="w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-755 dark:text-indigo-400 border border-indigo-200/20 dark:border-indigo-900/30 flex items-center justify-center font-bold text-xs uppercase">
+                                        <div class="w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/20 dark:border-indigo-900/30 flex items-center justify-center font-bold text-[10px] uppercase shrink-0">
                                             {{ $creatorInitials }}
                                         </div>
-                                        <span class="text-xs font-medium text-slate-700 dark:text-slate-300">{{ $creatorName }}</span>
+                                        <span class="text-slate-700 dark:text-slate-300 truncate">{{ $creatorName }}</span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-6 py-3 text-center">
                                     @if($announcement->is_active)
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-900/30 shadow-sm">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700/30 uppercase">
                                             Aktif
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 shadow-sm">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 uppercase">
                                             Draft
                                         </span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 text-right relative overflow-visible">
-                                    <div class="flex items-center justify-end gap-1.5">
+                                <td class="px-6 py-3 text-right relative overflow-visible">
+                                    <div class="flex items-center justify-end gap-1">
                                         <!-- Lihat Detail -->
                                         <div class="relative" x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false">
-                                             <button data-announcement="{{ json_encode($announcement) }}" @click.prevent="selectedAnnouncement = JSON.parse($el.dataset.announcement); selectedAnnouncement.attachment_url = '{{ $announcement->attachment ? (filter_var($announcement->attachment, FILTER_VALIDATE_URL) ? $announcement->attachment : Storage::url($announcement->attachment)) : '' }}'; selectedAnnouncement.creator_name = '{{ $creatorName }}'; selectedAnnouncement.formatted_publish_date = '{{ $announcement->publish_date ? $announcement->publish_date->format('d M Y, H:i') : '-' }}'; showDetailModal = true; $nextTick(() => lucide.createIcons())" class="inline-flex items-center justify-center p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer">
+                                             <button data-announcement="{{ json_encode($announcement) }}" @click.prevent="selectedAnnouncement = JSON.parse($el.dataset.announcement); selectedAnnouncement.attachment_url = '{{ $announcement->attachment ? (filter_var($announcement->attachment, FILTER_VALIDATE_URL) ? $announcement->attachment : Storage::url($announcement->attachment)) : '' }}'; selectedAnnouncement.creator_name = '{{ $creatorName }}'; selectedAnnouncement.formatted_publish_date = '{{ $announcement->publish_date ? $announcement->publish_date->format('d M Y, H:i') : '-' }}'; showDetailModal = true; $nextTick(() => lucide.createIcons())" class="inline-flex items-center justify-center p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer">
                                                 <i data-lucide="eye" class="w-4 h-4"></i>
                                              </button>
                                              <div x-show="hover" style="display: none;" x-cloak class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 bg-slate-900 dark:bg-slate-900 text-slate-50 dark:text-slate-100 text-[10px] font-medium px-2 py-1 rounded-md shadow-md whitespace-nowrap z-50 pointer-events-none transition-all duration-100">
@@ -125,7 +129,7 @@
                                         @if($canEditDelete)
                                             <!-- Edit -->
                                             <div class="relative" x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false">
-                                                <a href="{{ route('announcements.edit', $announcement) }}" class="inline-flex items-center justify-center p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer">
+                                                <a href="{{ route('announcements.edit', $announcement) }}" class="inline-flex items-center justify-center p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer">
                                                     <i data-lucide="edit" class="w-4 h-4"></i>
                                                 </a>
                                                 <div x-show="hover" style="display: none;" x-cloak class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 bg-slate-900 dark:bg-slate-900 text-slate-50 dark:text-slate-100 text-[10px] font-medium px-2 py-1 rounded-md shadow-md whitespace-nowrap z-50 pointer-events-none transition-all duration-100">
@@ -138,7 +142,7 @@
                                                 <form action="{{ route('announcements.destroy', $announcement) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengumuman ini?')">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="inline-flex items-center justify-center p-1.5 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg text-rose-600 dark:text-rose-400 hover:text-rose-700 transition-colors cursor-pointer">
+                                                    <button type="submit" class="inline-flex items-center justify-center p-1.5 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg text-rose-500 dark:text-rose-400 hover:text-rose-700 transition-colors cursor-pointer">
                                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                                                     </button>
                                                 </form>
@@ -164,6 +168,7 @@
                 </table>
             </div>
         </div>
+
 
         <!-- MOBILE LIST (Mobile View) -->
         <div class="block sm:hidden space-y-4">

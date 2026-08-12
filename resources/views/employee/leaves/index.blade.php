@@ -111,14 +111,14 @@
                                 <td class="px-6 py-4 text-left">
                                     <div class="flex flex-col items-start gap-1">
                                         <div class="flex items-center justify-start gap-1.5">
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/40 dark:border-slate-700/50 uppercase">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/40 dark:border-slate-700/50 uppercase">
                                                 {{ $statusCode }}
                                             </span>
                                             <span class="font-bold text-slate-800 dark:text-slate-200 uppercase">
                                                 {{ $leaveName }}
                                             </span>
                                         </div>
-                                        <span class="text-[9px] text-slate-400 dark:text-slate-500 font-medium">
+                                        <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">
                                             Diajukan: {{ $leave->created_at ? $leave->created_at->format('d M Y H:i') : '-' }}
                                         </span>
                                     </div>
@@ -146,15 +146,15 @@
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex flex-col items-center gap-1">
                                         @if($leave->status === 'Pending')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-955/30 text-amber-700 dark:text-amber-400 border border-amber-200/30 dark:border-amber-900/30 uppercase">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700/30 uppercase">
                                                 Pending
                                             </span>
                                         @elseif($leave->status === 'Approved')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-955/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/30 dark:border-emerald-900/30 uppercase">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700/30 uppercase">
                                                 Disetujui
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-955/30 text-rose-700 dark:text-rose-455 border border-rose-200/30 dark:border-rose-900/30 uppercase">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-700/30 uppercase">
                                                 Ditolak
                                             </span>
                                         @endif
