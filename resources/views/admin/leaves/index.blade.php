@@ -86,7 +86,7 @@
                 <!-- Left Side: Search & Filters -->
                 <div class="flex flex-wrap items-center gap-2 flex-1">
                     <!-- Search Box -->
-                    <div x-data="{ searchVal: '{{ request('search') }}' }" class="flex items-center w-full md:w-60 h-9 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden transition-all focus-within:ring-2 focus-within:ring-slate-100 dark:focus-within:ring-slate-800/60 focus-within:border-slate-400 dark:focus-within:border-slate-600 shadow-inner">
+                    <div x-data="{ searchVal: '{{ request('search') }}' }" class="flex items-center w-full md:w-60 h-9 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden transition-all focus-within:ring-2 focus-within:ring-slate-100 dark:focus-within:ring-slate-800/60 focus-within:border-slate-400 dark:focus-within:border-slate-600 shadow-inner search-container">
                         <input type="text" name="search" x-model="searchVal" placeholder="Cari pegawai..."
                             class="w-full h-full px-3 text-xs bg-transparent border-none outline-none focus:ring-0 text-slate-900 dark:text-slate-50 placeholder-slate-400 dark:placeholder-slate-500">
                         <button type="submit" 
@@ -705,4 +705,12 @@
             </div>
         </template>
     </div>
+
+    <style>
+        @media (min-width: 768px) {
+            .search-container {
+                max-width: 280px !important;
+            }
+        }
+    </style>
 </x-admin-layout>

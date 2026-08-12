@@ -179,64 +179,11 @@ class LeaveRequestController extends Controller
     {
         $leave = LeaveRequest::with('leaveType')->findOrFail($id);
         
-        $user = auth()->user();
-
         $leave->status = 'Approved';
         $leave->notes = $request->input('notes');
         $leave->processed_by_id = auth()->id();
         $leave->processed_by_name = null;
         $leave->save();
-
-        // Update attendance table automatically for those days
-        $startDate = Carbon::parse($leave->start_date);
-        $endDate = Carbon::parse($leave->end_date);
-        
-        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
-            $attendance = Attendance::where('employee_id', $leave->employee_id)
-                ->where('date', $date->format('Y-m-d'))
-                ->first();
-
-            $status = 'Leave';
-            if ($leave->leaveType) {
-                if ($leave->leaveType->status_code === 'S') {
-                    $status = 'Sick';
-                }
-            } else {
-                if ($leave->type === 'Sakit') {
-                    $status = 'Sick';
-                }
-            }
-
-            $getsBonus = $leave->leaveType ? $leave->leaveType->gets_presence_bonus : ($leave->type === 'Dinas');
-            $calculatedBonus = 0.00;
-            if ($getsBonus) {
-                $activeSchema = \App\Models\BonusSchema::where('is_active', true)->first();
-                if ($activeSchema) {
-                    $maxTier = \App\Models\BonusTier::where('bonus_schema_id', $activeSchema->id)
-                        ->orderBy('nominal', 'desc')
-                        ->first();
-                    if ($maxTier) {
-                        $calculatedBonus = $maxTier->nominal;
-                    }
-                }
-            }
-
-            if ($attendance) {
-                $attendance->update([
-                    'status' => $status,
-                    'calculated_bonus' => $calculatedBonus,
-                ]);
-            } else {
-                Attendance::create([
-                    'employee_id' => $leave->employee_id,
-                    'date' => $date->format('Y-m-d'),
-                    'clock_in' => null,
-                    'clock_out' => null,
-                    'status' => $status,
-                    'calculated_bonus' => $calculatedBonus,
-                ]);
-            }
-        }
 
         return redirect()->back()
             ->with('success', 'Pengajuan izin berhasil disetujui.');
@@ -271,7 +218,6 @@ class LeaveRequestController extends Controller
         ]);
 
         $leave = LeaveRequest::findOrFail($id);
-        $oldStatus = $leave->status;
 
         $leaveType = \App\Models\LeaveType::findOrFail($validated['leave_type_id']);
         $leave->leave_type_id = $leaveType->id;
@@ -283,79 +229,6 @@ class LeaveRequestController extends Controller
         $leave->processed_by_name = null;
         $leave->save();
 
-        // Handle attendance changes if changed from Approved or to Approved
-        if ($oldStatus === 'Approved' && $leave->status !== 'Approved') {
-            $startDate = Carbon::parse($leave->start_date);
-            $endDate = Carbon::parse($leave->end_date);
-            
-            for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
-                $attendance = Attendance::where('employee_id', $leave->employee_id)
-                    ->where('date', $date->format('Y-m-d'))
-                    ->first();
-                
-                if ($attendance) {
-                    if (is_null($attendance->clock_in) && is_null($attendance->clock_out)) {
-                        $attendance->delete();
-                    } else {
-                        $attendance->update([
-                            'status' => 'Present',
-                            'calculated_bonus' => 0.00,
-                        ]);
-                    }
-                }
-            }
-        } elseif ($oldStatus !== 'Approved' && $leave->status === 'Approved') {
-            $startDate = Carbon::parse($leave->start_date);
-            $endDate = Carbon::parse($leave->end_date);
-            
-            for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
-                $attendance = Attendance::where('employee_id', $leave->employee_id)
-                    ->where('date', $date->format('Y-m-d'))
-                    ->first();
-
-                $status = 'Leave';
-                if ($leave->leaveType) {
-                    if ($leave->leaveType->status_code === 'S') {
-                        $status = 'Sick';
-                    }
-                } else {
-                    if ($leave->type === 'Sakit') {
-                        $status = 'Sick';
-                    }
-                }
-
-                $getsBonus = $leave->leaveType ? $leave->leaveType->gets_presence_bonus : ($leave->type === 'Dinas');
-                $calculatedBonus = 0.00;
-                if ($getsBonus) {
-                    $activeSchema = \App\Models\BonusSchema::where('is_active', true)->first();
-                    if ($activeSchema) {
-                        $maxTier = \App\Models\BonusTier::where('bonus_schema_id', $activeSchema->id)
-                            ->orderBy('nominal', 'desc')
-                            ->first();
-                        if ($maxTier) {
-                            $calculatedBonus = $maxTier->nominal;
-                        }
-                    }
-                }
-
-                if ($attendance) {
-                    $attendance->update([
-                        'status' => $status,
-                        'calculated_bonus' => $calculatedBonus,
-                    ]);
-                } else {
-                    Attendance::create([
-                        'employee_id' => $leave->employee_id,
-                        'date' => $date->format('Y-m-d'),
-                        'clock_in' => null,
-                        'clock_out' => null,
-                        'status' => $status,
-                        'calculated_bonus' => $calculatedBonus,
-                    ]);
-                }
-            }
-        }
-
         return redirect()->back()
             ->with('success', 'Keputusan izin berhasil diperbarui.');
     }
@@ -366,22 +239,6 @@ class LeaveRequestController extends Controller
     public function destroy($id)
     {
         $leave = LeaveRequest::findOrFail($id);
-
-        if ($leave->status === 'Approved') {
-            $startDate = Carbon::parse($leave->start_date);
-            $endDate = Carbon::parse($leave->end_date);
-            
-            for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
-                $attendance = Attendance::where('employee_id', $leave->employee_id)
-                    ->where('date', $date->format('Y-m-d'))
-                    ->first();
-                
-                if ($attendance && is_null($attendance->clock_in) && is_null($attendance->clock_out)) {
-                    $attendance->delete();
-                }
-            }
-        }
-
         $leave->delete();
 
         return redirect()->route('leaves.index')

@@ -137,12 +137,10 @@ class LeaveRequest extends Model
         static::saved(function ($leave) {
             $leave->syncToCentral();
 
-            if ($leave->status === 'Approved') {
-                $leaveType = $leave->leaveType ?? \App\Models\LeaveType::find($leave->leave_type_id);
-                if ($leaveType && $leaveType->requires_attendance) {
-                    return;
-                }
+            $leaveType = $leave->leaveType ?? \App\Models\LeaveType::find($leave->leave_type_id);
+            $requiresAttendance = $leaveType ? $leaveType->requires_attendance : true;
 
+            if ($leave->status === 'Approved' && !$requiresAttendance) {
                 $startDate = \Carbon\Carbon::parse($leave->start_date);
                 $endDate = \Carbon\Carbon::parse($leave->end_date);
                 
@@ -152,8 +150,8 @@ class LeaveRequest extends Model
                         ->first();
 
                     $status = 'Leave';
-                    if ($leave->leaveType) {
-                        if ($leave->leaveType->status_code === 'S') {
+                    if ($leaveType) {
+                        if ($leaveType->status_code === 'S') {
                             $status = 'Sick';
                         }
                     } else {
@@ -162,7 +160,7 @@ class LeaveRequest extends Model
                         }
                     }
 
-                    $getsBonus = $leave->leaveType ? $leave->leaveType->gets_presence_bonus : ($leave->type === 'Dinas');
+                    $getsBonus = $leaveType ? $leaveType->gets_presence_bonus : ($leave->type === 'Dinas');
                     $calculatedBonus = 0.00;
                     if ($getsBonus) {
                         $activeSchema = \App\Models\BonusSchema::where('is_active', true)->first();
@@ -192,11 +190,51 @@ class LeaveRequest extends Model
                         ]);
                     }
                 }
+            } else {
+                $startDate = \Carbon\Carbon::parse($leave->start_date);
+                $endDate = \Carbon\Carbon::parse($leave->end_date);
+                
+                for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                    $attendance = \App\Models\Attendance::where('employee_id', $leave->employee_id)
+                        ->where('date', $date->format('Y-m-d'))
+                        ->first();
+                    
+                    if ($attendance) {
+                        if (is_null($attendance->clock_in) && is_null($attendance->clock_out)) {
+                            $attendance->delete();
+                        } else {
+                            $attendance->update([
+                                'status' => 'Present',
+                                'calculated_bonus' => 0.00,
+                            ]);
+                        }
+                    }
+                }
             }
         });
 
         static::deleted(function ($leave) {
             $leave->deleteFromCentral();
+
+            $startDate = \Carbon\Carbon::parse($leave->start_date);
+            $endDate = \Carbon\Carbon::parse($leave->end_date);
+            
+            for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                $attendance = \App\Models\Attendance::where('employee_id', $leave->employee_id)
+                    ->where('date', $date->format('Y-m-d'))
+                    ->first();
+                
+                if ($attendance) {
+                    if (is_null($attendance->clock_in) && is_null($attendance->clock_out)) {
+                        $attendance->delete();
+                    } else {
+                        $attendance->update([
+                            'status' => 'Present',
+                            'calculated_bonus' => 0.00,
+                        ]);
+                    }
+                }
+            }
         });
     }
 }
