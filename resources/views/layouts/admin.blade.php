@@ -167,7 +167,7 @@
             @include('partials.admin.sidebar')
 
             <!-- MAIN LAYOUT -->
-            <main id="main-content" class="flex-1 flex flex-col overflow-y-auto relative z-0">
+            <main id="main-content" class="flex-1 flex flex-col overflow-y-auto">
                 <!-- HEADER -->
                 @include('partials.admin.header')
 
