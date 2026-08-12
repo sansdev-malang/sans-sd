@@ -655,14 +655,61 @@
                     <form action="{{ route('leaves.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="p-6 space-y-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-2">Pegawai</label>
-                                <select name="employee_id" required class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 cursor-pointer">
-                                    <option value="">Pilih Pegawai</option>
+                            <div x-data="{
+                                open: false,
+                                search: '',
+                                selectedId: '{{ old('employee_id') }}',
+                                selectedName: '',
+                                employees: [
                                     @foreach($employees as $emp)
-                                        <option value="{{ $emp->id }}" {{ old('employee_id') == $emp->id ? 'selected' : '' }}>{{ $emp->name }}</option>
+                                        { id: '{{ $emp->id }}', name: {{ json_encode($emp->name) }} },
                                     @endforeach
-                                </select>
+                                ],
+                                get filteredEmployees() {
+                                    if (this.search.trim() === '') return this.employees;
+                                    return this.employees.filter(emp => emp.name.toLowerCase().includes(this.search.toLowerCase()));
+                                },
+                                init() {
+                                    let initial = this.employees.find(emp => emp.id == this.selectedId);
+                                    if (initial) this.selectedName = initial.name;
+                                }
+                            }" class="relative">
+                                <label class="block text-xs font-bold text-slate-455 dark:text-slate-500 uppercase tracking-wider mb-2">Pegawai</label>
+                                
+                                <input type="hidden" name="employee_id" :value="selectedId" required>
+                                
+                                <button type="button" @click="open = !open" 
+                                    class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 cursor-pointer flex items-center justify-between text-left transition-all">
+                                    <span x-text="selectedName || 'Pilih Pegawai'" :class="selectedName ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500'"></span>
+                                    <svg class="w-4 h-4 text-slate-400 shrink-0 ml-2 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path></svg>
+                                </button>
+                                
+                                <div x-show="open" @click.outside="open = false" 
+                                    class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg overflow-hidden flex flex-col max-h-60"
+                                    x-transition style="display: none;">
+                                    
+                                    <div class="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
+                                        <input type="text" x-model="search" placeholder="Cari nama pegawai..."
+                                            class="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:text-slate-100 placeholder-slate-400">
+                                    </div>
+                                    
+                                    <div class="overflow-y-auto flex-1 py-1">
+                                        <template x-for="emp in filteredEmployees" :key="emp.id">
+                                            <button type="button" @click="selectedId = emp.id; selectedName = emp.name; open = false; search = ''"
+                                                class="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 flex items-center justify-between cursor-pointer bg-transparent border-0">
+                                                <span x-text="emp.name"></span>
+                                                <template x-if="selectedId == emp.id">
+                                                    <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path></svg>
+                                                </template>
+                                            </button>
+                                        </template>
+                                        <template x-if="filteredEmployees.length === 0">
+                                            <div class="px-3 py-3 text-center text-slate-400 dark:text-slate-500">
+                                                Pegawai tidak ditemukan
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
                                 @error('employee_id') <span class="text-rose-500 text-[10px] mt-1 block">{{ $message }}</span> @enderror
                             </div>
                             <div>
