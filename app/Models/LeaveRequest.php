@@ -216,6 +216,14 @@ class LeaveRequest extends Model
         static::deleted(function ($leave) {
             $leave->deleteFromCentral();
 
+            if ($leave->attachment) {
+                try {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($leave->attachment);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error("Failed to delete leave attachment file: " . $e->getMessage());
+                }
+            }
+
             $startDate = \Carbon\Carbon::parse($leave->start_date);
             $endDate = \Carbon\Carbon::parse($leave->end_date);
             
