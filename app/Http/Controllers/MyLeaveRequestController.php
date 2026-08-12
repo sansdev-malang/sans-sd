@@ -86,7 +86,7 @@ class MyLeaveRequestController extends Controller
         $leaveType = \App\Models\LeaveType::findOrFail($validated['leave_type_id']);
         $validated['type'] = $leaveType->name;
         $validated['employee_id'] = $user->employee->id;
-        $validated['status'] = 'Pending';
+        $validated['status'] = $leaveType->requires_approval ? 'Pending' : 'Approved';
 
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');

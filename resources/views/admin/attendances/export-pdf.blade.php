@@ -102,11 +102,70 @@
                             @if($detail)
                                 @if($detail['status'] === 'Hadir')
                                     <div class="cell-content badge-green">{{ $detail['check_in'] ?? '-' }}</div>
+                                    @if(!empty($detail['pending_leave']))
+                                        @php
+                                            $pCode = $detail['pending_leave']['leave_code'];
+                                            $pdfStyleMap = [
+                                                'S' => 'color: #d97706; opacity: 0.6; border: 0.5px dashed #f59e0b;',
+                                                'I' => 'color: #7c3aed; opacity: 0.6; border: 0.5px dashed #8b5cf6;',
+                                                'C' => 'color: #2563eb; opacity: 0.6; border: 0.5px dashed #3b82f6;',
+                                                'H' => 'color: #059669; opacity: 0.6; border: 0.5px dashed #10b981;',
+                                            ];
+                                            $pStyle = $pdfStyleMap[$pCode] ?? 'color: #94a3b8; border: 0.5px dashed #94a3b8;';
+                                        @endphp
+                                        <div style="font-size: 5.5px; line-height: 1; margin: 1px 0;"><span style="{{ $pStyle }} padding: 0 1px;">{{ $pCode }}</span></div>
+                                    @endif
                                     <div class="cell-content text-muted">{{ $detail['check_out'] ?? '-' }}</div>
                                 @elseif($detail['status'] === 'Alfa')
                                     <span class="text-red">A</span>
+                                    @if(!empty($detail['pending_leave']))
+                                        @php
+                                            $pCode = $detail['pending_leave']['leave_code'];
+                                            $pdfStyleMap = [
+                                                'S' => 'color: #d97706; opacity: 0.6; border: 0.5px dashed #f59e0b;',
+                                                'I' => 'color: #7c3aed; opacity: 0.6; border: 0.5px dashed #8b5cf6;',
+                                                'C' => 'color: #2563eb; opacity: 0.6; border: 0.5px dashed #3b82f6;',
+                                                'H' => 'color: #059669; opacity: 0.6; border: 0.5px dashed #10b981;',
+                                            ];
+                                            $pStyle = $pdfStyleMap[$pCode] ?? 'color: #94a3b8; border: 0.5px dashed #94a3b8;';
+                                        @endphp
+                                        <div style="font-size: 5.5px; line-height: 1; margin: 1px 0;"><span style="{{ $pStyle }} padding: 0 1px;">{{ $pCode }}</span></div>
+                                    @endif
                                 @elseif($detail['status'] === 'Cuti/Izin')
-                                    <span class="badge-blue">{{ substr($detail['leave_type'] ?? 'IZIN', 0, 4) }}</span>
+                                    @php
+                                        $leaveCode = $detail['leave_code'] ?? 'I';
+                                        $isPending = !empty($detail['is_pending']);
+                                        $pdfColorMap = [
+                                            'S' => $isPending ? 'color: #d97706; opacity: 0.6; border: 0.5px dashed #f59e0b; padding: 0px 1px;' : 'color: #d97706; font-weight: bold;',
+                                            'I' => $isPending ? 'color: #7c3aed; opacity: 0.6; border: 0.5px dashed #8b5cf6; padding: 0px 1px;' : 'color: #7c3aed; font-weight: bold;',
+                                            'C' => $isPending ? 'color: #2563eb; opacity: 0.6; border: 0.5px dashed #3b82f6; padding: 0px 1px;' : 'color: #2563eb; font-weight: bold;',
+                                            'H' => $isPending ? 'color: #059669; opacity: 0.6; border: 0.5px dashed #10b981; padding: 0px 1px;' : 'color: #059669; font-weight: bold;',
+                                        ];
+                                        $pdfStyle = $pdfColorMap[$leaveCode] ?? 'color: #3b82f6;';
+                                    @endphp
+                                    
+                                    @if(!empty($detail['check_in']) || !empty($detail['check_out']))
+                                        <div class="cell-content">
+                                            @if(!empty($detail['check_in']))
+                                                <div class="badge-green" style="font-size: 6.5px;">{{ $detail['check_in'] }}</div>
+                                            @else
+                                                <div class="text-muted">-</div>
+                                            @endif
+                                            
+                                            <span style="{{ $pdfStyle }}; font-size: 6.5px;">{{ $leaveCode }}</span>
+                                            
+                                            @if(!empty($detail['check_out']))
+                                                <div class="text-muted" style="font-size: 6.5px;">{{ $detail['check_out'] }}</div>
+                                            @else
+                                                <div class="text-muted">-</div>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span style="{{ $pdfStyle }}; font-size: 7.5px;">{{ $leaveCode }}</span>
+                                        @if($isPending)
+                                            <div class="text-muted" style="font-size: 6px; line-height: 0.8;">-</div>
+                                        @endif
+                                    @endif
                                 @elseif($detail['status'] === 'Libur')
                                     <span class="text-red">-</span>
                                 @elseif($detail['status'] === 'Off')

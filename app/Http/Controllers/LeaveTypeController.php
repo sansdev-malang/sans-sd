@@ -32,16 +32,14 @@ class LeaveTypeController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:255|unique:leave_types,code',
             'status_code' => 'required|string|in:S,I,C,H',
+            'requires_attendance' => 'required|boolean',
+            'requires_approval' => 'required|boolean',
+            'gets_presence_bonus' => 'required|boolean',
         ]);
 
-        // Auto-generate code if empty
-        if (empty($validated['code'])) {
-            $validated['code'] = Str::slug($validated['name']);
-        } else {
-            $validated['code'] = Str::slug($validated['code']);
-        }
+        // Auto-generate code
+        $validated['code'] = Str::slug($validated['name']);
 
         // Ensure slug code is unique
         $originalSlug = $validated['code'];
@@ -50,9 +48,6 @@ class LeaveTypeController extends Controller
             $validated['code'] = $originalSlug . '-' . $counter;
             $counter++;
         }
-
-        // Determine if it gets presence bonus
-        $validated['gets_presence_bonus'] = ($validated['status_code'] === 'H');
 
         $leaveType = LeaveType::create($validated);
 
@@ -85,16 +80,21 @@ class LeaveTypeController extends Controller
     {
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'code' => 'nullable|string|max:255|unique:leave_types,code,' . $leaveType->id,
             'status_code' => 'sometimes|required|string|in:S,I,C,H',
+            'requires_attendance' => 'sometimes|required|boolean',
+            'requires_approval' => 'sometimes|required|boolean',
+            'gets_presence_bonus' => 'sometimes|required|boolean',
         ]);
 
-        if (isset($validated['code']) && !empty($validated['code'])) {
-            $validated['code'] = Str::slug($validated['code']);
-        }
-
-        if (isset($validated['status_code'])) {
-            $validated['gets_presence_bonus'] = ($validated['status_code'] === 'H');
+        if (isset($validated['name'])) {
+            $code = Str::slug($validated['name']);
+            $originalSlug = $code;
+            $counter = 1;
+            while (LeaveType::where('code', $code)->where('id', '!=', $leaveType->id)->exists()) {
+                $code = $originalSlug . '-' . $counter;
+                $counter++;
+            }
+            $validated['code'] = $code;
         }
 
         $leaveType->update($validated);

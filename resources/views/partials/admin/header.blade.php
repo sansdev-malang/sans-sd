@@ -1,5 +1,5 @@
 <header id="header"
-    class="sticky top-0 z-30 flex items-center justify-between px-6 py-3 bg-white/85 dark:bg-[#09090b]/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-200">
+    class="sticky top-0 z-50 flex items-center justify-between px-6 py-3 bg-white/85 dark:bg-[#09090b]/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-200">
     <!-- Sidebar Toggle, Close internally, and Breadcrumb -->
     <div class="flex items-center gap-3">
         <button id="sidebar-toggle"

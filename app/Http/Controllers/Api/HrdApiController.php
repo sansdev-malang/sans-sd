@@ -266,7 +266,7 @@ class HrdApiController extends Controller
      */
     public function leaveTypes()
     {
-        $types = \App\Models\LeaveType::all(['id', 'name', 'code', 'status_code', 'gets_presence_bonus']);
+        $types = \App\Models\LeaveType::all(['id', 'name', 'code', 'status_code', 'gets_presence_bonus', 'requires_attendance', 'requires_approval']);
         return response()->json($types);
     }
 
@@ -419,6 +419,8 @@ class HrdApiController extends Controller
                 'type' => $req->leaveType ? $req->leaveType->name : $req->type,
                 'status_code' => $req->leaveType ? $req->leaveType->status_code : ($req->type === 'Sakit' ? 'S' : ($req->type === 'Cuti' ? 'C' : ($req->type === 'Dinas' ? 'H' : 'I'))),
                 'gets_presence_bonus' => $req->leaveType ? $req->leaveType->gets_presence_bonus : ($req->type === 'Dinas'),
+                'requires_attendance' => $req->leaveType ? $req->leaveType->requires_attendance : true,
+                'requires_approval' => $req->leaveType ? $req->leaveType->requires_approval : true,
                 'start_date' => $req->start_date ? $req->start_date->format('Y-m-d') : null,
                 'end_date' => $req->end_date ? $req->end_date->format('Y-m-d') : null,
                 'reason' => $req->reason,
@@ -495,8 +497,10 @@ class HrdApiController extends Controller
             \Illuminate\Support\Facades\Log::error("Failed to notify employee for leave decision in unit: " . $e->getMessage());
         }
 
+        $requiresAttendance = $leave->leaveType ? $leave->leaveType->requires_attendance : false;
+
         // If changed from Approved to Pending/Rejected, remove/reset automatic attendance
-        if ($oldStatus === 'Approved' && $leave->status !== 'Approved') {
+        if ($oldStatus === 'Approved' && $leave->status !== 'Approved' && !$requiresAttendance) {
             $startDate = Carbon::parse($leave->start_date);
             $endDate = Carbon::parse($leave->end_date);
             
@@ -519,7 +523,7 @@ class HrdApiController extends Controller
         }
 
         // If approved, update attendance table automatically for those days
-        if ($leave->status === 'Approved') {
+        if ($leave->status === 'Approved' && !$requiresAttendance) {
             $startDate = Carbon::parse($leave->start_date);
             $endDate = Carbon::parse($leave->end_date);
             

@@ -43,6 +43,80 @@ class LeaveRequest extends Model
         return $this->belongsTo(User::class, 'processed_by_id');
     }
 
+    public function syncToCentral()
+    {
+        try {
+            $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
+            if (!$hrdUrl) return;
+
+            $schoolUnitCode = strtolower(config('app.school_unit', 'sd'));
+            $schoolUnitId = [
+                'paud' => 1,
+                'sd' => 2,
+                'smp' => 3,
+            ][$schoolUnitCode] ?? 2;
+            
+            $statusCode = $this->leaveType ? $this->leaveType->status_code : ($this->type === 'Sakit' ? 'S' : ($this->type === 'Cuti' ? 'C' : ($this->type === 'Dinas' ? 'H' : 'I')));
+            $getsPresenceBonus = $this->leaveType ? $this->leaveType->gets_presence_bonus : ($this->type === 'Dinas');
+            $requiresAttendance = $this->leaveType ? $this->leaveType->requires_attendance : true;
+            $requiresApproval = $this->leaveType ? $this->leaveType->requires_approval : true;
+
+            $processedByName = $this->processedBy ? ($this->processedBy->name . ' (' . (
+                [
+                    'super_admin' => 'Super Admin',
+                    'admin_paud' => 'Admin PAUD',
+                    'admin_sd' => 'Admin SD',
+                    'admin_smp' => 'Admin SMP',
+                    'kepala_sekolah' => 'Kepala Sekolah',
+                    'waka' => 'Wakil Kepala Sekolah',
+                ][$this->processedBy->role] ?? $this->processedBy->role
+            ) . ')') : $this->processed_by_name;
+
+            \Illuminate\Support\Facades\Http::timeout(5)->post(rtrim($hrdUrl, '/') . '/api/sync/leave-request', [
+                'school_unit_id' => $schoolUnitId,
+                'remote_leave_id' => $this->id,
+                'employee_id' => $this->employee_id,
+                'employee_name' => $this->employee ? $this->employee->name : null,
+                'type' => $this->leaveType ? $this->leaveType->name : $this->type,
+                'status_code' => $statusCode,
+                'gets_presence_bonus' => (bool)$getsPresenceBonus,
+                'requires_attendance' => (bool)$requiresAttendance,
+                'requires_approval' => (bool)$requiresApproval,
+                'start_date' => $this->start_date ? $this->start_date->format('Y-m-d') : null,
+                'end_date' => $this->end_date ? $this->end_date->format('Y-m-d') : null,
+                'reason' => $this->reason,
+                'status' => $this->status,
+                'notes' => $this->notes,
+                'attachment' => $this->attachment ? asset('storage/' . $this->attachment) : null,
+                'processed_by' => $processedByName,
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to sync leave request to central: " . $e->getMessage());
+        }
+    }
+
+    public function deleteFromCentral()
+    {
+        try {
+            $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
+            if (!$hrdUrl) return;
+
+            $schoolUnitCode = strtolower(config('app.school_unit', 'sd'));
+            $schoolUnitId = [
+                'paud' => 1,
+                'sd' => 2,
+                'smp' => 3,
+            ][$schoolUnitCode] ?? 2;
+
+            \Illuminate\Support\Facades\Http::timeout(5)->post(rtrim($hrdUrl, '/') . '/api/sync/leave-request/delete', [
+                'school_unit_id' => $schoolUnitId,
+                'remote_leave_id' => $this->id,
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to delete leave request from central: " . $e->getMessage());
+        }
+    }
+
     protected static function booted()
     {
         static::created(function ($leave) {
@@ -61,7 +135,14 @@ class LeaveRequest extends Model
         });
 
         static::saved(function ($leave) {
+            $leave->syncToCentral();
+
             if ($leave->status === 'Approved') {
+                $leaveType = $leave->leaveType ?? \App\Models\LeaveType::find($leave->leave_type_id);
+                if ($leaveType && $leaveType->requires_attendance) {
+                    return;
+                }
+
                 $startDate = \Carbon\Carbon::parse($leave->start_date);
                 $endDate = \Carbon\Carbon::parse($leave->end_date);
                 
@@ -112,6 +193,10 @@ class LeaveRequest extends Model
                     }
                 }
             }
+        });
+
+        static::deleted(function ($leave) {
+            $leave->deleteFromCentral();
         });
     }
 }

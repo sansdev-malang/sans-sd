@@ -16,7 +16,7 @@ class AttendanceController extends Controller
     {
         $month = $request->query('month', date('Y-m'));
         $search = $request->input('search');
-        $perPage = $request->input('per_page', 15);
+        $perPage = $request->input('per_page', 50);
         $schoolUnit = config('app.school_unit', 'smp');
 
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
@@ -69,6 +69,16 @@ class AttendanceController extends Controller
                     $reports = collect([$currentReport]);
                 }
             }
+
+            // Extract unique positions from local database for filtering
+            $positions = \App\Models\Employee::whereNotNull('position')
+                ->where('position', '!=', '')
+                ->distinct()
+                ->pluck('position')
+                ->sort()
+                ->values();
+
+            $position = $request->input('position');
 
             if ($user && $user->role === 'employee' && $user->employee_id) {
                 // If it's a regular employee, only show their own report
@@ -137,6 +147,14 @@ class AttendanceController extends Controller
                         return stripos($name, $search) !== false || stripos($nip, $search) !== false;
                     });
                 }
+
+                // Filter Position
+                if (!empty($position)) {
+                    $reports = $reports->filter(function ($item) use ($position) {
+                        $empPos = $item['employee']['position'] ?? $item['employee']['subject_position'] ?? '';
+                        return $empPos === $position;
+                    });
+                }
             }
 
             // Pagination
@@ -162,6 +180,8 @@ class AttendanceController extends Controller
             $reports = collect([]);
             $startDate = \Carbon\Carbon::now();
             $endDate = \Carbon\Carbon::now();
+            $positions = collect([]);
+            $position = null;
             session()->flash('error', 'Gagal memuat matriks absensi dari HRD: ' . $e->getMessage());
         }
 
@@ -169,7 +189,7 @@ class AttendanceController extends Controller
             return view('admin.attendances.calendar', compact('reports', 'month', 'search', 'perPage', 'startDate', 'endDate', 'myActiveShifts'));
         }
 
-        return view('admin.attendances.index', compact('reports', 'month', 'search', 'perPage', 'startDate', 'endDate'));
+        return view('admin.attendances.index', compact('reports', 'month', 'search', 'perPage', 'startDate', 'endDate', 'positions', 'position'));
     }
 
     public function export(Request $request)
@@ -179,6 +199,7 @@ class AttendanceController extends Controller
 
         $month = $request->query('month', date('Y-m'));
         $search = $request->input('search');
+        $position = $request->input('position');
         $format = $request->input('format', 'excel');
         $schoolUnit = config('app.school_unit', 'smp');
 
@@ -197,7 +218,7 @@ class AttendanceController extends Controller
             return back()->with('error', 'Gagal memuat data dari HRD: ' . $e->getMessage());
         }
 
-                $reports = collect($reportsData);
+        $reports = collect($reportsData);
         
         // Apply Role-based filtering
         $user = auth()->user();
@@ -214,13 +235,21 @@ class AttendanceController extends Controller
                     return stripos($name, $search) !== false || stripos($nip, $search) !== false;
                 });
             }
+
+            if (!empty($position)) {
+                $reports = $reports->filter(function ($item) use ($position) {
+                    $empPos = $item['employee']['position'] ?? $item['employee']['subject_position'] ?? '';
+                    return $empPos === $position;
+                });
+            }
         }
         
         $reports = $reports->values()->toArray();
 
         $periodeStr = $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
         $searchStr = !empty($search) ? '_Pencarian_' . preg_replace('/[^A-Za-z0-9]/', '', $search) : '';
-        $baseFileName = 'Matriks_Absensi_Unit_' . strtoupper($schoolUnit) . '_' . $month . $searchStr;
+        $posStr = !empty($position) ? '_Jabatan_' . preg_replace('/[^A-Za-z0-9]/', '', $position) : '';
+        $baseFileName = 'Matriks_Absensi_Unit_' . strtoupper($schoolUnit) . '_' . $month . $searchStr . $posStr;
 
         $start = $startDate->copy();
         $end = clone $endDate;
@@ -282,17 +311,45 @@ class AttendanceController extends Controller
                 
                 $cellValue = '-';
                 if ($detail) {
+                    $sheet->getStyle($colLetter . $row)->getAlignment()->setWrapText(true)->setHorizontal('center')->setVertical('center');
+                    
                     if ($detail['status'] === 'Hadir') {
                         $in = $detail['check_in'] ?? '-';
                         $out = $detail['check_out'] ?? '-';
-                        $cellValue = $in . "\n" . $out;
-                        $sheet->getStyle($colLetter . $row)->getAlignment()->setWrapText(true);
+                        if (!empty($detail['pending_leave'])) {
+                            $cellValue = $in . "\n" . $detail['pending_leave']['leave_code'] . "\n" . $out;
+                        } else {
+                            $cellValue = $in . "\n" . $out;
+                        }
                     } elseif ($detail['status'] === 'Alfa') {
                         $cellValue = 'A';
+                        if (!empty($detail['pending_leave'])) {
+                            $cellValue = "A\n" . $detail['pending_leave']['leave_code'];
+                        }
                         $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED));
                     } elseif ($detail['status'] === 'Cuti/Izin') {
-                        $cellValue = $detail['leave_type'] ?? 'IZIN';
-                        $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE));
+                        $leaveCode = $detail['leave_code'] ?? 'I';
+                        $isPending = !empty($detail['is_pending']);
+                        $in = $detail['check_in'] ?? null;
+                        $out = $detail['check_out'] ?? null;
+                        
+                        if ($in || $out) {
+                            $cellValue = ($in ?: '-') . "\n" . $leaveCode . ($isPending ? ' (P)' : '') . "\n" . ($out ?: '-');
+                        } else {
+                            $cellValue = $leaveCode . ($isPending ? ' (P)' : '');
+                        }
+                        
+                        $excelColorMap = [
+                            'S' => 'FFE28743', // Warm Amber
+                            'I' => 'FF8A2BE2', // Purple
+                            'C' => 'FF1F75FE', // Blue
+                            'H' => 'FF10B981', // Emerald/Green
+                        ];
+                        $colorHex = $excelColorMap[$leaveCode] ?? 'FF1F75FE';
+                        $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color($colorHex));
+                        if ($isPending) {
+                            $sheet->getStyle($colLetter . $row)->getFont()->setItalic(true);
+                        }
                     } elseif ($detail['status'] === 'Libur') {
                         $cellValue = '-';
                         $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED));
@@ -308,9 +365,6 @@ class AttendanceController extends Controller
                 }
                 
                 $sheet->setCellValue($colLetter . $row, $cellValue);
-                if ($cellValue === 'A' || $cellValue === 'L' || $cellValue === '-' || $detail['status'] ?? '' === 'Cuti/Izin') {
-                    $sheet->getStyle($colLetter . $row)->getAlignment()->setHorizontal('center')->setVertical('center');
-                }
                 $colIndex++;
             }
             $row++;

@@ -15,7 +15,7 @@ class BonusReportController extends Controller
     {
         $month = $request->query('month', date('Y-m'));
         $search = $request->query('search');
-        $perPage = $request->query('per_page', 15);
+        $perPage = $request->query('per_page', 50);
 
         $schoolUnit = config('app.school_unit', 'smp');
         $unitStr = strtoupper($schoolUnit);
@@ -42,6 +42,14 @@ class BonusReportController extends Controller
                 $startDateReq = $monthCarbon->copy()->subMonth()->setDay($cutoffDate + 1)->format('Y-m-d');
             }
 
+            // Extract unique positions from local database for filtering
+            $positions = \App\Models\Employee::whereNotNull('position')
+                ->where('position', '!=', '')
+                ->distinct()
+                ->pluck('position')
+                ->sort()
+                ->values();
+
             // Apply Role-based filtering
             $user = auth()->user();
             if ($user && $user->role === 'employee' && $user->employee_id) {
@@ -56,6 +64,16 @@ class BonusReportController extends Controller
                         $name = $item['employee']['name'] ?? '';
                         $nip = $item['employee']['nuptk_nip_nik'] ?? '';
                         return stripos($name, $search) !== false || stripos($nip, $search) !== false;
+                    })->values();
+                }
+
+                // Apply Position filter for admins
+                $position = $request->query('position');
+                if (!empty($position)) {
+                    $reports = $reports->filter(function ($item) use ($position) {
+                        $empId = $item['employee']['id'] ?? 0;
+                        $emp = \App\Models\Employee::find($empId);
+                        return $emp && $emp->position === $position;
                     })->values();
                 }
             }
@@ -82,7 +100,7 @@ class BonusReportController extends Controller
                 return view('bonus-reports.employee-index', compact('paginatedReports', 'month', 'startDateReq', 'endDateReq', 'activeSchema', 'totalSemuaBonus'));
             }
 
-            return view('bonus-reports.index', compact('paginatedReports', 'month', 'startDateReq', 'endDateReq', 'activeSchema', 'totalSemuaBonus'));
+            return view('bonus-reports.index', compact('paginatedReports', 'month', 'startDateReq', 'endDateReq', 'activeSchema', 'totalSemuaBonus', 'positions'));
 
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Gagal memuat rekap bonus dari HRD: ' . $e->getMessage(), [
@@ -126,6 +144,16 @@ class BonusReportController extends Controller
                         $name = $item['employee']['name'] ?? '';
                         $nip = $item['employee']['nuptk_nip_nik'] ?? '';
                         return stripos($name, $search) !== false || stripos($nip, $search) !== false;
+                    })->values();
+                }
+
+                // Apply Position filter for export
+                $position = $request->query('position');
+                if (!empty($position)) {
+                    $reports = $reports->filter(function ($item) use ($position) {
+                        $empId = $item['employee']['id'] ?? 0;
+                        $emp = \App\Models\Employee::find($empId);
+                        return $emp && $emp->position === $position;
                     })->values();
                 }
             }
