@@ -86,14 +86,13 @@
                 <!-- Left Side: Search & Filters -->
                 <div class="flex flex-wrap items-center gap-2 flex-1">
                     <!-- Search Box -->
-                    <div x-data="{ searchVal: '{{ request('search') }}' }" class="relative w-full search-container">
+                    <div x-data="{ searchVal: '{{ request('search') }}' }" class="flex items-center w-full md:w-60 h-9 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden transition-all focus-within:ring-2 focus-within:ring-slate-100 dark:focus-within:ring-slate-800/60 focus-within:border-slate-400 dark:focus-within:border-slate-600 shadow-inner">
                         <input type="text" name="search" x-model="searchVal" placeholder="Cari pegawai..."
-                            style="padding-left: 0.75rem; padding-right: 2.25rem;"
-                            class="w-full h-9 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 focus:border-slate-400 dark:focus:border-slate-600 text-slate-900 dark:text-slate-55 placeholder-slate-400 dark:placeholder-slate-500 transition-all shadow-inner">
+                            class="w-full h-full px-3 text-xs bg-transparent border-none outline-none focus:ring-0 text-slate-900 dark:text-slate-50 placeholder-slate-400 dark:placeholder-slate-500">
                         <button type="submit" 
-                            :class="searchVal.trim() !== '' ? 'text-indigo-600 dark:text-indigo-400 scale-105' : 'text-slate-400 dark:text-slate-505'"
-                            class="absolute right-0 top-0 h-full w-9 flex items-center justify-center hover:text-indigo-750 dark:hover:text-indigo-300 transition-all duration-200 cursor-pointer bg-transparent border-0">
-                            <i data-lucide="search" class="w-4 h-4"></i>
+                            class="h-full px-3 bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 border-l border-slate-200 dark:border-slate-800 font-semibold text-xs transition-colors flex items-center gap-1 cursor-pointer shrink-0">
+                            <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                            <span>Cari</span>
                         </button>
                     </div>
 
@@ -706,12 +705,4 @@
             </div>
         </template>
     </div>
-
-    <style>
-        @media (min-width: 768px) {
-            .search-container {
-                max-width: 280px !important;
-            }
-        }
-    </style>
 </x-admin-layout>
