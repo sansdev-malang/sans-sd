@@ -88,11 +88,17 @@
                     <!-- Search Box -->
                     <div x-data="{ searchVal: '{{ request('search') }}' }" class="flex items-center w-full md:w-60 h-9 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden transition-all focus-within:ring-2 focus-within:ring-slate-100 dark:focus-within:ring-slate-800/60 focus-within:border-slate-400 dark:focus-within:border-slate-600 shadow-inner search-container">
                         <input type="text" name="search" x-model="searchVal" placeholder="Cari pegawai..."
-                            class="w-full h-full px-3 text-xs bg-transparent border-none outline-none focus:ring-0 text-slate-900 dark:text-slate-50 placeholder-slate-400 dark:placeholder-slate-500">
+                            class="w-full h-full px-3 text-xs bg-transparent border-none outline-none focus:ring-0 text-slate-900 dark:text-slate-55 placeholder-slate-400 dark:placeholder-slate-500">
+                        
+                        <!-- Clear Button (x) -->
+                        <button type="button" x-show="searchVal.trim() !== ''" @click="searchVal = ''; $el.closest('form').submit();" class="h-full px-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer bg-transparent border-0 flex items-center justify-center" title="Bersihkan pencarian">
+                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                        </button>
+
                         <button type="submit" 
-                            class="h-full px-3 bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 border-l border-slate-200 dark:border-slate-800 font-semibold text-xs transition-colors flex items-center gap-1 cursor-pointer shrink-0">
-                            <i data-lucide="search" class="w-3.5 h-3.5"></i>
-                            <span>Cari</span>
+                            :class="searchVal.trim() !== '' ? 'bg-indigo-600 text-white dark:bg-indigo-500 dark:text-white border-indigo-700' : 'bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300'"
+                            class="h-full px-4 font-bold text-xs transition-all duration-150 cursor-pointer whitespace-nowrap flex items-center justify-center border-l border-slate-200 dark:border-slate-800">
+                            Cari
                         </button>
                     </div>
 

@@ -65,6 +65,22 @@
             #nprogress .peg {
                 box-shadow: 0 0 10px #4f46e5, 0 0 5px #4f46e5 !important;
             }
+
+            /* Global Search Container Hover and Button Styles */
+            .search-container button[type="submit"]:hover {
+                background-color: #0f172a !important; /* bg-slate-900 */
+                color: #ffffff !important; /* text-white */
+            }
+            .dark .search-container button[type="submit"]:hover {
+                background-color: #f8fafc !important; /* bg-slate-100 */
+                color: #0f172a !important; /* text-slate-900 */
+            }
+
+            /* Global Dark Mode Calendar Picker Icon Filter */
+            .dark input[type="date"]::-webkit-calendar-picker-indicator,
+            .dark input[type="month"]::-webkit-calendar-picker-indicator {
+                filter: invert(1) !important;
+            }
         </style>
         <script>
             (function() {

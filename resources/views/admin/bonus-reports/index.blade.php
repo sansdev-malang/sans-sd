@@ -38,7 +38,15 @@
                         <input type="text" name="search" x-model="searchVal" placeholder="Cari pegawai..."
                             style="border: none !important; outline: none !important; box-shadow: none !important;"
                             class="w-full h-9 px-3 text-xs bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-0">
-                        <button type="submit" class="h-9 px-4 bg-slate-55 dark:bg-slate-855 text-slate-700 dark:text-slate-300 font-bold text-xs transition-all duration-150 cursor-pointer whitespace-nowrap flex items-center justify-center border-l border-slate-200 dark:border-slate-800">
+                        
+                        <!-- Clear Button (x) -->
+                        <button type="button" x-show="searchVal.trim() !== ''" @click="searchVal = ''; $el.closest('form').submit();" class="h-9 px-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer bg-transparent border-0 flex items-center justify-center" title="Bersihkan pencarian">
+                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                        </button>
+
+                        <button type="submit" 
+                            :class="searchVal.trim() !== '' ? 'bg-indigo-600 text-white dark:bg-indigo-500 dark:text-white' : 'bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300'"
+                            class="h-9 px-4 font-bold text-xs transition-all duration-150 cursor-pointer whitespace-nowrap flex items-center justify-center border-l border-slate-200 dark:border-slate-800">
                             Cari
                         </button>
                     </div>
@@ -236,11 +244,11 @@
             max-width: 280px !important;
         }
     }
-    .search-container button:hover {
+    /* removed in favor of global styling */ /* removed */ .search-container button:hover_disabled_disabled {
         background-color: #0f172a !important; /* bg-slate-900 */
         color: #ffffff !important; /* text-white */
     }
-    .dark .search-container button:hover {
+    .dark /* removed in favor of global styling */ /* removed */ .search-container button:hover_disabled_disabled {
         background-color: #f8fafc !important; /* bg-slate-105 */
         color: #0f172a !important; /* text-slate-900 */
     }
