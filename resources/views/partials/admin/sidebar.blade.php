@@ -9,7 +9,10 @@
     );
 @endphp
 <aside id="sidebar"
-    class="fixed inset-y-0 left-0 z-40 flex flex-col w-64 bg-white dark:bg-[#09090b] border-r border-slate-200 dark:border-slate-800 p-3 shrink-0 transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative md:z-20 shadow-sm md:shadow-none">
+    class="fixed inset-y-0 left-0 z-[60] md:z-20 flex flex-col w-64
+    bg-white dark:bg-[#09090b] border-r border-slate-200 dark:border-slate-800 p-3
+    shrink-0 transition-transform duration-300 -translate-x-full
+    md:translate-x-0 md:relative shadow-sm md:shadow-none">
 
     <!-- Workspace / School Selector (dropdown lookalike) -->
     <div
@@ -232,6 +235,8 @@
                     </span>
                 </a>
                 @endif
+                
+                @if(!$isAdmin)
                 <a href="{{ route('my-leaves.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('my-leaves.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} text-xs relative group">
                     <i data-lucide="file-signature" class="menu-icon w-4 h-4"></i>
                     <span class="menu-text">Izin & Cuti Saya</span>
@@ -239,6 +244,8 @@
                         Izin & Cuti Saya
                     </span>
                 </a>
+                @endif
+                
                 <a href="{{ route('payslips.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('payslips.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} text-xs relative group">
                     <i data-lucide="file-text" class="menu-icon w-4 h-4"></i>
                     <span class="menu-text">Slip Gaji</span>

@@ -45,9 +45,17 @@
                             Password?</a>
                     @endif
                 </div>
-                <input id="password" type="password" name="password" required autocomplete="current-password"
-                    class="w-full bg-transparent border border-slate-200 dark:border-slate-800 focus:border-slate-400 dark:focus:border-slate-600 rounded-lg px-3.5 py-2 text-sm outline-none transition-colors dark:text-slate-50 text-slate-900 placeholder:text-slate-400"
-                    placeholder="••••••••">
+                <div class="relative">
+                    <input id="password" type="password" name="password" required autocomplete="current-password"
+                        class="w-full bg-transparent border border-slate-200 dark:border-slate-800 focus:border-slate-400 dark:focus:border-slate-600 rounded-lg px-3.5 py-2 pr-11 text-sm outline-none transition-colors dark:text-slate-50 text-slate-900 placeholder:text-slate-400"
+                        placeholder="Password">
+                    <button type="button" id="password-toggle" aria-label="Tampilkan password" aria-pressed="false"
+                        class="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                        onclick="togglePasswordVisibility()">
+                        <i id="password-eye-icon" data-lucide="eye" class="w-4 h-4" aria-hidden="true"></i>
+                        <i id="password-eye-closed-icon" data-lucide="eye-closed" class="hidden w-4 h-4" aria-hidden="true"></i>
+                    </button>
+                </div>
 
                 @if ($errors->has('password'))
                     <p class="text-xs font-bold text-red-500 mt-1.5">{{ $errors->first('password') }}</p>
@@ -70,4 +78,17 @@
             </button>
         </form>
     </div>
+
+    <script>
+        function togglePasswordVisibility() {
+            const input = document.getElementById('password');
+            const button = document.getElementById('password-toggle');
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            button.setAttribute('aria-label', isHidden ? 'Sembunyikan password' : 'Tampilkan password');
+            button.setAttribute('aria-pressed', String(isHidden));
+            document.getElementById('password-eye-icon').classList.toggle('hidden', isHidden);
+            document.getElementById('password-eye-closed-icon').classList.toggle('hidden', !isHidden);
+        }
+    </script>
 </x-auth-layout>
