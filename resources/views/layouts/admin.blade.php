@@ -48,6 +48,66 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <link href="https://fonts.cdnfonts.com/css/nasalization" rel="stylesheet">
 
+        <!-- NProgress CDN for Sleek Top Progress Bar -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+        <style>
+            #nprogress .bar {
+                background: #4f46e5 !important; /* indigo-600 */
+                height: 3px !important;
+                z-index: 999999 !important; /* Ensure it is above all headers and sidebars */
+            }
+            #nprogress .peg {
+                box-shadow: 0 0 10px #4f46e5, 0 0 5px #4f46e5 !important;
+            }
+        </style>
+        <script>
+            (function() {
+                // Configure NProgress when window loads
+                window.addEventListener('load', () => {
+                    if (typeof NProgress !== 'undefined') {
+                        NProgress.configure({ showSpinner: false, speed: 400 });
+                    } else {
+                        console.error("NProgress failed to load from CDN.");
+                    }
+                });
+
+                // Start progress on standard link navigation clicks instantly
+                document.addEventListener("click", (e) => {
+                    const link = e.target.closest("a");
+                    if (!link) return;
+                    const href = link.getAttribute("href");
+                    const target = link.getAttribute("target");
+                    if (!href || href.startsWith("#") || href.startsWith("javascript:") || target === "_blank") return;
+                    
+                    // Ignore export/download links
+                    const isDownload = href.includes("export") || href.includes("download") || link.hasAttribute("download");
+                    if (isDownload) return;
+
+                    if (typeof NProgress !== "undefined") {
+                        NProgress.start();
+                    }
+                });
+
+                // Start progress on form submissions
+                document.addEventListener("submit", (e) => {
+                    const form = e.target.closest("form");
+                    if (!form || form.getAttribute("target") === "_blank") return;
+                    
+                    if (typeof NProgress !== "undefined") {
+                        NProgress.start();
+                    }
+                });
+
+                // End progress if page is restored from cache (back/forward navigation)
+                window.addEventListener("pageshow", (event) => {
+                    if (event.persisted && typeof NProgress !== "undefined") {
+                        NProgress.done();
+                    }
+                });
+            })();
+        </script>
+
         <!-- Load Tailwind v4 styling compiled by Vite / CDN Fallback -->
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])

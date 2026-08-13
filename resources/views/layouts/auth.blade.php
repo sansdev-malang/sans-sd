@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ setting('app_name', 'SANS') }} - Log In</title>
+    <title>{{ setting('app_name', 'SANS') }}</title>
     @if(setting('app_favicon'))
         <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . setting('app_favicon')) }}">
     @else
@@ -117,7 +117,7 @@
                         <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
                         <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
                     </button>
-    
+
                     <!-- Back to Home link -->
                     <a href="https://sans.sch.id" class="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50 transition-colors">
                         <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
