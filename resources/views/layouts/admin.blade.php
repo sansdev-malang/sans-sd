@@ -54,8 +54,13 @@
         <style>
             #nprogress .bar {
                 background: #4f46e5 !important; /* indigo-600 */
-                height: 3px !important;
+                height: 4px !important; /* Default height */
                 z-index: 999999 !important; /* Ensure it is above all headers and sidebars */
+            }
+            @media (max-width: 767px) {
+                #nprogress .bar {
+                    height: 5px !important; /* Slightly thicker on mobile screens for better visibility */
+                }
             }
             #nprogress .peg {
                 box-shadow: 0 0 10px #4f46e5, 0 0 5px #4f46e5 !important;
