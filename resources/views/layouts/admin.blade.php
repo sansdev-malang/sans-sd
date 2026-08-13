@@ -48,7 +48,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <link href="https://fonts.cdnfonts.com/css/nasalization" rel="stylesheet">
 
-        <!-- NProgress CDN for Sleek Top Progress Bar -->
+                <!-- NProgress CDN for Sleek Top Progress Bar -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
         <style>
@@ -66,7 +66,7 @@
                 // Configure NProgress when window loads
                 window.addEventListener('load', () => {
                     if (typeof NProgress !== 'undefined') {
-                        NProgress.configure({ showSpinner: false, speed: 400 });
+                        NProgress.configure({ showSpinner: false, ease: 'ease-out', speed: 200 });
                     } else {
                         console.error("NProgress failed to load from CDN.");
                     }
@@ -86,6 +86,17 @@
 
                     if (typeof NProgress !== "undefined") {
                         NProgress.start();
+                        NProgress.set(0.3); // Instantly jump to 30% to feel fast
+                        
+                        // Artificially increment faster to match typical page load timings
+                        let progressInterval = setInterval(() => {
+                            NProgress.inc(0.12);
+                        }, 100);
+
+                        // Safety clear
+                        setTimeout(() => {
+                            clearInterval(progressInterval);
+                        }, 4000);
                     }
                 });
 
@@ -96,6 +107,15 @@
                     
                     if (typeof NProgress !== "undefined") {
                         NProgress.start();
+                        NProgress.set(0.3);
+                        
+                        let progressInterval = setInterval(() => {
+                            NProgress.inc(0.08); // slightly slower increments for forms
+                        }, 120);
+
+                        setTimeout(() => {
+                            clearInterval(progressInterval);
+                        }, 8000);
                     }
                 });
 
