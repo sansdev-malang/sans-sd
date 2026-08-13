@@ -39,7 +39,7 @@
         <!-- HEADER -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex flex-col gap-0.5">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-55">Data Riwayat Absensi</h2>
+                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Data Riwayat Absensi</h2>
                 <p class="text-xs text-slate-500 dark:text-slate-400">Memantau waktu kedatangan dan kepulangan pegawai secara komprehensif.</p>
             </div>
             
@@ -152,7 +152,7 @@
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
-                            <th class="px-4 py-3 bg-slate-50 dark:bg-slate-900 text-left sticky top-0 left-auto md:left-0 z-30 md:z-40 border-r border-slate-200 dark:border-slate-800 min-w-[200px]">
+                            <th class="px-4 py-3 bg-slate-50 dark:bg-slate-900 text-left sticky top-0 md:left-0 z-30 md:z-40 border-r border-slate-200 dark:border-slate-800 min-w-[200px]">
                                 <div class="flex items-center gap-2 justify-between">
                                     <span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Profil Pegawai</span>
                                     <span class="text-[9px] text-slate-400 dark:text-slate-500 font-bold whitespace-nowrap bg-slate-100 dark:bg-slate-800/40 px-1.5 py-0.5 rounded border border-slate-200/40 dark:border-slate-800/50" title="Siklus Cut-off Payroll">
@@ -297,7 +297,7 @@
                                         @elseif($detail['status'] === 'Libur')
                                             <div class="mx-auto w-full h-full min-h-[28px] flex items-center justify-center text-red-200 dark:text-red-900/30 font-bold text-xs">-</div>
                                         @elseif($detail['status'] === 'Off')
-                                            <div class="mx-auto w-full h-full min-h-[28px] flex items-center justify-center bg-slate-55 dark:bg-slate-900/40 text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-slate-800/40 rounded font-bold text-[9px]">OFF</div>
+                                            <div class="mx-auto w-full h-full min-h-[28px] flex items-center justify-center bg-slate-100 dark:bg-slate-900/40 text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-slate-800/40 rounded font-bold text-[9px]">OFF</div>
                                         @elseif($detail['status'] === 'Cuti/Izin')
                                             @php
                                                 $leaveCode = $detail['leave_code'] ?? 'I';
@@ -500,7 +500,7 @@
                             
                             <div class="text-left min-w-0">
                                 <h3 class="text-sm font-bold text-slate-900 dark:text-white truncate" x-text="selectedReport ? selectedReport.employee.name : ''"></h3>
-                                <p class="text-[10px] text-slate-500 dark:text-slate-450 truncate">
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                                     <span x-text="selectedReport ? (selectedReport.employee.position || '-') : ''"></span>
                                     &bull;
                                     <span x-text="selectedReport ? (selectedReport.employee.unit_name || '-') : ''" class="font-semibold text-indigo-650 dark:text-indigo-400"></span>
@@ -518,7 +518,7 @@
                     <div class="p-4">
                         <!-- Calendar Header (Month Name) -->
                         <div class="text-center mb-3">
-                            <h4 class="text-[9px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider">
+                            <h4 class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                 Periode Kehadiran &bull; <span x-text="startDateStr" class="text-indigo-650 dark:text-indigo-405"></span> - <span x-text="endDateStr" class="text-indigo-650 dark:text-indigo-405"></span>
                             </h4>
                         </div>
@@ -560,7 +560,7 @@
                                                         <span class="text-[10px] font-bold" 
                                                               :class="selectedReport.daily_details[day.dateStr].is_late ? 'text-amber-500' : 'text-emerald-600 dark:text-emerald-400'"
                                                               x-text="selectedReport.daily_details[day.dateStr].check_in || '-'"></span>
-                                                        <span class="text-[10px] font-semibold text-slate-450 dark:text-slate-550" x-text="selectedReport.daily_details[day.dateStr].check_out || '-'"></span>
+                                                        <span class="text-[10px] font-semibold text-slate-400 dark:text-slate-400" x-text="selectedReport.daily_details[day.dateStr].check_out || '-'"></span>
                                                     </div>
                                                 </template>
   
@@ -586,7 +586,7 @@
                                                                 <div class="w-full py-0.5 text-center rounded text-[9px] font-extrabold"
                                                                      :class="getClassForLeave(selectedReport.daily_details[day.dateStr])"
                                                                      x-text="selectedReport.daily_details[day.dateStr].leave_code"></div>
-                                                                <span class="text-[10px] text-slate-450 dark:text-slate-550" x-text="selectedReport.daily_details[day.dateStr].check_out"></span>
+                                                                <span class="text-[10px] text-slate-400 dark:text-slate-400" x-text="selectedReport.daily_details[day.dateStr].check_out"></span>
                                                             </div>
                                                         </template>
                                                         
