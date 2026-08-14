@@ -79,10 +79,18 @@
                             </td>
                             <td class="px-6 py-3 text-right">
                                 @if($emp->payslip_url)
-                                    <a href="{{ $emp->payslip_url }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 h-8 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-lg transition-colors">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                        Download PDF
-                                    </a>
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ $emp->payslip_url }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 h-8 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-lg transition-colors">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                            Download Slip
+                                        </a>
+                                        @if($emp->attachment_url)
+                                            <a href="{{ $emp->attachment_url }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 h-8 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold rounded-lg transition-colors border border-slate-200 dark:border-slate-700">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                                                Lampiran
+                                            </a>
+                                        @endif
+                                    </div>
                                 @else
                                     <button disabled class="inline-flex items-center justify-center h-8 px-3 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-bold rounded-lg cursor-not-allowed">
                                         Menunggu HRD
@@ -146,12 +154,18 @@
                         </div>
                     </div>
 
-                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800/60">
+                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800/60 flex flex-col gap-2">
                         @if($emp->payslip_url)
-                            <a href="{{ $emp->payslip_url }}" target="_blank" class="w-full inline-flex items-center justify-center h-10 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm gap-2">
+                            <a href="{{ $emp->payslip_url }}" target="_blank" class="w-full inline-flex items-center justify-center h-10 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                                 Download Slip Gaji (PDF)
                             </a>
+                            @if($emp->attachment_url)
+                                <a href="{{ $emp->attachment_url }}" target="_blank" class="w-full inline-flex items-center justify-center h-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-750 dark:text-slate-300 text-xs font-semibold rounded-lg transition-colors gap-2 border border-slate-200 dark:border-slate-700">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                                    Download Lampiran
+                                </a>
+                            @endif
                         @else
                             <button disabled class="w-full inline-flex items-center justify-center h-10 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-xs font-semibold rounded-lg cursor-not-allowed">
                                 Menunggu Pengiriman dari HRD

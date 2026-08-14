@@ -49,6 +49,7 @@ class PayslipController extends Controller
 
         $employees = $employees->map(function($emp) use ($payslips) {
             $emp->payslip_url = $payslips[$emp->id]['file_url'] ?? null;
+            $emp->attachment_url = $payslips[$emp->id]['attachment_url'] ?? null;
             return $emp;
         })->sortBy('name');
 
