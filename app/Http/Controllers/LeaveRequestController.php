@@ -61,7 +61,7 @@ class LeaveRequestController extends Controller
         $approvalRate = $processedCount > 0 ? round(($approvedCount / $processedCount) * 100, 1) : 0;
 
         // Base query for list
-        $query = LeaveRequest::with(['employee', 'leaveType', 'processedBy'])->orderBy('start_date', 'desc');
+        $query = LeaveRequest::with(['employee', 'leaveType', 'processedBy'])->orderBy('created_at', 'desc');
         if ($schoolUnit) {
             $query->whereHas('employee', function ($q) use ($schoolUnit) {
                 $q->where('unit', $schoolUnit);

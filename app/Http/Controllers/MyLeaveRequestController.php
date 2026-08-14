@@ -46,7 +46,7 @@ class MyLeaveRequestController extends Controller
         }
         $leaves = LeaveRequest::where('employee_id', $user->employee->id)
             ->with('leaveType')
-            ->orderBy('start_date', 'desc')
+            ->orderBy('created_at', 'desc')
             ->get();
         $leaveTypes = \App\Models\LeaveType::orderBy('name')->get();
 
