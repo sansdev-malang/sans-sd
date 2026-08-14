@@ -55,7 +55,6 @@
                             Cari
                         </button>
                     </div>
-                </div>
 
                 <!-- Filter Role -->
                 <div style="flex: 0 0 180px;">
