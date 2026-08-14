@@ -55,7 +55,7 @@ class LeaveRequest extends Model
                 'sd' => 2,
                 'smp' => 3,
             ][$schoolUnitCode] ?? 2;
-            
+
             $statusCode = $this->leaveType ? $this->leaveType->status_code : ($this->type === 'Sakit' ? 'S' : ($this->type === 'Cuti' ? 'C' : ($this->type === 'Dinas' ? 'H' : 'I')));
             $getsPresenceBonus = $this->leaveType ? $this->leaveType->gets_presence_bonus : ($this->type === 'Dinas');
             $requiresAttendance = $this->leaveType ? $this->leaveType->requires_attendance : true;
@@ -72,7 +72,9 @@ class LeaveRequest extends Model
                 ][$this->processedBy->role] ?? $this->processedBy->role
             ) . ')') : $this->processed_by_name;
 
-            \Illuminate\Support\Facades\Http::timeout(5)->post(rtrim($hrdUrl, '/') . '/api/sync/leave-request', [
+            \Illuminate\Support\Facades\Http::timeout(5)->withHeaders([
+                'X-API-TOKEN' => config('app.hrd_api_token')
+            ])->post(rtrim($hrdUrl, '/') . '/api/sync/leave-request', [
                 'school_unit_id' => $schoolUnitId,
                 'remote_leave_id' => $this->id,
                 'employee_id' => $this->employee_id,
@@ -108,7 +110,9 @@ class LeaveRequest extends Model
                 'smp' => 3,
             ][$schoolUnitCode] ?? 2;
 
-            \Illuminate\Support\Facades\Http::timeout(5)->post(rtrim($hrdUrl, '/') . '/api/sync/leave-request/delete', [
+            \Illuminate\Support\Facades\Http::timeout(5)->withHeaders([
+                'X-API-TOKEN' => config('app.hrd_api_token')
+            ])->post(rtrim($hrdUrl, '/') . '/api/sync/leave-request/delete', [
                 'school_unit_id' => $schoolUnitId,
                 'remote_leave_id' => $this->id,
             ]);
@@ -143,7 +147,7 @@ class LeaveRequest extends Model
             if ($leave->status === 'Approved' && !$requiresAttendance) {
                 $startDate = \Carbon\Carbon::parse($leave->start_date);
                 $endDate = \Carbon\Carbon::parse($leave->end_date);
-                
+
                 for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
                     $attendance = \App\Models\Attendance::where('employee_id', $leave->employee_id)
                         ->where('date', $date->format('Y-m-d'))
@@ -193,12 +197,12 @@ class LeaveRequest extends Model
             } else {
                 $startDate = \Carbon\Carbon::parse($leave->start_date);
                 $endDate = \Carbon\Carbon::parse($leave->end_date);
-                
+
                 for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
                     $attendance = \App\Models\Attendance::where('employee_id', $leave->employee_id)
                         ->where('date', $date->format('Y-m-d'))
                         ->first();
-                    
+
                     if ($attendance) {
                         if (is_null($attendance->clock_in) && is_null($attendance->clock_out)) {
                             $attendance->delete();
@@ -226,12 +230,12 @@ class LeaveRequest extends Model
 
             $startDate = \Carbon\Carbon::parse($leave->start_date);
             $endDate = \Carbon\Carbon::parse($leave->end_date);
-            
+
             for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
                 $attendance = \App\Models\Attendance::where('employee_id', $leave->employee_id)
                     ->where('date', $date->format('Y-m-d'))
                     ->first();
-                
+
                 if ($attendance) {
                     if (is_null($attendance->clock_in) && is_null($attendance->clock_out)) {
                         $attendance->delete();

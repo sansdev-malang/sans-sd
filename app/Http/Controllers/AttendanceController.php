@@ -37,17 +37,23 @@ class AttendanceController extends Controller
                 $apiParams['end_date'] = $monthCarbon->copy()->endOfMonth()->format('Y-m-d');
             }
 
-            $response = \Illuminate\Support\Facades\Http::get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', $apiParams);
-            
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'X-API-TOKEN' => env('HRD_API_TOKEN')
+            ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', array_merge($apiParams, [
+                'school_unit_id' => config('app.school_unit_id', 2)
+            ]));
+
             $json = $response->json();
             $reports = collect($json['data'] ?? []);
             $startDate = \Carbon\Carbon::parse($json['start_date'] ?? date('Y-m-d'));
             $endDate = \Carbon\Carbon::parse($json['end_date'] ?? date('Y-m-d'));
 
             if ($user && $user->role === 'employee' && $user->employee_id) {
-                $previousResponse = \Illuminate\Support\Facades\Http::get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
+                $previousResponse = \Illuminate\Support\Facades\Http::withHeaders([
+                    'X-API-TOKEN' => env('HRD_API_TOKEN')
+                ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
+                    'school_unit_id' => config('app.school_unit_id', 2),
                     'month' => $previousMonth,
-                    'unit_id' => strtolower($schoolUnit),
                     'start_date' => \Carbon\Carbon::createFromFormat('Y-m', $previousMonth)->startOfMonth()->format('Y-m-d'),
                     'end_date' => \Carbon\Carbon::createFromFormat('Y-m', $previousMonth)->endOfMonth()->format('Y-m-d'),
                 ]);
@@ -87,9 +93,11 @@ class AttendanceController extends Controller
                 });
 
                 // Fetch bonus reports for both current and previous month from central HRD
-                $bonusResponse = \Illuminate\Support\Facades\Http::get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
-                    'month' => $month,
-                    'unit_id' => strtolower($schoolUnit)
+                $bonusResponse = \Illuminate\Support\Facades\Http::withHeaders([
+                    'X-API-TOKEN' => env('HRD_API_TOKEN')
+                ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                    'school_unit_id' => config('app.school_unit_id', 2),
+                    'month' => $month
                 ]);
                 $bonusJson = $bonusResponse->json();
                 $bonusReports = collect($bonusJson['data'] ?? []);
@@ -102,24 +110,26 @@ class AttendanceController extends Controller
                     $myActiveShifts = $currentBonus['active_shifts'];
                 }
 
-                $prevBonusResponse = \Illuminate\Support\Facades\Http::get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
-                    'month' => $previousMonth,
-                    'unit_id' => strtolower($schoolUnit)
+                $prevBonusResponse = \Illuminate\Support\Facades\Http::withHeaders([
+                    'X-API-TOKEN' => env('HRD_API_TOKEN')
+                ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                    'school_unit_id' => config('app.school_unit_id', 2),
+                    'month' => $previousMonth
                 ]);
                 $prevBonusJson = $prevBonusResponse->json();
                 $previousBonusReports = collect($prevBonusJson['data'] ?? []);
 
                 $reports = $reports->map(function ($report) use ($bonusReports, $previousBonusReports) {
                     $empId = $report['employee']['id'] ?? 0;
-                    
+
                     $currentBonus = $bonusReports->first(function ($br) use ($empId) {
                         return ($br['employee']['id'] ?? 0) == $empId;
                     });
-                    
+
                     $prevBonus = $previousBonusReports->first(function ($br) use ($empId) {
                         return ($br['employee']['id'] ?? 0) == $empId;
                     });
-                    
+
                     $bonusDetails = [];
                     if ($prevBonus && isset($prevBonus['daily_details'])) {
                         $bonusDetails = $prevBonus['daily_details'];
@@ -219,7 +229,7 @@ class AttendanceController extends Controller
         }
 
         $reports = collect($reportsData);
-        
+
         // Apply Role-based filtering
         $user = auth()->user();
         if ($user && $user->role === 'employee' && $user->employee_id) {
@@ -243,7 +253,7 @@ class AttendanceController extends Controller
                 });
             }
         }
-        
+
         $reports = $reports->values()->toArray();
 
         $periodeStr = $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
@@ -302,17 +312,17 @@ class AttendanceController extends Controller
         foreach ($reports as $report) {
             $sheet->setCellValue('A' . $row, $no++);
             $sheet->setCellValue('B' . $row, $report['employee']['name'] ?? '-');
-            
+
             $colIndex = 3;
             foreach ($dates as $dateObj) {
                 $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
                 $dateStr = $dateObj->format('Y-m-d');
                 $detail = $report['daily_details'][$dateStr] ?? null;
-                
+
                 $cellValue = '-';
                 if ($detail) {
                     $sheet->getStyle($colLetter . $row)->getAlignment()->setWrapText(true)->setHorizontal('center')->setVertical('center');
-                    
+
                     if ($detail['status'] === 'Hadir') {
                         $in = $detail['check_in'] ?? '-';
                         $out = $detail['check_out'] ?? '-';
@@ -332,13 +342,13 @@ class AttendanceController extends Controller
                         $isPending = !empty($detail['is_pending']);
                         $in = $detail['check_in'] ?? null;
                         $out = $detail['check_out'] ?? null;
-                        
+
                         if ($in || $out) {
                             $cellValue = ($in ?: '-') . "\n" . $leaveCode . ($isPending ? ' (P)' : '') . "\n" . ($out ?: '-');
                         } else {
                             $cellValue = $leaveCode . ($isPending ? ' (P)' : '');
                         }
-                        
+
                         $excelColorMap = [
                             'S' => 'FFE28743', // Warm Amber
                             'I' => 'FF8A2BE2', // Purple
@@ -363,7 +373,7 @@ class AttendanceController extends Controller
                         $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED));
                     }
                 }
-                
+
                 $sheet->setCellValue($colLetter . $row, $cellValue);
                 $colIndex++;
             }
@@ -536,7 +546,7 @@ class AttendanceController extends Controller
 
         // 1. Check Holiday Adjustment or global holiday
         $isHoliday = false;
-        
+
         $adjustment = \App\Models\HolidayAdjustment::where('adjusted_date', $date)->first();
 
         if ($adjustment) {

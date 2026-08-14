@@ -30,9 +30,9 @@ Route::get('/dashboard', function () {
     $isAdmin = in_array($user->role, ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp', 'kepala_sekolah', 'waka']);
 
     $employeeCount = \App\Models\Employee::count();
-    
+
     $query = \App\Models\Announcement::latest();
-    
+
     if (!$isAdmin) {
         $query->where('is_active', true)
               ->where(function($q) {
@@ -45,7 +45,7 @@ Route::get('/dashboard', function () {
               })
               ->whereIn('target_audience', ['global', 'employee']);
     }
-    
+
     $latestAnnouncements = $query->take(3)->get();
 
     // Fetch personal stats for non-admin employees
@@ -84,9 +84,11 @@ Route::get('/dashboard', function () {
             $schoolUnit = config('app.school_unit', 'sd');
             $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
             try {
-                $response = \Illuminate\Support\Facades\Http::timeout(15)->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
-                    'month' => date('Y-m'),
-                    'unit_id' => strtolower($schoolUnit)
+                $response = \Illuminate\Support\Facades\Http::timeout(15)->withHeaders([
+                    'X-API-TOKEN' => config('app.hrd_api_token')
+                ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                    'school_unit_id' => config('app.school_unit_id'),
+                    'month' => date('Y-m')
                 ]);
                 if ($response->successful()) {
                     $json = $response->json();
@@ -115,36 +117,36 @@ Route::get('/dashboard', function () {
         // Filter out Pending, Off, and Leave days from the presence chart
         $completedDetails = array_filter($dailyDetails, function ($day) {
             $status = $day['status'] ?? '';
-            return $status !== 'Pending' && 
-                   $status !== 'Off' && 
-                   $status !== 'Libur' && 
-                   $status !== 'Sakit' && 
-                   $status !== 'Izin' && 
+            return $status !== 'Pending' &&
+                   $status !== 'Off' &&
+                   $status !== 'Libur' &&
+                   $status !== 'Sakit' &&
+                   $status !== 'Izin' &&
                    $status !== 'Cuti' &&
                    $status !== 'Cuti Melahirkan' &&
                    $status !== 'Cuti Tahunan';
         });
-        
+
         $idx = 0;
         foreach ($completedDetails as $dateStr => $det) {
             $x = $idx * 60; // 60px spacing per day
             $y = 130;
             $timeStr = '-';
-            
+
             $jamMasuk = $det['check_in'] ?? null;
             if ($jamMasuk) {
                 // Time calculations for chart Y position (06:00 = top, 08:00 = bottom)
                 $parts = explode(':', $jamMasuk);
                 $mins = (int)$parts[0] * 60 + (int)$parts[1];
-                
+
                 // 360 mins (06:00) -> Y=30. 480 mins (08:00) -> Y=130
                 $y = 30 + (($mins - 360) * (100 / 120));
-                if ($y < 30) $y = 30; 
-                if ($y > 130) $y = 130; 
-                
+                if ($y < 30) $y = 30;
+                if ($y > 130) $y = 130;
+
                 $timeStr = substr($jamMasuk, 0, 5);
             }
-            
+
             $chartPoints[] = [
                 'x' => $x,
                 'y' => $y,
@@ -171,10 +173,10 @@ Route::get('/dashboard', function () {
         $dates = array_keys($dailyDetails);
         $firstDateStr = reset($dates);
         $firstDate = \Carbon\Carbon::parse($firstDateStr);
-        
+
         $startDayOfWeek = $firstDate->dayOfWeek;
         $startDayOfWeek = $startDayOfWeek == 0 ? 7 : $startDayOfWeek;
-        
+
         for ($i = 1; $i < $startDayOfWeek; $i++) {
             $myCalendarDays[] = [
                 'is_empty' => true,
@@ -186,13 +188,13 @@ Route::get('/dashboard', function () {
                 'status' => null,
             ];
         }
-        
+
         foreach ($dailyDetails as $dateStr => $det) {
             $dateCarbon = \Carbon\Carbon::parse($dateStr);
             $shiftName = $det['shift_name'] ?? null;
             $shortLabel = '-';
             $type = 'default';
-            
+
             if ($shiftName) {
                 if (stripos($shiftName, 'malam') !== false) {
                     $shortLabel = 'M';
@@ -225,7 +227,7 @@ Route::get('/dashboard', function () {
                     $shortLabel = '-';
                 }
             }
-            
+
             $myCalendarDays[] = [
                 'is_empty' => false,
                 'date' => $dateStr,
@@ -381,7 +383,7 @@ Route::middleware('hrd.api')->prefix('api/v1/hrd')->group(function () {
     Route::get('attendances', [\App\Http\Controllers\Api\HrdApiController::class, 'attendances']);
     Route::get('employee-types', [\App\Http\Controllers\Api\HrdApiController::class, 'employeeTypes']);
     Route::get('leave-types', [\App\Http\Controllers\Api\HrdApiController::class, 'leaveTypes']);
-    
+
     // Shifts, schedules, holidays, bonuses, and leaves sync endpoints
     Route::post('sync/shifts', [\App\Http\Controllers\Api\HrdApiController::class, 'syncShifts']);
     Route::post('sync/schedules', [\App\Http\Controllers\Api\HrdApiController::class, 'syncSchedules']);

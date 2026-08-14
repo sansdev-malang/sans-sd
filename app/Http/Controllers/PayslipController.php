@@ -13,24 +13,26 @@ class PayslipController extends Controller
     {
         $month = $request->input('month', Carbon::today()->format('Y-m'));
         $schoolUnit = config('app.school_unit', 'sd');
-        
+
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
-        
+
         $payslips = [];
-        
+
         try {
-            $response = Http::timeout(10)->get(rtrim($hrdUrl, '/') . '/api/payslips', [
-                'month' => $month,
-                'unit_id' => $schoolUnit
+            $response = Http::timeout(10)->withHeaders([
+                'X-API-TOKEN' => env('HRD_API_TOKEN')
+            ])->get(rtrim($hrdUrl, '/') . '/api/payslips', [
+                'school_unit_id' => config('app.school_unit_id', 2),
+                'month' => $month
             ]);
-            
+
             if ($response->successful()) {
                 $payslips = $response->json('data') ?? [];
             }
         } catch (\Exception $e) {
             // Ignore for now
         }
-        
+
         // Fetch local employees based on role
         $user = auth()->user();
         if ($user->hasRole('super_admin')) {
@@ -44,12 +46,12 @@ class PayslipController extends Controller
                 }
             }
         }
-        
+
         $employees = $employees->map(function($emp) use ($payslips) {
             $emp->payslip_url = $payslips[$emp->id]['file_url'] ?? null;
             return $emp;
         })->sortBy('name');
-        
+
         return view('admin.payslips.index', compact('employees', 'month'));
     }
 }

@@ -22,14 +22,16 @@ class BonusReportController extends Controller
         $hrdUrl = Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
 
         try {
-            $response = Http::get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
-                'month' => $month,
-                'unit_id' => strtolower($schoolUnit)
+            $response = Http::withHeaders([
+                'X-API-TOKEN' => env('HRD_API_TOKEN')
+            ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                'school_unit_id' => config('app.school_unit_id', 2),
+                'month' => $month
             ]);
-            
+
             $json = $response->json();
             $reports = collect($json['data'] ?? []);
-            
+
             // Extract from API response or calculate default
             $startDateReq = $json['start_date'] ?? null;
             $endDateReq = $json['end_date'] ?? null;
@@ -95,7 +97,7 @@ class BonusReportController extends Controller
                     ['path' => $request->url(), 'query' => $request->query()]
                 );
             }
-            
+
             if ($user && $user->role === 'employee' && $user->employee_id) {
                 return view('bonus-reports.employee-index', compact('paginatedReports', 'month', 'startDateReq', 'endDateReq', 'activeSchema', 'totalSemuaBonus'));
             }
@@ -121,14 +123,16 @@ class BonusReportController extends Controller
         $hrdUrl = Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
 
         try {
-            $response = Http::get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
-                'month' => $month,
-                'unit_id' => strtolower($schoolUnit)
+            $response = Http::withHeaders([
+                'X-API-TOKEN' => env('HRD_API_TOKEN')
+            ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                'school_unit_id' => config('app.school_unit_id', 2),
+                'month' => $month
             ]);
-            
+
             $json = $response->json();
             $reports = collect($json['data'] ?? []);
-            
+
             $startDate = Carbon::parse($json['start_date'] ?? date('Y-m-d'));
             $endDate = Carbon::parse($json['end_date'] ?? date('Y-m-d'));
             $periodeStr = $startDate->format('d M') . ' - ' . $endDate->format('d M Y');
@@ -171,7 +175,7 @@ class BonusReportController extends Controller
             if ($format === 'excel') {
                 $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
                 $sheet = $spreadsheet->getActiveSheet();
-                
+
                 $sheet->setCellValue('A1', 'No');
                 $sheet->setCellValue('B1', 'Nama Pegawai');
                 $sheet->setCellValue('C1', 'Unit');
@@ -200,7 +204,7 @@ class BonusReportController extends Controller
                 $sheet->getStyle('A1:' . $lastColLetter . '1')->getAlignment()->setWrapText(true)
                     ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
                     ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
-                    
+
                 $row = 2;
                 $no = 1;
                 foreach ($reportsArr as $report) {
@@ -208,33 +212,33 @@ class BonusReportController extends Controller
                     $sheet->setCellValue('B' . $row, $report['employee']['name']);
                     $sheet->setCellValue('C' . $row, $report['employee']['unit']['name'] ?? ($report['employee']['unit_name'] ?? '-'));
                     $sheet->setCellValue('D' . $row, $report['bonus_nominal']);
-                    
+
                     $colIdx = 5;
                     foreach($dates as $date) {
                         $dateStr = $date->format('Y-m-d');
                         $detail = $report['daily_details'][$dateStr] ?? null;
                         $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx);
-                        
+
                         if ($detail && isset($detail['bonus_nominal']) && $detail['bonus_nominal'] > 0) {
                             $sheet->setCellValue($colLetter . $row, $detail['bonus_nominal']);
                         } else {
                             $sheet->setCellValue($colLetter . $row, '-');
                         }
-                        
+
                         // Align center
                         $sheet->getStyle($colLetter . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
                         $colIdx++;
                     }
                     $row++;
                 }
-                
+
                 $sheet->setCellValue('C' . $row, 'TOTAL:');
                 $sheet->getStyle('C' . $row)->getFont()->setBold(true);
                 $sheet->setCellValue('D' . $row, $totalSemuaBonus);
                 $sheet->getStyle('D' . $row)->getFont()->setBold(true);
-                
+
                 $sheet->getStyle('D2:D'.$row)->getNumberFormat()->setFormatCode('#,##0');
-                
+
                 foreach(range(1, $colIndex - 1) as $c) {
                     $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($c);
                     $sheet->getColumnDimension($colLetter)->setAutoSize(true);
@@ -261,7 +265,7 @@ class BonusReportController extends Controller
                 'dates' => $dates,
                 'totalSemuaBonus' => $totalSemuaBonus
             ])->setPaper('a4', 'landscape');
-            
+
             return $pdf->download('Rekap_Bonus_' . $unitStr . '_' . $month . '.pdf');
 
         } catch (\Exception $e) {
