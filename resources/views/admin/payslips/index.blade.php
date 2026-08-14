@@ -3,8 +3,18 @@
 @endphp
 <x-admin-layout>
     <style>
+        input[type="month"]::-webkit-calendar-picker-indicator {
+            filter: brightness(0) !important;
+            opacity: 1 !important;
+            cursor: pointer;
+        }
+
         .dark input[type="month"] {
             color-scheme: dark;
+        }
+
+        .dark input[type="month"]::-webkit-calendar-picker-indicator {
+            filter: brightness(0) invert(1) !important;
         }
     </style>
     <div class="p-6 space-y-6">
@@ -19,16 +29,17 @@
 
 
     <!-- Filters -->
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm mb-6 flex flex-col md:flex-row md:items-end gap-4">
-        @if($isSuperAdmin)
-        <div class="w-full md:w-64">
-            <label for="searchInput" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Cari Pegawai</label>
-            <input type="text" id="searchInput" placeholder="Ketik nama..." class="w-full text-xs rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-blue-500 focus:border-blue-500">
-        </div>
-        @endif
-        <form method="GET" action="{{ route('payslips.index') }}" class="flex flex-col sm:flex-row gap-4 flex-1">
-            <div class="w-full sm:w-64">
-                <input type="month" id="month" name="month" value="{{ $month }}" class="w-full text-xs rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-blue-500 focus:border-blue-500" onchange="this.form.submit()">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-4 w-full text-left">
+        <form method="GET" action="{{ route('payslips.index') }}" class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+            <div class="flex flex-wrap items-center gap-2 flex-1">
+                @if($isSuperAdmin)
+                <div class="w-full md:w-64 shrink-0">
+                    <div class="flex items-center h-9 w-full search-container bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-inner focus-within:ring-0 focus-within:border-slate-300 dark:focus-within:border-slate-700">
+                        <input type="text" id="searchInput" placeholder="Ketik nama..." class="w-full h-full px-3 text-xs bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-0 border-0 outline-none shadow-none">
+                    </div>
+                </div>
+                @endif
+                <input type="month" id="month" name="month" value="{{ $month }}" class="h-9 px-2.5 flex-1 sm:flex-initial sm:w-36 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 shadow-inner focus:outline-none focus:ring-0 focus:ring-transparent focus:border-slate-300 dark:focus:border-slate-700" onchange="this.form.submit()">
             </div>
         </form>
     </div>
