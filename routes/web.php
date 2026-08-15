@@ -134,17 +134,19 @@ Route::get('/dashboard', function () {
             $timeStr = '-';
 
             $jamMasuk = $det['check_in'] ?? null;
-            if ($jamMasuk) {
+            if ($jamMasuk && strpos($jamMasuk, ':') !== false) {
                 // Time calculations for chart Y position (06:00 = top, 08:00 = bottom)
                 $parts = explode(':', $jamMasuk);
-                $mins = (int)$parts[0] * 60 + (int)$parts[1];
+                if (count($parts) >= 2) {
+                    $mins = (int)$parts[0] * 60 + (int)$parts[1];
 
-                // 360 mins (06:00) -> Y=30. 480 mins (08:00) -> Y=130
-                $y = 30 + (($mins - 360) * (100 / 120));
-                if ($y < 30) $y = 30;
-                if ($y > 130) $y = 130;
+                    // 360 mins (06:00) -> Y=30. 480 mins (08:00) -> Y=130
+                    $y = 30 + (($mins - 360) * (100 / 120));
+                    if ($y < 30) $y = 30;
+                    if ($y > 130) $y = 130;
 
-                $timeStr = substr($jamMasuk, 0, 5);
+                    $timeStr = substr($jamMasuk, 0, 5);
+                }
             }
 
             $chartPoints[] = [
