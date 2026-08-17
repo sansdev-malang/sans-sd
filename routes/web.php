@@ -350,6 +350,7 @@ Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepal
     Route::post('employees/import', [EmployeeController::class, 'import'])->name('employees.import');
     Route::post('employees/generate-accounts', [EmployeeController::class, 'generateAccounts'])->name('employees.generate-accounts');
     Route::post('employees/{employee}/generate-account', [EmployeeController::class, 'generateSingleAccount'])->name('employees.generate-account');
+    Route::post('employees/sync-cache', [EmployeeController::class, 'syncCache'])->name('employees.sync-cache');
     Route::resource('employees', EmployeeController::class);
     Route::resource('employee-types', EmployeeTypeController::class);
     Route::resource('leave-types', \App\Http\Controllers\LeaveTypeController::class);

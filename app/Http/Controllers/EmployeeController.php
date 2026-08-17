@@ -669,6 +669,42 @@ class EmployeeController extends Controller
 
         return back()->with('success', "Akun untuk {$employee->name} berhasil dibuat dengan password default: sans1234");
     }
+
+    /**
+     * Sync employee cache manually to Central HRD.
+     */
+    public function syncCache(Request $request)
+    {
+        $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
+        $apiToken = \App\Models\Setting::get('hrd_api_token', config('app.hrd_api_token'));
+
+        if (!$hrdUrl) {
+            return back()->with('error', 'URL Aplikasi HRD Pusat belum dikonfigurasi di Pengaturan.');
+        }
+
+        $schoolUnitCode = strtolower(config('app.school_unit', 'sd'));
+        $schoolUnitId = config('app.school_unit_id') ?? ([
+            'paud' => 1,
+            'sd' => 2,
+            'smp' => 3,
+        ][$schoolUnitCode] ?? 2);
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(5)->withHeaders([
+                'X-API-TOKEN' => $apiToken
+            ])->post(rtrim($hrdUrl, '/') . '/api/sync/clear-employee-cache', [
+                'school_unit_id' => $schoolUnitId,
+            ]);
+
+            if ($response->successful()) {
+                return back()->with('success', 'Berhasil menyinkronkan data dan membersihkan cache di HRD Pusat!');
+            }
+
+            return back()->with('error', 'Gagal menyinkronkan data ke HRD Pusat. Status: ' . $response->status());
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghubungkan ke HRD Pusat: ' . $e->getMessage());
+        }
+    }
 }
 
 

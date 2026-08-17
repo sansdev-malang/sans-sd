@@ -167,7 +167,7 @@
                                         @endif
                                     @endif
                                 @elseif($detail['status'] === 'Libur')
-                                    <span class="text-red">-</span>
+                                    <span class="text-red" style="font-size: 6px; font-weight: bold;">OFF</span>
                                 @elseif($detail['status'] === 'Off')
                                     <span class="text-muted" style="font-size: 6px;">OFF</span>
                                 @else

@@ -21,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \App\Models\Employee::observe(\App\Observers\EmployeeObserver::class);
+
         // Directive untuk role tertentu
         Blade::if('role', function ($role) {
             return Auth::check() && Auth::user()->role === $role;

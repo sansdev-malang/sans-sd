@@ -9,6 +9,13 @@
                 <p class="text-xs text-slate-500 dark:text-slate-400">Kelola dan pantau data akademis serta profil pendidik secara real-time.</p>
             </div>
             <div class="flex items-center gap-2 shrink-0">
+                <form action="{{ route('employees.sync-cache') }}" method="POST" class="m-0 p-0 flex">
+                    @csrf
+                    <button type="submit" class="h-9 px-4 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-100 cursor-pointer flex items-center gap-2" onclick="this.disabled=true; this.innerHTML='Syncing...'; this.form.submit();">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-500"></i>
+                        Sync ke Server
+                    </button>
+                </form>
                 <button onclick="toggleModal('import-teacher-modal')" class="h-9 px-4 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-100 cursor-pointer flex items-center gap-2">
                     <i data-lucide="file-spreadsheet" class="w-4 h-4 text-slate-500"></i>
                     Impor Guru
