@@ -15,7 +15,7 @@
         </section>
 
         <!-- STAT CARDS GRID -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <section class="grid {{ $isAdmin ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' }} gap-4">
             @if($isAdmin)
                 <!-- Admin Card 1: Total Siswa -->
                 <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
@@ -50,6 +50,50 @@
                         </div>
                         <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
                             <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
+                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">98.2%</span> tingkat kehadiran
+                    </div>
+                </div>
+
+                <!-- Admin Card 2: GPK -->
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Guru Pendamping Khusus</p>
+                            <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                                @if(isset($gpkCount))
+                                    <span class="stat-counter" data-target="{{ $gpkCount }}">{{ $gpkCount }}</span>
+                                @else
+                                    <span>-</span>
+                                @endif
+                            </h3>
+                        </div>
+                        <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                            <i data-lucide="sun" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
+                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">98.2%</span> tingkat kehadiran
+                    </div>
+                </div>
+
+                <!-- Admin Card 2: GPQ -->
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Guru Pengajar Qur'an</p>
+                            <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                                @if(isset($gpqCount))
+                                    <span class="stat-counter" data-target="{{ $gpqCount }}">{{ $gpqCount }}</span>
+                                @else
+                                    <span>-</span>
+                                @endif
+                            </h3>
+                        </div>
+                        <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                            <i data-lucide="book-open" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
                         </div>
                     </div>
                     <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
@@ -207,8 +251,8 @@
                                 .mobile-time { display: none !important; }
                             }
                         </style>
-                        <div class="mb-4 p-3.5 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800/80 rounded-lg text-sm">
-                            <div class="flex items-center gap-1.5 font-semibold text-slate-900 dark:text-slate-700 mb-3">
+                        <div class="mb-4 p-3.5 bg-slate-50 dark:bg-emerald-600 border border-slate-200 dark:border-slate-800/80 rounded-lg text-sm">
+                            <div class="flex items-center gap-1.5 font-semibold text-slate-900 dark:text-slate-200 mb-3">
                                 <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-500 shrink-0"></i>
                                 <span>Informasi Shift Kerja Bulan Ini:</span>
                             </div>
