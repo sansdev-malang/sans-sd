@@ -20,31 +20,58 @@ class DashboardController extends Controller
         $gpqCount = \App\Models\Employee::where('position', 'GPQ')->count();
 
         $today = now()->toDateString();
+        $yesterday = now()->subDay()->toDateString();
         
-        $employeePresent = \App\Models\Attendance::where('date', $today)
-            ->whereHas('employee', function($q) {
-                $q->whereNotIn('position', ['GPK', 'GPQ'])->orWhereNull('position');
-            })->count();
+        $employeePresent = 0;
+        $gpkPresent = 0;
+        $gpqPresent = 0;
+        $totalPresentToday = 0;
+        $totalPresentYesterday = 0;
+
+        try {
+            $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'X-API-TOKEN' => env('HRD_API_TOKEN')
+            ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
+                'school_unit_id' => config('app.school_unit_id', 2),
+                'start_date' => $yesterday,
+                'end_date' => $today
+            ]);
+            
+            $reports = $response->json()['data'] ?? [];
+            
+            foreach ($reports as $report) {
+                $pos = $report['employee']['position'] ?? $report['employee']['subject_position'] ?? null;
+                $details = $report['daily_details'] ?? [];
+                
+                // Cek hari ini
+                if (($details[$today]['status'] ?? '') === 'Hadir') {
+                    $totalPresentToday++;
+                    
+                    if ($pos === 'GPK') {
+                        $gpkPresent++;
+                    } elseif ($pos === 'GPQ') {
+                        $gpqPresent++;
+                    } else {
+                        $employeePresent++;
+                    }
+                }
+                
+                // Cek kemarin
+                if (($details[$yesterday]['status'] ?? '') === 'Hadir') {
+                    $totalPresentYesterday++;
+                }
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal memuat absensi dashboard dari HRD: ' . $e->getMessage());
+        }
+
         $employeeAttendancePercent = $employeeCount > 0 ? round(($employeePresent / $employeeCount) * 100, 1) : 0;
-
-        $gpkPresent = \App\Models\Attendance::where('date', $today)
-            ->whereHas('employee', function($q) {
-                $q->where('position', 'GPK');
-            })->count();
         $gpkAttendancePercent = $gpkCount > 0 ? round(($gpkPresent / $gpkCount) * 100, 1) : 0;
-
-        $gpqPresent = \App\Models\Attendance::where('date', $today)
-            ->whereHas('employee', function($q) {
-                $q->where('position', 'GPQ');
-            })->count();
         $gpqAttendancePercent = $gpqCount > 0 ? round(($gpqPresent / $gpqCount) * 100, 1) : 0;
 
         $totalEmployeeCount = \App\Models\Employee::count();
-        $totalPresentToday = \App\Models\Attendance::where('date', $today)->count();
         $todayOverallPercent = $totalEmployeeCount > 0 ? round(($totalPresentToday / $totalEmployeeCount) * 100, 1) : 0;
-
-        $yesterday = now()->subDay()->toDateString();
-        $totalPresentYesterday = \App\Models\Attendance::where('date', $yesterday)->count();
         $yesterdayOverallPercent = $totalEmployeeCount > 0 ? round(($totalPresentYesterday / $totalEmployeeCount) * 100, 1) : 0;
         
         $diffPercent = round($todayOverallPercent - $yesterdayOverallPercent, 1);
