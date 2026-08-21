@@ -29,7 +29,7 @@
                         <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total
                             Guru Aktif</p>
                         <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                            <span class="stat-counter" data-target="86">0</span>
+                            <span class="stat-counter" data-target="{{ $totalGuru ?? 0 }}">{{ $totalGuru ?? 0 }}</span>
                         </h3>
                     </div>
                     <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
@@ -48,7 +48,7 @@
                     <div>
                         <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Guru Laki-laki</p>
                         <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                            <span class="stat-counter" data-target="38">0</span>
+                            <span class="stat-counter" data-target="{{ $guruMale ?? 0 }}">{{ $guruMale ?? 0 }}</span>
                         </h3>
                     </div>
                     <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
@@ -67,7 +67,7 @@
                     <div>
                         <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Guru Perempuan</p>
                         <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                            <span class="stat-counter" data-target="48">0</span>
+                            <span class="stat-counter" data-target="{{ $guruFemale ?? 0 }}">{{ $guruFemale ?? 0 }}</span>
                         </h3>
                     </div>
                     <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
@@ -87,7 +87,7 @@
                         <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                             Telah Sertifikasi</p>
                         <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                            <span class="stat-counter" data-target="71">0</span>%
+                            <span class="stat-counter" data-target="{{ $certifiedPercent ?? 0 }}">{{ $certifiedPercent ?? 0 }}</span>%
                         </h3>
                     </div>
                     <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
@@ -101,49 +101,39 @@
         </section>
 
         <!-- SECTION 3: SEARCH & FILTERS -->
-        <section
-            class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm w-full">
-            <div class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+        <section class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm w-full">
+            <form method="GET" action="{{ route('guru') }}" class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
                 <!-- Search Box -->
                 <div class="relative w-full md:max-w-md">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <i data-lucide="search" class="w-4 h-4 text-slate-400 dark:text-slate-500"></i>
                     </span>
-                    <input type="text" id="table-search" placeholder="Cari berdasarkan Nama, NIS, atau NISN..."
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari berdasarkan Nama, NIP, atau NUPTK..."
                         style="padding-left: 2.25rem;"
                         class="w-full h-9 pr-4 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 focus:border-slate-400 dark:focus:border-slate-600 text-slate-900 dark:text-slate-50 placeholder-slate-400 dark:placeholder-slate-500 transition-all shadow-inner">
                 </div>
 
                 <!-- Filter Select Toolbar -->
                 <div class="flex items-center gap-2 w-full md:w-auto">
-                    <!-- Filter Kelas -->
-                    <select id="filter-kelas"
-                        class="h-9 px-2 flex-1 sm:flex-initial sm:w-32 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 cursor-pointer transition-all shadow-sm">
-                        <option value="">Semua Kelas</option>
-                        <option value="10">Kelas 10</option>
-                        <option value="11">Kelas 11</option>
-                        <option value="12">Kelas 12</option>
-                    </select>
-
-                    <!-- Filter Rombel -->
-                    <select id="filter-rombel"
-                        class="h-9 px-2 flex-1 sm:flex-initial sm:w-32 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 cursor-pointer transition-all shadow-sm">
-                        <option value="">Semua Rombel</option>
-                        <option value="X-A">X-A</option>
-                        <option value="XI-IPA">XI-IPA</option>
-                        <option value="XII-IPS">XII-IPS</option>
+                    <!-- Filter Posisi -->
+                    <select name="position" onchange="this.form.submit()"
+                        class="h-9 px-2 flex-1 sm:flex-initial sm:w-36 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 cursor-pointer transition-all shadow-sm">
+                        <option value="">Semua Jabatan</option>
+                        @foreach($positions ?? [] as $pos)
+                            <option value="{{ $pos }}" {{ request('position') == $pos ? 'selected' : '' }}>{{ $pos }}</option>
+                        @endforeach
                     </select>
 
                     <!-- Filter Status -->
-                    <select id="filter-status"
+                    <select name="status" onchange="this.form.submit()"
                         class="h-9 px-2 flex-1 sm:flex-initial sm:w-32 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800 cursor-pointer transition-all shadow-sm">
                         <option value="">Semua Status</option>
-                        <option value="Aktif">Aktif</option>
-                        <option value="Cuti">Cuti</option>
-                        <option value="Alumni">Alumni</option>
+                        <option value="Active" {{ request('status') == 'Active' ? 'selected' : '' }}>Aktif</option>
+                        <option value="Leave" {{ request('status') == 'Leave' ? 'selected' : '' }}>Cuti</option>
+                        <option value="Inactive" {{ request('status') == 'Inactive' ? 'selected' : '' }}>Nonaktif</option>
                     </select>
                 </div>
-            </div>
+            </form>
         </section>
 
         <!-- SECTION 4: TABLE (PREMIUM DESIGN) -->
@@ -163,245 +153,57 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-900">
-                        <!-- Row 1 -->
-                        <tr class="teacher-row hover:bg-slate-50/40 dark:hover:bg-slate-900/20 transition-colors">
-                            <td class="px-6 py-4 text-slate-900 dark:text-slate-50 font-medium">1</td>
-                            <td class="teacher-nip px-6 py-4 text-slate-500 dark:text-slate-400 font-mono text-xs">197508122003121002</td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
-                                        EW
+                        @forelse($teachers as $index => $teacher)
+                            <tr class="teacher-row hover:bg-slate-50/40 dark:hover:bg-slate-900/20 transition-colors">
+                                <td class="px-6 py-4 text-slate-900 dark:text-slate-50 font-medium">{{ $teachers->firstItem() + $index }}</td>
+                                <td class="px-6 py-4 text-slate-500 dark:text-slate-400 font-mono text-xs">{{ $teacher->nuptk ?? '-' }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        @if($teacher->photo)
+                                            <img src="{{ str_contains($teacher->photo, 'photos/') ? asset('storage/' . $teacher->photo) : asset('storage/photos/' . $teacher->photo) }}" class="w-8 h-8 rounded-full object-cover border border-slate-200/50 dark:border-slate-800/40 shrink-0">
+                                        @else
+                                            <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
+                                                {{ strtoupper(substr($teacher->name, 0, 2)) }}
+                                            </div>
+                                        @endif
+                                        <span class="text-slate-900 dark:text-slate-50 font-semibold tracking-tight">{{ $teacher->name }}</span>
                                     </div>
-                                    <span class="teacher-name text-slate-900 dark:text-slate-50 font-semibold tracking-tight">Drs. Eko Wibowo, M.Pd</span>
-                                </div>
-                            </td>
-                            <td class="teacher-mapel px-6 py-4 text-slate-600 dark:text-slate-400 font-medium">Matematika</td>
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Laki-laki</td>
-                            <td class="teacher-kepegawaian px-6 py-4 text-slate-600 dark:text-slate-400">PNS</td>
-                            <td class="px-6 py-4">
-                                <span class="teacher-status inline-flex items-center px-4 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 shadow-sm">
-                                    Aktif
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-1.5">
-                                    <button class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-405 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Edit Data">
-                                        <i data-lucide="edit" class="w-4 h-4"></i>
-                                    </button>
-                                    <button class="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 hover:text-red-700 transition-colors cursor-pointer" title="Hapus Data">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Row 2 -->
-                        <tr class="teacher-row hover:bg-slate-50/40 dark:hover:bg-slate-900/20 transition-colors">
-                            <td class="px-6 py-4 text-slate-900 dark:text-slate-50 font-medium">2</td>
-                            <td class="teacher-nip px-6 py-4 text-slate-500 dark:text-slate-400 font-mono text-xs">198204152009042003</td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
-                                        RL
+                                </td>
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-medium">{{ $teacher->subject_position ?? '-' }}</td>
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">{{ $teacher->gender === 'Male' ? 'Laki-laki' : ($teacher->gender === 'Female' ? 'Perempuan' : '-') }}</td>
+                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">{{ $teacher->employment_status ?? '-' }}</td>
+                                <td class="px-6 py-4">
+                                    @if($teacher->status == 'Active')
+                                        <span class="inline-flex items-center px-4 py-1 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 shadow-sm">Aktif</span>
+                                    @elseif($teacher->status == 'Leave')
+                                        <span class="inline-flex items-center px-4 py-1 rounded-full text-[10px] font-semibold bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40 shadow-sm">Cuti</span>
+                                    @else
+                                        <span class="inline-flex items-center px-4 py-1 rounded-full text-[10px] font-semibold bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-800/40 shadow-sm">Nonaktif</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-1.5">
+                                        <a href="{{ route('employees.index') }}" class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Kelola di Data Pegawai">
+                                            <i data-lucide="external-link" class="w-4 h-4"></i>
+                                        </a>
                                     </div>
-                                    <span class="teacher-name text-slate-900 dark:text-slate-50 font-semibold tracking-tight">Retno Lestari, S.Pd</span>
-                                </div>
-                            </td>
-                            <td class="teacher-mapel px-6 py-4 text-slate-600 dark:text-slate-400 font-medium">Bahasa Inggris</td>
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Perempuan</td>
-                            <td class="teacher-kepegawaian px-6 py-4 text-slate-600 dark:text-slate-400">PNS</td>
-                            <td class="px-6 py-4">
-                                <span class="teacher-status inline-flex items-center px-4 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 shadow-sm">
-                                    Aktif
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-1.5">
-                                    <button class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Edit Data">
-                                        <i data-lucide="edit" class="w-4 h-4"></i>
-                                    </button>
-                                    <button class="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 hover:text-red-700 transition-colors cursor-pointer" title="Hapus Data">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Row 3 -->
-                        <tr class="teacher-row hover:bg-slate-50/40 dark:hover:bg-slate-900/20 transition-colors">
-                            <td class="px-6 py-4 text-slate-900 dark:text-slate-50 font-medium">3</td>
-                            <td class="teacher-nip px-6 py-4 text-slate-500 dark:text-slate-400 font-mono text-xs">-</td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
-                                        AF
-                                    </div>
-                                    <span class="teacher-name text-slate-900 dark:text-slate-50 font-semibold tracking-tight">Ahmad Fauzi, S.Si</span>
-                                </div>
-                            </td>
-                            <td class="teacher-mapel px-6 py-4 text-slate-600 dark:text-slate-400 font-medium">Fisika</td>
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Laki-laki</td>
-                            <td class="teacher-kepegawaian px-6 py-4 text-slate-600 dark:text-slate-400">Honorer</td>
-                            <td class="px-6 py-4">
-                                <span class="teacher-status inline-flex items-center px-4 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 shadow-sm">
-                                    Aktif
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-1.5">
-                                    <button class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Edit Data">
-                                        <i data-lucide="edit" class="w-4 h-4"></i>
-                                    </button>
-                                    <button class="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 hover:text-red-700 transition-colors cursor-pointer" title="Hapus Data">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Row 4 -->
-                        <tr class="teacher-row hover:bg-slate-50/40 dark:hover:bg-slate-900/20 transition-colors">
-                            <td class="px-6 py-4 text-slate-900 dark:text-slate-50 font-medium">4</td>
-                            <td class="teacher-nip px-6 py-4 text-slate-500 dark:text-slate-400 font-mono text-xs">199011032022212009</td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
-                                        SA
-                                    </div>
-                                    <span class="teacher-name text-slate-900 dark:text-slate-50 font-semibold tracking-tight">Siti Aminah, S.Pd</span>
-                                </div>
-                            </td>
-                            <td class="teacher-mapel px-6 py-4 text-slate-600 dark:text-slate-400 font-medium">Bahasa Indonesia</td>
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Perempuan</td>
-                            <td class="teacher-kepegawaian px-6 py-4 text-slate-600 dark:text-slate-400">Tetap Yayasan</td>
-                            <td class="px-6 py-4">
-                                <span class="teacher-status inline-flex items-center px-4 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 shadow-sm">
-                                    Aktif
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-1.5">
-                                    <button class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Edit Data">
-                                        <i data-lucide="edit" class="w-4 h-4"></i>
-                                    </button>
-                                    <button class="p-1.5 hover:bg-red-55 dark:hover:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 hover:text-red-700 transition-colors cursor-pointer" title="Hapus Data">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Row 5 -->
-                        <tr class="teacher-row hover:bg-slate-50/40 dark:hover:bg-slate-900/20 transition-colors">
-                            <td class="px-6 py-4 text-slate-900 dark:text-slate-50 font-medium">5</td>
-                            <td class="teacher-nip px-6 py-4 text-slate-500 dark:text-slate-400 font-mono text-xs">196803241995121001</td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
-                                        BH
-                                    </div>
-                                    <span class="teacher-name text-slate-900 dark:text-slate-50 font-semibold tracking-tight">Bambang Hermawan, M.T</span>
-                                </div>
-                            </td>
-                            <td class="teacher-mapel px-6 py-4 text-slate-600 dark:text-slate-400 font-medium">Informatika</td>
-                            <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Laki-laki</td>
-                            <td class="teacher-kepegawaian px-6 py-4 text-slate-600 dark:text-slate-400">PNS</td>
-                            <td class="px-6 py-4">
-                                <span class="teacher-status inline-flex items-center px-4 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 shadow-sm">
-                                    Cuti
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-1.5">
-                                    <button class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer" title="Edit Data">
-                                        <i data-lucide="edit" class="w-4 h-4"></i>
-                                    </button>
-                                    <button class="p-1.5 hover:bg-red-55 dark:hover:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400 hover:text-red-700 transition-colors cursor-pointer" title="Hapus Data">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="px-6 py-10 text-center text-slate-500 dark:text-slate-400">
+                                    Belum ada data guru terdaftar.
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
 
             <!-- PAGINATION -->
-            <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50/20 dark:bg-slate-900/10 flex items-center justify-between gap-4">
-                <span class="text-xs text-slate-500 dark:text-slate-400">
-                    Menampilkan <span class="font-semibold text-slate-700 dark:text-slate-300">1-5</span> dari <span class="font-semibold text-slate-700 dark:text-slate-300">86</span> guru
-                </span>
-
-                <div class="flex items-center gap-1.5">
-                    <button
-                        style="width: 36px; height: 36px; border-radius: 8px;"
-                        class="inline-flex items-center justify-center text-xs font-semibold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all disabled:opacity-50 cursor-pointer shadow-sm"
-                        disabled>
-                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                    </button>
-                    <button
-                        style="width: 36px; height: 36px; border-radius: 8px;"
-                        class="inline-flex items-center justify-center text-xs font-bold text-white dark:text-slate-900 bg-slate-900 dark:bg-slate-50 shadow-sm">1</button>
-                    <button
-                        style="width: 36px; height: 36px; border-radius: 8px;"
-                        class="inline-flex items-center justify-center text-xs font-semibold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all cursor-pointer shadow-sm">2</button>
-                    <button
-                        style="width: 36px; height: 36px; border-radius: 8px;"
-                        class="inline-flex items-center justify-center text-xs font-semibold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all cursor-pointer shadow-sm">3</button>
-                    <button
-                        style="width: 36px; height: 36px; border-radius: 8px;"
-                        class="inline-flex items-center justify-center text-xs font-semibold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all cursor-pointer shadow-sm">
-                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                    </button>
-                </div>
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+                {{ $teachers->links() }}
             </div>
         </section>
-
     </div>
-
-    <!-- Client-side real-time Search & Filter Javascript -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const searchInput = document.getElementById('table-search');
-            const filterMapel = document.getElementById('filter-mapel');
-            const filterKepegawaian = document.getElementById('filter-kepegawaian');
-            const filterStatus = document.getElementById('filter-status');
-            const rows = document.querySelectorAll('.teacher-row');
-
-            function filterTable() {
-                const searchQuery = searchInput.value.toLowerCase().trim();
-                const mapelQuery = filterMapel.value.toLowerCase();
-                const kepegawaianQuery = filterKepegawaian.value.toLowerCase();
-                const statusQuery = filterStatus.value.toLowerCase();
-
-                rows.forEach(row => {
-                    const name = row.querySelector('.teacher-name').textContent.toLowerCase();
-                    const nip = row.querySelector('.teacher-nip').textContent.toLowerCase();
-                    const mapel = row.querySelector('.teacher-mapel').textContent.toLowerCase();
-                    const kepegawaian = row.querySelector('.teacher-kepegawaian').textContent.toLowerCase();
-                    const status = row.querySelector('.teacher-status').textContent.trim().toLowerCase();
-
-                    const matchesSearch = name.includes(searchQuery) || nip.includes(searchQuery) || mapel.includes(searchQuery);
-                    const matchesMapel = !mapelQuery || mapel.includes(mapelQuery);
-                    const matchesKepegawaian = !kepegawaianQuery || kepegawaian.includes(kepegawaianQuery);
-                    const matchesStatus = !statusQuery || status.includes(statusQuery);
-
-                    if (matchesSearch && matchesMapel && matchesKepegawaian && matchesStatus) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            }
-
-            if (searchInput) searchInput.addEventListener('input', filterTable);
-            if (filterMapel) filterMapel.addEventListener('change', filterTable);
-            if (filterKepegawaian) filterKepegawaian.addEventListener('change', filterTable);
-            if (filterStatus) filterStatus.addEventListener('change', filterTable);
-        });
-    </script>
 </x-admin-layout>
-
-
-
-

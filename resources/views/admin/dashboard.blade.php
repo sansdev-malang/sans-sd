@@ -53,7 +53,7 @@
                         </div>
                     </div>
                     <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">98.2%</span> tingkat kehadiran
+                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $employeeAttendancePercent ?? 0 }}%</span> tingkat kehadiran
                     </div>
                 </div>
 
@@ -75,7 +75,7 @@
                         </div>
                     </div>
                     <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">98.2%</span> tingkat kehadiran
+                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $gpkAttendancePercent ?? 0 }}%</span> tingkat kehadiran
                     </div>
                 </div>
 
@@ -97,7 +97,7 @@
                         </div>
                     </div>
                     <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">98.2%</span> tingkat kehadiran
+                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $gpqAttendancePercent ?? 0 }}%</span> tingkat kehadiran
                     </div>
                 </div>
 
@@ -125,7 +125,7 @@
                         <div>
                             <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Presensi Hari Ini</p>
                             <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                                <span class="stat-counter" data-target="96">96</span>%
+                                <span class="stat-counter" data-target="{{ $todayOverallPercent ?? 0 }}">{{ $todayOverallPercent ?? 0 }}</span>%
                             </h3>
                         </div>
                         <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
@@ -133,7 +133,11 @@
                         </div>
                     </div>
                     <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">+1.2%</span> dari kemarin
+                        @if(($diffPercent ?? 0) >= 0)
+                            <span class="text-emerald-600 dark:text-emerald-400 font-bold">+{{ $diffPercent ?? 0 }}%</span> dari kemarin
+                        @else
+                            <span class="text-red-600 dark:text-red-400 font-bold">{{ $diffPercent ?? 0 }}%</span> dari kemarin
+                        @endif
                     </div>
                 </div>
             @else

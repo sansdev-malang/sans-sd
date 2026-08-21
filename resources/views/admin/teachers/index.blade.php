@@ -122,7 +122,7 @@
             <form method="GET" action="{{ route('teachers.index') }}" class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
                 <!-- Search Box Welded with Cari Button (Premium Input Group) -->
                 <div x-data="{ searchVal: '{{ request('search') }}' }" class="flex items-center w-full md:max-w-md search-container bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-inner focus-within:ring-0 focus-within:border-slate-300 dark:focus-within:border-slate-700">
-                    <input type="text" name="search" x-model="searchVal" placeholder="Cari berdasarkan nama, email, NIP, mapel..."
+                    <input type="text" name="search" x-model="searchVal" placeholder="Cari Guru..."
                         style="border: none !important; outline: none !important; box-shadow: none !important;"
                         class="w-full h-9 px-3 text-xs bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-0">
                     
@@ -149,6 +149,15 @@
                           <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 Data</option>
                           <option value="99999" {{ request('per_page') == 99999 ? 'selected' : '' }}>Semua</option>
                       </select>
+                    <!-- Filter Posisi/Jabatan -->
+                    <select name="position" onchange="this.form.submit()"
+                        class="h-9 px-2 flex-1 sm:flex-initial sm:w-36 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer">
+                        <option value="">Semua Jabatan</option>
+                        @foreach($positions ?? [] as $pos)
+                            <option value="{{ $pos }}" {{ request('position') == $pos ? 'selected' : '' }}>{{ $pos }}</option>
+                        @endforeach
+                    </select>
+
                     <!-- Filter Status -->
                     <select name="status" onchange="this.form.submit()"
                         class="h-9 px-2 flex-1 sm:flex-initial sm:w-36 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer">

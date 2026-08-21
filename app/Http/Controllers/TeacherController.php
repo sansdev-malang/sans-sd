@@ -55,6 +55,11 @@ class TeacherController extends Controller
             $query->where('status', $request->input('status'));
         }
 
+        // Apply Position
+        if ($request->filled('position')) {
+            $query->where('position', $request->input('position'));
+        }
+
         // Calculate statistics
         $statsQuery = Employee::where('employee_type_id', $teacherType->id);
         if ($schoolUnit) {
@@ -68,13 +73,19 @@ class TeacherController extends Controller
         $certifiedCount = (clone $statsQuery)->whereNotNull('nuptk')->where('nuptk', '!=', '')->count();
         $certifiedPercent = $totalGuru > 0 ? round(($certifiedCount / $totalGuru) * 100) : 0;
 
+        $positions = (clone $statsQuery)->whereNotNull('position')
+            ->where('position', '!=', '')
+            ->distinct()
+            ->orderBy('position')
+            ->pluck('position');
+
         $perPage = $request->input('per_page', 10);
         if ($perPage === 'all') {
             $perPage = $query->count() > 0 ? $query->count() : 1;
         }
         $teachers = $query->orderBy('name', 'asc')->paginate($perPage)->withQueryString();
 
-        return view('admin.teachers.index', compact('teachers', 'totalGuru', 'guruMale', 'guruFemale', 'certifiedPercent'));
+        return view('admin.teachers.index', compact('teachers', 'totalGuru', 'guruMale', 'guruFemale', 'certifiedPercent', 'positions'));
     }
 
     /**
