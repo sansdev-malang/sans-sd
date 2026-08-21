@@ -11,13 +11,19 @@ class DashboardController extends Controller
         $user = auth()->user();
         $isAdmin = in_array($user->role, ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp', 'kepala_sekolah', 'waka']);
 
-        $employeeCount = \App\Models\Employee::where(function($q) {
+        $tukangIds = \App\Models\Employee::where(function($q) {
+            $q->whereHas('employeeType', function($subQ) {
+                $subQ->where('code', 'tukang')->orWhere('name', 'like', '%tukang%');
+            })->orWhere('position', 'like', '%tukang%');
+        })->pluck('id')->toArray();
+
+        $employeeCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where(function($q) {
             $q->whereNotIn('position', ['GPK', 'GPQ'])
               ->orWhereNull('position');
         })->count();
 
-        $gpkCount = \App\Models\Employee::where('position', 'GPK')->count();
-        $gpqCount = \App\Models\Employee::where('position', 'GPQ')->count();
+        $gpkCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where('position', 'GPK')->count();
+        $gpqCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where('position', 'GPQ')->count();
 
         $today = now()->toDateString();
         $yesterday = now()->subDay()->toDateString();
@@ -42,6 +48,11 @@ class DashboardController extends Controller
             $reports = $response->json()['data'] ?? [];
             
             foreach ($reports as $report) {
+                $empId = $report['employee']['id'] ?? null;
+                if (in_array($empId, $tukangIds)) {
+                    continue;
+                }
+
                 $pos = $report['employee']['position'] ?? $report['employee']['subject_position'] ?? null;
                 $details = $report['daily_details'] ?? [];
                 
@@ -71,7 +82,7 @@ class DashboardController extends Controller
         $gpkAttendancePercent = $gpkCount > 0 ? round(($gpkPresent / $gpkCount) * 100, 1) : 0;
         $gpqAttendancePercent = $gpqCount > 0 ? round(($gpqPresent / $gpqCount) * 100, 1) : 0;
 
-        $totalEmployeeCount = \App\Models\Employee::count();
+        $totalEmployeeCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->count();
         $todayOverallPercent = $totalEmployeeCount > 0 ? round(($totalPresentToday / $totalEmployeeCount) * 100, 1) : 0;
         $yesterdayOverallPercent = $totalEmployeeCount > 0 ? round(($totalPresentYesterday / $totalEmployeeCount) * 100, 1) : 0;
         

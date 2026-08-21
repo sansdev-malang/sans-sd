@@ -56,6 +56,11 @@ class EmployeeController extends Controller
             $query->where('status', $request->input('status'));
         }
 
+        // Position filter
+        if ($request->filled('position')) {
+            $query->where('position', $request->input('position'));
+        }
+
         $perPage = $request->input('per_page', 10);
         if ($perPage === 'all') {
             $perPage = $query->count() > 0 ? $query->count() : 1;
@@ -63,6 +68,7 @@ class EmployeeController extends Controller
 
         $employees = $query->with('employeeType')->orderBy('name', 'asc')->paginate($perPage)->withQueryString();
         $employeeTypes = \App\Models\EmployeeType::all();
+        $positions = Employee::select('position')->whereNotNull('position')->where('position', '!=', '')->distinct()->pluck('position');
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -71,7 +77,7 @@ class EmployeeController extends Controller
             ]);
         }
 
-        return view('admin.employees.index', compact('employees', 'employeeTypes'));
+        return view('admin.employees.index', compact('employees', 'employeeTypes', 'positions'));
     }
 
     /**
@@ -152,6 +158,7 @@ class EmployeeController extends Controller
             'photo' => 'nullable|image|max:2048',
             'status' => 'required|in:Active,Leave,Inactive',
             'employee_type_id' => 'required|exists:employee_types,id',
+            'unit' => 'required|string|in:paud,sd,smp',
         ], $messages);
 
         if ($request->hasFile('photo')) {
@@ -260,6 +267,7 @@ class EmployeeController extends Controller
             'photo' => 'nullable|image|max:2048',
             'status' => 'required|in:Active,Leave,Inactive',
             'employee_type_id' => 'required|exists:employee_types,id',
+            'unit' => 'required|string|in:paud,sd,smp',
         ], $messages);
 
         if ($request->hasFile('photo')) {

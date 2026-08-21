@@ -103,7 +103,7 @@ class HrdApiController extends Controller
             'zkteco_uid' => 'nullable|string|max:255',
             'photo' => 'nullable|image|max:2048',
             'status' => 'required|in:Active,Leave,Inactive',
-            'employee_type_code' => 'required|string|in:teacher,employee,management',
+            'employee_type_code' => 'required|string',
             'unit' => 'required|string|max:255',
         ]);
 
@@ -186,7 +186,7 @@ class HrdApiController extends Controller
             'zkteco_uid' => 'nullable|string|max:255',
             'photo' => 'nullable|image|max:2048',
             'status' => 'required|in:Active,Leave,Inactive',
-            'employee_type_code' => 'required|string|in:teacher,employee,management',
+            'employee_type_code' => 'required|string',
             'unit' => 'required|string|max:255',
         ]);
 
