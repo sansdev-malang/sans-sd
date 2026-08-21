@@ -133,10 +133,12 @@
                         </div>
                     </div>
                     <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                        @if(($diffPercent ?? 0) >= 0)
-                            <span class="text-emerald-600 dark:text-emerald-400 font-bold">+{{ $diffPercent ?? 0 }}%</span> dari kemarin
+                        @if(($diffPercent ?? 0) > 0)
+                            <span class="text-emerald-600 dark:text-emerald-400 font-bold">+{{ $diffPercent }}%</span> dari kemarin
+                        @elseif(($diffPercent ?? 0) < 0)
+                            <span class="text-red-600 dark:text-red-400 font-bold">{{ $diffPercent }}%</span> dari kemarin
                         @else
-                            <span class="text-red-600 dark:text-red-400 font-bold">{{ $diffPercent ?? 0 }}%</span> dari kemarin
+                            <span class="text-slate-500 dark:text-slate-400 font-bold">Sama seperti kemarin</span>
                         @endif
                     </div>
                 </div>

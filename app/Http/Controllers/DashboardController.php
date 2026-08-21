@@ -19,7 +19,7 @@ class DashboardController extends Controller
         $gpkCount = \App\Models\Employee::where('position', 'GPK')->count();
         $gpqCount = \App\Models\Employee::where('position', 'GPQ')->count();
 
-        $today = date('Y-m-d');
+        $today = now()->toDateString();
         
         $employeePresent = \App\Models\Attendance::where('date', $today)
             ->whereHas('employee', function($q) {
@@ -43,7 +43,7 @@ class DashboardController extends Controller
         $totalPresentToday = \App\Models\Attendance::where('date', $today)->count();
         $todayOverallPercent = $totalEmployeeCount > 0 ? round(($totalPresentToday / $totalEmployeeCount) * 100, 1) : 0;
 
-        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $yesterday = now()->subDay()->toDateString();
         $totalPresentYesterday = \App\Models\Attendance::where('date', $yesterday)->count();
         $yesterdayOverallPercent = $totalEmployeeCount > 0 ? round(($totalPresentYesterday / $totalEmployeeCount) * 100, 1) : 0;
         
