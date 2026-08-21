@@ -34,6 +34,7 @@ class DashboardController extends Controller
                 'X-API-TOKEN' => env('HRD_API_TOKEN')
             ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
                 'school_unit_id' => config('app.school_unit_id', 2),
+                'unit_id' => strtolower(config('app.school_unit', 'sd')),
                 'start_date' => $yesterday,
                 'end_date' => $today
             ]);
