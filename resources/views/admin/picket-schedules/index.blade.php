@@ -14,7 +14,7 @@
             </p>
         </div>
         <div class="flex items-center gap-2.5">
-            <a href="{{ route('picket-schedules.download') }}" class="h-9 px-4 inline-flex items-center gap-2 bg-indigo-650 hover:bg-indigo-700 text-white rounded-xl shadow-xs text-xs font-semibold cursor-pointer transition-all duration-150">
+            <a href="{{ route('picket-schedules.download') }}" class="h-9 px-4 inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-xs text-xs font-semibold cursor-pointer transition-all duration-150">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 Download Jadwal Piket
             </a>
@@ -288,7 +288,7 @@
                 @foreach($days as $idx => $day)
                     <button @click="mobileActiveDay = {{ $idx }}" 
                         :class="mobileActiveDay === {{ $idx }} 
-                            ? 'bg-indigo-650 text-white font-bold shadow-xs' 
+                            ? 'bg-indigo-600 text-white font-bold shadow-xs' 
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50'"
                         class="px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-all duration-150 cursor-pointer border-0">
                         {{ $day }}

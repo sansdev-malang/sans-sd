@@ -98,9 +98,9 @@
 
     <!-- TABS NAVIGATION -->
     <div class="flex border-b border-slate-200 dark:border-slate-800 gap-6 text-xs font-bold text-slate-400">
-        <button @click="tab = 'scheduler'" :class="tab === 'scheduler' ? 'text-indigo-650 dark:text-indigo-400 border-b-2 border-indigo-650 dark:border-indigo-400 pb-2.5' : 'hover:text-slate-700 dark:hover:text-slate-200 pb-2.5 cursor-pointer'" class="transition-colors">Penugasan Piket</button>
-        <button @click="tab = 'areas'" :class="tab === 'areas' ? 'text-indigo-650 dark:text-indigo-400 border-b-2 border-indigo-650 dark:border-indigo-400 pb-2.5' : 'hover:text-slate-700 dark:hover:text-slate-200 pb-2.5 cursor-pointer'" class="transition-colors">Area & Tupoksi</button>
-        <button @click="tab = 'swaps'" :class="tab === 'swaps' ? 'text-indigo-650 dark:text-indigo-400 border-b-2 border-indigo-650 dark:border-indigo-400 pb-2.5' : 'hover:text-slate-700 dark:hover:text-slate-200 pb-2.5 cursor-pointer'" class="transition-colors">
+        <button @click="tab = 'scheduler'" :class="tab === 'scheduler' ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 pb-2.5' : 'hover:text-slate-700 dark:hover:text-slate-200 pb-2.5 cursor-pointer'" class="transition-colors">Penugasan Piket</button>
+        <button @click="tab = 'areas'" :class="tab === 'areas' ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 pb-2.5' : 'hover:text-slate-700 dark:hover:text-slate-200 pb-2.5 cursor-pointer'" class="transition-colors">Area & Tupoksi</button>
+        <button @click="tab = 'swaps'" :class="tab === 'swaps' ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 pb-2.5' : 'hover:text-slate-700 dark:hover:text-slate-200 pb-2.5 cursor-pointer'" class="transition-colors">
             Persetujuan Swap 
             @php
                 $needsApprovalCount = $swaps->where('status', 'approved_by_target')->count();
@@ -517,7 +517,7 @@
                         <!-- Actions -->
                         <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
                             <button type="button" @click="showAssignModal = false" class="h-9 px-4 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold cursor-pointer transition-colors">Batal</button>
-                            <button type="submit" class="h-9 px-4 bg-indigo-650 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold cursor-pointer transition-colors shadow-2xs">Simpan Penugasan</button>
+                            <button type="submit" class="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold cursor-pointer transition-colors shadow-2xs">Simpan Penugasan</button>
                         </div>
                     </form>
                 </div>

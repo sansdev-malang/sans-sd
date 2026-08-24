@@ -117,7 +117,7 @@
         .signature-box {
             width: 35%;
             float: right;
-            text-align: right;
+            text-align: center;
             font-size: 10px;
         }
         .signature-title {

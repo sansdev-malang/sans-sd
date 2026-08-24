@@ -633,7 +633,7 @@
                     
                     @if($myPicketToday)
                         <!-- Hari Ini Ada Piket -->
-                        <div class="bg-gradient-to-br from-indigo-500/10 via-indigo-650/5 to-transparent dark:from-indigo-950/30 dark:via-indigo-900/10 dark:to-transparent border border-indigo-100 dark:border-indigo-900/40 rounded-2xl p-4 mb-4 relative overflow-hidden">
+                        <div class="bg-gradient-to-br from-indigo-500/10 via-indigo-600/5 to-transparent dark:from-indigo-950/30 dark:via-indigo-900/10 dark:to-transparent border border-indigo-100 dark:border-indigo-900/40 rounded-2xl p-4 mb-4 relative overflow-hidden">
                             <!-- Subtle decorative gradient circle -->
                             <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-indigo-500/10 rounded-full blur-xl pointer-events-none"></div>
                             
@@ -650,7 +650,7 @@
                                         {{ $myPicketToday->picketArea->name }}
                                     </h4>
                                     
-                                    <div class="flex items-center gap-1.5 font-bold text-indigo-650 dark:text-indigo-400 text-[10px] mt-1.5">
+                                    <div class="flex items-center gap-1.5 font-bold text-indigo-600 dark:text-indigo-400 text-[10px] mt-1.5">
                                         <i data-lucide="clock" class="w-3.5 h-3.5"></i>
                                         <span>{{ $myPicketToday->picketArea->duty_hours }} WIB</span>
                                     </div>
@@ -664,7 +664,7 @@
                                         @foreach(explode("\n", $myPicketToday->picketArea->jobs) as $job)
                                             @if(trim($job))
                                                 <div class="flex items-start gap-2 text-[10px] text-slate-655 dark:text-slate-400 leading-relaxed font-medium">
-                                                    <div class="w-3.5 h-3.5 rounded-md bg-indigo-50 dark:bg-indigo-955 text-indigo-650 dark:text-indigo-450 flex items-center justify-center shrink-0 shadow-3xs border border-indigo-100/10 mt-0.5">
+                                                    <div class="w-3.5 h-3.5 rounded-md bg-indigo-50 dark:bg-indigo-955 text-indigo-600 dark:text-indigo-450 flex items-center justify-center shrink-0 shadow-3xs border border-indigo-100/10 mt-0.5">
                                                         <i data-lucide="check" class="w-2.5 h-2.5 stroke-[3]"></i>
                                                     </div>
                                                     <p class="flex-1">{{ trim($job) }}</p>
