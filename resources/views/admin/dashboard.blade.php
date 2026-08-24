@@ -679,7 +679,6 @@
 
                     <!-- List Roster Jadwal Mingguan -->
                     <div class="space-y-2.5">
-                        <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2.5">Jadwal Mingguan Anda</p>
                         @forelse($myPicketSchedules as $sched)
                             @php
                                 $isToday = ($sched->day_of_week === $todayDayOfWeek);
@@ -687,12 +686,12 @@
                             <div class="p-3 border rounded-2xl transition-all duration-200 {{ $isToday ? 'bg-indigo-500/5 dark:bg-indigo-500/5 border-indigo-200 dark:border-indigo-950' : 'bg-slate-50/50 dark:bg-slate-950/30 border-slate-200/50 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-950' }}">
                                 <div class="flex items-center justify-between gap-3">
                                     <div class="flex items-center gap-2.5 min-w-0">
-                                        <span class="px-2 py-1 rounded-xl {{ $isToday ? 'bg-indigo-600 text-white font-extrabold shadow-sm' : 'bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 text-slate-700 dark:text-slate-350 font-bold' }} text-[10px] shrink-0">
+                                        <span class="px-2 py-1 rounded-xl {{ $isToday ? 'bg-indigo-600 text-white font-extrabold shadow-sm' : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold' }} text-[10px] shrink-0">
                                             {{ [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu'][$sched->day_of_week] ?? '-' }}
                                         </span>
                                         <div class="flex flex-col min-w-0">
                                             <span class="font-bold text-[11px] {{ $isToday ? 'text-indigo-950 dark:text-indigo-300' : 'text-slate-800 dark:text-slate-200' }} leading-tight break-words">{{ $sched->picketArea->name }}</span>
-                                            <span class="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5">Jam: {{ $sched->picketArea->duty_hours }}</span>
+                                            <span class="text-[9px] text-slate-500 dark:text-slate-300 mt-0.5">Jam: {{ $sched->picketArea->duty_hours }}</span>
                                         </div>
                                     </div>
                                     @if($sched->picketArea->jobs)

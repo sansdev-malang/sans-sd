@@ -335,7 +335,8 @@ class DashboardController extends Controller
             'myActiveShifts',
             'myCalendarDays',
             'myPicketSchedules',
-            'myPicketToday'
+            'myPicketToday',
+            'todayDayOfWeek'
         ));
     }
 }
