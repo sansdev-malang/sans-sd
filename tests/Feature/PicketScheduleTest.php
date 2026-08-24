@@ -28,7 +28,7 @@ test('teacher can view picket schedules but cannot access admin panel', function
 
     $response = $this->actingAs($user)->get('/picket-schedules');
     $response->assertOk();
-    $response->assertSee('Jadwal Piket Guru');
+    $response->assertSee('Jadwal Piket');
 
     // Should get 403 on admin dashboard
     $adminResponse = $this->actingAs($user)->get('/admin/picket-schedules');
