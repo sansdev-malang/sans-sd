@@ -17,13 +17,15 @@ class EmployeeFactory extends Factory
         return [
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
-            'nuptk_nip_nik' => $this->faker->numerify('################'),
+            'nik' => $this->faker->numerify('################'),
+            'nuptk' => $this->faker->numerify('################'),
+            'niy' => $this->faker->numerify('########'),
             'employee_type_id' => \App\Models\EmployeeType::firstOrCreate(
                 ['code' => 'teacher'],
                 ['name' => 'Guru', 'description' => 'Tenaga Pendidik']
             )->id,
             'unit' => $this->faker->randomElement(['paud', 'sd', 'smp']),
-            'subject_position' => $this->faker->jobTitle(),
+            'position' => $this->faker->jobTitle(),
             'gender' => $this->faker->randomElement(['Male', 'Female']),
             'employment_status' => 'PNS',
             'zkteco_uid' => $this->faker->unique()->numberBetween(1000, 9999),

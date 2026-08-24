@@ -7,6 +7,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeTypeController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ZktecoDeviceController;
+use App\Http\Controllers\PicketScheduleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -122,6 +123,15 @@ Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepal
     Route::resource('attendances', AttendanceController::class)->except(['index', 'show']);
     Route::resource('leaves', \App\Http\Controllers\LeaveRequestController::class);
     Route::resource('announcements', \App\Http\Controllers\AnnouncementController::class)->except(['index', 'show']);
+
+    // Admin picket schedule routes
+    Route::get('admin/picket-schedules', [PicketScheduleController::class, 'adminDashboard'])->name('picket-schedules.admin');
+    Route::post('admin/picket-schedules/assignment', [PicketScheduleController::class, 'storeAssignment'])->name('picket-schedules.assignment.store');
+    Route::delete('admin/picket-schedules/assignment/{id}', [PicketScheduleController::class, 'destroyAssignment'])->name('picket-schedules.assignment.destroy');
+    Route::post('admin/picket-schedules/areas', [PicketScheduleController::class, 'storeArea'])->name('picket-schedules.areas.store');
+    Route::put('admin/picket-schedules/areas/{id}', [PicketScheduleController::class, 'updateArea'])->name('picket-schedules.areas.update');
+    Route::delete('admin/picket-schedules/areas/{id}', [PicketScheduleController::class, 'destroyArea'])->name('picket-schedules.areas.destroy');
+    Route::post('admin/picket-schedules/swap/{id}/approve-admin', [PicketScheduleController::class, 'approveSwapAdmin'])->name('picket-schedules.swap.approve-admin');
 });
 
 Route::middleware(['auth', 'verified', 'role:employee,admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->group(function () {
@@ -139,6 +149,13 @@ Route::middleware(['auth', 'verified', 'role:employee,admin_sd,admin_paud,admin_
         $notification->markAsRead();
         return redirect($notification->data['url'] ?? url('/dashboard'));
     })->name('notifications.read');
+
+    // Teacher/Employee picket schedule routes
+    Route::get('picket-schedules', [PicketScheduleController::class, 'index'])->name('picket-schedules.index');
+    Route::get('picket-schedules/download', [PicketScheduleController::class, 'downloadPdf'])->name('picket-schedules.download');
+    Route::post('picket-schedules/swap', [PicketScheduleController::class, 'requestSwap'])->name('picket-schedules.swap.request');
+    Route::post('picket-schedules/swap/{id}/approve-target', [PicketScheduleController::class, 'approveSwapTarget'])->name('picket-schedules.swap.approve-target');
+    Route::post('picket-schedules/swap/{id}/reject', [PicketScheduleController::class, 'rejectSwap'])->name('picket-schedules.swap.reject');
 });
 
 // REST API for HRD Central Aggregator Integration

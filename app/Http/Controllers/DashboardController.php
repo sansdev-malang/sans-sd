@@ -160,6 +160,21 @@ class DashboardController extends Controller
             }
         }
 
+        // Fetch picket schedules for employee
+        $myPicketSchedules = collect();
+        $myPicketToday = null;
+        if (!$isAdmin && $user->employee_id && config('app.school_unit') === 'sd') {
+            $myPicketSchedules = \App\Models\PicketSchedule::where('employee_id', $user->employee_id)
+                ->with('picketArea')
+                ->orderBy('day_of_week')
+                ->get();
+
+            $todayDayOfWeek = now()->dayOfWeek; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+            if ($todayDayOfWeek >= 1 && $todayDayOfWeek <= 6) {
+                $myPicketToday = $myPicketSchedules->firstWhere('day_of_week', $todayDayOfWeek);
+            }
+        }
+
         // Prepare SVG Chart Points from HRD API daily_details
         $chartPoints = [];
         $dailyDetails = $myReport['daily_details'] ?? [];
@@ -318,7 +333,9 @@ class DashboardController extends Controller
             'chartPoints',
             'totalLateDays',
             'myActiveShifts',
-            'myCalendarDays'
+            'myCalendarDays',
+            'myPicketSchedules',
+            'myPicketToday'
         ));
     }
 }

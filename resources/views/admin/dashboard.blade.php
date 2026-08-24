@@ -555,7 +555,7 @@
                                     <h4 class="text-xs font-semibold {{ $announcement->category == 'penting' ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-50' }}">
                                         <a href="{{ route('announcements.show', $announcement) }}" class="hover:underline">{{ $announcement->title }}</a>
                                     </h4>
-                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{{ Str::limit(strip_tags($announcement->content), 100) }}</p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{{ Str::limit(html_entity_decode(strip_tags(str_replace('&nbsp;', ' ', $announcement->content)), ENT_QUOTES, 'UTF-8'), 100) }}</p>
                                     <div class="flex items-center gap-2 mt-1">
                                         <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ $announcement->created_at->translatedFormat('d M Y, H:i') }}</span>
                                         @if($announcement->attachment)
@@ -625,8 +625,56 @@
 
             </div>
 
+            <!-- Jadwal Piket Saya Card (Hanya untuk Pegawai Biasa di SD) -->
+            @if(!$isAdmin && config('app.school_unit') === 'sd')
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4 font-nasalization">Jadwal Piket Saya</h3>
+                    
+                    @if($myPicketToday)
+                        <!-- Hari Ini Ada Piket -->
+                        <div class="bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 rounded-xl p-3.5 mb-4">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-400 border border-indigo-200/20 uppercase tracking-wider animate-pulse">Hari Ini</span>
+                                <span class="text-xs font-bold text-slate-800 dark:text-slate-200">{{ $myPicketToday->picketArea->name }}</span>
+                            </div>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                                <p class="flex items-center gap-1.5 font-semibold text-indigo-650 dark:text-indigo-400">
+                                    <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                                    Jam Tugas: {{ $myPicketToday->picketArea->duty_hours }} WIB
+                                </p>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- List Roster Jadwal Mingguan -->
+                    <div class="space-y-2">
+                        <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Jadwal Mingguan Anda</p>
+                        @forelse($myPicketSchedules as $sched)
+                            <div class="flex items-center justify-between p-2.5 bg-slate-50/50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-850 rounded-xl text-xs">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 text-slate-700 dark:text-slate-350 font-bold text-[10px]">
+                                        {{ [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu'][$sched->day_of_week] ?? '-' }}
+                                    </span>
+                                    <span class="font-bold text-slate-800 dark:text-slate-250 truncate max-w-[120px]">{{ $sched->picketArea->name }}</span>
+                                </div>
+                                <span class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{{ $sched->picketArea->duty_hours }}</span>
+                            </div>
+                        @empty
+                            @if(!$myPicketToday)
+                                <div class="text-xs text-slate-500 text-center py-6">
+                                    <i data-lucide="calendar" class="w-6 h-6 text-slate-300 dark:text-slate-750 mx-auto mb-2"></i>
+                                    Anda tidak memiliki jadwal piket minggu ini.
+                                </div>
+                            @endif
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Recent Activity Logs -->
-            <div class="animate-card lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+            <div class="animate-card {{ ($isAdmin || config('app.school_unit') !== 'sd') ? 'lg:col-span-2' : 'lg:col-span-1' }} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                 @if($isAdmin)
                     <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">Log Aktivitas Terbaru</h3>
                      <div class="space-y-3.5">
