@@ -210,7 +210,7 @@
         </div>
         <div class="signature-box">
             <div class="signature-title">Mengetahui,</div>
-            <div>Kepala Sekolah SD SANS</div>
+            <div>Kepala Sekolah</div>
             <div style="margin-top: 40px; font-weight: bold;">( ___________________________ )</div>
         </div>
         <div class="clear"></div>

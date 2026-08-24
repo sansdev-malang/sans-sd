@@ -275,7 +275,7 @@
                     </div>
                     <div class="text-right flex flex-col justify-end">
                         <p class="font-bold text-slate-800">Mengetahui,</p>
-                        <p class="font-bold text-slate-900 mt-12">Kepala Sekolah SD SANS</p>
+                        <p class="font-bold text-slate-900 mt-12">Kepala Sekolah</p>
                     </div>
                 </div>
             </div>
