@@ -1,5 +1,5 @@
 <x-admin-layout>
-@section('title', 'Kelola Piket')
+@section('title', 'Manajemen Piket')
 <div class="p-6 space-y-6" x-data="{
     tab: 'scheduler',
     showAreaModal: false,
@@ -85,7 +85,7 @@
     <!-- HEADER SECTION -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
-            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Manajemen Piket Guru & Karyawan</h3>
+            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Manajemen Piket</h3>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Konfigurasi jadwal mingguan, tupoksi area, dan verifikasi tukar piket</p>
         </div>
         <div class="flex items-center gap-2">

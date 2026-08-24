@@ -1,5 +1,5 @@
 <x-admin-layout>
-@section('title', 'Jadwal Piket Guru')
+@section('title', 'Jadwal Piket')
 <div class="p-6 space-y-6" x-data="{
     searchQuery: '',
     showSwapModal: false,
@@ -8,7 +8,7 @@
     <!-- HEADER SECTION (Hidden during print) -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-5 print:hidden">
         <div>
-            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Jadwal Piket Guru & Karyawan</h3>
+            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Jadwal Piket</h3>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 Berlaku Periode: <span class="font-semibold text-indigo-600 dark:text-indigo-400">Agustus - Desember 2026</span>
             </p>
