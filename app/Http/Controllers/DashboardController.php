@@ -163,13 +163,13 @@ class DashboardController extends Controller
         // Fetch picket schedules for employee
         $myPicketSchedules = collect();
         $myPicketToday = null;
+        $todayDayOfWeek = now()->dayOfWeek; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
         if (!$isAdmin && $user->employee_id && config('app.school_unit') === 'sd') {
             $myPicketSchedules = \App\Models\PicketSchedule::where('employee_id', $user->employee_id)
                 ->with('picketArea')
                 ->orderBy('day_of_week')
                 ->get();
 
-            $todayDayOfWeek = now()->dayOfWeek; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
             if ($todayDayOfWeek >= 1 && $todayDayOfWeek <= 6) {
                 $myPicketToday = $myPicketSchedules->firstWhere('day_of_week', $todayDayOfWeek);
             }
