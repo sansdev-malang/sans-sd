@@ -76,8 +76,8 @@
                 </a>
                 @endif
                 @if($isAdmin)
-                <a href="{{ route('coming-soon') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg
-                    {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
+                <a href="{{ route('siswa') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg
+                    {{ Request::routeIs('siswa') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
                     text-xs relative group">
                     <div class="flex items-center gap-3">
                         <i data-lucide="users" class="menu-icon w-4 h-4"></i>
@@ -103,8 +103,8 @@
                 </a>
                 @endif
                 @if($isAdmin)
-                <a href="{{ route('coming-soon') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg 
-                    {{ Request::routeIs('coming-soon') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
+                <a href="{{ route('rombel') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg 
+                    {{ Request::routeIs('rombel') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
                     text-xs font-medium relative group">
                     <div class="flex items-center gap-3">
                         <i data-lucide="university" class="menu-icon w-4 h-4"></i>

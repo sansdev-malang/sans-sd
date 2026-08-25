@@ -18,6 +18,17 @@
             </div>
         </section>
 
+        <!-- DEVELOPMENT BANNER -->
+        <div class="bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/50 rounded-xl p-4 flex items-start gap-3 shadow-xs">
+            <div class="p-1.5 bg-indigo-600 text-white rounded-lg shrink-0">
+                <i data-lucide="wrench" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <h4 class="text-xs font-bold text-indigo-950 dark:text-indigo-200">Halaman Laporan Presensi Sedang Dalam Pengembangan</h4>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">Halaman analisis dan rekapitulasi data laporan absensi bulanan ini saat ini masih dalam tahap pengembangan aktif oleh tim pengembang SANS Malang dan akan terhubung secara penuh dalam pembaruan berikutnya.</p>
+            </div>
+        </div>
+
         <!-- Filters -->
         <section class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
