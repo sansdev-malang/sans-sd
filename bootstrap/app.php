@@ -22,6 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/v1/hrd/*',
         ]);
+
+        $middleware->encryptCookies(except: [
+            'download_token',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
