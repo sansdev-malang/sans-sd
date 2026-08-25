@@ -645,7 +645,7 @@ class EmployeeController extends Controller
 
         foreach ($employees as $employee) {
             \App\Models\User::create([
-                'name' => $employee->name,
+                'name' => $employee->raw_name,
                 'email' => $employee->email,
                 'password' => bcrypt('sans1234'),
                 'role' => 'employee',
@@ -668,14 +668,14 @@ class EmployeeController extends Controller
         }
 
         \App\Models\User::create([
-            'name' => $employee->name,
+            'name' => $employee->raw_name,
             'email' => $employee->email,
             'password' => bcrypt('sans1234'),
             'role' => 'employee',
             'employee_id' => $employee->id,
         ]);
 
-        return back()->with('success', "Akun untuk {$employee->name} berhasil dibuat dengan password default: sans1234");
+        return back()->with('success', "Akun untuk {$employee->raw_name} berhasil dibuat dengan password default: sans1234");
     }
 
     /**
