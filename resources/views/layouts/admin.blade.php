@@ -656,6 +656,9 @@
                         const token = 'dt_' + Date.now();
                         
                         window.showToastNotification('Menyiapkan file ekspor... Berkas Anda akan terunduh sebentar lagi.', 'info', token);
+                        if (typeof NProgress !== 'undefined') {
+                            NProgress.start();
+                        }
                         
                         const url = new URL(link.href, window.location.origin);
                         url.searchParams.set('download_token', token);
@@ -667,6 +670,9 @@
                             const cookieVal = getCookie('download_token');
                             if (cookieVal === token) {
                                 window.dispatchEvent(new CustomEvent('toast-dismiss-dispatch', { detail: { token } }));
+                                if (typeof NProgress !== 'undefined') {
+                                    NProgress.done();
+                                }
                                 deleteCookie('download_token');
                                 clearInterval(intervalId);
                             }
@@ -675,6 +681,9 @@
                         setTimeout(function () {
                             clearInterval(intervalId);
                             window.dispatchEvent(new CustomEvent('toast-dismiss-dispatch', { detail: { token } }));
+                            if (typeof NProgress !== 'undefined') {
+                                NProgress.done();
+                            }
                         }, 25000);
                         
                         return;
