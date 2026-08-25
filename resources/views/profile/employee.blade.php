@@ -244,7 +244,7 @@
                                             <div class="md:col-span-2">
                                                 <label
                                                     class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Nama
-                                                    Lengkap</label>
+                                                    Lengkap <span class="text-[9px] text-slate-400 dark:text-slate-500 normal-case">(Tanpa Gelar)</span></label>
                                                 <input type="text" name="name"
                                                     value="{{ old('name', $employee->raw_name) }}" required
                                                     class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-100 dark:focus:ring-slate-800">
