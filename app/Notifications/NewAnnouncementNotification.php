@@ -44,7 +44,7 @@ class NewAnnouncementNotification extends Notification
             'title' => $this->announcement->title,
             'category' => $this->announcement->category,
             'target_audience' => $this->announcement->target_audience,
-            'message' => 'Ada pengumuman baru: ' . $this->announcement->title,
+            'message' => $this->announcement->title,
             'url' => route('announcements.show', $this->announcement->id),
         ];
     }

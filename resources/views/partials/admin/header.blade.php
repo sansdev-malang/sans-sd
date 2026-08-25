@@ -93,7 +93,7 @@
                                         <i data-lucide="{{ $icon }}" class="w-4 h-4"></i>
                                     </div>
                                     <div class="space-y-0.5 overflow-hidden">
-                                        <p class="font-bold text-slate-800 dark:text-slate-200 truncate">{{ $notification->data['message'] ?? 'Notifikasi Baru' }}</p>
+                                        <p class="font-bold text-slate-800 dark:text-slate-200 truncate">{{ str_replace('Ada pengumuman baru: ', '', $notification->data['message'] ?? 'Notifikasi Baru') }}</p>
                                         <p class="text-slate-500 dark:text-slate-400 text-[10px]">{{ $notification->created_at->diffForHumans() }}</p>
                                     </div>
                                 </a>
