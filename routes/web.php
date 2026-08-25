@@ -117,6 +117,8 @@ Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepal
     Route::post('employees/generate-accounts', [EmployeeController::class, 'generateAccounts'])->name('employees.generate-accounts');
     Route::post('employees/{employee}/generate-account', [EmployeeController::class, 'generateSingleAccount'])->name('employees.generate-account');
     Route::post('employees/sync-cache', [EmployeeController::class, 'syncCache'])->name('employees.sync-cache');
+    Route::get('employees/export/excel', [EmployeeController::class, 'exportExcel'])->name('employees.export.excel');
+    Route::get('employees/export/pdf', [EmployeeController::class, 'exportPdf'])->name('employees.export.pdf');
     Route::resource('employees', EmployeeController::class);
     Route::resource('employee-types', EmployeeTypeController::class);
     Route::resource('leave-types', \App\Http\Controllers\LeaveTypeController::class);

@@ -713,6 +713,159 @@ class EmployeeController extends Controller
             return back()->with('error', 'Gagal menghubungkan ke HRD Pusat: ' . $e->getMessage());
         }
     }
+
+    private function getFilteredEmployees(Request $request)
+    {
+        $query = Employee::query();
+
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('nik', 'like', "%{$search}%")
+                  ->orWhere('nuptk', 'like', "%{$search}%");
+            });
+        }
+
+        // Type filter
+        if ($request->filled('type')) {
+            $typeVal = $request->input('type');
+            if (is_numeric($typeVal)) {
+                $query->where('employee_type_id', $typeVal);
+            } else {
+                $query->whereHas('employeeType', function ($q) use ($typeVal) {
+                    $q->where('code', $typeVal)->orWhere('name', $typeVal);
+                });
+            }
+        }
+
+        // Unit filter
+        $schoolUnit = config('app.school_unit');
+        if ($schoolUnit) {
+            $query->where('unit', $schoolUnit);
+        } elseif ($request->filled('unit')) {
+            $query->where('unit', $request->input('unit'));
+        }
+
+        // Status filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        // Position filter
+        if ($request->filled('position')) {
+            $query->where('position', $request->input('position'));
+        }
+
+        return $query->with('employeeType')->orderBy('name', 'asc')->get();
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $employees = $this->getFilteredEmployees($request);
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $headers = [
+            'No', 'Unit Sekolah', 'Gelar Depan', 'Nama Lengkap (Tanpa Gelar)', 'Gelar Belakang',
+            'Email', 'Tipe Pegawai', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir',
+            'NIK', 'NIY', 'NUPTK', 'No UKG', 'NRG', 'Pangkat/Golongan',
+            'Pendidikan Terakhir', 'Jurusan', 'Jabatan Utama', 'Jabatan Tambahan',
+            'Tanggal Mulai Tugas', 'Status Kepegawaian', 'Tanggal Diangkat',
+            'Tanggal SK Terakhir', 'Nomor SK Terakhir', 'Masa Kerja Golongan',
+            'Alamat', 'No. HP/WA', 'Catatan Tambahan', 'ID ZKTeco (PIN)', 'Status Keaktifan'
+        ];
+
+        foreach ($headers as $colIndex => $header) {
+            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1);
+            $sheet->setCellValue($colLetter . '1', $header);
+        }
+
+        $row = 2;
+        $no = 1;
+        foreach ($employees as $emp) {
+            $nameWithoutTitles = $emp->raw_name ?? $emp->name;
+            $genderText = $emp->gender === 'Female' ? 'Perempuan' : 'Laki-laki';
+            
+            $statusText = 'Aktif';
+            if ($emp->status == 'Leave') $statusText = 'Cuti';
+            if ($emp->status == 'Inactive') $statusText = 'Nonaktif';
+
+            $sheet->setCellValue('A' . $row, $no++);
+            $sheet->setCellValue('B' . $row, $emp->unit ?? '');
+            $sheet->setCellValue('C' . $row, $emp->front_title ?? '');
+            $sheet->setCellValue('D' . $row, $nameWithoutTitles);
+            $sheet->setCellValue('E' . $row, $emp->back_title ?? '');
+            $sheet->setCellValue('F' . $row, $emp->email ?? '');
+            $sheet->setCellValue('G' . $row, $emp->employeeType->name ?? '');
+            $sheet->setCellValue('H' . $row, $genderText);
+            $sheet->setCellValue('I' . $row, $emp->birth_place ?? '');
+            $sheet->setCellValue('J' . $row, $emp->birth_date ?? '');
+            $sheet->setCellValue('K' . $row, $emp->nik ?? '');
+            $sheet->setCellValue('L' . $row, $emp->niy ?? '');
+            $sheet->setCellValue('M' . $row, $emp->nuptk ?? '');
+            $sheet->setCellValue('N' . $row, $emp->no_ukg ?? '');
+            $sheet->setCellValue('O' . $row, $emp->nrg ?? '');
+            $sheet->setCellValue('P' . $row, $emp->pangkat_golongan ?? '');
+            $sheet->setCellValue('Q' . $row, $emp->last_education ?? '');
+            $sheet->setCellValue('R' . $row, $emp->major ?? '');
+            $sheet->setCellValue('S' . $row, $emp->position ?? '');
+            $sheet->setCellValue('T' . $row, $emp->additional_position ?? '');
+            $sheet->setCellValue('U' . $row, $emp->task_start_date ?? '');
+            $sheet->setCellValue('V' . $row, $emp->employment_status ?? '');
+            $sheet->setCellValue('W' . $row, $emp->appointment_date ?? '');
+            $sheet->setCellValue('X' . $row, $emp->last_sk_date ?? '');
+            $sheet->setCellValue('Y' . $row, $emp->last_sk_number ?? '');
+            $sheet->setCellValue('Z' . $row, $emp->work_period ?? '');
+            $sheet->setCellValue('AA' . $row, $emp->address ?? '');
+            $sheet->setCellValue('AB' . $row, $emp->phone ?? '');
+            $sheet->setCellValue('AC' . $row, $emp->notes ?? '');
+            $sheet->setCellValue('AD' . $row, $emp->zkteco_uid ?? '');
+            $sheet->setCellValue('AE' . $row, $statusText);
+            $row++;
+        }
+
+        foreach (range(1, count($headers)) as $colIndex) {
+            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
+            $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+        }
+
+        $unitName = strtoupper(config('app.school_unit', 'SD'));
+        $fileName = 'Data Pegawai - ' . $unitName . '.xlsx';
+
+        if ($request->filled('download_token')) {
+            setcookie('download_token', $request->query('download_token'), time() + 60, '/', '', false, false);
+        }
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="'. $fileName .'"');
+        header('Cache-Control: max-age=0');
+        
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
+    }
+
+    public function exportPdf(Request $request)
+    {
+        ini_set('memory_limit', '512M');
+        $employees = $this->getFilteredEmployees($request);
+        $unitName = strtoupper(config('app.school_unit', 'SD'));
+        $fileName = 'Data Pegawai - ' . $unitName . '.pdf';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.employees.pdf', [
+            'employees' => $employees,
+            'unitName' => $unitName
+        ])->setPaper('a4', 'landscape');
+
+        $response = $pdf->download($fileName);
+        if ($request->filled('download_token')) {
+            $response->headers->setCookie(cookie('download_token', $request->query('download_token'), 1, '/', null, false, false));
+        }
+        return $response;
+    }
 }
 
 
