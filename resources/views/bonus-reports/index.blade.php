@@ -192,7 +192,7 @@
                                     $detail = $report['daily_details'][$dateStr] ?? null;
                                 @endphp
                                 <td class="py-1 px-1 text-center border-r border-slate-50 dark:border-slate-800/30">
-                                    @if($detail)
+                                    @if($detail && !in_array($detail['status'] ?? '', ['Off', 'Libur']))
                                         @if($detail['bonus_nominal'] > 0)
                                             @php 
                                                 $nominal = $detail['bonus_nominal'];
@@ -202,13 +202,15 @@
                                                 {{ $shortNominal }}
                                             </div>
                                         @else
-                                            <div class="mx-auto flex items-center justify-center text-slate-300 dark:text-slate-600 font-bold text-xs" title="Tidak ada bonus">-</div>
+                                            <div class="mx-auto w-9 h-6 flex items-center justify-center bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold text-[10px] rounded shadow-sm border border-red-200 dark:border-red-800/50" title="Tidak ada bonus">
+                                                0K
+                                            </div>
                                         @endif
                                     @else
                                         @if($date->isSunday())
-                                            <div class="mx-auto flex items-center justify-center text-red-200 dark:text-red-900/30 font-bold text-xs" title="Hari Minggu">-</div>
+                                            <div class="mx-auto flex items-center justify-center text-red-400/80 dark:text-red-900/50 font-bold text-[10px]" title="Hari Minggu (OFF)">OFF</div>
                                         @else
-                                            <div class="mx-auto flex items-center justify-center text-slate-100 dark:text-slate-800/50 font-bold text-[10px]">-</div>
+                                            <div class="mx-auto flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold text-[10px]" title="Jadwal Off/Libur">OFF</div>
                                         @endif
                                     @endif
                                 </td>

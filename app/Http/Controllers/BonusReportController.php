@@ -219,10 +219,20 @@ class BonusReportController extends Controller
                         $detail = $report['daily_details'][$dateStr] ?? null;
                         $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIdx);
 
-                        if ($detail && isset($detail['bonus_nominal']) && $detail['bonus_nominal'] > 0) {
-                            $sheet->setCellValue($colLetter . $row, $detail['bonus_nominal']);
+                        if ($detail) {
+                            if (isset($detail['bonus_nominal']) && $detail['bonus_nominal'] > 0) {
+                                $sheet->setCellValue($colLetter . $row, $detail['bonus_nominal']);
+                            } else {
+                                $status = $detail['status'] ?? '';
+                                if (in_array($status, ['Off', 'Libur'])) {
+                                    $sheet->setCellValue($colLetter . $row, 'OFF');
+                                } else {
+                                    $sheet->setCellValue($colLetter . $row, '0K');
+                                    $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED));
+                                }
+                            }
                         } else {
-                            $sheet->setCellValue($colLetter . $row, '-');
+                            $sheet->setCellValue($colLetter . $row, 'OFF');
                         }
 
                         // Align center
