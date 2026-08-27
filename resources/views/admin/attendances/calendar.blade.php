@@ -173,8 +173,11 @@
                     </div>
                     
                     <!-- Kanan: Berjalan -->
-                    <div class="calendar-header-right flex flex-col sm:flex-row items-end sm:items-center gap-3 w-full sm:w-auto">
-                        <div class="text-right hidden md:block">
+                    <div class="calendar-header-right flex items-center md:justify-end gap-2 w-full sm:w-auto">
+                        <span class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/30 flex items-center justify-center shrink-0 md:hidden">
+                            <i data-lucide="wallet" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
+                        </span>
+                        <div class="text-left md:text-right">
                             <span class="block text-sm font-extrabold text-slate-900 dark:text-slate-50 leading-tight">Rp {{ number_format($ongoingBonus, 0, ',', '.') }}</span>
                             <span class="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mt-0.5">Berjalan (26-{{ $selectedMonth->copy()->endOfMonth()->format('d') }} {{ $selectedMonth->translatedFormat('M') }})</span>
                         </div>
