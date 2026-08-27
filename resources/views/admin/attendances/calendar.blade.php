@@ -90,12 +90,24 @@
             $report = $reports->first(); 
             $dailyDetails = $report['daily_details'] ?? [];
             
-            $totalBonus = 0;
-            foreach ($dailyDetails as $detail) {
-                $totalBonus += $detail['calculated_bonus'] ?? 0;
-            }
-
             \Carbon\Carbon::setLocale('id');
+            $selectedMonth = \Carbon\Carbon::createFromFormat('Y-m', $month ?? date('Y-m'));
+            $cutOffStart = $selectedMonth->copy()->subMonthNoOverflow()->setDay(26)->format('Y-m-d');
+            $cutOffEnd = $selectedMonth->copy()->setDay(25)->format('Y-m-d');
+            
+            $ongoingStart = $selectedMonth->copy()->setDay(26)->format('Y-m-d');
+            $ongoingEnd = $selectedMonth->copy()->endOfMonth()->format('Y-m-d');
+            
+            $cutoffBonus = 0;
+            $ongoingBonus = 0;
+            
+            foreach ($dailyDetails as $dateStr => $detail) {
+                if ($dateStr >= $cutOffStart && $dateStr <= $cutOffEnd) {
+                    $cutoffBonus += $detail['calculated_bonus'] ?? 0;
+                } elseif ($dateStr >= $ongoingStart && $dateStr <= $ongoingEnd) {
+                    $ongoingBonus += $detail['calculated_bonus'] ?? 0;
+                }
+            }
 
             $calendarStart = $start->copy()->startOfMonth();
             $months = [
@@ -142,27 +154,31 @@
         <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="md:col-span-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[18px] shadow-sm w-full p-3 sm:p-4">
                 <div class="calendar-header-container pb-3 border-b border-slate-200 dark:border-slate-800">
-                    <!-- Kiri: Akumulasi Bonus -->
                     <div class="calendar-header-left flex items-center gap-2">
                         <span class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 flex items-center justify-center shrink-0">
                             <i data-lucide="banknote" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
                         </span>
                         <div class="text-left">
-                            <span class="block text-sm font-extrabold text-slate-900 dark:text-slate-50 leading-tight">Rp {{ number_format($totalBonus, 0, ',', '.') }}</span>
-                            <span class="block text-xs text-slate-400 dark:text-slate-500 tracking-wider leading-none mt-0.5">Akumulasi Bonus</span>
+                            <span class="block text-sm font-extrabold text-slate-900 dark:text-slate-50 leading-tight">Rp {{ number_format($cutoffBonus, 0, ',', '.') }}</span>
+                            <span class="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mt-0.5">Akumulasi Cut-off (26 {{ $selectedMonth->copy()->subMonthNoOverflow()->translatedFormat('M') }} - 25 {{ $selectedMonth->translatedFormat('M') }})</span>
                         </div>
                     </div>
                     
-                    <!-- Tengah: Bulan Tahun -->
-                    <div class="calendar-header-center">
-                        <h3 class="text-base md:text-lg font-bold text-slate-900 dark:text-slate-50 leading-tight">{{ $startMonthName }} {{ $startYear }}</h3>
-                        <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Tampilan dua bulan kalender absensi</p>
+                    <!-- Tengah: Filter Periode -->
+                    <div class="calendar-header-center flex flex-col items-center">
+                        <form method="GET" action="{{ route('attendances.index') }}" class="m-0 w-full sm:w-auto">
+                            <input type="month" name="month" lang="id-ID" value="{{ $month }}" onchange="this.form.submit()" class="w-full sm:w-auto h-9 px-3.5 text-sm font-bold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-slate-700 cursor-pointer text-center">
+                        </form>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">Tampilan dua bulan kalender absensi</p>
                     </div>
                     
-                    <!-- Kanan: Filter Periode -->
-                    <form method="GET" action="{{ route('attendances.index') }}" class="calendar-header-right m-0 w-full sm:w-auto">
-                        <input type="month" name="month" lang="id-ID" value="{{ $month }}" max="{{ now()->format('Y-m') }}" onchange="this.form.submit()" class="w-full sm:w-auto h-9 px-3.5 text-xs font-medium bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-slate-700 cursor-pointer">
-                    </form>
+                    <!-- Kanan: Berjalan -->
+                    <div class="calendar-header-right flex flex-col sm:flex-row items-end sm:items-center gap-3 w-full sm:w-auto">
+                        <div class="text-right hidden md:block">
+                            <span class="block text-sm font-extrabold text-slate-900 dark:text-slate-50 leading-tight">Rp {{ number_format($ongoingBonus, 0, ',', '.') }}</span>
+                            <span class="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mt-0.5">Berjalan (26-{{ $selectedMonth->copy()->endOfMonth()->format('d') }} {{ $selectedMonth->translatedFormat('M') }})</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mt-3 overflow-hidden rounded-[18px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">

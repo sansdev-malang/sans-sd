@@ -119,7 +119,17 @@ class AttendanceController extends Controller
                 $prevBonusJson = $prevBonusResponse->json();
                 $previousBonusReports = collect($prevBonusJson['data'] ?? []);
 
-                $reports = $reports->map(function ($report) use ($bonusReports, $previousBonusReports) {
+                $nextMonth = $monthCarbon->copy()->addMonthNoOverflow()->format('Y-m');
+                $nextBonusResponse = \Illuminate\Support\Facades\Http::withHeaders([
+                    'X-API-TOKEN' => env('HRD_API_TOKEN')
+                ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                    'school_unit_id' => config('app.school_unit_id', 3),
+                    'month' => $nextMonth
+                ]);
+                $nextBonusJson = $nextBonusResponse->json();
+                $nextBonusReports = collect($nextBonusJson['data'] ?? []);
+
+                $reports = $reports->map(function ($report) use ($bonusReports, $previousBonusReports, $nextBonusReports) {
                     $empId = $report['employee']['id'] ?? 0;
 
                     $currentBonus = $bonusReports->first(function ($br) use ($empId) {
@@ -130,12 +140,19 @@ class AttendanceController extends Controller
                         return ($br['employee']['id'] ?? 0) == $empId;
                     });
 
+                    $nextBonus = $nextBonusReports->first(function ($br) use ($empId) {
+                        return ($br['employee']['id'] ?? 0) == $empId;
+                    });
+
                     $bonusDetails = [];
                     if ($prevBonus && isset($prevBonus['daily_details'])) {
                         $bonusDetails = $prevBonus['daily_details'];
                     }
                     if ($currentBonus && isset($currentBonus['daily_details'])) {
                         $bonusDetails = $bonusDetails + $currentBonus['daily_details'];
+                    }
+                    if ($nextBonus && isset($nextBonus['daily_details'])) {
+                        $bonusDetails = $bonusDetails + $nextBonus['daily_details'];
                     }
 
                     if (isset($report['daily_details'])) {
