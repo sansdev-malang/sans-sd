@@ -106,6 +106,7 @@ class AttendanceController extends Controller
                     'X-API-TOKEN' => config('app.hrd_api_token')
                 ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                     'school_unit_id' => config('app.school_unit_id', 2),
+                    'unit_id' => strtolower($schoolUnit),
                     'month' => $month
                 ]);
                 $bonusJson = $bonusResponse->json();
@@ -123,6 +124,7 @@ class AttendanceController extends Controller
                     'X-API-TOKEN' => config('app.hrd_api_token')
                 ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                     'school_unit_id' => config('app.school_unit_id', 2),
+                    'unit_id' => strtolower($schoolUnit),
                     'month' => $previousMonth
                 ]);
                 $prevBonusJson = $prevBonusResponse->json();
@@ -132,7 +134,8 @@ class AttendanceController extends Controller
                 $nextBonusResponse = \Illuminate\Support\Facades\Http::withHeaders([
                     'X-API-TOKEN' => config('app.hrd_api_token')
                 ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
-                    'school_unit_id' => config('app.school_unit_id', 3),
+                    'school_unit_id' => config('app.school_unit_id', 2),
+                    'unit_id' => strtolower($schoolUnit),
                     'month' => $nextMonth
                 ]);
                 $nextBonusJson = $nextBonusResponse->json();
