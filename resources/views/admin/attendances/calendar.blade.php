@@ -179,7 +179,7 @@
                             <i data-lucide="wallet" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
                         </span>
                         <div class="text-left md:text-right">
-                            <span class="block text-sm font-extrabold text-slate-900 dark:text-slate-50 leading-tight">Rp {{ number_format($ongoingBonus, 0, ',', '.') }}</span>
+                            <span class="block text-sm font-extrabold text-slate-900 dark:text-slate-50 leading-tight">Rp {{ number_format($cutoffBonus + $ongoingBonus, 0, ',', '.') }}</span>
                             <span class="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mt-0.5">Berjalan ({{ $cutoffDateVal + 1 }} {{ $selectedMonth->copy()->subMonthNoOverflow()->translatedFormat('M') }} - {{ $selectedMonth->copy()->endOfMonth()->format('d') }} {{ $selectedMonth->translatedFormat('M') }})</span>
                         </div>
                     </div>
