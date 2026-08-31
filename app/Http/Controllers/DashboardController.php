@@ -37,7 +37,7 @@ class DashboardController extends Controller
         try {
             $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
             $response = \Illuminate\Support\Facades\Http::withHeaders([
-                'X-API-TOKEN' => env('HRD_API_TOKEN')
+                'X-API-TOKEN' => config('app.hrd_api_token')
             ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
                 'school_unit_id' => config('app.school_unit_id', 2),
                 'unit_id' => strtolower(config('app.school_unit', 'sd')),

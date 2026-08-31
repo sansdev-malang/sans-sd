@@ -20,7 +20,7 @@ class PayslipController extends Controller
 
         try {
             $response = Http::timeout(10)->withHeaders([
-                'X-API-TOKEN' => env('HRD_API_TOKEN')
+                'X-API-TOKEN' => config('app.hrd_api_token')
             ])->get(rtrim($hrdUrl, '/') . '/api/payslips', [
                 'school_unit_id' => config('app.school_unit_id', 2),
                 'month' => $month

@@ -43,7 +43,7 @@ class AttendanceController extends Controller
             }
 
             $response = \Illuminate\Support\Facades\Http::withHeaders([
-                'X-API-TOKEN' => env('HRD_API_TOKEN')
+                'X-API-TOKEN' => config('app.hrd_api_token')
             ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', array_merge($apiParams, [
                 'school_unit_id' => config('app.school_unit_id', 2)
             ]));
@@ -58,7 +58,7 @@ class AttendanceController extends Controller
 
             if ($user && $user->role === 'employee' && $user->employee_id) {
                 $previousResponse = \Illuminate\Support\Facades\Http::withHeaders([
-                    'X-API-TOKEN' => env('HRD_API_TOKEN')
+                    'X-API-TOKEN' => config('app.hrd_api_token')
                 ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
                     'school_unit_id' => config('app.school_unit_id', 2),
                     'month' => $previousMonth,
@@ -102,7 +102,7 @@ class AttendanceController extends Controller
 
                 // Fetch bonus reports for both current and previous month from central HRD
                 $bonusResponse = \Illuminate\Support\Facades\Http::withHeaders([
-                    'X-API-TOKEN' => env('HRD_API_TOKEN')
+                    'X-API-TOKEN' => config('app.hrd_api_token')
                 ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                     'school_unit_id' => config('app.school_unit_id', 2),
                     'month' => $month
@@ -119,7 +119,7 @@ class AttendanceController extends Controller
                 }
 
                 $prevBonusResponse = \Illuminate\Support\Facades\Http::withHeaders([
-                    'X-API-TOKEN' => env('HRD_API_TOKEN')
+                    'X-API-TOKEN' => config('app.hrd_api_token')
                 ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                     'school_unit_id' => config('app.school_unit_id', 2),
                     'month' => $previousMonth
@@ -129,7 +129,7 @@ class AttendanceController extends Controller
 
                 $nextMonth = $monthCarbon->copy()->addMonthNoOverflow()->format('Y-m');
                 $nextBonusResponse = \Illuminate\Support\Facades\Http::withHeaders([
-                    'X-API-TOKEN' => env('HRD_API_TOKEN')
+                    'X-API-TOKEN' => config('app.hrd_api_token')
                 ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                     'school_unit_id' => config('app.school_unit_id', 3),
                     'month' => $nextMonth

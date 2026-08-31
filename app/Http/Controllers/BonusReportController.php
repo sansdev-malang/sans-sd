@@ -28,7 +28,7 @@ class BonusReportController extends Controller
 
         try {
             $response = Http::withHeaders([
-                'X-API-TOKEN' => env('HRD_API_TOKEN')
+                'X-API-TOKEN' => config('app.hrd_api_token')
             ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                 'school_unit_id' => config('app.school_unit_id', 2),
                 'month' => $month
@@ -132,7 +132,7 @@ class BonusReportController extends Controller
 
         try {
             $response = Http::withHeaders([
-                'X-API-TOKEN' => env('HRD_API_TOKEN')
+                'X-API-TOKEN' => config('app.hrd_api_token')
             ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                 'school_unit_id' => config('app.school_unit_id', 2),
                 'month' => $month
