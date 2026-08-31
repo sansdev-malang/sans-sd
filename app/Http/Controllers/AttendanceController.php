@@ -61,6 +61,7 @@ class AttendanceController extends Controller
                     'X-API-TOKEN' => config('app.hrd_api_token')
                 ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
                     'school_unit_id' => config('app.school_unit_id', 2),
+                    'unit_id' => strtolower($schoolUnit),
                     'month' => $previousMonth,
                     'start_date' => \Carbon\Carbon::parse($previousMonth . '-01')->startOfMonth()->format('Y-m-d'),
                     'end_date' => \Carbon\Carbon::parse($previousMonth . '-01')->endOfMonth()->format('Y-m-d'),
