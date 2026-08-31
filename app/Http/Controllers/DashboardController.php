@@ -215,11 +215,15 @@ class DashboardController extends Controller
                 $schoolUnit = config('app.school_unit', 'sd');
                 $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
                 try {
+                    $cutoffDate = (int) \App\Models\Setting::get('payroll_cutoff_date', 26);
+                    $today = now();
+                    $month = $today->day > $cutoffDate ? $today->copy()->startOfMonth()->addMonth()->format('Y-m') : $today->format('Y-m');
+
                     $response = \Illuminate\Support\Facades\Http::timeout(15)->withHeaders([
                         'X-API-TOKEN' => config('app.hrd_api_token')
                     ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                         'school_unit_id' => config('app.school_unit_id'),
-                        'month' => date('Y-m')
+                        'month' => $month
                     ]);
                     if ($response->successful()) {
                         $json = $response->json();
