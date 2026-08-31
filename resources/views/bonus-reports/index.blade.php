@@ -202,9 +202,13 @@
                                                 {{ $shortNominal }}
                                             </div>
                                         @else
-                                            <div class="mx-auto w-9 h-6 flex items-center justify-center bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold text-[10px] rounded shadow-sm border border-red-200 dark:border-red-800/50" title="Tidak ada bonus">
-                                                0K
-                                            </div>
+                                            @if($dateStr > date('Y-m-d'))
+                                                <div class="mx-auto flex items-center justify-center text-slate-300 dark:text-slate-700 font-medium text-[10px]">-</div>
+                                            @else
+                                                <div class="mx-auto w-9 h-6 flex items-center justify-center bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold text-[10px] rounded shadow-sm border border-red-200 dark:border-red-800/50" title="Tidak ada bonus">
+                                                    0K
+                                                </div>
+                                            @endif
                                         @endif
                                     @else
                                         @if($date->isSunday())

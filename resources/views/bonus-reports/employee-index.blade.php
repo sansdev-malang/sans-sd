@@ -167,11 +167,17 @@
                                 <div class="mt-2 text-[10px] sm:text-xs font-extrabold text-slate-400 dark:text-slate-500">
                                     OFF
                                 </div>
-                            @else
-                                <div class="mt-2 text-[10px] sm:text-xs font-bold text-rose-600 dark:text-rose-400 bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded-full shadow-sm">
-                                    0K
-                                </div>
-                            @endif
+                             @else
+                                 @if($dateStr > date('Y-m-d'))
+                                     <div class="mt-2 text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500">
+                                         -
+                                     </div>
+                                 @else
+                                     <div class="mt-2 text-[10px] sm:text-xs font-bold text-rose-600 dark:text-rose-400 bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded-full shadow-sm">
+                                         0K
+                                     </div>
+                                 @endif
+                             @endif
                         @endif
                         
                     </button>
