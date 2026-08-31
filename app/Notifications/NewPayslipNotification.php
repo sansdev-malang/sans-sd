@@ -35,7 +35,7 @@ class NewPayslipNotification extends Notification
     public function toArray(object $notifiable): array
     {
         // Format period YYYY-MM to Indonesian, e.g. "Agustus 2026"
-        $date = \Carbon\Carbon::createFromFormat('Y-m', $this->period);
+        $date = \Carbon\Carbon::parse($this->period . '-01');
         $monthName = $date->translatedFormat('F Y');
 
         return [

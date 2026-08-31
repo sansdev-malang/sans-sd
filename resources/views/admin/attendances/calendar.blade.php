@@ -91,11 +91,12 @@
             $dailyDetails = $report['daily_details'] ?? [];
             
             \Carbon\Carbon::setLocale('id');
-            $selectedMonth = \Carbon\Carbon::createFromFormat('Y-m', $month ?? date('Y-m'));
-            $cutOffStart = $selectedMonth->copy()->subMonthNoOverflow()->setDay(26)->format('Y-m-d');
-            $cutOffEnd = $selectedMonth->copy()->setDay(25)->format('Y-m-d');
+            $selectedMonth = \Carbon\Carbon::parse(($month ?? date('Y-m')) . '-01');
+            $cutoffDateVal = (int) \App\Models\Setting::get('payroll_cutoff_date', 26);
+            $cutOffStart = $selectedMonth->copy()->subMonthNoOverflow()->setDay($cutoffDateVal + 1)->format('Y-m-d');
+            $cutOffEnd = $selectedMonth->copy()->setDay($cutoffDateVal)->format('Y-m-d');
             
-            $ongoingStart = $selectedMonth->copy()->setDay(26)->format('Y-m-d');
+            $ongoingStart = $selectedMonth->copy()->setDay($cutoffDateVal + 1)->format('Y-m-d');
             $ongoingEnd = $selectedMonth->copy()->endOfMonth()->format('Y-m-d');
             
             $cutoffBonus = 0;
@@ -160,7 +161,7 @@
                         </span>
                         <div class="text-left">
                             <span class="block text-sm font-extrabold text-slate-900 dark:text-slate-50 leading-tight">Rp {{ number_format($cutoffBonus, 0, ',', '.') }}</span>
-                            <span class="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mt-0.5">Akumulasi Cut-off (26 {{ $selectedMonth->copy()->subMonthNoOverflow()->translatedFormat('M') }} - 25 {{ $selectedMonth->translatedFormat('M') }})</span>
+                            <span class="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mt-0.5">Akumulasi Cut-off ({{ $cutoffDateVal + 1 }} {{ $selectedMonth->copy()->subMonthNoOverflow()->translatedFormat('M') }} - {{ $cutoffDateVal }} {{ $selectedMonth->translatedFormat('M') }})</span>
                         </div>
                     </div>
                     
@@ -179,7 +180,7 @@
                         </span>
                         <div class="text-left md:text-right">
                             <span class="block text-sm font-extrabold text-slate-900 dark:text-slate-50 leading-tight">Rp {{ number_format($ongoingBonus, 0, ',', '.') }}</span>
-                            <span class="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mt-0.5">Berjalan (26-{{ $selectedMonth->copy()->endOfMonth()->format('d') }} {{ $selectedMonth->translatedFormat('M') }})</span>
+                            <span class="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mt-0.5">Berjalan ({{ $cutoffDateVal + 1 }} {{ $selectedMonth->copy()->subMonthNoOverflow()->translatedFormat('M') }} - {{ $selectedMonth->copy()->endOfMonth()->format('d') }} {{ $selectedMonth->translatedFormat('M') }})</span>
                         </div>
                     </div>
                 </div>

@@ -14,7 +14,12 @@ class AttendanceController extends Controller
      */
     public function index(Request $request)
     {
-        $month = $request->query('month', date('Y-m'));
+        $cutoffDate = (int) \App\Models\Setting::get('payroll_cutoff_date', 26);
+        $month = $request->query('month');
+        if (empty($month)) {
+            $today = now();
+            $month = $today->day > $cutoffDate ? $today->copy()->startOfMonth()->addMonth()->format('Y-m') : $today->format('Y-m');
+        }
         $search = $request->input('search');
         $perPage = $request->input('per_page', 50);
         $schoolUnit = config('app.school_unit', 'smp');
@@ -29,7 +34,7 @@ class AttendanceController extends Controller
                 'unit_id' => strtolower($schoolUnit)
             ];
 
-            $monthCarbon = \Carbon\Carbon::createFromFormat('Y-m', $month);
+            $monthCarbon = \Carbon\Carbon::parse($month . '-01');
             $previousMonth = $monthCarbon->copy()->subMonthNoOverflow()->format('Y-m');
 
             if ($user && $user->role === 'employee') {
@@ -44,6 +49,9 @@ class AttendanceController extends Controller
             ]));
 
             $json = $response->json();
+            if (isset($json['cutoff_date'])) {
+                \App\Models\Setting::set('payroll_cutoff_date', $json['cutoff_date']);
+            }
             $reports = collect($json['data'] ?? []);
             $startDate = \Carbon\Carbon::parse($json['start_date'] ?? date('Y-m-d'));
             $endDate = \Carbon\Carbon::parse($json['end_date'] ?? date('Y-m-d'));
@@ -54,8 +62,8 @@ class AttendanceController extends Controller
                 ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
                     'school_unit_id' => config('app.school_unit_id', 2),
                     'month' => $previousMonth,
-                    'start_date' => \Carbon\Carbon::createFromFormat('Y-m', $previousMonth)->startOfMonth()->format('Y-m-d'),
-                    'end_date' => \Carbon\Carbon::createFromFormat('Y-m', $previousMonth)->endOfMonth()->format('Y-m-d'),
+                    'start_date' => \Carbon\Carbon::parse($previousMonth . '-01')->startOfMonth()->format('Y-m-d'),
+                    'end_date' => \Carbon\Carbon::parse($previousMonth . '-01')->endOfMonth()->format('Y-m-d'),
                 ]);
 
                 $previousJson = $previousResponse->json();

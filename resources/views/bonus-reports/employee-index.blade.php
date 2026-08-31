@@ -59,7 +59,7 @@
             }
             
             \Carbon\Carbon::setLocale('id');
-            $reqMonthDate = \Carbon\Carbon::createFromFormat('Y-m', $month);
+            $reqMonthDate = \Carbon\Carbon::parse($month . '-01');
             $startMonthNum = $reqMonthDate->format('m');
             $startMonthName = $reqMonthDate->translatedFormat('F');
             $startYear = $reqMonthDate->format('Y');

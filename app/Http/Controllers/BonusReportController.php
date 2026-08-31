@@ -13,7 +13,12 @@ class BonusReportController extends Controller
 {
     public function index(Request $request)
     {
-        $month = $request->query('month', date('Y-m'));
+        $cutoffDate = (int) Setting::get('payroll_cutoff_date', 26);
+        $month = $request->query('month');
+        if (empty($month)) {
+            $today = now();
+            $month = $today->day > $cutoffDate ? $today->copy()->startOfMonth()->addMonth()->format('Y-m') : $today->format('Y-m');
+        }
         $search = $request->query('search');
         $perPage = $request->query('per_page', 50);
 
@@ -30,6 +35,9 @@ class BonusReportController extends Controller
             ]);
 
             $json = $response->json();
+            if (isset($json['cutoff_date'])) {
+                Setting::set('payroll_cutoff_date', $json['cutoff_date']);
+            }
             $reports = collect($json['data'] ?? []);
 
             // Extract from API response or calculate default
@@ -39,7 +47,7 @@ class BonusReportController extends Controller
 
             if (!$startDateReq || !$endDateReq) {
                 $cutoffDate = (int) Setting::get('payroll_cutoff_date', 26);
-                $monthCarbon = Carbon::createFromFormat('Y-m', $month);
+                $monthCarbon = Carbon::parse($month . '-01');
                 $endDateReq = $monthCarbon->copy()->setDay($cutoffDate)->format('Y-m-d');
                 $startDateReq = $monthCarbon->copy()->subMonth()->setDay($cutoffDate + 1)->format('Y-m-d');
             }
