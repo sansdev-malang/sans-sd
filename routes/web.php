@@ -178,6 +178,7 @@ Route::middleware('hrd.api')->prefix('api/v1/hrd')->group(function () {
     Route::post('sync/bonus-schemas', [\App\Http\Controllers\Api\HrdApiController::class, 'syncBonusSchemas']);
     Route::post('sync/announcements', [\App\Http\Controllers\Api\HrdApiController::class, 'syncAnnouncements']);
     Route::post('sync/payslips', [\App\Http\Controllers\Api\HrdApiController::class, 'syncPayslip']);
+    Route::post('sync/leave-types', [\App\Http\Controllers\Api\HrdApiController::class, 'syncLeaveType']);
     Route::get('leave-requests', [\App\Http\Controllers\Api\HrdApiController::class, 'leaveRequests']);
     Route::post('leave-requests/decision', [\App\Http\Controllers\Api\HrdApiController::class, 'leaveDecision']);
 });

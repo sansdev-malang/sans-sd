@@ -427,6 +427,8 @@ class HrdApiController extends Controller
                 'status' => $req->status,
                 'notes' => $req->notes,
                 'attachment' => $req->attachment ? asset('storage/' . $req->attachment) : null,
+                'created_at' => $req->created_at ? $req->created_at->format('Y-m-d H:i:s') : null,
+                'updated_at' => $req->updated_at ? $req->updated_at->format('Y-m-d H:i:s') : null,
                 'processed_by' => $req->processedBy ? ($req->processedBy->name . ' (' . (
                     [
                         'super_admin' => 'Super Admin',
@@ -454,6 +456,7 @@ class HrdApiController extends Controller
             'notes' => 'nullable|string',
             'type' => 'nullable|string',
             'processed_by' => 'nullable|string',
+            'action' => 'nullable|string',
         ]);
 
         $leave = LeaveRequest::with('leaveType')->find($request->input('leave_id'));
@@ -462,6 +465,36 @@ class HrdApiController extends Controller
         }
 
         $oldStatus = $leave->status;
+        $requiresAttendance = $leave->leaveType ? $leave->leaveType->requires_attendance : false;
+
+        // If action is delete, reset attendance if needed and remove the record
+        if ($request->input('action') === 'delete') {
+            if ($oldStatus === 'Approved' && !$requiresAttendance) {
+                $startDate = Carbon::parse($leave->start_date);
+                $endDate = Carbon::parse($leave->end_date);
+
+                for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                    $attendance = Attendance::where('employee_id', $leave->employee_id)
+                        ->where('date', $date->format('Y-m-d'))
+                        ->first();
+
+                    if ($attendance) {
+                        if (is_null($attendance->clock_in) && is_null($attendance->clock_out)) {
+                            $attendance->delete();
+                        } else {
+                            $attendance->update([
+                                'status' => 'Present',
+                                'calculated_bonus' => 0.00,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            $leave->delete();
+            return response()->json(['success' => true, 'message' => 'Leave request deleted successfully.']);
+        }
+
         $leave->status = $request->input('status');
         $leave->notes = $request->input('notes');
         $leave->processed_by_id = null;
@@ -496,8 +529,6 @@ class HrdApiController extends Controller
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("Failed to notify employee for leave decision in unit: " . $e->getMessage());
         }
-
-        $requiresAttendance = $leave->leaveType ? $leave->leaveType->requires_attendance : false;
 
         // If changed from Approved to Pending/Rejected, remove/reset automatic attendance
         if ($oldStatus === 'Approved' && $leave->status !== 'Approved' && !$requiresAttendance) {
@@ -558,10 +589,12 @@ class HrdApiController extends Controller
                 }
 
                 if ($attendance) {
-                    $attendance->update([
-                        'status' => $status,
-                        'calculated_bonus' => $calculatedBonus,
-                    ]);
+                    if (!$attendance->clock_in) {
+                        $attendance->update([
+                            'status' => $status,
+                            'calculated_bonus' => $calculatedBonus,
+                        ]);
+                    }
                 } else {
                     Attendance::create([
                         'employee_id' => $leave->employee_id,
@@ -692,6 +725,59 @@ class HrdApiController extends Controller
             'success' => false,
             'message' => 'Password salah.'
         ], 401);
+    }
+
+    /**
+     * Sync leave type from Central HRD.
+     */
+    public function syncLeaveType(Request $request)
+    {
+        $action = $request->input('action', 'save'); // 'save' or 'delete'
+        $code = $request->input('code');
+        $name = $request->input('name');
+
+        if (!$code && !$name) {
+            return response()->json(['success' => false, 'message' => 'Missing code or name.'], 400);
+        }
+
+        if ($action === 'delete') {
+            $leaveType = \App\Models\LeaveType::where('code', $code)->orWhere('name', $name)->first();
+            if ($leaveType) {
+                // Check if any leave requests use this type
+                $inUse = \App\Models\LeaveRequest::where('leave_type_id', $leaveType->id)->exists();
+                if ($inUse) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Tipe izin tidak dapat dihapus di unit karena sedang digunakan oleh riwayat izin pegawai.'
+                    ], 422);
+                }
+                $leaveType->delete();
+            }
+            return response()->json(['success' => true, 'message' => 'Leave type deleted successfully.']);
+        }
+
+        // Action: Save (Create or Update)
+        $leaveType = \App\Models\LeaveType::where('code', $code)->orWhere('name', $name)->first();
+        if (!$leaveType) {
+            $leaveType = new \App\Models\LeaveType();
+            $leaveType->code = $code ?: \Illuminate\Support\Str::slug($name);
+        }
+
+        $leaveType->name = $name;
+        if ($code) {
+            $leaveType->code = $code;
+        }
+        $leaveType->status_code = $request->input('status_code', 'I');
+        $leaveType->requires_attendance = (bool) $request->input('requires_attendance', true);
+        $leaveType->requires_approval = (bool) $request->input('requires_approval', true);
+        $leaveType->gets_presence_bonus = (bool) $request->input('gets_presence_bonus', false);
+        $leaveType->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Leave type synced successfully.',
+            'data' => $leaveType
+        ]);
     }
 }
 

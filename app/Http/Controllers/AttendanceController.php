@@ -630,7 +630,49 @@ class AttendanceController extends Controller
         $status = $manualStatus;
         $calculatedBonus = 0.00;
 
-        if ($leave) {
+        if ($clockIn) {
+            // Priority 1: Actual Fingerprint Override (Employee actually attended work)
+            $status = 'Present';
+            $lateMinutes = 0;
+            $hasExcusedBonus = false;
+
+            if ($leave && ($leave->leaveType ? $leave->leaveType->gets_presence_bonus : ($leave->type === 'Dinas'))) {
+                $hasExcusedBonus = true;
+            }
+
+            if ($shiftDetail && $shiftDetail->start_time && !$isOffDay) {
+                $shiftStart = Carbon::parse($date . ' ' . $shiftDetail->start_time);
+                $actualIn = Carbon::parse($date . ' ' . $clockIn);
+
+                if ($actualIn->gt($shiftStart)) {
+                    $lateMinutes = $actualIn->diffInMinutes($shiftStart);
+                    if (!$hasExcusedBonus) {
+                        $status = 'Late';
+                    }
+                }
+            }
+
+            $activeSchema = \App\Models\BonusSchema::where('is_active', true)->first();
+            if ($activeSchema) {
+                if ($hasExcusedBonus) {
+                    $maxTier = \App\Models\BonusTier::where('bonus_schema_id', $activeSchema->id)
+                        ->orderBy('nominal', 'desc')
+                        ->first();
+                    $calculatedBonus = $maxTier ? $maxTier->nominal : 0.00;
+                } else {
+                    $matchingTier = \App\Models\BonusTier::where('bonus_schema_id', $activeSchema->id)
+                        ->where('max_late_minutes', '>=', $lateMinutes)
+                        ->orderBy('nominal', 'desc')
+                        ->first();
+                    $calculatedBonus = $matchingTier ? $matchingTier->nominal : 0.00;
+                }
+            }
+        } elseif ($isOffDay) {
+            // Priority 2: Holiday & Shift Day-Off (Employee has no clock-in on a scheduled day off / holiday)
+            $status = 'Off';
+            $calculatedBonus = 0.00;
+        } elseif ($leave) {
+            // Priority 3: Approved Leave on a scheduled working day
             $getsBonus = $leave->leaveType ? $leave->leaveType->gets_presence_bonus : ($leave->type === 'Dinas');
             $statusCode = $leave->leaveType ? $leave->leaveType->status_code : null;
 
@@ -646,64 +688,17 @@ class AttendanceController extends Controller
                     $maxTier = \App\Models\BonusTier::where('bonus_schema_id', $activeSchema->id)
                         ->orderBy('nominal', 'desc')
                         ->first();
-                    if ($maxTier) {
-                        $calculatedBonus = $maxTier->nominal;
-                    }
+                    $calculatedBonus = $maxTier ? $maxTier->nominal : 0.00;
                 }
             } else {
                 $calculatedBonus = 0.00;
-            }
-        } elseif ($isOffDay) {
-            if (!$clockIn) {
-                $status = 'Off';
-                $calculatedBonus = 0.00;
-            } else {
-                $status = 'Present';
-                $activeSchema = \App\Models\BonusSchema::where('is_active', true)->first();
-                if ($activeSchema) {
-                    $maxTier = \App\Models\BonusTier::where('bonus_schema_id', $activeSchema->id)
-                        ->orderBy('nominal', 'desc')
-                        ->first();
-                    if ($maxTier) {
-                        $calculatedBonus = $maxTier->nominal;
-                    }
-                }
             }
         } else {
-            // Work day
-            if (!$clockIn) {
-                if (!$status || $status === 'Present') {
-                    $status = 'Absent';
-                }
-                $calculatedBonus = 0.00;
-            } else {
-                $status = 'Present';
-                $lateMinutes = 0;
-
-                if ($shiftDetail && $shiftDetail->start_time) {
-                    $shiftStart = Carbon::parse($date . ' ' . $shiftDetail->start_time);
-                    $actualIn = Carbon::parse($date . ' ' . $clockIn);
-
-                    if ($actualIn->gt($shiftStart)) {
-                        $lateMinutes = $actualIn->diffInMinutes($shiftStart);
-                        $status = 'Late';
-                    }
-                }
-
-                $activeSchema = \App\Models\BonusSchema::where('is_active', true)->first();
-                if ($activeSchema) {
-                    $matchingTier = \App\Models\BonusTier::where('bonus_schema_id', $activeSchema->id)
-                        ->where('max_late_minutes', '>=', $lateMinutes)
-                        ->orderBy('nominal', 'desc')
-                        ->first();
-
-                    if ($matchingTier) {
-                        $calculatedBonus = $matchingTier->nominal;
-                    } else {
-                        $calculatedBonus = 0.00;
-                    }
-                }
+            // Priority 4: Working day with no clock-in and no approved leave
+            if (!$status || $status === 'Present') {
+                $status = 'Absent';
             }
+            $calculatedBonus = 0.00;
         }
 
         return [

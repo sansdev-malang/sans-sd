@@ -661,6 +661,21 @@
                     <form action="{{ route('leaves.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="p-6 space-y-4">
+                            @if($errors->any())
+                                <div class="bg-rose-50 dark:bg-rose-900/40 border border-rose-200 dark:border-rose-900/60 rounded-xl p-4 mb-2">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-7 h-7 rounded-full bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                                            <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                                        </div>
+                                        <h5 class="text-xs font-bold text-slate-800 dark:text-slate-200">Terjadi Kesalahan Validasi</h5>
+                                    </div>
+                                    <ul class="list-disc list-inside text-xs text-slate-600 dark:text-slate-400 space-y-1 ml-10">
+                                        @foreach($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                             <div x-data="{
                                 open: false,
                                 search: '',

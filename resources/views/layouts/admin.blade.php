@@ -343,14 +343,14 @@
         @if(session('success'))
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
-                    showToast('Sukses!', "{{ session('success') }}", 'success');
+                    showToast('Sukses!', @json(session('success')), 'success');
                 });
             </script>
         @endif
         @if(session('error'))
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
-                    showToast('Perhatian!', "{{ session('error') }}", 'error');
+                    showToast('Perhatian!', @json(session('error')), 'error');
                 });
             </script>
         @endif

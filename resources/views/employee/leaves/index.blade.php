@@ -328,7 +328,7 @@
                     </button>
                 </div>
 
-                <form method="POST" action="{{ route('my-leaves.store') }}" enctype="multipart/form-data" id="leaveForm" class="p-5 pt-0 pb-5 space-y-4 text-xs">
+                <form method="POST" action="{{ route('my-leaves.store') }}" enctype="multipart/form-data" id="leaveForm" onsubmit="let btn = this.querySelector('button[type=submit]'); if (btn) { btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed'); }" class="p-5 pt-0 pb-5 space-y-4 text-xs">
                     @csrf
                     
                     @if($errors->any())
