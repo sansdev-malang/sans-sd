@@ -11,7 +11,8 @@ class PayslipController extends Controller
 {
     public function index(Request $request)
     {
-        $month = $request->input('month', Carbon::today()->format('Y-m'));
+        $lastMonth = Carbon::now()->subMonth()->format('Y-m');
+        $month = $request->input('month', $lastMonth);
         $schoolUnit = config('app.school_unit', 'sd');
 
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
