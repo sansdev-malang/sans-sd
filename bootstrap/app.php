@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->validateCsrfTokens(except: [
             'api/v1/hrd/*',
+            'api/spmb-webhook',
         ]);
 
         $middleware->encryptCookies(except: [

@@ -99,13 +99,25 @@ Route::get('/form_homebase', function () {
     return view('admin.form_homebase');
 })->middleware(['auth', 'verified'])->name('form_homebase');
 
+// SPMB Webhook Receiver (Real-time Push)
+Route::post('/api/spmb-webhook', [\App\Http\Controllers\Api\SpmbWebhookController::class, 'handleWebhook'])->name('api.spmb-webhook');
+
 Route::middleware(['auth', 'verified', 'role:super_admin'])->group(function () {
     Route::get('/settings', [SettingController::class, 'index'])->name('settings');
     Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::post('/settings/test-spmb-connection', [SettingController::class, 'testSpmbConnection'])->name('spmb.test-connection');
     Route::resource('users', \App\Http\Controllers\UserController::class);
 });
 
 Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->group(function () {
+
+    // SPMB New Candidate Management
+    Route::prefix('spmb')->name('spmb.')->group(function () {
+        Route::get('/pendaftar', [\App\Http\Controllers\SpmbCandidateController::class, 'index'])->name('candidates.index');
+        Route::get('/pendaftar/{id}', [\App\Http\Controllers\SpmbCandidateController::class, 'show'])->name('candidates.show');
+        Route::post('/pendaftar/sync', [\App\Http\Controllers\SpmbCandidateController::class, 'sync'])->name('candidates.sync');
+        Route::post('/pendaftar/{id}/toggle-enroll', [\App\Http\Controllers\SpmbCandidateController::class, 'toggleActive'])->name('candidates.toggle-active');
+    });
 
     // New English singular based routes
     Route::get('teachers/download-template', [\App\Http\Controllers\TeacherController::class, 'downloadTemplate'])->name('teachers.download-template');
