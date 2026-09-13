@@ -489,11 +489,13 @@
                                             <span class="text-[11px] text-slate-400 dark:text-slate-500">Gelar depan & belakang dipisah</span>
                                         </div>
 
-                                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3.5">
+                                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3.5 items-start">
                                             <div>
-                                                <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                                                    Gelar Depan
-                                                </label>
+                                                <div class="h-6 flex items-center mb-1">
+                                                    <label class="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                                                        Gelar Depan
+                                                    </label>
+                                                </div>
                                                 <input type="text" name="front_title" placeholder="Contoh: Dr. / Dra. / Hj."
                                                     x-model="frontTitle"
                                                     value="{{ old('front_title', $employee->front_title) }}"
@@ -502,10 +504,13 @@
                                             </div>
 
                                             <div class="sm:col-span-2">
-                                                <label class="block text-[11px] font-bold text-slate-900 dark:text-slate-100 mb-1 flex items-center justify-between">
-                                                    <span>Nama Lengkap (Wajib Tanpa Gelar) <span class="text-rose-500">*</span></span>
-                                                    <span class="text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-900/50">Hanya Nama Asli</span>
-                                                </label>
+                                                <div class="h-6 flex items-center justify-between mb-1">
+                                                    <label class="text-[11px] font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1">
+                                                        <span>Nama Lengkap</span>
+                                                        <span class="text-rose-500">*</span>
+                                                    </label>
+                                                    <span class="text-[9px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-900/50 uppercase tracking-tight">Wajib Tanpa Gelar</span>
+                                                </div>
                                                 <input type="text" name="name" required placeholder="Contoh: Sri Yudiyanti"
                                                     x-model="rawName"
                                                     value="{{ old('name', $employee->raw_name) }}"
@@ -515,9 +520,11 @@
                                             </div>
 
                                             <div>
-                                                <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                                                    Gelar Belakang
-                                                </label>
+                                                <div class="h-6 flex items-center mb-1">
+                                                    <label class="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                                                        Gelar Belakang
+                                                    </label>
+                                                </div>
                                                 <input type="text" name="back_title" placeholder="Contoh: S.Pd / M.M"
                                                     x-model="backTitle"
                                                     value="{{ old('back_title', $employee->back_title) }}"
