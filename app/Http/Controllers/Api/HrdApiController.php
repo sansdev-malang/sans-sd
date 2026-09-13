@@ -791,9 +791,14 @@ class HrdApiController extends Controller
     protected function invalidateDashboardCache()
     {
         $unitId = config('app.school_unit_id');
+        $currentMonth = date('Y-m');
+        $nextMonth = date('Y-m', strtotime('+1 month'));
+
         \Illuminate\Support\Facades\Cache::forget('dashboard_master_counts_' . $unitId);
         \Illuminate\Support\Facades\Cache::forget('hrd_matrix_unit_' . $unitId . '_' . date('Y-m-d'));
         \Illuminate\Support\Facades\Cache::forget('dashboard_activity_logs_' . $unitId);
+        \Illuminate\Support\Facades\Cache::forget('hrd_bonus_report_' . $unitId . '_' . $currentMonth);
+        \Illuminate\Support\Facades\Cache::forget('hrd_bonus_report_' . $unitId . '_' . $nextMonth);
     }
 }
 

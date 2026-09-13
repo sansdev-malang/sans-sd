@@ -15,142 +15,139 @@ class DashboardController extends Controller
         $isAdmin = in_array($user->role, ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp', 'kepala_sekolah', 'waka']);
         $schoolUnitId = config('app.school_unit_id', 2);
 
-        // Smart Caching for Master Counts (5 minutes TTL)
-        $masterCounts = Cache::remember('dashboard_master_counts_' . $schoolUnitId, 300, function () {
-            $tukangIds = \App\Models\Employee::where(function($q) {
-                $q->whereHas('employeeType', function($subQ) {
-                    $subQ->where('code', 'tukang')->orWhere('name', 'like', '%tukang%');
-                })->orWhere('position', 'like', '%tukang%');
-            })->pluck('id')->toArray();
-
-            $employeeCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where(function($q) {
-                $q->whereNotIn('position', ['GPK', 'GPQ'])
-                  ->orWhereNull('position');
-            })->count();
-
-            $studentCount = \App\Models\Student::where('status', 'active')->count() ?: \App\Models\Student::count();
-            $classroomCount = \App\Models\Classroom::count();
-            $spmbCount = \App\Models\SpmbCandidate::count();
-
-            $gpkCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where('position', 'GPK')->count();
-            $gpqCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where('position', 'GPQ')->count();
-            $totalEmployeeCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->count();
-
-            return [
-                'tukangIds' => $tukangIds,
-                'employeeCount' => $employeeCount,
-                'studentCount' => $studentCount,
-                'classroomCount' => $classroomCount,
-                'spmbCount' => $spmbCount,
-                'gpkCount' => $gpkCount,
-                'gpqCount' => $gpqCount,
-                'totalEmployeeCount' => $totalEmployeeCount,
-            ];
-        });
-
-        $tukangIds = $masterCounts['tukangIds'];
-        $employeeCount = $masterCounts['employeeCount'];
-        $studentCount = $masterCounts['studentCount'];
-        $classroomCount = $masterCounts['classroomCount'];
-        $spmbCount = $masterCounts['spmbCount'];
-        $gpkCount = $masterCounts['gpkCount'];
-        $gpqCount = $masterCounts['gpqCount'];
-        $totalEmployeeCount = $masterCounts['totalEmployeeCount'];
-
-        $today = now()->toDateString();
-        $yesterday = now()->subDay()->toDateString();
-        
-        $employeePresent = 0;
-        $gpkPresent = 0;
-        $gpqPresent = 0;
-        $totalPresentToday = 0;
-        $totalPresentYesterday = 0;
+        $tukangIds = [];
+        $employeeCount = 0;
+        $studentCount = 0;
+        $classroomCount = 0;
+        $spmbCount = 0;
+        $gpkCount = 0;
+        $gpqCount = 0;
+        $totalEmployeeCount = 0;
+        $employeeAttendancePercent = 0;
+        $gpkAttendancePercent = 0;
+        $gpqAttendancePercent = 0;
+        $todayOverallPercent = 0;
+        $diffPercent = 0;
+        $adminChartPoints = [];
+        $activityLogs = collect();
 
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
-        $cacheKey = 'hrd_matrix_unit_' . $schoolUnitId . '_' . $today;
-
-        // Smart Caching with Fast 1.5s Timeout and Stale Cache Fallback
-        $reports = Cache::remember($cacheKey, 300, function () use ($hrdUrl, $schoolUnitId, $yesterday, $today, $cacheKey) {
-            try {
-                $response = Http::timeout(1.5)->withHeaders([
-                    'X-API-TOKEN' => config('app.hrd_api_token')
-                ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
-                    'school_unit_id' => $schoolUnitId,
-                    'unit_id' => strtolower(config('app.school_unit', 'sd')),
-                    'start_date' => $yesterday,
-                    'end_date' => $today
-                ]);
-
-                if ($response->successful()) {
-                    $data = $response->json()['data'] ?? [];
-                    Cache::put($cacheKey . '_stale', $data, 86400); // 24h backup
-                    return $data;
-                }
-            } catch (\Exception $e) {
-                Log::warning('Gagal memuat absensi dashboard dari HRD: ' . $e->getMessage());
-            }
-
-            return Cache::get($cacheKey . '_stale', []);
-        });
-
-        foreach ($reports as $report) {
-            $empId = $report['employee']['id'] ?? null;
-            if (in_array($empId, $tukangIds)) {
-                continue;
-            }
-
-            $pos = $report['employee']['position'] ?? $report['employee']['subject_position'] ?? null;
-            $details = $report['daily_details'] ?? [];
-            
-            // Cek hari ini
-            if (($details[$today]['status'] ?? '') === 'Hadir') {
-                $totalPresentToday++;
-                
-                if ($pos === 'GPK') {
-                    $gpkPresent++;
-                } elseif ($pos === 'GPQ') {
-                    $gpqPresent++;
-                } else {
-                    $employeePresent++;
-                }
-            }
-            
-            // Cek kemarin
-            if (($details[$yesterday]['status'] ?? '') === 'Hadir') {
-                $totalPresentYesterday++;
-            }
-        }
-
-        $employeeAttendancePercent = $employeeCount > 0 ? round(($employeePresent / $employeeCount) * 100, 1) : 0;
-        $gpkAttendancePercent = $gpkCount > 0 ? round(($gpkPresent / $gpkCount) * 100, 1) : 0;
-        $gpqAttendancePercent = $gpqCount > 0 ? round(($gpqPresent / $gpqCount) * 100, 1) : 0;
-
-        $todayOverallPercent = $totalEmployeeCount > 0 ? round(($totalPresentToday / $totalEmployeeCount) * 100, 1) : 0;
-        $yesterdayOverallPercent = $totalEmployeeCount > 0 ? round(($totalPresentYesterday / $totalEmployeeCount) * 100, 1) : 0;
-        
-        $diffPercent = round($todayOverallPercent - $yesterdayOverallPercent, 1);
-
-        $query = \App\Models\Announcement::latest();
-
-        if (!$isAdmin) {
-            $query->where('is_active', true)
-                ->where(function($q) {
-                    $q->whereNull('publish_date')
-                        ->orWhere('publish_date', '<=', now());
-                })
-                ->where(function($q) {
-                    $q->whereNull('expiry_date')
-                        ->orWhere('expiry_date', '>=', now());
-                })
-                ->whereIn('target_audience', ['global', 'employee']);
-        }
-
-        $latestAnnouncements = $query->take(3)->get();
-
-        // Prepare Admin Attendance Chart Points (Utilizing new compound index)
-        $adminChartPoints = [];
 
         if ($isAdmin) {
+            // Smart Caching for Master Counts (5 minutes TTL)
+            $masterCounts = Cache::remember('dashboard_master_counts_' . $schoolUnitId, 300, function () {
+                $tukangIds = \App\Models\Employee::where(function($q) {
+                    $q->whereHas('employeeType', function($subQ) {
+                        $subQ->where('code', 'tukang')->orWhere('name', 'like', '%tukang%');
+                    })->orWhere('position', 'like', '%tukang%');
+                })->pluck('id')->toArray();
+
+                $employeeCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where(function($q) {
+                    $q->whereNotIn('position', ['GPK', 'GPQ'])
+                      ->orWhereNull('position');
+                })->count();
+
+                $studentCount = \App\Models\Student::where('status', 'active')->count() ?: \App\Models\Student::count();
+                $classroomCount = \App\Models\Classroom::count();
+                $spmbCount = \App\Models\SpmbCandidate::count();
+
+                $gpkCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where('position', 'GPK')->count();
+                $gpqCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where('position', 'GPQ')->count();
+                $totalEmployeeCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->count();
+
+                return [
+                    'tukangIds' => $tukangIds,
+                    'employeeCount' => $employeeCount,
+                    'studentCount' => $studentCount,
+                    'classroomCount' => $classroomCount,
+                    'spmbCount' => $spmbCount,
+                    'gpkCount' => $gpkCount,
+                    'gpqCount' => $gpqCount,
+                    'totalEmployeeCount' => $totalEmployeeCount,
+                ];
+            });
+
+            $tukangIds = $masterCounts['tukangIds'];
+            $employeeCount = $masterCounts['employeeCount'];
+            $studentCount = $masterCounts['studentCount'];
+            $classroomCount = $masterCounts['classroomCount'];
+            $spmbCount = $masterCounts['spmbCount'];
+            $gpkCount = $masterCounts['gpkCount'];
+            $gpqCount = $masterCounts['gpqCount'];
+            $totalEmployeeCount = $masterCounts['totalEmployeeCount'];
+
+            $today = now()->toDateString();
+            $yesterday = now()->subDay()->toDateString();
+            
+            $employeePresent = 0;
+            $gpkPresent = 0;
+            $gpqPresent = 0;
+            $totalPresentToday = 0;
+            $totalPresentYesterday = 0;
+
+            $cacheKey = 'hrd_matrix_unit_' . $schoolUnitId . '_' . $today;
+
+            // Smart Caching with Fast 1.5s Timeout and Stale Cache Fallback
+            $reports = Cache::remember($cacheKey, 300, function () use ($hrdUrl, $schoolUnitId, $yesterday, $today, $cacheKey) {
+                try {
+                    $response = Http::timeout(1.5)->withHeaders([
+                        'X-API-TOKEN' => config('app.hrd_api_token')
+                    ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
+                        'school_unit_id' => $schoolUnitId,
+                        'unit_id' => strtolower(config('app.school_unit', 'sd')),
+                        'start_date' => $yesterday,
+                        'end_date' => $today
+                    ]);
+
+                    if ($response->successful()) {
+                        $data = $response->json()['data'] ?? [];
+                        Cache::put($cacheKey . '_stale', $data, 86400); // 24h backup
+                        return $data;
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Gagal memuat absensi dashboard dari HRD: ' . $e->getMessage());
+                }
+
+                return Cache::get($cacheKey . '_stale', []);
+            });
+
+            foreach ($reports as $report) {
+                $empId = $report['employee']['id'] ?? null;
+                if (in_array($empId, $tukangIds)) {
+                    continue;
+                }
+
+                $pos = $report['employee']['position'] ?? $report['employee']['subject_position'] ?? null;
+                $details = $report['daily_details'] ?? [];
+                
+                // Cek hari ini
+                if (($details[$today]['status'] ?? '') === 'Hadir') {
+                    $totalPresentToday++;
+                    
+                    if ($pos === 'GPK') {
+                        $gpkPresent++;
+                    } elseif ($pos === 'GPQ') {
+                        $gpqPresent++;
+                    } else {
+                        $employeePresent++;
+                    }
+                }
+                
+                // Cek kemarin
+                if (($details[$yesterday]['status'] ?? '') === 'Hadir') {
+                    $totalPresentYesterday++;
+                }
+            }
+
+            $employeeAttendancePercent = $employeeCount > 0 ? round(($employeePresent / $employeeCount) * 100, 1) : 0;
+            $gpkAttendancePercent = $gpkCount > 0 ? round(($gpkPresent / $gpkCount) * 100, 1) : 0;
+            $gpqAttendancePercent = $gpqCount > 0 ? round(($gpqPresent / $gpqCount) * 100, 1) : 0;
+
+            $todayOverallPercent = $totalEmployeeCount > 0 ? round(($totalPresentToday / $totalEmployeeCount) * 100, 1) : 0;
+            $yesterdayOverallPercent = $totalEmployeeCount > 0 ? round(($totalPresentYesterday / $totalEmployeeCount) * 100, 1) : 0;
+            $diffPercent = round($todayOverallPercent - $yesterdayOverallPercent, 1);
+
+            // Prepare Admin Attendance Chart Points (Utilizing new compound index)
             $cutoffDate = (int) \App\Models\Setting::get('payroll_cutoff_date', 26);
             $todayCarbon = now();
             
@@ -190,7 +187,6 @@ class DashboardController extends Controller
                 
                 // Fallback for dev if no attendance records exist
                 if ($count === 0) {
-                    $dateCarbon = \Carbon\Carbon::parse($dateStr);
                     $seed = crc32($dateStr);
                     mt_srand($seed);
                     $percent = mt_rand(88, 97);
@@ -218,6 +214,23 @@ class DashboardController extends Controller
             }
         }
 
+        $query = \App\Models\Announcement::latest();
+
+        if (!$isAdmin) {
+            $query->where('is_active', true)
+                ->where(function($q) {
+                    $q->whereNull('publish_date')
+                        ->orWhere('publish_date', '<=', now());
+                })
+                ->where(function($q) {
+                    $q->whereNull('expiry_date')
+                        ->orWhere('expiry_date', '>=', now());
+                })
+                ->whereIn('target_audience', ['global', 'employee']);
+        }
+
+        $latestAnnouncements = $query->take(3)->get();
+
         // Fetch personal stats for non-admin employees
         $myReport = null;
         $totalLeavesThisYear = 0;
@@ -227,32 +240,26 @@ class DashboardController extends Controller
         if (!$isAdmin && $user->employee_id) {
             $employee = \App\Models\Employee::find($user->employee_id);
             if ($employee) {
-                // Calculate Leave Days Approved This Year
+                // Calculate Leave Days Approved This Year (selective query)
                 $approvedLeavesThisYear = \App\Models\LeaveRequest::where('employee_id', $employee->id)
                     ->where('status', 'Approved')
                     ->whereYear('start_date', date('Y'))
+                    ->select('start_date', 'end_date')
                     ->get();
+
                 foreach ($approvedLeavesThisYear as $req) {
                     $totalLeavesThisYear += \Carbon\Carbon::parse($req->start_date)->diffInDays(\Carbon\Carbon::parse($req->end_date)) + 1;
                 }
 
-                // Fetch Recent Activity (Leaves/Permits status)
-                $myRecentLeaves = \App\Models\LeaveRequest::where('employee_id', $employee->id)
+                // Fetch Recent Activity (Leaves/Permits status) with eager loading
+                $myRecentLeaves = \App\Models\LeaveRequest::with('leaveType:id,name')
+                    ->where('employee_id', $employee->id)
+                    ->select('id', 'employee_id', 'leave_type_id', 'type', 'status', 'created_at')
                     ->latest()
                     ->limit(5)
                     ->get();
 
-                // Fetch Recent Attendances (last 7 days) for Employee
-                $myRecentAttendances = \App\Models\Attendance::where('employee_id', $employee->id)
-                    ->orderBy('date', 'desc')
-                    ->limit(7)
-                    ->get()
-                    ->reverse()
-                    ->values();
-
                 // Fetch Presence & Bonus details from HRD for the top cards
-                $schoolUnit = config('app.school_unit', 'sd');
-                $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
                 try {
                     $cutoffDate = (int) \App\Models\Setting::get('payroll_cutoff_date', 26);
                     $todayDate = now();
