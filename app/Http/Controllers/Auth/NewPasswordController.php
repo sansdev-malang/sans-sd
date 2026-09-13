@@ -31,10 +31,22 @@ class NewPasswordController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        if ($request->has('email')) {
+            $request->merge([
+                'email' => strtolower(trim((string) $request->input('email'))),
+            ]);
+        }
+
         $request->validate([
             'token' => ['required'],
             'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ], [
+            'token.required' => 'Token reset password tidak valid.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'password.required' => 'Password baru wajib diisi.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
         // Here we will attempt to reset the user's password. If it is successful we

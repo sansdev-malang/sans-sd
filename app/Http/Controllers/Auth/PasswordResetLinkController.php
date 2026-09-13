@@ -26,8 +26,17 @@ class PasswordResetLinkController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        if ($request->has('email')) {
+            $request->merge([
+                'email' => strtolower(trim((string) $request->input('email'))),
+            ]);
+        }
+
         $request->validate([
             'email' => ['required', 'email'],
+        ], [
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
         ]);
 
         // We will send the password reset link to this user. Once we have attempted
