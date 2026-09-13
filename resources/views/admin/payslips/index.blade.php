@@ -34,7 +34,7 @@
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Unduh slip gaji dan lampiran bulanan dari HRD.</p>
                 </div>
             </div>
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
+            <div class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
                 <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-500"></i>
                 <span>Periode: <strong class="text-slate-900 dark:text-slate-100">{{ $currentDate->translatedFormat('F Y') }}</strong></span>
             </div>
@@ -54,12 +54,12 @@
                     @endif
 
                     <!-- Quick Month Navigator -->
-                    <div class="inline-flex items-center gap-1 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 p-1 rounded-xl shadow-xs">
-                        <a href="{{ route('payslips.index', ['month' => $prevMonth]) }}" title="Bulan Sebelumnya ({{ \Carbon\Carbon::parse($prevMonth . '-01')->translatedFormat('M Y') }})" class="h-7 w-7 inline-flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                    <div class="flex items-center justify-between w-full sm:w-auto bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 p-1 sm:p-1 rounded-xl shadow-xs">
+                        <a href="{{ route('payslips.index', ['month' => $prevMonth]) }}" title="Bulan Sebelumnya ({{ \Carbon\Carbon::parse($prevMonth . '-01')->translatedFormat('M Y') }})" class="h-8 w-8 sm:h-7 sm:w-7 inline-flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white dark:hover:bg-slate-800 transition-colors shrink-0">
                             <i data-lucide="chevron-left" class="w-4 h-4"></i>
                         </a>
-                        <input type="month" id="month" name="month" value="{{ $month }}" class="h-7 px-2 text-xs font-semibold bg-transparent text-slate-800 dark:text-slate-200 border-0 focus:ring-0 cursor-pointer text-center" onchange="this.form.submit()">
-                        <a href="{{ route('payslips.index', ['month' => $nextMonth]) }}" title="Bulan Selanjutnya ({{ \Carbon\Carbon::parse($nextMonth . '-01')->translatedFormat('M Y') }})" class="h-7 w-7 inline-flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                        <input type="month" id="month" name="month" value="{{ $month }}" class="h-8 sm:h-7 px-2 flex-1 sm:flex-initial sm:w-36 text-xs font-semibold bg-transparent text-slate-800 dark:text-slate-200 border-0 focus:ring-0 cursor-pointer text-center" onchange="this.form.submit()">
+                        <a href="{{ route('payslips.index', ['month' => $nextMonth]) }}" title="Bulan Selanjutnya ({{ \Carbon\Carbon::parse($nextMonth . '-01')->translatedFormat('M Y') }})" class="h-8 w-8 sm:h-7 sm:w-7 inline-flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white dark:hover:bg-slate-800 transition-colors shrink-0">
                             <i data-lucide="chevron-right" class="w-4 h-4"></i>
                         </a>
                     </div>
