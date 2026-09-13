@@ -1,5 +1,5 @@
 <x-admin-layout>
-    <div class="p-6 space-y-6">
+    <div class="p-6 space-y-6" x-data="{ showClearModal: false }">
 
         <!-- HEADER / PAGE TITLE -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -34,17 +34,13 @@
                     </a>
                 @endif
 
-                <!-- Clear Log Form -->
+                <!-- Clear Log Button (Triggers Sleek Alpine Modal) -->
                 @if($selectedFile && $selectedFile['raw_size'] > 0)
-                    <form action="{{ route('system-logs.clear', ['file' => $selectedFileName]) }}" method="POST"
-                          onsubmit="return confirm('Apakah Anda yakin ingin mengosongkan file log {{ $selectedFileName }}? Tindakan ini tidak dapat dibatalkan.');">
-                        @csrf
-                        <button type="submit"
-                            class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-700 rounded-lg transition-colors shadow-sm cursor-pointer">
-                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                            <span>Bersihkan Log</span>
-                        </button>
-                    </form>
+                    <button type="button" @click="showClearModal = true; $nextTick(() => { if (window.lucide) lucide.createIcons(); })"
+                        class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-700 rounded-lg transition-colors shadow-sm cursor-pointer">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        <span>Bersihkan Log</span>
+                    </button>
                 @endif
             </div>
         </section>
@@ -350,6 +346,72 @@
                 </div>
             @endif
         </section>
+
+        <!-- CONFIRMATION MODAL FOR CLEARING LOGS -->
+        <template x-teleport="body">
+            <div x-show="showClearModal" x-cloak
+                 class="fixed inset-0 z-50 overflow-y-auto"
+                 aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                
+                <!-- Backdrop -->
+                <div x-show="showClearModal"
+                     x-transition:enter="ease-out duration-200"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="ease-in duration-150"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+                     @click="showClearModal = false"></div>
+
+                <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                    <!-- Modal Panel -->
+                    <div x-show="showClearModal"
+                         x-transition:enter="ease-out duration-200"
+                         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                         x-transition:leave="ease-in duration-150"
+                         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                         x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                         @keydown.escape.window="showClearModal = false"
+                         class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200 dark:border-slate-800 p-6">
+                        
+                        <div class="flex items-start gap-4">
+                            <div class="w-11 h-11 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/50">
+                                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                            </div>
+
+                            <div class="space-y-1.5 flex-1">
+                                <h3 class="text-base font-bold text-slate-900 dark:text-slate-100" id="modal-title">
+                                    Kosongkan Berkas Log?
+                                </h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                                    Semua riwayat error, peringatan, dan status runtime di berkas <span class="font-bold text-slate-700 dark:text-slate-300 font-mono">{{ $selectedFileName }}</span> akan dihapus dan dikosongkan. Tindakan ini <strong class="text-rose-600 dark:text-rose-400">tidak dapat dibatalkan</strong>.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="mt-6 flex items-center justify-end gap-2.5">
+                            <button type="button" @click="showClearModal = false"
+                                class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer">
+                                Batal
+                            </button>
+
+                            <form action="{{ route('system-logs.clear', ['file' => $selectedFileName]) }}" method="POST">
+                                @csrf
+                                <button type="submit"
+                                    class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-700 rounded-lg transition-colors shadow-sm cursor-pointer">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    <span>Ya, Kosongkan Log</span>
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </template>
 
     </div>
 </x-admin-layout>
