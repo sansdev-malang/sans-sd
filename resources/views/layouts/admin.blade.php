@@ -87,10 +87,28 @@
                 color: #0f172a !important; /* text-slate-900 */
             }
 
-            /* Global Dark Mode Calendar Picker Icon Filter */
+            /* Global Dark Mode Calendar Picker */
+            .dark input[type="date"],
+            .dark input[type="month"],
+            .dark input[type="time"],
+            .dark input[type="datetime-local"] {
+                color-scheme: dark !important;
+            }
+
             .dark input[type="date"]::-webkit-calendar-picker-indicator,
-            .dark input[type="month"]::-webkit-calendar-picker-indicator {
-                filter: invert(1) !important;
+            .dark input[type="month"]::-webkit-calendar-picker-indicator,
+            .dark input[type="time"]::-webkit-calendar-picker-indicator,
+            .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+                filter: none !important;
+                cursor: pointer;
+                opacity: 0.9 !important;
+            }
+
+            .dark input[type="date"]::-webkit-calendar-picker-indicator:hover,
+            .dark input[type="month"]::-webkit-calendar-picker-indicator:hover,
+            .dark input[type="time"]::-webkit-calendar-picker-indicator:hover,
+            .dark input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+                opacity: 1 !important;
             }
         </style>
         <script>

@@ -773,8 +773,4 @@
     .dark /* removed in favor of global styling */ /* removed */ .search-container button:hover_disabled_disabled {
         background-color: #f8fafc !important; /* bg-slate-105 */
         color: #0f172a !important; /* text-slate-900 */
-    }
-    .dark input[type="month"]::-webkit-calendar-picker-indicator {
-        filter: invert(1) !important;
-    }
 </style>
