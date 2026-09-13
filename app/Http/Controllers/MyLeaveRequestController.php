@@ -46,12 +46,24 @@ class MyLeaveRequestController extends Controller
             \Illuminate\Support\Facades\Cache::forever('read_leave_ids_' . $user->id, array_unique($readIds));
         }
         $leaves = LeaveRequest::where('employee_id', $user->employee->id)
-            ->with('leaveType')
+            ->with(['leaveType', 'processedBy'])
+            ->orderBy('start_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
         $leaveTypes = \App\Models\LeaveType::orderBy('name')->get();
 
-        return view('employee.leaves.index', compact('leaves', 'leaveTypes'));
+        // Calculate leave summary statistics for the current year
+        $currentYear = now()->year;
+        $stats = [
+            'total_this_year' => $leaves->where('status', 'Approved')->filter(function ($l) use ($currentYear) {
+                return $l->start_date && $l->start_date->year === $currentYear;
+            })->count(),
+            'pending' => $leaves->where('status', 'Pending')->count(),
+            'approved' => $leaves->where('status', 'Approved')->count(),
+            'rejected' => $leaves->where('status', 'Rejected')->count(),
+        ];
+
+        return view('employee.leaves.index', compact('leaves', 'leaveTypes', 'stats'));
     }
 
     /**
@@ -66,7 +78,7 @@ class MyLeaveRequestController extends Controller
 
         $validated = $request->validate([
             'leave_type_id' => 'required|exists:leave_types,id',
-            'start_date' => 'required|date|after_or_equal:today',
+            'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'reason' => 'nullable|string',
             'attachment' => 'nullable|file|mimes:pdf,png,jpg,jpeg,doc,docx|max:2048',
@@ -75,7 +87,6 @@ class MyLeaveRequestController extends Controller
             'leave_type_id.exists' => 'Jenis izin / cuti yang dipilih tidak valid.',
             'start_date.required' => 'Tanggal mulai wajib diisi.',
             'start_date.date' => 'Tanggal mulai harus berupa tanggal yang valid.',
-            'start_date.after_or_equal' => 'Tanggal mulai tidak boleh sebelum hari ini.',
             'end_date.required' => 'Tanggal selesai wajib diisi.',
             'end_date.date' => 'Tanggal selesai harus berupa tanggal yang valid.',
             'end_date.after_or_equal' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.',
@@ -83,23 +94,6 @@ class MyLeaveRequestController extends Controller
             'attachment.mimes' => 'Format file lampiran harus berupa: pdf, png, jpg, jpeg, doc, docx.',
             'attachment.max' => 'Ukuran file lampiran tidak boleh lebih dari 2MB.',
         ]);
-
-        // 1. Cut-off payroll lock check
-        $cutoffDay = (int) \App\Models\Setting::get('payroll_cutoff_date', 26);
-        $today = Carbon::today();
-        if ($today->day > $cutoffDay) {
-            $minAllowedDate = $today->copy()->day($cutoffDay + 1);
-        } else {
-            $minAllowedDate = $today->copy()->subMonthNoOverflow()->day($cutoffDay + 1);
-        }
-
-        if (Carbon::parse($validated['start_date'])->lt($minAllowedDate)) {
-            return redirect()->back()
-                ->withInput()
-                ->withErrors([
-                    'start_date' => "Tanggal izin tidak boleh mendahului periode cut-off penggajian yang sudah ditutup (minimal tanggal " . $minAllowedDate->translatedFormat('d M Y') . ")."
-                ]);
-        }
 
         $leaveType = \App\Models\LeaveType::findOrFail($validated['leave_type_id']);
         $validated['type'] = $leaveType->name;

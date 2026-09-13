@@ -136,23 +136,6 @@ class LeaveRequestController extends Controller
             'attachment.max' => 'Ukuran file lampiran maksimal 2MB.',
         ]);
 
-        // 1. Cut-off payroll lock check
-        $cutoffDay = (int) \App\Models\Setting::get('payroll_cutoff_date', 26);
-        $today = Carbon::today();
-        if ($today->day > $cutoffDay) {
-            $minAllowedDate = $today->copy()->day($cutoffDay + 1);
-        } else {
-            $minAllowedDate = $today->copy()->subMonthNoOverflow()->day($cutoffDay + 1);
-        }
-
-        if (Carbon::parse($validated['start_date'])->lt($minAllowedDate)) {
-            return redirect()->back()
-                ->withInput()
-                ->withErrors([
-                    'start_date' => "Tanggal izin tidak boleh mendahului periode cut-off penggajian yang sudah ditutup (minimal tanggal " . $minAllowedDate->translatedFormat('d M Y') . ")."
-                ]);
-        }
-
         $leaveType = \App\Models\LeaveType::findOrFail($validated['leave_type_id']);
         $validated['type'] = $leaveType->name;
 
