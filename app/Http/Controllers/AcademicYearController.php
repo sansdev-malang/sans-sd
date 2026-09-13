@@ -62,13 +62,14 @@ class AcademicYearController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:50|unique:academic_years,name',
             'code' => 'nullable|string|max:20',
-            'semester' => 'required|string|in:Ganjil,Genap',
+            'semester' => 'required|string|in:Ganjil,Genap,ganjil,genap',
             'is_active' => 'nullable|boolean',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'description' => 'nullable|string',
         ]);
 
+        $validated['semester'] = strtolower($validated['semester']);
         $isActive = $request->boolean('is_active');
         $validated['is_active'] = $isActive;
 
@@ -96,13 +97,14 @@ class AcademicYearController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:50|unique:academic_years,name,' . $academicYear->id,
             'code' => 'nullable|string|max:20',
-            'semester' => 'required|string|in:Ganjil,Genap',
+            'semester' => 'required|string|in:Ganjil,Genap,ganjil,genap',
             'is_active' => 'nullable|boolean',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'description' => 'nullable|string',
         ]);
 
+        $validated['semester'] = strtolower($validated['semester']);
         $isActive = $request->boolean('is_active');
         $validated['is_active'] = $isActive;
 

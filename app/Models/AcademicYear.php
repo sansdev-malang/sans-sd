@@ -37,6 +37,22 @@ class AcademicYear extends Model
     }
 
     /**
+     * Get formatted semester (e.g. Ganjil, Genap).
+     */
+     public function getSemesterAttribute($value)
+     {
+         return ucfirst(strtolower($value ?? 'ganjil'));
+     }
+ 
+     /**
+      * Set semester to lowercase in DB.
+      */
+     public function setSemesterAttribute($value)
+     {
+         $this->attributes['semester'] = strtolower($value ?? 'ganjil');
+     }
+ 
+    /**
      * Scope for active academic year.
      */
     public function scopeActive($query)

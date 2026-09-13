@@ -15,7 +15,7 @@
                                 Master Akademik
                             </span>
                         </h2>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Kelola master tahun ajaran, semester, dan status periode akademik aktif di {{ setting('app_name', 'SD Anak Saleh') }}.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Kelola master tahun ajaran, semester, dan status periode akademik aktif di SANS SD.</p>
                     </div>
                 </div>
             </div>
@@ -107,7 +107,7 @@
                     </div>
                 </div>
                 <div class="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
-                    Siswa terdaftar di unit SD
+                    Siswa terdaftar di seluruh SD
                 </div>
             </div>
         </section>
@@ -169,14 +169,15 @@
                                 </td>
                                 <td class="px-5 py-3.5 text-center">
                                     @if($year->is_active)
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 shadow-2xs">
                                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                             AKTIF UTAMA
                                         </span>
                                     @else
-                                        <button type="button" @click="setActive({{ $year->id }}, '{{ $year->name }}')"
-                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                                        <button type="button" @click="confirmSetActive({{ $year->id }}, '{{ $year->name }}', '{{ $year->semester }}')"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-800 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-400 dark:hover:border-emerald-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-2xs transition-all duration-150 cursor-pointer"
                                             title="Klik untuk menjadikan Tahun Ajaran ini Aktif">
+                                            <i data-lucide="check-circle" class="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-500"></i>
                                             <span>Jadikan Aktif</span>
                                         </button>
                                     @endif
@@ -197,7 +198,7 @@
                                             <i data-lucide="edit-2" class="w-4 h-4"></i>
                                         </button>
                                         @if(!$year->is_active)
-                                            <button type="button" @click="deleteYear({{ $year->id }}, '{{ $year->name }}')"
+                                            <button type="button" @click="confirmDeleteYear({{ $year->id }}, '{{ $year->name }}')"
                                                 class="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg transition-colors cursor-pointer"
                                                 title="Hapus Tahun Ajaran">
                                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -218,9 +219,14 @@
             </div>
         </section>
 
-        <!-- MODAL TAMBAH / EDIT TAHUN AJARAN -->
-        <div x-show="modalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">
-            <div @click.outside="modalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+        <!-- MODAL TAMBAH / EDIT TAHUN AJARAN (Non-bubbling backdrop overlay) -->
+        <div x-show="modalOpen" x-cloak 
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto"
+            @click.self="modalOpen = false"
+            @keydown.escape.window="modalOpen = false">
+            
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col relative my-auto"
+                @click.stop>
                 
                 <form @submit.prevent="submitForm">
                     <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm z-10">
@@ -228,7 +234,7 @@
                             <h3 class="text-base font-bold text-slate-900 dark:text-slate-50" x-text="isEdit ? 'Edit Tahun Ajaran' : 'Tambah Tahun Ajaran Baru'"></h3>
                             <p class="text-xs text-slate-400 mt-0.5">Atur nama periode dan semester akademik.</p>
                         </div>
-                        <button type="button" @click="modalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <button type="button" @click="modalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
                             <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
                     </div>
@@ -263,12 +269,12 @@
                             </div>
                         </div>
 
-                        <div class="pt-2">
+                        <div class="pt-2 p-3 bg-indigo-50/50 dark:bg-indigo-950/30 rounded-xl border border-indigo-100 dark:border-indigo-900/40">
                             <label class="flex items-center gap-2 cursor-pointer">
                                 <input type="checkbox" x-model="formData.is_active" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-700">
                                 <span class="font-semibold text-slate-800 dark:text-slate-200">Set sebagai Tahun Ajaran Aktif (Default Sistem)</span>
                             </label>
-                            <p class="text-[11px] text-slate-400 ml-6 mt-0.5">Jika dicentang, tahun ajaran lain otomatis dinonaktifkan sebagai acuan utama.</p>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 ml-6 mt-0.5">Jika dicentang, tahun ajaran lain otomatis dinonaktifkan sebagai acuan utama.</p>
                         </div>
 
                         <div>
@@ -279,15 +285,48 @@
                     </div>
 
                     <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex justify-end gap-2">
-                        <button type="button" @click="modalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold transition-colors">
+                        <button type="button" @click="modalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold transition-colors cursor-pointer">
                             Batal
                         </button>
-                        <button type="submit" :disabled="saving" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5">
+                        <button type="submit" :disabled="saving" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+                            <span x-show="saving" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                             <span x-text="saving ? 'Menyimpan...' : (isEdit ? 'Simpan Perubahan' : 'Tambah Tahun Ajaran')"></span>
                         </button>
                     </div>
                 </form>
 
+            </div>
+        </div>
+
+        <!-- MODAL KONFIRMASI IN-APP (Aman dari native alert/confirm loop) -->
+        <div x-show="confirmModal.open" x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+            @click.self="confirmModal.open = false"
+            @keydown.escape.window="confirmModal.open = false">
+            
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col p-6 text-center animate-in fade-in zoom-in-95 duration-150"
+                @click.stop>
+                
+                <div class="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-4"
+                    :class="confirmModal.type === 'delete' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400' : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400'">
+                    <i :data-lucide="confirmModal.type === 'delete' ? 'trash-2' : 'check-circle'" class="w-6 h-6"></i>
+                </div>
+
+                <h3 class="text-base font-bold text-slate-900 dark:text-slate-50" x-text="confirmModal.title"></h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed" x-html="confirmModal.message"></p>
+
+                <div class="mt-6 flex items-center justify-center gap-3">
+                    <button type="button" @click="confirmModal.open = false" :disabled="confirmModal.loading"
+                        class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold transition-colors cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="button" @click="executeConfirmAction()" :disabled="confirmModal.loading"
+                        class="px-5 py-2 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                        :class="confirmModal.type === 'delete' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'">
+                        <span x-show="confirmModal.loading" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span x-text="confirmModal.confirmText"></span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -309,6 +348,15 @@
                     is_active: false,
                     description: '',
                 },
+                confirmModal: {
+                    open: false,
+                    type: 'activate',
+                    id: null,
+                    title: '',
+                    message: '',
+                    confirmText: 'Ya, Lanjutkan',
+                    loading: false
+                },
 
                 openCreateModal() {
                     this.isEdit = false;
@@ -322,6 +370,9 @@
                         description: '',
                     };
                     this.modalOpen = true;
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
                 },
 
                 openEditModal(id) {
@@ -336,19 +387,29 @@
                         if (res.success) {
                             const y = res.academic_year;
                             this.isEdit = true;
+                            const semStr = (y.semester || '').toString().toLowerCase();
                             this.formData = {
                                 id: y.id,
-                                name: y.name,
-                                semester: y.semester || 'Ganjil',
+                                name: y.name || '',
+                                semester: semStr === 'genap' ? 'Genap' : 'Ganjil',
                                 start_date: y.start_date ? y.start_date.substring(0, 10) : '',
                                 end_date: y.end_date ? y.end_date.substring(0, 10) : '',
                                 is_active: Boolean(y.is_active),
                                 description: y.description || '',
                             };
                             this.modalOpen = true;
+                            this.$nextTick(() => {
+                                if (window.lucide) lucide.createIcons();
+                            });
                         }
                     })
-                    .catch(err => alert("Gagal mengambil data: " + err.message));
+                    .catch(err => {
+                        if (window.showToastNotification) {
+                            window.showToastNotification("Gagal mengambil data: " + err.message, "error");
+                        } else {
+                            alert("Gagal mengambil data: " + err.message);
+                        }
+                    });
                 },
 
                 submitForm() {
@@ -367,65 +428,135 @@
                         },
                         body: JSON.stringify(this.formData)
                     })
-                    .then(res => res.json())
-                    .then(res => {
+                    .then(async (res) => {
                         this.saving = false;
-                        if (res.success) {
+                        const data = await res.json();
+                        if (res.ok && data.success) {
                             this.modalOpen = false;
-                            alert(res.message || 'Tahun ajaran berhasil disimpan!');
-                            window.location.reload();
+                            if (window.showToastNotification) {
+                                window.showToastNotification(data.message || 'Tahun ajaran berhasil disimpan!', 'success');
+                            }
+                            setTimeout(() => window.location.reload(), 500);
                         } else {
-                            alert(res.message || 'Terjadi kesalahan saat menyimpan.');
+                            const errMsg = data.message || (data.errors ? Object.values(data.errors).flat().join(', ') : 'Terjadi kesalahan saat menyimpan.');
+                            if (window.showToastNotification) {
+                                window.showToastNotification(errMsg, 'error');
+                            } else {
+                                alert(errMsg);
+                            }
                         }
                     })
                     .catch(err => {
                         this.saving = false;
-                        alert('Error: ' + err.message);
+                        if (window.showToastNotification) {
+                            window.showToastNotification('Error: ' + err.message, 'error');
+                        } else {
+                            alert('Error: ' + err.message);
+                        }
                     });
                 },
 
-                setActive(id, name) {
-                    if (!confirm(`Jadikan Tahun Ajaran "${name}" sebagai periode aktif utama?`)) return;
-
-                    fetch(`/academic-years/${id}/set-active`, {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        }
-                    })
-                    .then(res => res.json())
-                    .then(res => {
-                        if (res.success) {
-                            alert(res.message);
-                            window.location.reload();
-                        } else {
-                            alert(res.message || 'Gagal mengubah status aktif.');
-                        }
-                    })
-                    .catch(err => alert('Error: ' + err.message));
+                confirmSetActive(id, name, semester) {
+                    this.confirmModal = {
+                        open: true,
+                        type: 'activate',
+                        id: id,
+                        title: 'Jadikan Periode Aktif Utama?',
+                        message: `Tahun Ajaran <strong>${name} (${semester})</strong> akan dijadikan sebagai periode aktif utama sistem. Seluruh filter data siswa, rombel, dan SPMB secara default akan mengacu pada periode ini.`,
+                        confirmText: 'Ya, Jadikan Aktif',
+                        loading: false
+                    };
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
                 },
 
-                deleteYear(id, name) {
-                    if (!confirm(`Apakah Anda yakin ingin menghapus Tahun Ajaran "${name}"?`)) return;
+                confirmDeleteYear(id, name) {
+                    this.confirmModal = {
+                        open: true,
+                        type: 'delete',
+                        id: id,
+                        title: 'Hapus Tahun Ajaran?',
+                        message: `Apakah Anda yakin ingin menghapus Tahun Ajaran <strong>${name}</strong>? Data yang telah dihapus tidak dapat dipulihkan.`,
+                        confirmText: 'Hapus Permanen',
+                        loading: false
+                    };
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
+                },
 
-                    fetch(`/academic-years/${id}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        }
-                    })
-                    .then(res => res.json())
-                    .then(res => {
-                        if (res.success) {
-                            alert(res.message || 'Tahun ajaran berhasil dihapus!');
-                            window.location.reload();
-                        } else {
-                            alert(res.message || 'Gagal menghapus tahun ajaran.');
-                        }
-                    })
-                    .catch(err => alert('Error: ' + err.message));
+                executeConfirmAction() {
+                    if (this.confirmModal.loading) return;
+                    this.confirmModal.loading = true;
+
+                    if (this.confirmModal.type === 'activate') {
+                        fetch(`/academic-years/${this.confirmModal.id}/set-active`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            }
+                        })
+                        .then(async (res) => {
+                            this.confirmModal.loading = false;
+                            const data = await res.json();
+                            if (res.ok && data.success) {
+                                this.confirmModal.open = false;
+                                if (window.showToastNotification) {
+                                    window.showToastNotification(data.message || 'Tahun ajaran berhasil diaktifkan!', 'success');
+                                }
+                                setTimeout(() => window.location.reload(), 500);
+                            } else {
+                                if (window.showToastNotification) {
+                                    window.showToastNotification(data.message || 'Gagal mengubah status aktif.', 'error');
+                                } else {
+                                    alert(data.message || 'Gagal mengubah status aktif.');
+                                }
+                            }
+                        })
+                        .catch(err => {
+                            this.confirmModal.loading = false;
+                            if (window.showToastNotification) {
+                                window.showToastNotification('Error: ' + err.message, 'error');
+                            } else {
+                                alert('Error: ' + err.message);
+                            }
+                        });
+                    } else if (this.confirmModal.type === 'delete') {
+                        fetch(`/academic-years/${this.confirmModal.id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            }
+                        })
+                        .then(async (res) => {
+                            this.confirmModal.loading = false;
+                            const data = await res.json();
+                            if (res.ok && data.success) {
+                                this.confirmModal.open = false;
+                                if (window.showToastNotification) {
+                                    window.showToastNotification(data.message || 'Tahun ajaran berhasil dihapus!', 'success');
+                                }
+                                setTimeout(() => window.location.reload(), 500);
+                            } else {
+                                if (window.showToastNotification) {
+                                    window.showToastNotification(data.message || 'Gagal menghapus tahun ajaran.', 'error');
+                                } else {
+                                    alert(data.message || 'Gagal menghapus tahun ajaran.');
+                                }
+                            }
+                        })
+                        .catch(err => {
+                            this.confirmModal.loading = false;
+                            if (window.showToastNotification) {
+                                window.showToastNotification('Error: ' + err.message, 'error');
+                            } else {
+                                alert('Error: ' + err.message);
+                            }
+                        });
+                    }
                 }
             }
         }
