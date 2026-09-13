@@ -142,10 +142,10 @@
                     text-xs relative group">
                     <div class="flex items-center gap-3">
                         <i data-lucide="user-plus" class="menu-icon w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
-                        <span class="menu-text">Siswa Baru SPMB</span>
+                        <span class="menu-text">SPMB</span>
                     </div>
                     <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
-                        Siswa Baru SPMB
+                        SPMB
                     </span>
                 </a>
 

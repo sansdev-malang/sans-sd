@@ -10,7 +10,7 @@
                     </div>
                     <div>
                         <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
-                            Siswa Baru SPMB
+                            SPMB
                             <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 font-semibold border border-emerald-200 dark:border-emerald-800">
                                 Unit SD
                             </span>
@@ -335,7 +335,7 @@
         </section>
 
         <!-- MODAL DETAIL PENDAFTAR -->
-        <div x-show="modalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">
+        <div x-show="modalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">
             <div @click.outside="modalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
                 
                 <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm z-10">
@@ -472,7 +472,7 @@
         </div>
 
         <!-- MODAL ENROLLMENT WIZARD (TANDAI / ALOKASI SISWA AKTIF) -->
-        <div x-show="enrollModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">
+        <div x-show="enrollModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">
             <div @click.outside="enrollModalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col">
                 
                 <form @submit.prevent="submitEnroll">

@@ -30,7 +30,7 @@
                     'my-leaves.index' => 'Izin & Cuti Saya',
                     'my-attendance' => 'Absensi Saya',
                     'payslips.index' => 'Slip Gaji Saya',
-                    'spmb.candidates.index' => 'Siswa Baru SPMB',
+                    'spmb.candidates.index' => 'SPMB',
                     'settings' => 'Pengaturan Aplikasi',
                     'users.index' => 'Manajemen Pengguna',
                     'teachers.index' => 'Data Guru',
