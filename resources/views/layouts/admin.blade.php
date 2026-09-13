@@ -27,7 +27,7 @@
                     'bonus-reports.index' => 'Rekap Bonus Kehadiran',
                     'attendances.index' => 'Data Riwayat Absensi',
                     'leaves.index' => 'Pengajuan Izin & Cuti',
-                    'my-leaves.index' => 'Izin & Cuti Saya',
+                    'my-leaves.index' => 'Izin & Cuti',
                     'my-attendance' => 'Absensi Saya',
                     'payslips.index' => 'Slip Gaji Saya',
                     'spmb.candidates.index' => 'SPMB',

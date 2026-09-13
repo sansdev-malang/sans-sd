@@ -54,7 +54,7 @@
                     <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                         <i data-lucide="calendar-days" class="w-4 h-4"></i>
                     </div>
-                    <h2 class="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Izin & Cuti Saya</h2>
+                    <h2 class="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Izin & Cuti</h2>
                 </div>
                 <p class="text-xs text-slate-500 dark:text-slate-400">Pantau riwayat izin, sakit, dinas, dan cuti mandiri Anda.</p>
             </div>
