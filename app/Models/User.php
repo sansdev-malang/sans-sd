@@ -44,8 +44,15 @@ class User extends Authenticatable
             if ($user->employee_id && ($user->isDirty('name') || $user->isDirty('email'))) {
                 $employee = \App\Models\Employee::find($user->employee_id);
                 if ($employee) {
+                    $rawName = $user->name;
+                    $front = $employee->front_title;
+                    $back = $employee->back_title;
+                    \App\Models\Employee::sanitizeTitlesAndName($front, $rawName, $back);
+
                     $employee->updateQuietly([
-                        'name' => $user->name,
+                        'front_title' => $front ?: null,
+                        'name' => $rawName,
+                        'back_title' => $back ?: null,
                         'email' => $user->email,
                     ]);
                 }

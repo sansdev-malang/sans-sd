@@ -99,8 +99,8 @@ class MyEmployeeProfileController extends Controller
 
         // Sync with associated User account
         if ($employee->user) {
-            $employee->user->update([
-                'name' => $employee->name, // Formatted name with titles
+            $employee->user->updateQuietly([
+                'name' => $employee->raw_name,
                 'email' => $employee->email,
             ]);
         }

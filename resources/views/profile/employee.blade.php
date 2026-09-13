@@ -21,6 +21,69 @@
                 if (!this.rawName) return false;
                 const titleRegex = /(^|[\s,\.])(dr\.|drg\.|dra\.|drs\.|prof\.|kh\.|kh\b|hj\.|hj\b|h\.|h\b|ust\.|ustad\b|ustadz\b|s\.pd|m\.pd|s\.kom|m\.kom|s\.e|m\.m|s\.si|m\.si|s\.ag|m\.ag|s\.t|m\.t|s\.h|m\.h|s\.sos|m\.sos|s\.ked|s\.psi|m\.psi|l\.c|ph\.d|b\.a|m\.a)([\s,\.]|$)/i;
                 return titleRegex.test(this.rawName) || this.rawName.includes(',');
+            },
+            cleanTitleFromName() {
+                let name = (this.rawName || '').trim();
+                let front = (this.frontTitle || '').trim();
+                let back = (this.backTitle || '').trim();
+
+                const frontPatterns = [
+                    /^(dr\.|drg\.|dra\.|drs\.|prof\.|kh\.|kh\b|hj\.|hj\b|h\.|h\b|ust\.|ustad\b|ustadz\b|ir\.|rr\.)\s+/i
+                ];
+
+                if (front) {
+                    let cleanFront = front.replace(/\.+$/, '');
+                    let reg = new RegExp('^\\s*(' + front.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&') + '|' + cleanFront.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&') + '\\.?)\\s*', 'i');
+                    name = name.replace(reg, '');
+                } else {
+                    for (let pat of frontPatterns) {
+                        let m = name.match(pat);
+                        if (m) {
+                            front = m[1].trim();
+                            if (!front.endsWith('.') && !['kh', 'hj', 'h', 'ustad', 'ustadz', 'rr'].includes(front.toLowerCase())) {
+                                front += '.';
+                            }
+                            this.frontTitle = front;
+                            name = name.replace(pat, '');
+                            break;
+                        }
+                    }
+                }
+
+                if (name.includes(',')) {
+                    let parts = name.split(',');
+                    let cleanBase = parts.shift().trim();
+                    let afterComma = parts.map(p => p.trim()).filter(Boolean).join(', ');
+                    if (afterComma) {
+                        if (!back) {
+                            back = afterComma;
+                        } else {
+                            back = back + ', ' + afterComma;
+                        }
+                    }
+                    name = cleanBase;
+                }
+
+                if (back) {
+                    let backParts = back.split(',').map(p => p.trim()).filter(Boolean);
+                    for (let part of backParts) {
+                        let reg = new RegExp('[\\s,]+' + part.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&') + '\\s*$', 'i');
+                        name = name.replace(reg, '');
+                    }
+
+                    let seen = new Set();
+                    let uniqueTokens = [];
+                    for (let token of backParts) {
+                        let norm = token.toLowerCase().replace(/[\s\.]/g, '');
+                        if (norm && !seen.has(norm)) {
+                            seen.add(norm);
+                            uniqueTokens.push(token);
+                        }
+                    }
+                    this.backTitle = uniqueTokens.join(', ');
+                }
+
+                this.rawName = name.replace(/^[\s,]+|[\s,]+$/g, '').trim();
             }
          }" 
          class="p-4 sm:p-6 space-y-6 w-full">
@@ -380,7 +443,7 @@
                                       action="{{ route('my-employee-profile.update') }}"
                                       method="POST" 
                                       enctype="multipart/form-data" 
-                                      @submit="isSaving = true"
+                                      @submit="cleanTitleFromName(); isSaving = true"
                                       class="space-y-6 text-xs">
                                     @csrf
                                     @method('PUT')
@@ -469,13 +532,19 @@
                                              x-transition:enter-start="opacity-0 -translate-y-1"
                                              x-transition:enter-end="opacity-100 translate-y-0"
                                              style="display: none;" 
-                                             class="p-2.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 flex items-start gap-2.5 text-[11px]">
+                                             class="p-3 rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 flex items-start gap-2.5 text-[11px]">
                                             <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"></i>
-                                            <div>
+                                            <div class="flex-1">
                                                 <div class="font-bold">Perhatian: Terdeteksi gelar atau tanda koma di kolom Nama Lengkap!</div>
                                                 <p class="text-[10px] text-amber-700/90 dark:text-amber-400 mt-0.5">
-                                                    Mohon hapus singkatan gelar dari kolom nama ini. Pindahkan gelar depan (Dr., Hj., Drs., dll) ke kolom <b>Gelar Depan</b> dan gelar akademik (S.Pd, M.M, dll) ke kolom <b>Gelar Belakang</b>.
+                                                    Kolom Nama Lengkap wajib hanya berisi nama asli tanpa gelar. Pisahkan gelar ke kolom <b>Gelar Depan</b> atau <b>Gelar Belakang</b>.
                                                 </p>
+                                                <button type="button" 
+                                                        @click="cleanTitleFromName()"
+                                                        class="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] shadow-sm transition-colors cursor-pointer">
+                                                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                                    <span>Bersihkan Gelar dari Kolom Nama Otomatis</span>
+                                                </button>
                                             </div>
                                         </div>
 
