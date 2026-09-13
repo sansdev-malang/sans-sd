@@ -84,7 +84,12 @@
                                 <td class="px-5 py-3.5 text-left">
                                     <div class="flex flex-col min-w-0 max-w-lg">
                                         <span class="text-slate-900 dark:text-slate-100 font-bold tracking-tight text-xs" title="{{ $announcement->title }}">{{ $announcement->title }}</span>
-                                        <span class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border capitalize w-fit {{ $catColor }}">
+                                        @if(!empty($announcement->content))
+                                            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-normal line-clamp-1 mt-0.5" title="{{ strip_tags($announcement->content) }}">
+                                                {{ \Illuminate\Support\Str::limit(strip_tags($announcement->content), 85) }}
+                                            </p>
+                                        @endif
+                                        <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold border capitalize w-fit {{ $catColor }}">
                                             <i data-lucide="tag" class="w-3 h-3"></i>
                                             {{ $announcement->category }}
                                         </span>
@@ -237,7 +242,12 @@
                     </div>
                     <div class="space-y-1">
                         <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug">{{ $announcement->title }}</h3>
-                        <div class="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500">
+                        @if(!empty($announcement->content))
+                            <p class="text-xs text-slate-600 dark:text-slate-400 font-normal line-clamp-2 leading-relaxed">
+                                {{ \Illuminate\Support\Str::limit(strip_tags($announcement->content), 120) }}
+                            </p>
+                        @endif
+                        <div class="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500 pt-0.5">
                             <span>Oleh: {{ $creatorName }}</span>
                             <span>•</span>
                             <span>{{ $announcement->publish_date ? $announcement->publish_date->translatedFormat('d M Y, H:i') : '-' }}</span>
