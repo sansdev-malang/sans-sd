@@ -10,6 +10,15 @@
         @else
             <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23e91d1d'/%3E%3Cstop offset='25%25' stop-color='%23f3e40f'/%3E%3Cstop offset='50%25' stop-color='%2333ee0d'/%3E%3Cstop offset='75%25' stop-color='%23070be2'/%3E%3Cstop offset='100%25' stop-color='%238a18c5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23grad)'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-weight='900' font-size='18'%3E{{ substr(setting('app_name', 'SANS'), 0, 1) }}%3C/text%3E%3C/svg%3E">
         @endif
+
+        <!-- PWA Settings -->
+        <link rel="manifest" href="{{ asset('manifest.json') }}">
+        <meta name="theme-color" content="#0284c7">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="{{ setting('app_name', 'SANS SD') }}">
+        <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192.png') }}">
         @php
             if (!isset($title) || empty($title) || $title === 'Admin Dashboard') {
                 $routeName = request()->route() ? request()->route()->getName() : '';
@@ -759,5 +768,19 @@
                 </div>
             </template>
         </div>
+        <!-- PWA Service Worker Registration -->
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(reg => {
+                            console.log('[PWA] ServiceWorker registered with scope:', reg.scope);
+                        })
+                        .catch(err => {
+                            console.warn('[PWA] ServiceWorker registration failed:', err);
+                        });
+                });
+            }
+        </script>
     </body>
 </html>
