@@ -150,7 +150,7 @@
                 }
             }
 
-            $calendarStart = $start->copy()->startOfMonth();
+            $calendarStart = $selectedMonth->copy()->startOfMonth();
             $months = [
                 $calendarStart->copy()->subMonthNoOverflow(),
                 $calendarStart->copy(),
