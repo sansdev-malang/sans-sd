@@ -4,14 +4,17 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ setting('app_name', 'SANS') }}</title>
+    <meta name="description" content="Sistem Informasi Manajemen Akademik & Administrasi Terpadu SANS SD">
+    <title>{{ setting('app_name', 'SANS SD') }}</title>
     @if(setting('app_favicon'))
         <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . setting('app_favicon')) }}">
     @else
         <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%236366f1'/><stop offset='100%' stop-color='%23a855f7'/></linearGradient></defs><rect width='100' height='100' rx='25' fill='url(%23g)'/><text x='50' y='75' font-family='Arial, sans-serif' font-size='65' font-weight='bold' fill='white' text-anchor='middle'>{{ substr(setting('app_name', 'SANS'), 0, 1) }}</text></svg>">
     @endif
 
-    <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+    <!-- DNS Prefetch & Google Fonts: Inter, Plus Jakarta Sans -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -180,19 +183,23 @@
                     <span class="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">{{ setting('app_name', 'SANS') }}</span>
                 </a>
 
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3 sm:gap-4">
                     <!-- Light / Dark Switch Button -->
                     <button id="theme-toggle"
                         class="p-1.5 text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md cursor-pointer transition-colors"
-                        title="Toggle Tema">
+                        title="Toggle Tema"
+                        aria-label="Toggle Tema">
                         <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
                         <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
                     </button>
 
-                    <!-- Back to Home link -->
-                    <a href="https://sans.sch.id" class="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50 transition-colors">
+                    <!-- Back to Home link (Pure Link: Icon on mobile, Icon + Text on desktop) -->
+                    <a href="https://sans.sch.id" 
+                        class="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50 transition-colors"
+                        title="Kembali ke Portal Utama SANS"
+                        aria-label="Back to Portal">
                         <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
-                        Back to Portal
+                        <span class="hidden sm:inline">Back to Portal</span>
                     </a>
                 </div>
             </div>
