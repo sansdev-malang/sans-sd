@@ -23,13 +23,13 @@
             @else
                 <div class="w-8 h-8 rounded-lg logo-gradient-bg flex items-center justify-center shrink-0 shadow-sm">
                     <span class="text-white text-lg font-bold" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">
-                        {{ substr(setting('app_name', 'SANS SD'), 0, 1) }}
+                        {{ substr(setting('app_name', config('app.name', 'SANS SD')), 0, 1) }}
                     </span>
                 </div>
             @endif
             <div class="school-info overflow-hidden">
                 <h1 class="text-lg text-slate-900 dark:text-slate-50 truncate leading-normal tracking-wide" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">
-                    {{ setting('app_name', 'SANS SD') }}
+                    {{ setting('app_name', config('app.name', 'SANS SD')) }}
                 </h1>
             </div>
         </div>
@@ -101,8 +101,7 @@
                         Siswa Baru SPMB
                     </span>
                 </a>
-                @endif
-                @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin_sd') || auth()->user()->hasRole('admin_paud') || auth()->user()->hasRole('admin_smp') || auth()->user()->hasRole('kepala_sekolah') || auth()->user()->hasRole('waka'))
+
                 <a href="{{ route('teachers.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg
                     {{ Request::routeIs('teachers.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
                     text-xs relative group">
@@ -297,7 +296,10 @@
         @php
             $showPicketGroup = false;
             if (config('app.school_unit') === 'sd') {
-                $showPicketGroup = $isAdmin || (auth()->user()->employee_id && \App\Models\PicketSchedule::where('employee_id', auth()->user()->employee_id)->exists());
+                $empId = auth()->user()->employee_id;
+                $showPicketGroup = $isAdmin || ($empId && \Illuminate\Support\Facades\Cache::remember('user_has_picket_' . $empId, 300, function() use ($empId) {
+                    return \App\Models\PicketSchedule::where('employee_id', $empId)->exists();
+                }));
             }
         @endphp
         @if($showPicketGroup)
@@ -494,12 +496,15 @@
                 @php
                     $nameParts = explode(' ', Auth::user()->name);
                     $initials = strtoupper(substr($nameParts[0], 0, 1) . (isset($nameParts[1]) ? substr($nameParts[1], 0, 1) : ''));
-                    $photo = null;
-                    if (method_exists(Auth::user(), 'employee') && Auth::user()->employee) {
-                        $photo = Auth::user()->employee->photo;
-                    } elseif (isset(Auth::user()->photo)) {
-                        $photo = Auth::user()->photo;
-                    }
+                    $userId = Auth::id();
+                    $photo = \Illuminate\Support\Facades\Cache::remember('user_sidebar_photo_' . $userId, 300, function () {
+                        $u = Auth::user();
+                        if (!$u) return null;
+                        if ($u->relationLoaded('employee')) {
+                            return $u->employee?->photo ?? $u->photo ?? null;
+                        }
+                        return $u->employee_id ? \App\Models\Employee::where('id', $u->employee_id)->value('photo') : ($u->photo ?? null);
+                    });
                 @endphp
 
                 @if($photo)
