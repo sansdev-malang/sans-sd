@@ -220,8 +220,8 @@
         </section>
 
         <!-- MODAL TAMBAH / EDIT TAHUN AJARAN (Non-bubbling backdrop overlay) -->
-        <div x-show="modalOpen" x-cloak style="display: none;"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto"
+        <div x-show="modalOpen" x-cloak style="display: none; margin-top: 0px !important; z-index: 9999;"
+            class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto"
             @click.self="modalOpen = false"
             @keydown.escape.window="modalOpen = false">
             
@@ -299,8 +299,8 @@
         </div>
 
         <!-- MODAL KONFIRMASI IN-APP (Aman dari native alert/confirm loop) -->
-        <div x-show="confirmModal.open" x-cloak style="display: none;"
-            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+        <div x-show="confirmModal.open" x-cloak style="display: none; margin-top: 0px !important; z-index: 9999;"
+            class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
             @click.self="confirmModal.open = false"
             @keydown.escape.window="confirmModal.open = false">
             
