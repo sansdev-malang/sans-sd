@@ -18,7 +18,7 @@
         <section class="grid {{ $isAdmin ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' }} gap-4">
             @if($isAdmin)
                 <!-- Admin Card 1: Total Siswa -->
-                <div onclick="window.location='{{ route('siswa') }}'" class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer">
+                <div onclick="window.location='{{ route('students.index') }}'" class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer">
                     <div class="flex justify-between items-start">
                         <div>
                             <div class="flex items-center gap-2">
@@ -105,7 +105,7 @@
                 </div>
 
                 <!-- Admin Card 3: Total Rombel / Kelas -->
-                <div onclick="window.location='{{ route('rombel') }}'" class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer">
+                <div onclick="window.location='{{ route('classrooms.index') }}'" class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer">
                     <div class="flex justify-between items-start">
                         <div>
                             <div class="flex items-center gap-2">
@@ -633,7 +633,7 @@
                 <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">Aksi Cepat</h3>
                 <div class="grid grid-cols-2 gap-2">
                     @if($isAdmin)
-                        <button onclick="window.location='{{ route('siswa') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
+                        <button onclick="window.location='{{ route('students.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
                             <i data-lucide="user-plus" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
                             <span class="text-[10px] font-medium text-slate-700 dark:text-slate-300 mt-1.5 text-center leading-tight">Tambah Siswa</span>
                         </button>
