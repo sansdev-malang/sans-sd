@@ -22,7 +22,7 @@
         }
     </style>
 
-    <div class="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+    <div class="p-4 sm:p-6 space-y-6 w-full">
         <!-- HEADER -->
         <section class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div class="flex items-center gap-3">
