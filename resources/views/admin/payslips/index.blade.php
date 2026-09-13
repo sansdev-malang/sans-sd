@@ -1,11 +1,14 @@
 @php
     $isSuperAdmin = auth()->user() && auth()->user()->hasRole('super_admin');
+    $currentDate = \Carbon\Carbon::parse($month . '-01');
+    $prevMonth = $currentDate->copy()->subMonth()->format('Y-m');
+    $nextMonth = $currentDate->copy()->addMonth()->format('Y-m');
 @endphp
 <x-admin-layout>
     <style>
         input[type="month"]::-webkit-calendar-picker-indicator {
             filter: brightness(0) !important;
-            opacity: 1 !important;
+            opacity: 0.6 !important;
             cursor: pointer;
         }
 
@@ -15,202 +18,241 @@
 
         .dark input[type="month"]::-webkit-calendar-picker-indicator {
             filter: brightness(0) invert(1) !important;
+            opacity: 0.7 !important;
         }
     </style>
-    <div class="p-6 space-y-6">
+
+    <div class="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
         <!-- HEADER -->
-        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="flex flex-col gap-0.5">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Slip Gaji Pegawai</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Unduh slip gaji bulanan dari HRD pusat.</p>
+        <section class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-xs">
+                    <i data-lucide="receipt" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Slip Gaji</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Unduh slip gaji dan lampiran bulanan dari HRD.</p>
+                </div>
             </div>
-            <div class="flex items-center gap-2"></div>
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
+                <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-500"></i>
+                <span>Periode: <strong class="text-slate-900 dark:text-slate-100">{{ $currentDate->translatedFormat('F Y') }}</strong></span>
+            </div>
         </section>
 
+        <!-- FILTERS & NAVIGATION -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xs">
+            <form method="GET" action="{{ route('payslips.index') }}" class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2.5 flex-1">
+                    @if($isSuperAdmin)
+                    <div class="w-full sm:w-64 shrink-0">
+                        <div class="relative flex items-center">
+                            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none"></i>
+                            <input type="text" id="searchInput" placeholder="Cari nama pegawai..." class="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:border-indigo-500 transition-colors">
+                        </div>
+                    </div>
+                    @endif
 
-    <!-- Filters -->
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-4 w-full text-left">
-        <form method="GET" action="{{ route('payslips.index') }}" class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
-            <div class="flex flex-wrap items-center gap-2 flex-1">
-                @if($isSuperAdmin)
-                <div class="w-full md:w-64 shrink-0">
-                    <div class="flex items-center h-9 w-full search-container bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-inner focus-within:ring-0 focus-within:border-slate-300 dark:focus-within:border-slate-700">
-                        <input type="text" id="searchInput" placeholder="Ketik nama..." class="w-full h-full px-3 text-xs bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-0 border-0 outline-none shadow-none">
+                    <!-- Quick Month Navigator -->
+                    <div class="inline-flex items-center gap-1 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 p-1 rounded-xl shadow-xs">
+                        <a href="{{ route('payslips.index', ['month' => $prevMonth]) }}" title="Bulan Sebelumnya ({{ \Carbon\Carbon::parse($prevMonth . '-01')->translatedFormat('M Y') }})" class="h-7 w-7 inline-flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </a>
+                        <input type="month" id="month" name="month" value="{{ $month }}" class="h-7 px-2 text-xs font-semibold bg-transparent text-slate-800 dark:text-slate-200 border-0 focus:ring-0 cursor-pointer text-center" onchange="this.form.submit()">
+                        <a href="{{ route('payslips.index', ['month' => $nextMonth]) }}" title="Bulan Selanjutnya ({{ \Carbon\Carbon::parse($nextMonth . '-01')->translatedFormat('M Y') }})" class="h-7 w-7 inline-flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </a>
                     </div>
                 </div>
-                @endif
-                <input type="month" id="month" name="month" value="{{ $month }}" class="h-9 px-2.5 flex-1 sm:flex-initial sm:w-36 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 shadow-inner focus:outline-none focus:ring-0 focus:ring-transparent focus:border-slate-300 dark:focus:border-slate-700" onchange="this.form.submit()">
-            </div>
-        </form>
-    </div>
 
-    <!-- TABLE LIST -->
-    <div class="{{ !$isSuperAdmin ? 'hidden sm:block' : '' }} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden text-left w-full flex flex-col justify-between">
-        <!-- <div class="p-5 border-b border-slate-100 dark:border-slate-900 flex justify-between items-center flex-wrap gap-2 bg-white dark:bg-slate-900">
-            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Daftar Slip Gaji
-            </h3>
-        </div> -->
-        <div class="overflow-x-auto overflow-y-auto custom-scrollbar" style="max-height: calc(100vh - 240px);">
-            <table class="w-full text-xs border-collapse">
-                <thead class="z-10">
-                    <tr class="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[10px]">
-                        <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-left w-64 min-w-[200px]">Nama Pegawai</th>
-                        <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-left w-48 min-w-[150px]">Tipe Pegawai</th>
-                        <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-center w-40">Periode</th>
-                        <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-center w-32">Status Slip</th>
-                        <th class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 px-6 py-3 text-right w-36">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-900 text-slate-700 dark:text-slate-300 font-medium">
-                    @forelse($employees as $emp)
-                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition-colors">
-                            <td class="px-6 py-3 text-left">
-                                <div class="flex flex-col min-w-0">
-                                    <span class="text-slate-900 dark:text-slate-200 font-bold tracking-tight truncate">{{ $emp->name }}</span>
-                                    <span class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold truncate">{{ $emp->nik ?? '-' }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-3 text-left text-slate-600 dark:text-slate-300">
-                                {{ $emp->employeeType->name ?? '-' }}
-                            </td>
-                            <td class="px-6 py-3 text-center text-slate-600 dark:text-slate-300">
-                                {{ \Carbon\Carbon::parse($month . '-01')->translatedFormat('F Y') }}
-                            </td>
-                            <td class="px-6 py-3 text-center">
-                                @if($emp->payslip_url)
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700/30 uppercase">
-                                        Tersedia
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-700/30 uppercase">
-                                        Belum Ada
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-3 text-right">
-                                @if($emp->payslip_url)
-                                    <div class="flex items-center justify-end gap-2">
-                                        <a href="{{ $emp->payslip_url }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 h-8 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-lg transition-colors">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                            Download Slip
-                                        </a>
-                                        @if($emp->attachment_url)
-                                            <a href="{{ $emp->attachment_url }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 h-8 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold rounded-lg transition-colors border border-slate-200 dark:border-slate-700">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-                                                Lampiran
-                                            </a>
-                                        @endif
-                                    </div>
-                                @else
-                                    <button disabled class="inline-flex items-center justify-center h-8 px-3 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-bold rounded-lg cursor-not-allowed">
-                                        Menunggu HRD
-                                    </button>
-                                @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
-                                Tidak ada data pegawai.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                <div class="text-xs text-slate-500 dark:text-slate-400 self-end sm:self-center">
+                    Total: <span class="font-bold text-slate-800 dark:text-slate-200">{{ $employees->count() }} Pegawai</span>
+                </div>
+            </form>
         </div>
-    </div>
 
-    @if(!$isSuperAdmin)
-        <!-- Mobile View for Regular Employee -->
-        <div class="block sm:hidden space-y-4">
+        <!-- TABLE LIST (Desktop & Super Admin) -->
+        <div class="{{ !$isSuperAdmin ? 'hidden md:block' : '' }} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
+            <div class="overflow-x-auto" style="max-height: calc(100vh - 280px); overflow-y: auto;">
+                <table class="w-full text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[11px] sticky top-0 z-10">
+                            <th class="px-5 py-3.5 text-left min-w-[200px]">Nama Pegawai</th>
+                            <th class="px-5 py-3.5 text-left min-w-[150px]">Tipe Pegawai</th>
+                            <th class="px-5 py-3.5 text-center w-36">Periode</th>
+                            <th class="px-5 py-3.5 text-center w-32">Status Slip</th>
+                            <th class="px-5 py-3.5 text-right w-48">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300 font-medium">
+                        @forelse($employees as $emp)
+                            <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                                <td class="px-5 py-3.5 text-left">
+                                    <div class="flex flex-col min-w-0">
+                                        <span class="text-slate-900 dark:text-slate-100 font-semibold truncate">{{ $emp->name }}</span>
+                                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">{{ $emp->nik ?? '-' }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-5 py-3.5 text-left text-slate-600 dark:text-slate-300">
+                                    {{ $emp->employeeType->name ?? '-' }}
+                                </td>
+                                <td class="px-5 py-3.5 text-center text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                                    {{ $currentDate->translatedFormat('F Y') }}
+                                </td>
+                                <td class="px-5 py-3.5 text-center whitespace-nowrap">
+                                    @if($emp->payslip_url)
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            Tersedia
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                            Belum Ada
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                                    @if($emp->payslip_url)
+                                        <div class="flex items-center justify-end gap-1.5">
+                                            <a href="{{ $emp->payslip_url }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 h-8 px-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-colors shadow-xs">
+                                                <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                                                Slip Gaji
+                                            </a>
+                                            @if($emp->attachment_url)
+                                                <a href="{{ $emp->attachment_url }}" target="_blank" class="inline-flex items-center justify-center gap-1.5 h-8 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl transition-colors border border-slate-200 dark:border-slate-700">
+                                                    <i data-lucide="paperclip" class="w-3.5 h-3.5"></i>
+                                                    Lampiran
+                                                </a>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <button disabled class="inline-flex items-center justify-center h-8 px-3 bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 text-xs font-medium rounded-xl cursor-not-allowed border border-slate-200/50 dark:border-slate-800">
+                                            Menunggu HRD
+                                        </button>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                                    <div class="flex flex-col items-center justify-center gap-2">
+                                        <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                                            <i data-lucide="inbox" class="w-6 h-6"></i>
+                                        </div>
+                                        <span class="text-sm font-medium">Tidak ada data slip gaji untuk periode ini.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if(!$isSuperAdmin)
+        <!-- MOBILE / CARD VIEW (Regular Employee) -->
+        <div class="block md:hidden space-y-4">
             @forelse($employees as $emp)
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm space-y-4 text-left">
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <h3 class="text-base font-bold text-slate-900 dark:text-slate-50">{{ $emp->name }}</h3>
-                            <p class="text-xs text-slate-500 mt-1">NIK: {{ $emp->nik ?? '-' }}</p>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4 text-left">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">{{ $emp->name }}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">NIK: {{ $emp->nik ?? '-' }}</p>
                         </div>
-                        <div class="shrink-0 ml-3">
+                        <div class="shrink-0">
                             @if($emp->payslip_url)
-                                <span class="inline-flex items-center justify-center text-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/20">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                     Tersedia
                                 </span>
                             @else
-                                <span class="inline-flex items-center justify-center text-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-200/20">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
                                     Belum Ada
                                 </span>
                             @endif
                         </div>
                     </div>
 
-                    <div class="border-t border-slate-100 dark:border-slate-800/60 pt-3.5 space-y-2">
-                        <div class="flex justify-between text-xs">
-                            <span class="text-slate-400 dark:text-slate-500">Tipe Pegawai:</span>
-                            <span class="font-medium text-slate-800 dark:text-slate-200">{{ $emp->employeeType->name ?? '-' }}</span>
+                    <div class="grid grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800/80 rounded-xl text-xs">
+                        <div>
+                            <span class="text-slate-400 dark:text-slate-500 block text-[11px]">Tipe Pegawai</span>
+                            <span class="font-medium text-slate-800 dark:text-slate-200 truncate block mt-0.5">{{ $emp->employeeType->name ?? '-' }}</span>
                         </div>
-                        <div class="flex justify-between text-xs">
-                            <span class="text-slate-400 dark:text-slate-500">Jabatan Utama:</span>
-                            <span class="font-medium text-slate-800 dark:text-slate-200">{{ $emp->position ?? '-' }}</span>
+                        <div>
+                            <span class="text-slate-400 dark:text-slate-500 block text-[11px]">Periode</span>
+                            <span class="font-semibold text-slate-800 dark:text-slate-200 truncate block mt-0.5">{{ $currentDate->translatedFormat('F Y') }}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 dark:text-slate-500 block text-[11px]">Jabatan Utama</span>
+                            <span class="font-medium text-slate-800 dark:text-slate-200 truncate block mt-0.5">{{ $emp->position ?? '-' }}</span>
                         </div>
                         @if(!empty($emp->additional_position))
-                            <div class="flex justify-between text-xs">
-                                <span class="text-slate-400 dark:text-slate-500">Jabatan Tambahan:</span>
-                                <span class="font-medium text-slate-800 dark:text-slate-200">{{ $emp->additional_position }}</span>
+                            <div>
+                                <span class="text-slate-400 dark:text-slate-500 block text-[11px]">Jabatan Tambahan</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200 truncate block mt-0.5">{{ $emp->additional_position }}</span>
                             </div>
                         @endif
-                        <div class="flex justify-between text-xs">
-                            <span class="text-slate-400 dark:text-slate-500">Periode:</span>
-                            <span class="font-semibold text-slate-800 dark:text-slate-200">{{ \Carbon\Carbon::parse($month . '-01')->translatedFormat('F Y') }}</span>
-                        </div>
                     </div>
 
-                    <div class="pt-3 border-t border-slate-100 dark:border-slate-800/60 flex flex-col gap-2">
+                    <div class="pt-2 flex flex-col gap-2">
                         @if($emp->payslip_url)
-                            <a href="{{ $emp->payslip_url }}" target="_blank" class="w-full inline-flex items-center justify-center h-10 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                Download Slip Gaji (PDF)
+                            <a href="{{ $emp->payslip_url }}" target="_blank" class="w-full inline-flex items-center justify-center gap-2 h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-colors shadow-xs">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                                Slip Gaji
                             </a>
                             @if($emp->attachment_url)
-                                <a href="{{ $emp->attachment_url }}" target="_blank" class="w-full inline-flex items-center justify-center h-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-750 dark:text-slate-300 text-xs font-semibold rounded-lg transition-colors gap-2 border border-slate-200 dark:border-slate-700">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-                                    Download Lampiran
+                                <a href="{{ $emp->attachment_url }}" target="_blank" class="w-full inline-flex items-center justify-center gap-2 h-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl transition-colors border border-slate-200 dark:border-slate-700">
+                                    <i data-lucide="paperclip" class="w-4 h-4"></i>
+                                    Lampiran
                                 </a>
                             @endif
                         @else
-                            <button disabled class="w-full inline-flex items-center justify-center h-10 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-xs font-semibold rounded-lg cursor-not-allowed">
-                                Menunggu Pengiriman dari HRD
+                            <button disabled class="w-full inline-flex items-center justify-center h-10 bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 text-xs font-medium rounded-xl cursor-not-allowed border border-slate-200/50 dark:border-slate-800">
+                                Menunggu HRD
                             </button>
                         @endif
                     </div>
                 </div>
             @empty
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center text-slate-500 dark:text-slate-400">
-                    Tidak ada data pegawai.
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center text-slate-500 dark:text-slate-400">
+                    <div class="flex flex-col items-center justify-center gap-2">
+                        <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                            <i data-lucide="inbox" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-sm font-medium">Tidak ada data slip gaji untuk periode ini.</span>
+                    </div>
                 </div>
             @endforelse
         </div>
-    @endif
-</div>
+        @endif
+    </div>
 
-<script>
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('keyup', function() {
-            let filter = this.value.toLowerCase();
-            let rows = document.querySelectorAll('tbody tr');
-            
-            rows.forEach(row => {
-                if (row.children.length > 1) { // Skip empty state row
-                    let name = row.children[0].innerText.toLowerCase();
-                    if (name.includes(filter)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                }
-            });
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keyup', function() {
+                    let filter = this.value.toLowerCase();
+                    let rows = document.querySelectorAll('tbody tr');
+                    
+                    rows.forEach(row => {
+                        if (row.children.length > 1) { // Skip empty state row
+                            let name = row.children[0].innerText.toLowerCase();
+                            if (name.includes(filter)) {
+                                row.style.display = '';
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        }
+                    });
+                });
+            }
         });
-    }
-</script>
+    </script>
 </x-admin-layout>

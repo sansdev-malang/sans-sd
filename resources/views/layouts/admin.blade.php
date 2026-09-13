@@ -29,7 +29,7 @@
                     'leaves.index' => 'Pengajuan Izin & Cuti',
                     'my-leaves.index' => 'Izin & Cuti',
                     'my-attendance' => 'Absensi Saya',
-                    'payslips.index' => 'Slip Gaji Saya',
+                    'payslips.index' => 'Slip Gaji',
                     'spmb.candidates.index' => 'SPMB',
                     'settings' => 'Pengaturan Aplikasi',
                     'users.index' => 'Manajemen Pengguna',
