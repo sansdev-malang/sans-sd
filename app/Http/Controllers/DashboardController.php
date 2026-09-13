@@ -266,9 +266,9 @@ class DashboardController extends Controller
                     $month = $todayDate->day > $cutoffDate ? $todayDate->copy()->startOfMonth()->addMonth()->format('Y-m') : $todayDate->format('Y-m');
                     $bonusCacheKey = 'hrd_bonus_report_' . $schoolUnitId . '_' . $month;
 
-                    $reports = Cache::remember($bonusCacheKey, 300, function () use ($hrdUrl, $schoolUnitId, $month, $bonusCacheKey) {
+                    $reports = Cache::remember($bonusCacheKey, 600, function () use ($hrdUrl, $schoolUnitId, $month, $bonusCacheKey) {
                         try {
-                            $response = Http::timeout(1.5)->withHeaders([
+                            $response = Http::timeout(8.0)->withHeaders([
                                 'X-API-TOKEN' => config('app.hrd_api_token')
                             ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                                 'school_unit_id' => $schoolUnitId,
@@ -276,7 +276,7 @@ class DashboardController extends Controller
                             ]);
                             if ($response->successful()) {
                                 $data = $response->json()['data'] ?? [];
-                                Cache::put($bonusCacheKey . '_stale', $data, 86400);
+                                Cache::put($bonusCacheKey . '_stale', $data, 604800); // 7 days stale cache
                                 return $data;
                             }
                         } catch (\Exception $e) {
@@ -292,6 +292,70 @@ class DashboardController extends Controller
                 } catch (\Exception $e) {
                     // Fallback silently
                 }
+
+                // Robust local DB fallback if HRD is unreachable or employee not found in HRD
+                if (empty($myReport)) {
+                    $currentMonthAttendances = \App\Models\Attendance::where('employee_id', $employee->id)
+                        ->whereMonth('date', now()->month)
+                        ->whereYear('date', now()->year)
+                        ->orderBy('date')
+                        ->get()
+                        ->keyBy(function($att) {
+                            return \Carbon\Carbon::parse($att->date)->format('Y-m-d');
+                        });
+
+                    $totalPresent = $currentMonthAttendances->where('status', 'Hadir')->count();
+                    $localDaily = [];
+                    $daysInMonth = now()->daysInMonth;
+                    $startOfMonth = now()->startOfMonth();
+
+                    for ($d = 1; $d <= $daysInMonth; $d++) {
+                        $curDate = $startOfMonth->copy()->day($d);
+                        $dStr = $curDate->format('Y-m-d');
+                        $att = $currentMonthAttendances->get($dStr);
+
+                        $status = 'Off';
+                        if ($curDate->dayOfWeek >= 1 && $curDate->dayOfWeek <= 5) {
+                            $status = $curDate->isFuture() ? 'Pending' : 'Alpha';
+                        }
+                        $checkIn = null;
+                        $checkOut = null;
+                        $lateMinutes = 0;
+
+                        if ($att) {
+                            $status = $att->status ?? 'Hadir';
+                            $checkIn = $att->clock_in ?? null;
+                            $checkOut = $att->clock_out ?? null;
+                            if ($checkIn && $checkIn > '07:05:00') {
+                                $lateMinutes = (int) ((\Carbon\Carbon::parse($checkIn)->diffInSeconds(\Carbon\Carbon::parse('07:00:00'))) / 60);
+                            }
+                        }
+
+                        $localDaily[$dStr] = [
+                            'date' => $dStr,
+                            'status' => $status,
+                            'check_in' => $checkIn,
+                            'check_out' => $checkOut,
+                            'late_minutes' => $lateMinutes,
+                            'shift_name' => 'Shift Reguler',
+                            'shift_start' => '07:00:00',
+                            'shift_end' => '15:30:00'
+                        ];
+                    }
+
+                    $myReport = [
+                        'employee' => ['id' => $employee->id, 'name' => $employee->name],
+                        'total_present' => $totalPresent,
+                        'bonus_nominal' => 0,
+                        'daily_details' => $localDaily,
+                        'active_shifts' => [
+                            [
+                                'name' => 'Shift Reguler',
+                                'schedule' => 'Senin - Jumat: 07.00 - 15.30'
+                            ]
+                        ]
+                    ];
+                }
             }
         }
 
@@ -302,7 +366,7 @@ class DashboardController extends Controller
 
         if (!$isAdmin && $user->employee_id) {
             $myPicketSchedules = \App\Models\PicketSchedule::where('employee_id', $user->employee_id)
-                ->with(['workingShift', 'replacementEmployee'])
+                ->with(['picketArea', 'employee'])
                 ->orderBy('day_of_week')
                 ->get();
 
