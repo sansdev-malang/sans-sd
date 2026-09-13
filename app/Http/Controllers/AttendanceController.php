@@ -235,17 +235,18 @@ class AttendanceController extends Controller
                 });
             }
 
-            // Extract unique positions from local database for filtering
-            $positions = \App\Models\Employee::whereNotNull('position')
-                ->where('position', '!=', '')
-                ->distinct()
-                ->pluck('position')
-                ->sort()
-                ->values();
-
+            // Extract unique positions from local database for filtering (only for admin/headmaster)
+            $positions = collect();
             $position = $request->input('position');
 
             if (!$needsEmployeeData) {
+                $positions = \App\Models\Employee::whereNotNull('position')
+                    ->where('position', '!=', '')
+                    ->distinct()
+                    ->pluck('position')
+                    ->sort()
+                    ->values();
+
                 // Filter Search
                 if (!empty($search)) {
                     $reports = $reports->filter(function ($item) use ($search) {
@@ -408,22 +409,38 @@ class AttendanceController extends Controller
         $schoolUnitId = config('app.school_unit_id', 2);
 
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
+        $matrixCacheKey = "hrd_att_matrix_{$schoolUnitId}_{$month}";
 
-        try {
-            $response = \Illuminate\Support\Facades\Http::timeout(15.0)->withHeaders([
-                'X-API-TOKEN' => config('app.hrd_api_token')
-            ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
-                'school_unit_id' => $schoolUnitId,
-                'month' => $month,
-                'unit_id' => strtolower($schoolUnit)
-            ]);
-            $json = $response->json();
-            $reportsData = $json['data'] ?? [];
-            $startDate = \Carbon\Carbon::parse($json['start_date'] ?? date('Y-m-d'));
-            $endDate = \Carbon\Carbon::parse($json['end_date'] ?? date('Y-m-d'));
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal memuat data dari HRD: ' . $e->getMessage());
+        $json = \Illuminate\Support\Facades\Cache::get($matrixCacheKey);
+
+        if (!$json) {
+            try {
+                $response = \Illuminate\Support\Facades\Http::timeout(15.0)->withHeaders([
+                    'X-API-TOKEN' => config('app.hrd_api_token')
+                ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
+                    'school_unit_id' => $schoolUnitId,
+                    'month' => $month,
+                    'unit_id' => strtolower($schoolUnit)
+                ]);
+                if ($response->successful()) {
+                    $json = $response->json();
+                    $monthCarbon = \Carbon\Carbon::parse($month . '-01');
+                    $isPastMonth = $monthCarbon->copy()->endOfMonth()->isPast();
+                    \Illuminate\Support\Facades\Cache::put($matrixCacheKey, $json, $isPastMonth ? 86400 : 20);
+                } else {
+                    $json = \Illuminate\Support\Facades\Cache::get($matrixCacheKey . '_stale');
+                }
+            } catch (\Exception $e) {
+                $json = \Illuminate\Support\Facades\Cache::get($matrixCacheKey . '_stale');
+                if (!$json) {
+                    return back()->with('error', 'Gagal memuat data dari HRD: ' . $e->getMessage());
+                }
+            }
         }
+
+        $reportsData = $json['data'] ?? [];
+        $startDate = \Carbon\Carbon::parse($json['start_date'] ?? date('Y-m-d'));
+        $endDate = \Carbon\Carbon::parse($json['end_date'] ?? date('Y-m-d'));
 
         $reports = collect($reportsData);
 

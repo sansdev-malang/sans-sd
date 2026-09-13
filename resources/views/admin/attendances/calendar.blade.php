@@ -114,9 +114,14 @@
                 <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Memantau waktu kedatangan, kepulangan, dan estimasi bonus kehadiran Anda.</p>
             </div>
             <div>
-                <a href="{{ route('attendances.index', array_merge(request()->query(), ['refresh' => 1])) }}" class="h-9 px-3.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold text-xs rounded-xl shadow-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-2" title="Sinkronkan data terbaru langsung dari HRD / Mesin Absensi">
-                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
-                    <span>Sinkronkan Data</span>
+                <a href="{{ route('attendances.index', array_merge(request()->query(), ['refresh' => 1])) }}" 
+                   x-data="{ syncing: false }" 
+                   @click="syncing = true" 
+                   :class="{ 'opacity-75 pointer-events-none': syncing }"
+                   class="h-9 px-3.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold text-xs rounded-xl shadow-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-2" 
+                   title="Sinkronkan data terbaru langsung dari HRD / Mesin Absensi">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" :class="{ 'animate-spin': syncing }"></i>
+                    <span x-text="syncing ? 'Menyinkronkan...' : 'Sinkronkan Data'">Sinkronkan Data</span>
                 </a>
             </div>
         </section>

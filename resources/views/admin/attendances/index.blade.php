@@ -45,9 +45,14 @@
             
             <!-- ACTIONS: SINKRONKAN & EKSPOR DATA -->
             <div class="flex items-center gap-2 w-full md:w-auto">
-                <a href="{{ route('attendances.index', array_merge(request()->query(), ['refresh' => 1])) }}" class="w-full md:w-auto justify-center h-9 px-3 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold text-xs rounded-lg shadow-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5" title="Sinkronkan data terbaru langsung dari HRD / Mesin ADMS">
-                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
-                    <span>Sinkronkan</span>
+                <a href="{{ route('attendances.index', array_merge(request()->query(), ['refresh' => 1])) }}" 
+                   x-data="{ syncing: false }" 
+                   @click="syncing = true" 
+                   :class="{ 'opacity-75 pointer-events-none': syncing }"
+                   class="w-full md:w-auto justify-center h-9 px-3 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold text-xs rounded-lg shadow-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5" 
+                   title="Sinkronkan data terbaru langsung dari HRD / Mesin ADMS">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" :class="{ 'animate-spin': syncing }"></i>
+                    <span x-text="syncing ? 'Menyinkronkan...' : 'Sinkronkan'">Sinkronkan</span>
                 </a>
 
                 <div x-data="{ open: false }" class="relative inline-block text-left w-full md:w-auto">
