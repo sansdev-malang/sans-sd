@@ -13,24 +13,49 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
         $isAdmin = in_array($user->role, ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp', 'kepala_sekolah', 'waka']);
+        $schoolUnitId = config('app.school_unit_id', 2);
 
-        $tukangIds = \App\Models\Employee::where(function($q) {
-            $q->whereHas('employeeType', function($subQ) {
-                $subQ->where('code', 'tukang')->orWhere('name', 'like', '%tukang%');
-            })->orWhere('position', 'like', '%tukang%');
-        })->pluck('id')->toArray();
+        // Smart Caching for Master Counts (5 minutes TTL)
+        $masterCounts = Cache::remember('dashboard_master_counts_' . $schoolUnitId, 300, function () {
+            $tukangIds = \App\Models\Employee::where(function($q) {
+                $q->whereHas('employeeType', function($subQ) {
+                    $subQ->where('code', 'tukang')->orWhere('name', 'like', '%tukang%');
+                })->orWhere('position', 'like', '%tukang%');
+            })->pluck('id')->toArray();
 
-        $employeeCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where(function($q) {
-            $q->whereNotIn('position', ['GPK', 'GPQ'])
-              ->orWhereNull('position');
-        })->count();
+            $employeeCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where(function($q) {
+                $q->whereNotIn('position', ['GPK', 'GPQ'])
+                  ->orWhereNull('position');
+            })->count();
 
-        $studentCount = \App\Models\Student::where('status', 'active')->count() ?: \App\Models\Student::count();
-        $classroomCount = \App\Models\Classroom::count();
-        $spmbCount = \App\Models\SpmbCandidate::count();
+            $studentCount = \App\Models\Student::where('status', 'active')->count() ?: \App\Models\Student::count();
+            $classroomCount = \App\Models\Classroom::count();
+            $spmbCount = \App\Models\SpmbCandidate::count();
 
-        $gpkCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where('position', 'GPK')->count();
-        $gpqCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where('position', 'GPQ')->count();
+            $gpkCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where('position', 'GPK')->count();
+            $gpqCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->where('position', 'GPQ')->count();
+            $totalEmployeeCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->count();
+
+            return [
+                'tukangIds' => $tukangIds,
+                'employeeCount' => $employeeCount,
+                'studentCount' => $studentCount,
+                'classroomCount' => $classroomCount,
+                'spmbCount' => $spmbCount,
+                'gpkCount' => $gpkCount,
+                'gpqCount' => $gpqCount,
+                'totalEmployeeCount' => $totalEmployeeCount,
+            ];
+        });
+
+        $tukangIds = $masterCounts['tukangIds'];
+        $employeeCount = $masterCounts['employeeCount'];
+        $studentCount = $masterCounts['studentCount'];
+        $classroomCount = $masterCounts['classroomCount'];
+        $spmbCount = $masterCounts['spmbCount'];
+        $gpkCount = $masterCounts['gpkCount'];
+        $gpqCount = $masterCounts['gpqCount'];
+        $totalEmployeeCount = $masterCounts['totalEmployeeCount'];
 
         $today = now()->toDateString();
         $yesterday = now()->subDay()->toDateString();
@@ -41,13 +66,13 @@ class DashboardController extends Controller
         $totalPresentToday = 0;
         $totalPresentYesterday = 0;
 
-        $schoolUnitId = config('app.school_unit_id', 2);
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
         $cacheKey = 'hrd_matrix_unit_' . $schoolUnitId . '_' . $today;
 
-        $reports = Cache::remember($cacheKey, 60, function () use ($hrdUrl, $schoolUnitId, $yesterday, $today) {
+        // Smart Caching with Fast 1.5s Timeout and Stale Cache Fallback
+        $reports = Cache::remember($cacheKey, 300, function () use ($hrdUrl, $schoolUnitId, $yesterday, $today, $cacheKey) {
             try {
-                $response = Http::timeout(3)->withHeaders([
+                $response = Http::timeout(1.5)->withHeaders([
                     'X-API-TOKEN' => config('app.hrd_api_token')
                 ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
                     'school_unit_id' => $schoolUnitId,
@@ -56,11 +81,16 @@ class DashboardController extends Controller
                     'end_date' => $today
                 ]);
 
-                return $response->successful() ? ($response->json()['data'] ?? []) : [];
+                if ($response->successful()) {
+                    $data = $response->json()['data'] ?? [];
+                    Cache::put($cacheKey . '_stale', $data, 86400); // 24h backup
+                    return $data;
+                }
             } catch (\Exception $e) {
                 Log::warning('Gagal memuat absensi dashboard dari HRD: ' . $e->getMessage());
-                return [];
             }
+
+            return Cache::get($cacheKey . '_stale', []);
         });
 
         foreach ($reports as $report) {
@@ -95,7 +125,6 @@ class DashboardController extends Controller
         $gpkAttendancePercent = $gpkCount > 0 ? round(($gpkPresent / $gpkCount) * 100, 1) : 0;
         $gpqAttendancePercent = $gpqCount > 0 ? round(($gpqPresent / $gpqCount) * 100, 1) : 0;
 
-        $totalEmployeeCount = \App\Models\Employee::whereNotIn('id', $tukangIds)->count();
         $todayOverallPercent = $totalEmployeeCount > 0 ? round(($totalPresentToday / $totalEmployeeCount) * 100, 1) : 0;
         $yesterdayOverallPercent = $totalEmployeeCount > 0 ? round(($totalPresentYesterday / $totalEmployeeCount) * 100, 1) : 0;
         
@@ -118,7 +147,7 @@ class DashboardController extends Controller
 
         $latestAnnouncements = $query->take(3)->get();
 
-        // Prepare Admin Attendance Chart Points
+        // Prepare Admin Attendance Chart Points (Utilizing new compound index)
         $adminChartPoints = [];
 
         if ($isAdmin) {
@@ -230,18 +259,23 @@ class DashboardController extends Controller
                     $month = $todayDate->day > $cutoffDate ? $todayDate->copy()->startOfMonth()->addMonth()->format('Y-m') : $todayDate->format('Y-m');
                     $bonusCacheKey = 'hrd_bonus_report_' . $schoolUnitId . '_' . $month;
 
-                    $reports = Cache::remember($bonusCacheKey, 120, function () use ($hrdUrl, $schoolUnitId, $month) {
+                    $reports = Cache::remember($bonusCacheKey, 300, function () use ($hrdUrl, $schoolUnitId, $month, $bonusCacheKey) {
                         try {
-                            $response = Http::timeout(3)->withHeaders([
+                            $response = Http::timeout(1.5)->withHeaders([
                                 'X-API-TOKEN' => config('app.hrd_api_token')
                             ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
                                 'school_unit_id' => $schoolUnitId,
                                 'month' => $month
                             ]);
-                            return $response->successful() ? ($response->json()['data'] ?? []) : [];
+                            if ($response->successful()) {
+                                $data = $response->json()['data'] ?? [];
+                                Cache::put($bonusCacheKey . '_stale', $data, 86400);
+                                return $data;
+                            }
                         } catch (\Exception $e) {
-                            return [];
+                            // Fallback to stale
                         }
+                        return Cache::get($bonusCacheKey . '_stale', []);
                     });
 
                     $reportsCol = collect($reports);
@@ -258,15 +292,14 @@ class DashboardController extends Controller
         $myPicketSchedules = collect();
         $myPicketToday = null;
         $todayDayOfWeek = now()->dayOfWeek; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-        if ($user->employee_id && config('app.school_unit') === 'sd') {
+
+        if (!$isAdmin && $user->employee_id) {
             $myPicketSchedules = \App\Models\PicketSchedule::where('employee_id', $user->employee_id)
-                ->with('picketArea')
+                ->with(['workingShift', 'replacementEmployee'])
                 ->orderBy('day_of_week')
                 ->get();
 
-            if ($todayDayOfWeek >= 1 && $todayDayOfWeek <= 6) {
-                $myPicketToday = $myPicketSchedules->firstWhere('day_of_week', $todayDayOfWeek);
-            }
+            $myPicketToday = $myPicketSchedules->firstWhere('day_of_week', $todayDayOfWeek);
         }
 
         // Prepare SVG Chart Points from HRD API daily_details
@@ -301,16 +334,12 @@ class DashboardController extends Controller
 
                 $jamMasuk = $det['check_in'] ?? null;
                 if ($jamMasuk && strpos($jamMasuk, ':') !== false) {
-                    // Time calculations for chart Y position (06:00 = top, 08:00 = bottom)
                     $parts = explode(':', $jamMasuk);
                     if (count($parts) >= 2) {
                         $mins = (int)$parts[0] * 60 + (int)$parts[1];
-
-                        // 360 mins (06:00) -> Y=30. 480 mins (08:00) -> Y=130
                         $y = 30 + (($mins - 360) * (100 / 120));
                         if ($y < 30) $y = 30;
                         if ($y > 130) $y = 130;
-
                         $timeStr = substr($jamMasuk, 0, 5);
                     }
                 }
@@ -319,7 +348,7 @@ class DashboardController extends Controller
                     'x' => $x,
                     'y' => $y,
                     'date' => \Carbon\Carbon::parse($dateStr)->translatedFormat('d M'),
-                    'short_date' => \Carbon\Carbon::parse($dateStr)->format('d/m'), // Added shorter date format for tight spaces
+                    'short_date' => \Carbon\Carbon::parse($dateStr)->format('d/m'),
                     'time' => $timeStr,
                     'status' => $det['status'] ?? '-',
                     'is_late' => isset($det['late_minutes']) && $det['late_minutes'] > 0,
@@ -414,7 +443,12 @@ class DashboardController extends Controller
         $activityLogs = collect();
         if ($isAdmin) {
             // 1. Fetch Leave Requests
-            $leaves = \App\Models\LeaveRequest::with(['employee', 'leaveType'])->latest()->take(10)->get();
+            $leaves = \App\Models\LeaveRequest::with(['employee:id,name', 'leaveType:id,name'])
+                ->select('id', 'employee_id', 'leave_type_id', 'status', 'reason', 'created_at')
+                ->latest()
+                ->take(10)
+                ->get();
+
             foreach ($leaves as $leave) {
                 $statusText = 'mengajukan cuti/izin';
                 if ($leave->status === 'Approved') {
@@ -433,10 +467,15 @@ class DashboardController extends Controller
                 ]);
             }
 
-            // 2. Fetch Picket Swaps
-            $swaps = \App\Models\PicketSwap::with(['requester', 'targetEmployee'])->latest()->take(10)->get();
+            // 2. Fetch Picket Swap Requests
+            $swaps = \App\Models\PicketSwap::with(['requester:id,name', 'targetEmployee:id,name'])
+                ->select('id', 'requester_id', 'target_employee_id', 'status', 'created_at')
+                ->latest()
+                ->take(10)
+                ->get();
+
             foreach ($swaps as $swap) {
-                $statusText = 'mengajukan tukar piket';
+                $statusText = 'mengajukan tukar jadwal piket';
                 if ($swap->status === 'approved') {
                     $statusText = 'tukar piket disetujui resmi';
                 } elseif ($swap->status === 'approved_by_target') {
@@ -456,7 +495,12 @@ class DashboardController extends Controller
             }
 
             // 3. Fetch Attendances (Check-in/Check-out)
-            $attendances = \App\Models\Attendance::with('employee')->latest()->take(15)->get();
+            $attendances = \App\Models\Attendance::with('employee:id,name')
+                ->select('id', 'employee_id', 'date', 'clock_in', 'clock_out')
+                ->latest()
+                ->take(15)
+                ->get();
+
             foreach ($attendances as $att) {
                 if ($att->clock_in) {
                     $activityLogs->push([
@@ -481,7 +525,12 @@ class DashboardController extends Controller
             }
 
             // 4. Fetch Employee Updates / Creations
-            $newEmployees = \App\Models\Employee::with('employeeType')->latest()->take(10)->get();
+            $newEmployees = \App\Models\Employee::with('employeeType:id,name')
+                ->select('id', 'name', 'position', 'employee_type_id', 'created_at', 'updated_at')
+                ->latest()
+                ->take(10)
+                ->get();
+
             foreach ($newEmployees as $emp) {
                 $isUpdate = $emp->updated_at->gt($emp->created_at->addMinutes(5));
                 $activityLogs->push([
@@ -494,7 +543,6 @@ class DashboardController extends Controller
                 ]);
             }
 
-            // Sort all activities by time descending and take top 10
             $activityLogs = $activityLogs->sortByDesc('time')->take(10)->values();
         }
 

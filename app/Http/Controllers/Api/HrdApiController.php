@@ -135,6 +135,7 @@ class HrdApiController extends Controller
         }
 
         $employee = Employee::create($validated);
+        $this->invalidateDashboardCache();
 
         return response()->json([
             'success' => true,
@@ -223,6 +224,7 @@ class HrdApiController extends Controller
         }
 
         $employee->update($validated);
+        $this->invalidateDashboardCache();
 
         return response()->json([
             'success' => true,
@@ -245,6 +247,7 @@ class HrdApiController extends Controller
         }
 
         $employee->delete();
+        $this->invalidateDashboardCache();
 
         return response()->json([
             'success' => true,
@@ -773,11 +776,24 @@ class HrdApiController extends Controller
         $leaveType->gets_presence_bonus = (bool) $request->input('gets_presence_bonus', false);
         $leaveType->save();
 
+        $this->invalidateDashboardCache();
+
         return response()->json([
             'success' => true,
             'message' => 'Leave type synced successfully.',
             'data' => $leaveType
         ]);
+    }
+
+    /**
+     * Invalidate dashboard performance caches on sync events.
+     */
+    protected function invalidateDashboardCache()
+    {
+        $unitId = config('app.school_unit_id');
+        \Illuminate\Support\Facades\Cache::forget('dashboard_master_counts_' . $unitId);
+        \Illuminate\Support\Facades\Cache::forget('hrd_matrix_unit_' . $unitId . '_' . date('Y-m-d'));
+        \Illuminate\Support\Facades\Cache::forget('dashboard_activity_logs_' . $unitId);
     }
 }
 
