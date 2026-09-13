@@ -76,7 +76,117 @@ class SettingController extends Controller
             Setting::set('app_favicon', $faviconPath);
         }
 
+        // Sync PWA icons and manifest.json with current app logo and name
+        $this->syncPwaIconsAndManifest();
+
         return redirect()->back()->with('success', 'Pengaturan sistem berhasil diperbarui!');
+    }
+
+    /**
+     * Synchronize PWA icons (192x192, 512x512, maskable) and manifest.json with current app settings.
+     */
+    public function syncPwaIconsAndManifest(): void
+    {
+        $appName = Setting::get('app_name', config('app.name', 'SANS SD'));
+        $logoRelativePath = Setting::get('app_logo');
+        $iconDir = public_path('icons');
+
+        if (!is_dir($iconDir)) {
+            @mkdir($iconDir, 0755, true);
+        }
+
+        if ($logoRelativePath && Storage::disk('public')->exists($logoRelativePath)) {
+            $fullPath = Storage::disk('public')->path($logoRelativePath);
+            $imgData = @file_get_contents($fullPath);
+            $srcImg = $imgData ? @imagecreatefromstring($imgData) : null;
+
+            if ($srcImg) {
+                $srcW = imagesx($srcImg);
+                $srcH = imagesy($srcImg);
+                $sizes = [192, 512];
+
+                foreach ($sizes as $size) {
+                    // 1. Standard Icon (Any) - Transparent canvas
+                    $destImg = imagecreatetruecolor($size, $size);
+                    imagealphablending($destImg, false);
+                    imagesavealpha($destImg, true);
+                    $transparent = imagecolorallocatealpha($destImg, 255, 255, 255, 127);
+                    imagefilledrectangle($destImg, 0, 0, $size, $size, $transparent);
+
+                    $ratio = min($size / $srcW, $size / $srcH);
+                    $dstW = (int)round($srcW * $ratio);
+                    $dstH = (int)round($srcH * $ratio);
+                    $dstX = (int)round(($size - $dstW) / 2);
+                    $dstY = (int)round(($size - $dstH) / 2);
+
+                    imagecopyresampled($destImg, $srcImg, $dstX, $dstY, 0, 0, $dstW, $dstH, $srcW, $srcH);
+                    imagepng($destImg, "$iconDir/icon-{$size}x{$size}.png", 9);
+                    imagedestroy($destImg);
+
+                    // 2. Maskable Icon - 80% safe zone with white background for Android adaptive icons
+                    $maskImg = imagecreatetruecolor($size, $size);
+                    $white = imagecolorallocate($maskImg, 255, 255, 255);
+                    imagefilledrectangle($maskImg, 0, 0, $size, $size, $white);
+
+                    $safeSize = (int)round($size * 0.80);
+                    $maskRatio = min($safeSize / $srcW, $safeSize / $srcH);
+                    $mDstW = (int)round($srcW * $maskRatio);
+                    $mDstH = (int)round($srcH * $maskRatio);
+                    $mDstX = (int)round(($size - $mDstW) / 2);
+                    $mDstY = (int)round(($size - $mDstH) / 2);
+
+                    imagecopyresampled($maskImg, $srcImg, $mDstX, $mDstY, 0, 0, $mDstW, $mDstH, $srcW, $srcH);
+                    imagepng($maskImg, "$iconDir/icon-maskable-{$size}x{$size}.png", 9);
+                    imagedestroy($maskImg);
+                }
+
+                imagedestroy($srcImg);
+            }
+        }
+
+        // Update public/manifest.json
+        $manifestPath = public_path('manifest.json');
+        $version = time();
+        $manifest = [
+            'name' => $appName,
+            'short_name' => $appName,
+            'description' => "Sistem Informasi Manajemen Terpadu {$appName}",
+            'start_url' => '/',
+            'scope' => '/',
+            'display' => 'standalone',
+            'orientation' => 'portrait-primary',
+            'background_color' => '#ffffff',
+            'theme_color' => '#4f46e5',
+            'categories' => ['education', 'productivity', 'management'],
+            'icons' => [
+                [
+                    'src' => "/icons/icon-192x192.png?v={$version}",
+                    'sizes' => '192x192',
+                    'type' => 'image/png',
+                    'purpose' => 'any'
+                ],
+                [
+                    'src' => "/icons/icon-maskable-192x192.png?v={$version}",
+                    'sizes' => '192x192',
+                    'type' => 'image/png',
+                    'purpose' => 'maskable'
+                ],
+                [
+                    'src' => "/icons/icon-512x512.png?v={$version}",
+                    'sizes' => '512x512',
+                    'type' => 'image/png',
+                    'purpose' => 'any'
+                ],
+                [
+                    'src' => "/icons/icon-maskable-512x512.png?v={$version}",
+                    'sizes' => '512x512',
+                    'type' => 'image/png',
+                    'purpose' => 'maskable'
+                ]
+            ]
+        ];
+
+        @file_put_contents($manifestPath, json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 
     /**
