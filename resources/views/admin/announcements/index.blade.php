@@ -79,14 +79,16 @@
                                     return $audienceMap[trim($aud)] ?? trim($aud);
                                 }, $audiences);
                                 $displayText = implode(', ', $translatedAudiences);
+                                $rawSnippet = html_entity_decode(strip_tags($announcement->content ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                                $cleanSnippet = preg_replace('/[\s\x{00a0}]+/u', ' ', trim($rawSnippet));
                             @endphp
                             <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                                 <td class="px-5 py-3.5 text-left">
                                     <div class="flex flex-col min-w-0 max-w-lg">
                                         <span class="text-slate-900 dark:text-slate-100 font-bold tracking-tight text-xs" title="{{ $announcement->title }}">{{ $announcement->title }}</span>
-                                        @if(!empty($announcement->content))
-                                            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-normal line-clamp-1 mt-0.5" title="{{ strip_tags($announcement->content) }}">
-                                                {{ \Illuminate\Support\Str::limit(strip_tags($announcement->content), 85) }}
+                                        @if(!empty($cleanSnippet))
+                                            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-normal line-clamp-1 mt-0.5" title="{{ $cleanSnippet }}">
+                                                {{ \Illuminate\Support\Str::limit($cleanSnippet, 85) }}
                                             </p>
                                         @endif
                                         <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold border capitalize w-fit {{ $catColor }}">
@@ -222,6 +224,8 @@
                         return $audienceMap[trim($aud)] ?? trim($aud);
                     }, $audiences);
                     $displayText = implode(', ', $translatedAudiences);
+                    $rawSnippet = html_entity_decode(strip_tags($announcement->content ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                    $cleanSnippet = preg_replace('/[\s\x{00a0}]+/u', ' ', trim($rawSnippet));
                 @endphp
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5 text-left">
                     <div class="flex items-center justify-between">
@@ -242,9 +246,9 @@
                     </div>
                     <div class="space-y-1">
                         <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug">{{ $announcement->title }}</h3>
-                        @if(!empty($announcement->content))
+                        @if(!empty($cleanSnippet))
                             <p class="text-xs text-slate-600 dark:text-slate-400 font-normal line-clamp-2 leading-relaxed">
-                                {{ \Illuminate\Support\Str::limit(strip_tags($announcement->content), 120) }}
+                                {{ \Illuminate\Support\Str::limit($cleanSnippet, 120) }}
                             </p>
                         @endif
                         <div class="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500 pt-0.5">
