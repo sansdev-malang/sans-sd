@@ -4,7 +4,7 @@
             photoPreview: null,
             isSaving: false
          }" 
-         class="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+         class="p-4 sm:p-6 space-y-6 w-full">
          
         <!-- PROFIL PEGAWAI / PAGE TITLE -->
         <section class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
