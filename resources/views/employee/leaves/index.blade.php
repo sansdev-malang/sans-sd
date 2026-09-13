@@ -275,7 +275,7 @@
                                         </span>
                                         <span class="inline-flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
                                             <i data-lucide="clock" class="w-3 h-3 text-indigo-500 dark:text-indigo-400"></i>
-                                            <span>{{ $days }} Hari Kerja</span>
+                                            <span>{{ $days }} Hari</span>
                                         </span>
                                     </div>
                                 </td>
@@ -487,7 +487,7 @@
                                 Durasi
                             </span>
                             <span class="font-bold text-indigo-600 dark:text-indigo-400 text-[11px]">
-                                {{ $days }} Hari Kerja
+                                {{ $days }} Hari
                             </span>
                         </div>
                     </div>
