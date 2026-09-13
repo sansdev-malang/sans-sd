@@ -220,6 +220,12 @@ Route::middleware('hrd.api')->prefix('api/v1/hrd')->group(function () {
 Route::middleware(['auth', 'role:super_admin'])->group(function () {
     Route::post('zkteco-devices/{zktecoDevice}/ping', [ZktecoDeviceController::class, 'ping'])->name('zkteco-devices.ping');
     Route::resource('zkteco-devices', ZktecoDeviceController::class);
+
+    // System Logs
+    Route::get('system-logs', [\App\Http\Controllers\SystemLogController::class, 'index'])->name('system-logs.index');
+    Route::get('system-logs/download', [\App\Http\Controllers\SystemLogController::class, 'download'])->name('system-logs.download');
+    Route::post('system-logs/clear', [\App\Http\Controllers\SystemLogController::class, 'clear'])->name('system-logs.clear');
+    Route::delete('system-logs/delete', [\App\Http\Controllers\SystemLogController::class, 'destroy'])->name('system-logs.destroy');
 });
 
 Route::middleware('auth')->group(function () {
