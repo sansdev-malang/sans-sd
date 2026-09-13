@@ -18,9 +18,8 @@ class MyEmployeeProfileController extends Controller
         }
 
         $employee = Employee::with('employeeType')->findOrFail($user->employee_id);
-        $employeeTypes = \App\Models\EmployeeType::all();
 
-        return view('profile.employee', compact('employee', 'employeeTypes'));
+        return view('profile.employee', compact('employee'));
     }
 
     public function update(Request $request)
