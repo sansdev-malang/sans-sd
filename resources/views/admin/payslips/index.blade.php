@@ -65,9 +65,11 @@
                     </div>
                 </div>
 
+                @if($isSuperAdmin)
                 <div class="text-xs text-slate-500 dark:text-slate-400 self-end sm:self-center">
                     Total: <span class="font-bold text-slate-800 dark:text-slate-200">{{ $employees->count() }} Pegawai</span>
                 </div>
+                @endif
             </form>
         </div>
 
