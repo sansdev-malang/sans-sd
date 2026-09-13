@@ -76,29 +76,33 @@
                 </a>
                 @endif
                 @if($isAdmin)
-                <a href="{{ route('siswa') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg
-                    {{ Request::routeIs('siswa') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
+                <a href="{{ route('students.index') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg
+                    {{ Request::routeIs('students.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
                     text-xs relative group">
                     <div class="flex items-center gap-3">
                         <i data-lucide="users" class="menu-icon w-4 h-4"></i>
                         <span class="menu-text">Data Siswa</span>
                     </div>
-                    <span class="menu-text text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
                     <span
                         class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
                         Data Siswa
                     </span>
                 </a>
-                <a href="{{ route('spmb.candidates.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg
+
+                <a href="{{ route('spmb.candidates.index') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg
                     {{ Request::routeIs('spmb.candidates.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
                     text-xs relative group">
-                    <i data-lucide="user-plus" class="menu-icon w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
-                    <span class="menu-text">Siswa Baru SPMB</span>
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="user-plus" class="menu-icon w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
+                        <span class="menu-text">Siswa Baru SPMB</span>
+                    </div>
                     <span
                         class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
                         Siswa Baru SPMB
                     </span>
                 </a>
+                @endif
+                @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin_sd') || auth()->user()->hasRole('admin_paud') || auth()->user()->hasRole('admin_smp') || auth()->user()->hasRole('kepala_sekolah') || auth()->user()->hasRole('waka'))
                 <a href="{{ route('teachers.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg
                     {{ Request::routeIs('teachers.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}
                     text-xs relative group">
@@ -109,17 +113,44 @@
                         Data Guru
                     </span>
                 </a>
-                <a href="{{ route('rombel') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg 
-                    {{ Request::routeIs('rombel') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
+                @endif
+                @if($isAdmin)
+                <a href="{{ route('classrooms.index') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg 
+                    {{ Request::routeIs('classrooms.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
                     text-xs font-medium relative group">
                     <div class="flex items-center gap-3">
                         <i data-lucide="university" class="menu-icon w-4 h-4"></i>
                         <span class="menu-text">Rombongan Belajar</span>
                     </div>
-                    <span class="menu-text text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
                     <span
                         class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
                         Rombongan Belajar
+                    </span>
+                </a>
+
+                <a href="{{ route('class-levels.index') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg 
+                    {{ Request::routeIs('class-levels.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
+                    text-xs font-medium relative group">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="layers" class="menu-icon w-4 h-4"></i>
+                        <span class="menu-text">Tingkat Kelas</span>
+                    </div>
+                    <span
+                        class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
+                        Tingkat Kelas
+                    </span>
+                </a>
+
+                <a href="{{ route('academic-years.index') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg 
+                    {{ Request::routeIs('academic-years.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
+                    text-xs font-medium relative group">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="calendar-range" class="menu-icon w-4 h-4"></i>
+                        <span class="menu-text">Tahun Ajaran</span>
+                    </div>
+                    <span
+                        class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
+                        Tahun Ajaran
                     </span>
                 </a>
                 @endif

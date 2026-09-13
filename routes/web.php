@@ -8,21 +8,39 @@ use App\Http\Controllers\EmployeeTypeController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ZktecoDeviceController;
 use App\Http\Controllers\PicketScheduleController;
+use App\Http\Controllers\AcademicYearController;
+use App\Http\Controllers\ClassLevelController;
+use App\Http\Controllers\ClassroomController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\SpmbCandidateController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect('/login');
 });
 
-Route::get('/siswa', function () {
-    return view('admin.siswa');
-})->middleware(['auth', 'verified'])->name('siswa');
-
-Route::get('/rombel', function () {
-    return view('admin.rombel');
-})->middleware(['auth', 'verified'])->name('rombel');
-
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+
+// Academic Master & Student Management (English Resource Standard)
+Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->group(function () {
+    // Academic Years (Tahun Ajaran)
+    Route::post('academic-years/{id}/set-active', [AcademicYearController::class, 'setActive'])->name('academic-years.set-active');
+    Route::resource('academic-years', AcademicYearController::class);
+
+    // Class Levels (Tingkat Kelas)
+    Route::resource('class-levels', ClassLevelController::class);
+
+    // Classrooms (Rombongan Belajar)
+    Route::get('/classrooms/{id}/students', [ClassroomController::class, 'students'])->name('classrooms.students');
+    Route::resource('classrooms', ClassroomController::class);
+    Route::get('/rombel', fn() => redirect()->route('classrooms.index'));
+
+    // Students (Data Siswa & Bulk Excel Import)
+    Route::get('students/download-template', [StudentController::class, 'downloadTemplate'])->name('students.download-template');
+    Route::post('students/import', [StudentController::class, 'import'])->name('students.import');
+    Route::resource('students', StudentController::class);
+    Route::get('/siswa', fn() => redirect()->route('students.index'));
+});
 
 
 
@@ -113,10 +131,12 @@ Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepal
 
     // SPMB New Candidate Management
     Route::prefix('spmb')->name('spmb.')->group(function () {
-        Route::get('/pendaftar', [\App\Http\Controllers\SpmbCandidateController::class, 'index'])->name('candidates.index');
-        Route::get('/pendaftar/{id}', [\App\Http\Controllers\SpmbCandidateController::class, 'show'])->name('candidates.show');
-        Route::post('/pendaftar/sync', [\App\Http\Controllers\SpmbCandidateController::class, 'sync'])->name('candidates.sync');
-        Route::post('/pendaftar/{id}/toggle-enroll', [\App\Http\Controllers\SpmbCandidateController::class, 'toggleActive'])->name('candidates.toggle-active');
+        Route::get('/pendaftar', [SpmbCandidateController::class, 'index'])->name('candidates.index');
+        Route::get('/pendaftar/{id}', [SpmbCandidateController::class, 'show'])->name('candidates.show');
+        Route::post('/pendaftar/sync', [SpmbCandidateController::class, 'sync'])->name('candidates.sync');
+        Route::get('/pendaftar/{id}/enroll-data', [SpmbCandidateController::class, 'getEnrollData'])->name('candidates.enroll-data');
+        Route::post('/pendaftar/{id}/enroll', [SpmbCandidateController::class, 'enroll'])->name('candidates.enroll');
+        Route::post('/pendaftar/{id}/unenroll', [SpmbCandidateController::class, 'unenroll'])->name('candidates.unenroll');
     });
 
     // New English singular based routes
