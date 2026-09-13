@@ -78,8 +78,13 @@
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex flex-col gap-0.5">
                 <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Data Riwayat Absensi</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Memantau waktu kedatangan dan
-                    kepulangan Anda secara komprehensif.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Memantau waktu kedatangan dan kepulangan Anda secara komprehensif.</p>
+            </div>
+            <div>
+                <a href="{{ route('attendances.index', array_merge(request()->query(), ['refresh' => 1])) }}" class="h-9 px-3 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold text-xs rounded-lg shadow-sm transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5" title="Sinkronkan data terbaru langsung dari HRD / Mesin Absensi">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
+                    <span>Sinkronkan Data</span>
+                </a>
             </div>
         </section>
 

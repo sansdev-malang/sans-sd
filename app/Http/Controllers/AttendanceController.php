@@ -22,53 +22,152 @@ class AttendanceController extends Controller
         }
         $search = $request->input('search');
         $perPage = $request->input('per_page', 50);
-        $schoolUnit = config('app.school_unit', 'smp');
+        $schoolUnit = config('app.school_unit', 'sd');
+        $schoolUnitId = config('app.school_unit_id', 2);
+        $forceRefresh = $request->boolean('refresh');
 
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
         $user = auth()->user();
         $myActiveShifts = [];
 
+        $monthCarbon = \Carbon\Carbon::parse($month . '-01');
+        $isPastMonth = $monthCarbon->copy()->endOfMonth()->isPast();
+        $previousMonth = $monthCarbon->copy()->subMonthNoOverflow()->format('Y-m');
+        $nextMonth = $monthCarbon->copy()->addMonthNoOverflow()->format('Y-m');
+
+        // Past months: 86400s (1 day). Current month: 20s micro-cache (real-time ADMS sync with fast navigation).
+        $cacheTtlCurrent = 20;
+        $cacheTtlPast = 86400;
+
+        $matrixCacheKey = "hrd_att_matrix_{$schoolUnitId}_{$month}";
+        $prevMatrixCacheKey = "hrd_att_matrix_{$schoolUnitId}_{$previousMonth}";
+        $bonusCacheKey = "hrd_bonus_{$schoolUnitId}_{$month}";
+        $prevBonusCacheKey = "hrd_bonus_{$schoolUnitId}_{$previousMonth}";
+        $nextBonusCacheKey = "hrd_bonus_{$schoolUnitId}_{$nextMonth}";
+
+        if ($forceRefresh) {
+            \Illuminate\Support\Facades\Cache::forget($matrixCacheKey);
+            \Illuminate\Support\Facades\Cache::forget($prevMatrixCacheKey);
+            \Illuminate\Support\Facades\Cache::forget($bonusCacheKey);
+            \Illuminate\Support\Facades\Cache::forget($prevBonusCacheKey);
+            \Illuminate\Support\Facades\Cache::forget($nextBonusCacheKey);
+        }
+
         try {
-            $apiParams = [
-                'month' => $month,
-                'unit_id' => strtolower($schoolUnit)
-            ];
+            $matrixData = \Illuminate\Support\Facades\Cache::get($matrixCacheKey);
+            $prevMatrixData = \Illuminate\Support\Facades\Cache::get($prevMatrixCacheKey);
+            $bonusData = \Illuminate\Support\Facades\Cache::get($bonusCacheKey);
+            $prevBonusData = \Illuminate\Support\Facades\Cache::get($prevBonusCacheKey);
+            $nextBonusData = \Illuminate\Support\Facades\Cache::get($nextBonusCacheKey);
 
-            $monthCarbon = \Carbon\Carbon::parse($month . '-01');
-            $previousMonth = $monthCarbon->copy()->subMonthNoOverflow()->format('Y-m');
+            $needsEmployeeData = $user && $user->role === 'employee' && $user->employee_id;
 
-            if ($user && $user->role === 'employee') {
-                $apiParams['start_date'] = $monthCarbon->copy()->startOfMonth()->format('Y-m-d');
-                $apiParams['end_date'] = $monthCarbon->copy()->endOfMonth()->format('Y-m-d');
+            // Build list of calls needed
+            $poolCalls = [];
+            if (!$matrixData) {
+                $poolCalls['curr_matrix'] = function (\Illuminate\Http\Client\Pool $pool) use ($hrdUrl, $schoolUnitId, $schoolUnit, $month) {
+                    return $pool->as('curr_matrix')->withHeaders(['X-API-TOKEN' => config('app.hrd_api_token')])->timeout(8.0)->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
+                        'school_unit_id' => $schoolUnitId,
+                        'unit_id' => strtolower($schoolUnit),
+                        'month' => $month
+                    ]);
+                };
             }
 
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
-                'X-API-TOKEN' => config('app.hrd_api_token')
-            ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', array_merge($apiParams, [
-                'school_unit_id' => config('app.school_unit_id', 2)
-            ]));
-
-            $json = $response->json();
-            if (isset($json['cutoff_date'])) {
-                \App\Models\Setting::set('payroll_cutoff_date', $json['cutoff_date']);
+            if ($needsEmployeeData) {
+                if (!$prevMatrixData) {
+                    $poolCalls['prev_matrix'] = function (\Illuminate\Http\Client\Pool $pool) use ($hrdUrl, $schoolUnitId, $schoolUnit, $previousMonth) {
+                        return $pool->as('prev_matrix')->withHeaders(['X-API-TOKEN' => config('app.hrd_api_token')])->timeout(8.0)->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
+                            'school_unit_id' => $schoolUnitId,
+                            'unit_id' => strtolower($schoolUnit),
+                            'month' => $previousMonth,
+                            'start_date' => \Carbon\Carbon::parse($previousMonth . '-01')->startOfMonth()->format('Y-m-d'),
+                            'end_date' => \Carbon\Carbon::parse($previousMonth . '-01')->endOfMonth()->format('Y-m-d'),
+                        ]);
+                    };
+                }
+                if (!$bonusData) {
+                    $poolCalls['curr_bonus'] = function (\Illuminate\Http\Client\Pool $pool) use ($hrdUrl, $schoolUnitId, $schoolUnit, $month) {
+                        return $pool->as('curr_bonus')->withHeaders(['X-API-TOKEN' => config('app.hrd_api_token')])->timeout(8.0)->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                            'school_unit_id' => $schoolUnitId,
+                            'unit_id' => strtolower($schoolUnit),
+                            'month' => $month
+                        ]);
+                    };
+                }
+                if (!$prevBonusData) {
+                    $poolCalls['prev_bonus'] = function (\Illuminate\Http\Client\Pool $pool) use ($hrdUrl, $schoolUnitId, $schoolUnit, $previousMonth) {
+                        return $pool->as('prev_bonus')->withHeaders(['X-API-TOKEN' => config('app.hrd_api_token')])->timeout(8.0)->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                            'school_unit_id' => $schoolUnitId,
+                            'unit_id' => strtolower($schoolUnit),
+                            'month' => $previousMonth
+                        ]);
+                    };
+                }
+                if (!$nextBonusData) {
+                    $poolCalls['next_bonus'] = function (\Illuminate\Http\Client\Pool $pool) use ($hrdUrl, $schoolUnitId, $schoolUnit, $nextMonth) {
+                        return $pool->as('next_bonus')->withHeaders(['X-API-TOKEN' => config('app.hrd_api_token')])->timeout(8.0)->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                            'school_unit_id' => $schoolUnitId,
+                            'unit_id' => strtolower($schoolUnit),
+                            'month' => $nextMonth
+                        ]);
+                    };
+                }
             }
-            $reports = collect($json['data'] ?? []);
-            $startDate = \Carbon\Carbon::parse($json['start_date'] ?? date('Y-m-d'));
-            $endDate = \Carbon\Carbon::parse($json['end_date'] ?? date('Y-m-d'));
 
-            if ($user && $user->role === 'employee' && $user->employee_id) {
-                $previousResponse = \Illuminate\Support\Facades\Http::withHeaders([
-                    'X-API-TOKEN' => config('app.hrd_api_token')
-                ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
-                    'school_unit_id' => config('app.school_unit_id', 2),
-                    'unit_id' => strtolower($schoolUnit),
-                    'month' => $previousMonth,
-                    'start_date' => \Carbon\Carbon::parse($previousMonth . '-01')->startOfMonth()->format('Y-m-d'),
-                    'end_date' => \Carbon\Carbon::parse($previousMonth . '-01')->endOfMonth()->format('Y-m-d'),
-                ]);
+            // Execute missing calls concurrently in parallel via Http::pool
+            if (!empty($poolCalls)) {
+                $responses = \Illuminate\Support\Facades\Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($poolCalls) {
+                    $callList = [];
+                    foreach ($poolCalls as $call) {
+                        $callList[] = $call($pool);
+                    }
+                    return $callList;
+                });
 
-                $previousJson = $previousResponse->json();
-                $previousReports = collect($previousJson['data'] ?? []);
+                if (isset($responses['curr_matrix']) && $responses['curr_matrix'] instanceof \Illuminate\Http\Client\Response && $responses['curr_matrix']->successful()) {
+                    $matrixData = $responses['curr_matrix']->json();
+                    \Illuminate\Support\Facades\Cache::put($matrixCacheKey, $matrixData, $isPastMonth ? $cacheTtlPast : $cacheTtlCurrent);
+                    \Illuminate\Support\Facades\Cache::put($matrixCacheKey . '_stale', $matrixData, 604800);
+                }
+                if (isset($responses['prev_matrix']) && $responses['prev_matrix'] instanceof \Illuminate\Http\Client\Response && $responses['prev_matrix']->successful()) {
+                    $prevMatrixData = $responses['prev_matrix']->json();
+                    \Illuminate\Support\Facades\Cache::put($prevMatrixCacheKey, $prevMatrixData, $cacheTtlPast);
+                    \Illuminate\Support\Facades\Cache::put($prevMatrixCacheKey . '_stale', $prevMatrixData, 604800);
+                }
+                if (isset($responses['curr_bonus']) && $responses['curr_bonus'] instanceof \Illuminate\Http\Client\Response && $responses['curr_bonus']->successful()) {
+                    $bonusData = $responses['curr_bonus']->json();
+                    \Illuminate\Support\Facades\Cache::put($bonusCacheKey, $bonusData, $isPastMonth ? $cacheTtlPast : $cacheTtlCurrent);
+                    \Illuminate\Support\Facades\Cache::put($bonusCacheKey . '_stale', $bonusData, 604800);
+                }
+                if (isset($responses['prev_bonus']) && $responses['prev_bonus'] instanceof \Illuminate\Http\Client\Response && $responses['prev_bonus']->successful()) {
+                    $prevBonusData = $responses['prev_bonus']->json();
+                    \Illuminate\Support\Facades\Cache::put($prevBonusCacheKey, $prevBonusData, $cacheTtlPast);
+                    \Illuminate\Support\Facades\Cache::put($prevBonusCacheKey . '_stale', $prevBonusData, 604800);
+                }
+                if (isset($responses['next_bonus']) && $responses['next_bonus'] instanceof \Illuminate\Http\Client\Response && $responses['next_bonus']->successful()) {
+                    $nextBonusData = $responses['next_bonus']->json();
+                    \Illuminate\Support\Facades\Cache::put($nextBonusCacheKey, $nextBonusData, $cacheTtlCurrent);
+                    \Illuminate\Support\Facades\Cache::put($nextBonusCacheKey . '_stale', $nextBonusData, 604800);
+                }
+            }
+
+            // Fallback to stale cache if null
+            if (!$matrixData) $matrixData = \Illuminate\Support\Facades\Cache::get($matrixCacheKey . '_stale');
+            if (!$prevMatrixData) $prevMatrixData = \Illuminate\Support\Facades\Cache::get($prevMatrixCacheKey . '_stale');
+            if (!$bonusData) $bonusData = \Illuminate\Support\Facades\Cache::get($bonusCacheKey . '_stale');
+            if (!$prevBonusData) $prevBonusData = \Illuminate\Support\Facades\Cache::get($prevBonusCacheKey . '_stale');
+            if (!$nextBonusData) $nextBonusData = \Illuminate\Support\Facades\Cache::get($nextBonusCacheKey . '_stale');
+
+            if (isset($matrixData['cutoff_date'])) {
+                \App\Models\Setting::set('payroll_cutoff_date', $matrixData['cutoff_date']);
+            }
+            $reports = collect($matrixData['data'] ?? []);
+            $startDate = \Carbon\Carbon::parse($matrixData['start_date'] ?? ($month . '-01'));
+            $endDate = \Carbon\Carbon::parse($matrixData['end_date'] ?? $monthCarbon->copy()->endOfMonth()->format('Y-m-d'));
+
+            if ($needsEmployeeData) {
+                $previousReports = collect($prevMatrixData['data'] ?? []);
                 $previousReport = $previousReports->first(function ($item) use ($user) {
                     return ($item['employee']['id'] ?? 0) == $user->employee_id;
                 });
@@ -82,35 +181,13 @@ class AttendanceController extends Controller
                     $previousDetails = $previousReport['daily_details'] ?? [];
                     $currentReport['daily_details'] = $previousDetails + $currentDetails;
                     $reports = collect([$currentReport]);
+                } elseif ($currentReport) {
+                    $reports = collect([$currentReport]);
                 }
-            }
 
-            // Extract unique positions from local database for filtering
-            $positions = \App\Models\Employee::whereNotNull('position')
-                ->where('position', '!=', '')
-                ->distinct()
-                ->pluck('position')
-                ->sort()
-                ->values();
-
-            $position = $request->input('position');
-
-            if ($user && $user->role === 'employee' && $user->employee_id) {
-                // If it's a regular employee, only show their own report
-                $reports = $reports->filter(function ($item) use ($user) {
-                    return ($item['employee']['id'] ?? 0) == $user->employee_id;
-                });
-
-                // Fetch bonus reports for both current and previous month from central HRD
-                $bonusResponse = \Illuminate\Support\Facades\Http::withHeaders([
-                    'X-API-TOKEN' => config('app.hrd_api_token')
-                ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
-                    'school_unit_id' => config('app.school_unit_id', 2),
-                    'unit_id' => strtolower($schoolUnit),
-                    'month' => $month
-                ]);
-                $bonusJson = $bonusResponse->json();
-                $bonusReports = collect($bonusJson['data'] ?? []);
+                $bonusReports = collect($bonusData['data'] ?? []);
+                $previousBonusReports = collect($prevBonusData['data'] ?? []);
+                $nextBonusReports = collect($nextBonusData['data'] ?? []);
 
                 $empId = $user->employee_id;
                 $currentBonus = $bonusReports->first(function ($br) use ($empId) {
@@ -119,27 +196,6 @@ class AttendanceController extends Controller
                 if ($currentBonus && isset($currentBonus['active_shifts'])) {
                     $myActiveShifts = $currentBonus['active_shifts'];
                 }
-
-                $prevBonusResponse = \Illuminate\Support\Facades\Http::withHeaders([
-                    'X-API-TOKEN' => config('app.hrd_api_token')
-                ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
-                    'school_unit_id' => config('app.school_unit_id', 2),
-                    'unit_id' => strtolower($schoolUnit),
-                    'month' => $previousMonth
-                ]);
-                $prevBonusJson = $prevBonusResponse->json();
-                $previousBonusReports = collect($prevBonusJson['data'] ?? []);
-
-                $nextMonth = $monthCarbon->copy()->addMonthNoOverflow()->format('Y-m');
-                $nextBonusResponse = \Illuminate\Support\Facades\Http::withHeaders([
-                    'X-API-TOKEN' => config('app.hrd_api_token')
-                ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
-                    'school_unit_id' => config('app.school_unit_id', 2),
-                    'unit_id' => strtolower($schoolUnit),
-                    'month' => $nextMonth
-                ]);
-                $nextBonusJson = $nextBonusResponse->json();
-                $nextBonusReports = collect($nextBonusJson['data'] ?? []);
 
                 $reports = $reports->map(function ($report) use ($bonusReports, $previousBonusReports, $nextBonusReports) {
                     $empId = $report['employee']['id'] ?? 0;
@@ -177,7 +233,19 @@ class AttendanceController extends Controller
                     }
                     return $report;
                 });
-            } else {
+            }
+
+            // Extract unique positions from local database for filtering
+            $positions = \App\Models\Employee::whereNotNull('position')
+                ->where('position', '!=', '')
+                ->distinct()
+                ->pluck('position')
+                ->sort()
+                ->values();
+
+            $position = $request->input('position');
+
+            if (!$needsEmployeeData) {
                 // Filter Search
                 if (!empty($search)) {
                     $reports = $reports->filter(function ($item) use ($search) {
@@ -194,6 +262,11 @@ class AttendanceController extends Controller
                         return $empPos === $position;
                     });
                 }
+            }
+
+            // Fallback to local DB if reports is empty
+            if ($reports->isEmpty()) {
+                $reports = $this->buildLocalMatrixFallback($monthCarbon, $user, $search, $position);
             }
 
             // Pagination
@@ -213,15 +286,12 @@ class AttendanceController extends Controller
             }
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Gagal memuat matriks absensi dari HRD: ' . $e->getMessage(), [
-                'exception' => $e
-            ]);
-            $reports = collect([]);
-            $startDate = \Carbon\Carbon::now();
-            $endDate = \Carbon\Carbon::now();
-            $positions = collect([]);
+            \Illuminate\Support\Facades\Log::warning('Fallback matriks absensi lokal: ' . $e->getMessage());
+            $reports = $this->buildLocalMatrixFallback($monthCarbon, $user, $search, $position ?? null);
+            $startDate = $monthCarbon->copy()->startOfMonth();
+            $endDate = $monthCarbon->copy()->endOfMonth();
+            $positions = \App\Models\Employee::whereNotNull('position')->distinct()->pluck('position')->sort()->values();
             $position = null;
-            session()->flash('error', 'Gagal memuat matriks absensi dari HRD: ' . $e->getMessage());
         }
 
         if ($user && $user->role === 'employee' && $user->employee_id) {
@@ -229,6 +299,100 @@ class AttendanceController extends Controller
         }
 
         return view('admin.attendances.index', compact('reports', 'month', 'search', 'perPage', 'startDate', 'endDate', 'positions', 'position'));
+    }
+
+    /**
+     * Local database fallback builder when HRD central aggregator is unreachable
+     */
+    protected function buildLocalMatrixFallback(Carbon $monthCarbon, $user, $search = null, $position = null)
+    {
+        $start = $monthCarbon->copy()->startOfMonth();
+        $end = $monthCarbon->copy()->endOfMonth();
+
+        $empQuery = \App\Models\Employee::query();
+        if ($user && $user->role === 'employee' && $user->employee_id) {
+            $empQuery->where('id', $user->employee_id);
+        } else {
+            if (!empty($search)) {
+                $empQuery->where(function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('nik', 'like', "%{$search}%")
+                      ->orWhere('nuptk', 'like', "%{$search}%");
+                });
+            }
+            if (!empty($position)) {
+                $empQuery->where('position', $position);
+            }
+        }
+
+        $employees = $empQuery->orderBy('name')->get();
+        $empIds = $employees->pluck('id')->toArray();
+
+        $attendances = \App\Models\Attendance::whereIn('employee_id', $empIds)
+            ->whereBetween('date', [$start->format('Y-m-d'), $end->format('Y-m-d')])
+            ->get()
+            ->groupBy('employee_id');
+
+        $result = collect();
+
+        foreach ($employees as $emp) {
+            $empAtts = $attendances->get($emp->id, collect())->keyBy(function($att) {
+                return \Carbon\Carbon::parse($att->date)->format('Y-m-d');
+            });
+
+            $dailyDetails = [];
+            $cur = $start->copy();
+            while ($cur <= $end) {
+                $dStr = $cur->format('Y-m-d');
+                $att = $empAtts->get($dStr);
+
+                $status = 'Off';
+                if ($cur->dayOfWeek >= 1 && $cur->dayOfWeek <= 5) {
+                    $status = $cur->isFuture() ? 'Pending' : 'Alpha';
+                }
+                $checkIn = null;
+                $checkOut = null;
+                $isLate = false;
+                $lateMinutes = 0;
+
+                if ($att) {
+                    $status = $att->status ?? 'Hadir';
+                    $checkIn = $att->clock_in ? substr($att->clock_in, 0, 5) : null;
+                    $checkOut = $att->clock_out ? substr($att->clock_out, 0, 5) : null;
+                    if ($checkIn && $checkIn > '07:05') {
+                        $isLate = true;
+                        $lateMinutes = (int) ((\Carbon\Carbon::parse($att->clock_in)->diffInSeconds(\Carbon\Carbon::parse('07:00:00'))) / 60);
+                    }
+                }
+
+                $dailyDetails[$dStr] = [
+                    'date' => $dStr,
+                    'status' => $status,
+                    'check_in' => $checkIn,
+                    'check_out' => $checkOut,
+                    'is_late' => $isLate,
+                    'late_minutes' => $lateMinutes,
+                    'calculated_bonus' => 0.00,
+                    'shift_name' => 'Shift Reguler',
+                    'shift_start' => '07:00',
+                    'shift_end' => '15:30'
+                ];
+
+                $cur->addDay();
+            }
+
+            $result->push([
+                'employee' => [
+                    'id' => $emp->id,
+                    'name' => $emp->name,
+                    'position' => $emp->position ?? '-',
+                    'photo' => $emp->photo ?? null,
+                ],
+                'daily_details' => $dailyDetails,
+            ]);
+        }
+
+        return $result;
     }
 
     public function export(Request $request)
@@ -240,12 +404,16 @@ class AttendanceController extends Controller
         $search = $request->input('search');
         $position = $request->input('position');
         $format = $request->input('format', 'excel');
-        $schoolUnit = config('app.school_unit', 'smp');
+        $schoolUnit = config('app.school_unit', 'sd');
+        $schoolUnitId = config('app.school_unit_id', 2);
 
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
 
         try {
-            $response = \Illuminate\Support\Facades\Http::get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
+            $response = \Illuminate\Support\Facades\Http::timeout(15.0)->withHeaders([
+                'X-API-TOKEN' => config('app.hrd_api_token')
+            ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
+                'school_unit_id' => $schoolUnitId,
                 'month' => $month,
                 'unit_id' => strtolower($schoolUnit)
             ]);
