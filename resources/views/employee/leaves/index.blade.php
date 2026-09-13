@@ -225,6 +225,17 @@
                                     }
                                 }
 
+                                // Bersihkan "HRD Pusat" -> "HRD", dan hilangkan "Pusat" serta "(Dinas)"
+                                $processedByName = preg_replace('/\bHRD\s+Pusat\b/i', 'HRD', $processedByName);
+                                $processedByName = preg_replace('/\bPusat\b/i', '', $processedByName);
+                                $processedByName = trim($processedByName);
+
+                                $processedByRole = preg_replace('/\b(HRD\s+Pusat|Dinas|Pusat)\b/i', '', $processedByRole);
+                                $processedByRole = trim($processedByRole);
+                                if (strcasecmp($processedByName, $processedByRole) === 0 || strcasecmp($processedByRole, 'Dinas') === 0) {
+                                    $processedByRole = '';
+                                }
+
                                 $displayNotes = $leave->notes ?? '';
                                 $lowerNotes = strtolower($displayNotes);
                                 if (
@@ -391,6 +402,17 @@
                                 $processedByName = $rawProcessed;
                             }
                         }
+                    }
+
+                    // Bersihkan "HRD Pusat" -> "HRD", dan hilangkan "Pusat" serta "(Dinas)"
+                    $processedByName = preg_replace('/\bHRD\s+Pusat\b/i', 'HRD', $processedByName);
+                    $processedByName = preg_replace('/\bPusat\b/i', '', $processedByName);
+                    $processedByName = trim($processedByName);
+
+                    $processedByRole = preg_replace('/\b(HRD\s+Pusat|Dinas|Pusat)\b/i', '', $processedByRole);
+                    $processedByRole = trim($processedByRole);
+                    if (strcasecmp($processedByName, $processedByRole) === 0 || strcasecmp($processedByRole, 'Dinas') === 0) {
+                        $processedByRole = '';
                     }
 
                     $displayNotes = $leave->notes ?? '';

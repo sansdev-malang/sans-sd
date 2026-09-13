@@ -44,7 +44,7 @@ class LeaveDecisionNotification extends Notification
             $statusLabel = 'Ditolak';
         }
 
-        $message = "Pengajuan izin {$this->leave->type} Anda telah {$statusLabel} oleh HRD Pusat.";
+        $message = "Pengajuan izin {$this->leave->type} Anda telah {$statusLabel} oleh HRD.";
         if ($this->leave->notes) {
             $message .= " Catatan: " . $this->leave->notes;
         }

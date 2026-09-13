@@ -203,6 +203,11 @@
                                     }
                                 }
 
+                                $processedBy = preg_replace('/\bHRD\s+Pusat\b/i', 'HRD', $processedBy);
+                                $processedBy = preg_replace('/\s*\(HRD\s+Pusat\)/i', '', $processedBy);
+                                $processedBy = preg_replace('/\s*\(Dinas\)/i', '', $processedBy);
+                                $processedBy = trim($processedBy);
+
                                 $displayNotes = $leave->notes ?? '';
                                 $lowerNotes = strtolower($displayNotes);
                                 if (
