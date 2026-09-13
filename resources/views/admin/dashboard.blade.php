@@ -257,7 +257,7 @@
                                 .mobile-time { display: none !important; }
                             }
                         </style>
-                        <div class="mb-4 p-3.5 bg-slate-50 dark:bg-emerald-600 border border-slate-200 dark:border-slate-800/80 rounded-lg text-sm">
+                        <div class="mb-4 p-3.5 bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/80 rounded-lg text-sm">
                             <div class="flex items-center gap-1.5 font-semibold text-slate-900 dark:text-slate-200 mb-3">
                                 <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-500 shrink-0"></i>
                                 <span>Informasi Shift Kerja Bulan Ini:</span>
@@ -271,20 +271,8 @@
                                         <div class="space-y-3">
                                             @foreach($myActiveShifts as $index => $shift)
                                                 <div class="{{ $index > 0 ? 'pt-3 border-t border-slate-100 dark:border-slate-800/50' : '' }}">
-                                                    @php
-                                                        $code = '';
-                                                        if (stripos($shift['name'], 'malam') !== false) {
-                                                            $code = 'M';
-                                                        } elseif (stripos($shift['name'], 'pagi') !== false) {
-                                                            $code = 'P';
-                                                        } elseif (stripos($shift['name'], 'siang') !== false) {
-                                                            $code = 'S';
-                                                        } else {
-                                                            $code = strtoupper(substr($shift['name'], 0, 1));
-                                                        }
-                                                    @endphp
                                                     <div class="font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center justify-between">
-                                                        <span>{{ $shift['name'] }} ({{ $code }})</span>
+                                                        <span>{{ $shift['name'] }}</span>
                                                     </div>
                                                     @if(!empty($shift['description']))
                                                         <div class="text-xs text-slate-450 dark:text-slate-500 mb-1.5 leading-snug">{{ $shift['description'] }}</div>
