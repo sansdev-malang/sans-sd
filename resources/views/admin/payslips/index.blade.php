@@ -80,7 +80,9 @@
                     <thead>
                         <tr class="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[11px] sticky top-0 z-10">
                             <th class="px-5 py-3.5 text-left min-w-[200px]">Nama Pegawai</th>
-                            <th class="px-5 py-3.5 text-left min-w-[150px]">Tipe Pegawai</th>
+                            <th class="px-5 py-3.5 text-left min-w-[130px]">Tipe Pegawai</th>
+                            <th class="px-5 py-3.5 text-left min-w-[140px]">Jabatan Utama</th>
+                            <th class="px-5 py-3.5 text-left min-w-[140px]">Jabatan Tambahan</th>
                             <th class="px-5 py-3.5 text-center w-36">Periode</th>
                             <th class="px-5 py-3.5 text-center w-32">Status Slip</th>
                             <th class="px-5 py-3.5 text-right w-48">Aksi</th>
@@ -92,11 +94,17 @@
                                 <td class="px-5 py-3.5 text-left">
                                     <div class="flex flex-col min-w-0">
                                         <span class="text-slate-900 dark:text-slate-100 font-semibold truncate">{{ $emp->name }}</span>
-                                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">{{ $emp->nik ?? '-' }}</span>
+                                        <span class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">NIY: {{ $emp->niy ?? '-' }}</span>
                                     </div>
                                 </td>
                                 <td class="px-5 py-3.5 text-left text-slate-600 dark:text-slate-300">
                                     {{ $emp->employeeType->name ?? '-' }}
+                                </td>
+                                <td class="px-5 py-3.5 text-left text-slate-600 dark:text-slate-300">
+                                    {{ $emp->position ?? '-' }}
+                                </td>
+                                <td class="px-5 py-3.5 text-left text-slate-600 dark:text-slate-300">
+                                    {{ !empty($emp->additional_position) ? $emp->additional_position : '-' }}
                                 </td>
                                 <td class="px-5 py-3.5 text-center text-slate-600 dark:text-slate-300 whitespace-nowrap">
                                     {{ $currentDate->translatedFormat('F Y') }}
@@ -137,7 +145,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                                <td colspan="7" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                                     <div class="flex flex-col items-center justify-center gap-2">
                                         <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
                                             <i data-lucide="inbox" class="w-6 h-6"></i>
@@ -160,7 +168,7 @@
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
                             <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">{{ $emp->name }}</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">NIK: {{ $emp->nik ?? '-' }}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">NIY: {{ $emp->niy ?? '-' }}</p>
                         </div>
                         <div class="shrink-0">
                             @if($emp->payslip_url)
@@ -190,12 +198,10 @@
                             <span class="text-slate-400 dark:text-slate-500 block text-[11px]">Jabatan Utama</span>
                             <span class="font-medium text-slate-800 dark:text-slate-200 truncate block mt-0.5">{{ $emp->position ?? '-' }}</span>
                         </div>
-                        @if(!empty($emp->additional_position))
-                            <div>
-                                <span class="text-slate-400 dark:text-slate-500 block text-[11px]">Jabatan Tambahan</span>
-                                <span class="font-medium text-slate-800 dark:text-slate-200 truncate block mt-0.5">{{ $emp->additional_position }}</span>
-                            </div>
-                        @endif
+                        <div>
+                            <span class="text-slate-400 dark:text-slate-500 block text-[11px]">Jabatan Tambahan</span>
+                            <span class="font-medium text-slate-800 dark:text-slate-200 truncate block mt-0.5">{{ !empty($emp->additional_position) ? $emp->additional_position : '-' }}</span>
+                        </div>
                     </div>
 
                     <div class="pt-2 flex flex-col gap-2">
@@ -245,8 +251,8 @@
                     
                     rows.forEach(row => {
                         if (row.children.length > 1) { // Skip empty state row
-                            let name = row.children[0].innerText.toLowerCase();
-                            if (name.includes(filter)) {
+                            let text = row.innerText.toLowerCase();
+                            if (text.includes(filter)) {
                                 row.style.display = '';
                             } else {
                                 row.style.display = 'none';
