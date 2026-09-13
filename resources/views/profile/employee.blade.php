@@ -2,7 +2,26 @@
     <div x-data="{ 
             showEditModal: {{ $errors->any() ? 'true' : 'false' }},
             photoPreview: null,
-            isSaving: false
+            isSaving: false,
+            frontTitle: '{{ addslashes(old('front_title', $employee->front_title)) }}',
+            rawName: '{{ addslashes(old('name', $employee->raw_name)) }}',
+            backTitle: '{{ addslashes(old('back_title', $employee->back_title)) }}',
+            get formattedFullName() {
+                let f = this.frontTitle ? this.frontTitle.trim() : '';
+                let n = this.rawName ? this.rawName.trim() : '';
+                let b = this.backTitle ? this.backTitle.trim() : '';
+                if (!n) return '(Nama belum diisi)';
+                let res = '';
+                if (f) res += f + ' ';
+                res += n;
+                if (b) res += ', ' + b;
+                return res;
+            },
+            get hasTitleInName() {
+                if (!this.rawName) return false;
+                const titleRegex = /(^|[\s,\.])(dr\.|drg\.|dra\.|drs\.|prof\.|kh\.|kh\b|hj\.|hj\b|h\.|h\b|ust\.|ustad\b|ustadz\b|s\.pd|m\.pd|s\.kom|m\.kom|s\.e|m\.m|s\.si|m\.si|s\.ag|m\.ag|s\.t|m\.t|s\.h|m\.h|s\.sos|m\.sos|s\.ked|s\.psi|m\.psi|l\.c|ph\.d|b\.a|m\.a)([\s,\.]|$)/i;
+                return titleRegex.test(this.rawName) || this.rawName.includes(',');
+            }
          }" 
          class="p-4 sm:p-6 space-y-6 w-full">
          
@@ -398,33 +417,75 @@
                                     </div>
 
                                     <!-- SECTION 2: GELAR & NAMA LENGKAP -->
-                                    <div>
-                                        <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
-                                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                            <span>Nama & Gelar</span>
-                                        </h4>
-                                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                    <div class="space-y-3">
+                                        <div class="flex items-center justify-between">
+                                            <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                                <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                                <span>Nama & Gelar</span>
+                                            </h4>
+                                            <span class="text-[11px] text-slate-400 dark:text-slate-500">Gelar depan & belakang dipisah</span>
+                                        </div>
+
+                                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3.5">
                                             <div>
-                                                <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Gelar Depan</label>
-                                                <input type="text" name="front_title" placeholder="Contoh: Dr. / Dra."
+                                                <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                                    Gelar Depan
+                                                </label>
+                                                <input type="text" name="front_title" placeholder="Contoh: Dr. / Dra. / Hj."
+                                                    x-model="frontTitle"
                                                     value="{{ old('front_title', $employee->front_title) }}"
                                                     class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                                                 @error('front_title') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                             </div>
+
                                             <div class="sm:col-span-2">
-                                                <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Nama Lengkap <span class="text-rose-500">*</span></label>
-                                                <input type="text" name="name" required placeholder="Nama lengkap tanpa gelar"
+                                                <label class="block text-[11px] font-bold text-slate-900 dark:text-slate-100 mb-1 flex items-center justify-between">
+                                                    <span>Nama Lengkap (Wajib Tanpa Gelar) <span class="text-rose-500">*</span></span>
+                                                    <span class="text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-900/50">Hanya Nama Asli</span>
+                                                </label>
+                                                <input type="text" name="name" required placeholder="Contoh: Sri Yudiyanti"
+                                                    x-model="rawName"
                                                     value="{{ old('name', $employee->raw_name) }}"
+                                                    :class="{ 'border-amber-400 dark:border-amber-500 ring-2 ring-amber-400/20': hasTitleInName }"
                                                     class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                                                 @error('name') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                             </div>
+
                                             <div>
-                                                <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Gelar Belakang</label>
+                                                <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                                                    Gelar Belakang
+                                                </label>
                                                 <input type="text" name="back_title" placeholder="Contoh: S.Pd / M.M"
+                                                    x-model="backTitle"
                                                     value="{{ old('back_title', $employee->back_title) }}"
                                                     class="w-full text-xs h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                                                 @error('back_title') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                             </div>
+                                        </div>
+
+                                        <!-- REAL-TIME SMART WARNING IF TITLE DETECTED IN RAW NAME -->
+                                        <div x-show="hasTitleInName" 
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="opacity-0 -translate-y-1"
+                                             x-transition:enter-end="opacity-100 translate-y-0"
+                                             style="display: none;" 
+                                             class="p-2.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 flex items-start gap-2.5 text-[11px]">
+                                            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"></i>
+                                            <div>
+                                                <div class="font-bold">Perhatian: Terdeteksi gelar atau tanda koma di kolom Nama Lengkap!</div>
+                                                <p class="text-[10px] text-amber-700/90 dark:text-amber-400 mt-0.5">
+                                                    Mohon hapus singkatan gelar dari kolom nama ini. Pindahkan gelar depan (Dr., Hj., Drs., dll) ke kolom <b>Gelar Depan</b> dan gelar akademik (S.Pd, M.M, dll) ke kolom <b>Gelar Belakang</b>.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <!-- REAL-TIME LIVE NAME PREVIEW BOX -->
+                                        <div class="p-3 rounded-xl bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                                            <div class="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                                <i data-lucide="eye" class="w-3.5 h-3.5 text-indigo-500"></i>
+                                                <span>Pratinjau Nama Resmi Sistem:</span>
+                                            </div>
+                                            <div class="text-xs font-bold text-slate-900 dark:text-slate-100 tracking-wide truncate" x-text="formattedFullName"></div>
                                         </div>
                                     </div>
 
