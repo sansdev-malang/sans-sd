@@ -51,7 +51,9 @@
             color: '',
             bonus: 0,
             x: 0,
-            y: 0
+            y: 0,
+            placement: 'top',
+            activeDate: ''
         },
         showTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus) {
             if (!status) return;
@@ -62,18 +64,51 @@
             this.tooltip.isLate = isLate;
             this.tooltip.color = color;
             this.tooltip.bonus = bonus || 0;
+            this.tooltip.activeDate = date;
             
             const containerRect = this.$refs.container.getBoundingClientRect();
             const targetRect = e.currentTarget.getBoundingClientRect();
             
-            this.tooltip.x = targetRect.left - containerRect.left + (targetRect.width / 2);
-            this.tooltip.y = targetRect.top - containerRect.top - 8;
+            const rawX = targetRect.left - containerRect.left + (targetRect.width / 2);
+            const rawY = targetRect.top - containerRect.top - 8;
+            
+            // Width of tooltip card is approx 220px. Safe padding 10px from container edges.
+            const tooltipWidth = 220;
+            const halfWidth = tooltipWidth / 2;
+            const padding = 10;
+            
+            const minX = halfWidth + padding;
+            const maxX = containerRect.width - halfWidth - padding;
+            
+            if (containerRect.width <= tooltipWidth + padding * 2) {
+                this.tooltip.x = containerRect.width / 2;
+            } else {
+                this.tooltip.x = Math.max(minX, Math.min(rawX, maxX));
+            }
+            
+            // If the cell is too close to top of container, place tooltip below the cell
+            if (rawY < 130) {
+                this.tooltip.y = targetRect.bottom - containerRect.top + 8;
+                this.tooltip.placement = 'bottom';
+            } else {
+                this.tooltip.y = rawY;
+                this.tooltip.placement = 'top';
+            }
+            
             this.tooltip.show = true;
+        },
+        toggleTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus) {
+            if (this.tooltip.show && this.tooltip.activeDate === date) {
+                this.hideTooltip();
+            } else {
+                this.showTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus);
+            }
         },
         hideTooltip() {
             this.tooltip.show = false;
+            this.tooltip.activeDate = '';
         }
-    }" x-ref="container">
+    }" x-ref="container" @click="hideTooltip()">
         <!-- DATA RIWAYAT ABSENSI / PAGE TITLE -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex flex-col gap-0.5">
@@ -275,6 +310,7 @@
                                     <div
                                         @mouseenter="showTooltip($event, '{{ $date->translatedFormat('d F Y') }}', '{{ $status }}', '{{ $checkIn }}', '{{ $checkOut }}', {{ $isLate ? 'true' : 'false' }}, '{{ $modalColor }}', {{ $bonus }})"
                                         @mouseleave="hideTooltip()"
+                                        @click.stop="toggleTooltip($event, '{{ $date->translatedFormat('d F Y') }}', '{{ $status }}', '{{ $checkIn }}', '{{ $checkOut }}', {{ $isLate ? 'true' : 'false' }}, '{{ $modalColor }}', {{ $bonus }})"
                                         class="group relative flex min-h-[26px] sm:min-h-[34px] items-center justify-center px-0.5 sm:px-1 transition-colors {{ $isToday ? 'bg-slate-950 text-white dark:bg-slate-100 dark:text-slate-900 rounded-[200px]' : 'hover:bg-slate-100 dark:hover:bg-slate-900/60' }} cursor-pointer">
                                         <span class="text-[12px] sm:text-[13px] font-normal leading-none tracking-[0.01em] {{ $isToday ? 'text-inherit' : $numberColor }}">
                                             {{ $date->format('d') }}
@@ -417,9 +453,10 @@
             x-transition:leave="transition ease-in duration-75"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
-            :style="`left: ${tooltip.x}px; top: ${tooltip.y}px; transform: translate(-50%, -100%);`"
-            class="absolute z-50 pointer-events-none min-w-[200px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl p-3.5 text-left text-xs transition-all duration-150"
+            :style="`left: ${tooltip.x}px; top: ${tooltip.y}px; transform: translate(-50%, ${tooltip.placement === 'bottom' ? '0%' : '-100%'});`"
+            class="absolute z-50 pointer-events-none w-[220px] max-w-[calc(100vw-32px)] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl p-3.5 text-left text-xs transition-all duration-150"
             style="display: none;"
+            @click.stop
         >
             <!-- Date header -->
             <div class="font-bold text-slate-850 dark:text-slate-100 mb-2 border-b border-slate-100 dark:border-slate-800 pb-1.5" x-text="tooltip.date"></div>
@@ -427,13 +464,14 @@
             <!-- Status Badge -->
             <div class="flex items-center justify-between gap-4 mb-2.5">
                 <span class="text-slate-400 dark:text-slate-500 font-medium">Status</span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider"
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
                       :class="{
                           'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400': tooltip.color === 'emerald',
                           'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': tooltip.color === 'red',
                           'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400': tooltip.color === 'amber',
                           'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': tooltip.color === 'blue',
                           'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400': tooltip.color === 'purple',
+                          'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400': tooltip.color === 'rose',
                           'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300': tooltip.color === 'slate'
                       }"
                       x-text="tooltip.status">
@@ -445,7 +483,7 @@
                 <div class="space-y-2">
                     <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                         <div class="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-lg p-1.5 border border-slate-100/50 dark:border-slate-800 text-center">
-                            <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Masuk</span>
+                            <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Masuk</span>
                             <span class="font-bold text-[11px]" :class="tooltip.isLate ? 'text-amber-600 dark:text-amber-500' : 'text-slate-700 dark:text-slate-200'" x-text="tooltip.checkIn"></span>
                             <template x-if="tooltip.isLate">
                                 <span class="text-[8px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none">Telat</span>
@@ -460,6 +498,14 @@
                     <div class="flex items-center justify-between bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/30 dark:border-emerald-900/30 rounded-lg px-2 py-1.5 text-[10px]">
                         <span class="text-slate-500 dark:text-slate-400 font-medium">Bonus Kehadiran</span>
                         <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="tooltip.bonus > 0 ? 'Rp ' + Number(tooltip.bonus).toLocaleString('id-ID') : 'Rp 0'"></span>
+                    </div>
+                </div>
+            </template>
+            <template x-if="tooltip.status !== 'Hadir' && tooltip.bonus > 0">
+                <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center justify-between bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/30 dark:border-emerald-900/30 rounded-lg px-2 py-1.5 text-[10px]">
+                        <span class="text-slate-500 dark:text-slate-400 font-medium">Bonus Kehadiran</span>
+                        <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="'Rp ' + Number(tooltip.bonus).toLocaleString('id-ID')"></span>
                     </div>
                 </div>
             </template>
