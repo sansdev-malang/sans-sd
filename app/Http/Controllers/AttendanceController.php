@@ -35,8 +35,7 @@ class AttendanceController extends Controller
         $previousMonth = $monthCarbon->copy()->subMonthNoOverflow()->format('Y-m');
         $nextMonth = $monthCarbon->copy()->addMonthNoOverflow()->format('Y-m');
 
-        // Past months: 86400s (1 day). Current month: 20s micro-cache (real-time ADMS sync with fast navigation).
-        $cacheTtlCurrent = 20;
+        // Past months: 86400s (1 day). Current active month: always fetched live for real-time synchronization.
         $cacheTtlPast = 86400;
 
         $matrixCacheKey = "hrd_att_matrix_{$schoolUnitId}_{$month}";
@@ -47,18 +46,24 @@ class AttendanceController extends Controller
 
         if ($forceRefresh) {
             \Illuminate\Support\Facades\Cache::forget($matrixCacheKey);
+            \Illuminate\Support\Facades\Cache::forget($matrixCacheKey . '_stale');
             \Illuminate\Support\Facades\Cache::forget($prevMatrixCacheKey);
+            \Illuminate\Support\Facades\Cache::forget($prevMatrixCacheKey . '_stale');
             \Illuminate\Support\Facades\Cache::forget($bonusCacheKey);
+            \Illuminate\Support\Facades\Cache::forget($bonusCacheKey . '_stale');
             \Illuminate\Support\Facades\Cache::forget($prevBonusCacheKey);
+            \Illuminate\Support\Facades\Cache::forget($prevBonusCacheKey . '_stale');
             \Illuminate\Support\Facades\Cache::forget($nextBonusCacheKey);
+            \Illuminate\Support\Facades\Cache::forget($nextBonusCacheKey . '_stale');
         }
 
         try {
-            $matrixData = \Illuminate\Support\Facades\Cache::get($matrixCacheKey);
+            // Only use cache for past months; current active month is always fetched live
+            $matrixData = $isPastMonth ? \Illuminate\Support\Facades\Cache::get($matrixCacheKey) : null;
             $prevMatrixData = \Illuminate\Support\Facades\Cache::get($prevMatrixCacheKey);
-            $bonusData = \Illuminate\Support\Facades\Cache::get($bonusCacheKey);
+            $bonusData = $isPastMonth ? \Illuminate\Support\Facades\Cache::get($bonusCacheKey) : null;
             $prevBonusData = \Illuminate\Support\Facades\Cache::get($prevBonusCacheKey);
-            $nextBonusData = \Illuminate\Support\Facades\Cache::get($nextBonusCacheKey);
+            $nextBonusData = null; // Next month is dynamic
 
             $needsEmployeeData = $user && $user->role === 'employee' && $user->employee_id;
 
@@ -119,15 +124,17 @@ class AttendanceController extends Controller
             if (!empty($poolCalls)) {
                 $responses = \Illuminate\Support\Facades\Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($poolCalls) {
                     $callList = [];
-                    foreach ($poolCalls as $call) {
-                        $callList[] = $call($pool);
+                    foreach ($poolCalls as $key => $call) {
+                        $callList[$key] = $call($pool);
                     }
                     return $callList;
                 });
 
                 if (isset($responses['curr_matrix']) && $responses['curr_matrix'] instanceof \Illuminate\Http\Client\Response && $responses['curr_matrix']->successful()) {
                     $matrixData = $responses['curr_matrix']->json();
-                    \Illuminate\Support\Facades\Cache::put($matrixCacheKey, $matrixData, $isPastMonth ? $cacheTtlPast : $cacheTtlCurrent);
+                    if ($isPastMonth) {
+                        \Illuminate\Support\Facades\Cache::put($matrixCacheKey, $matrixData, $cacheTtlPast);
+                    }
                     \Illuminate\Support\Facades\Cache::put($matrixCacheKey . '_stale', $matrixData, 604800);
                 }
                 if (isset($responses['prev_matrix']) && $responses['prev_matrix'] instanceof \Illuminate\Http\Client\Response && $responses['prev_matrix']->successful()) {
@@ -137,7 +144,9 @@ class AttendanceController extends Controller
                 }
                 if (isset($responses['curr_bonus']) && $responses['curr_bonus'] instanceof \Illuminate\Http\Client\Response && $responses['curr_bonus']->successful()) {
                     $bonusData = $responses['curr_bonus']->json();
-                    \Illuminate\Support\Facades\Cache::put($bonusCacheKey, $bonusData, $isPastMonth ? $cacheTtlPast : $cacheTtlCurrent);
+                    if ($isPastMonth) {
+                        \Illuminate\Support\Facades\Cache::put($bonusCacheKey, $bonusData, $cacheTtlPast);
+                    }
                     \Illuminate\Support\Facades\Cache::put($bonusCacheKey . '_stale', $bonusData, 604800);
                 }
                 if (isset($responses['prev_bonus']) && $responses['prev_bonus'] instanceof \Illuminate\Http\Client\Response && $responses['prev_bonus']->successful()) {
@@ -147,7 +156,6 @@ class AttendanceController extends Controller
                 }
                 if (isset($responses['next_bonus']) && $responses['next_bonus'] instanceof \Illuminate\Http\Client\Response && $responses['next_bonus']->successful()) {
                     $nextBonusData = $responses['next_bonus']->json();
-                    \Illuminate\Support\Facades\Cache::put($nextBonusCacheKey, $nextBonusData, $cacheTtlCurrent);
                     \Illuminate\Support\Facades\Cache::put($nextBonusCacheKey . '_stale', $nextBonusData, 604800);
                 }
             }
@@ -409,9 +417,9 @@ class AttendanceController extends Controller
         $schoolUnitId = config('app.school_unit_id', 2);
 
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
-        $matrixCacheKey = "hrd_att_matrix_{$schoolUnitId}_{$month}";
-
-        $json = \Illuminate\Support\Facades\Cache::get($matrixCacheKey);
+        $monthCarbon = \Carbon\Carbon::parse($month . '-01');
+        $isPastMonth = $monthCarbon->copy()->endOfMonth()->isPast();
+        $json = $isPastMonth ? \Illuminate\Support\Facades\Cache::get($matrixCacheKey) : null;
 
         if (!$json) {
             try {
@@ -424,9 +432,10 @@ class AttendanceController extends Controller
                 ]);
                 if ($response->successful()) {
                     $json = $response->json();
-                    $monthCarbon = \Carbon\Carbon::parse($month . '-01');
-                    $isPastMonth = $monthCarbon->copy()->endOfMonth()->isPast();
-                    \Illuminate\Support\Facades\Cache::put($matrixCacheKey, $json, $isPastMonth ? 86400 : 20);
+                    if ($isPastMonth) {
+                        \Illuminate\Support\Facades\Cache::put($matrixCacheKey, $json, 86400);
+                    }
+                    \Illuminate\Support\Facades\Cache::put($matrixCacheKey . '_stale', $json, 604800);
                 } else {
                     $json = \Illuminate\Support\Facades\Cache::get($matrixCacheKey . '_stale');
                 }

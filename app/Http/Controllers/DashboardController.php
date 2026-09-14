@@ -87,29 +87,28 @@ class DashboardController extends Controller
 
             $cacheKey = 'hrd_matrix_unit_' . $schoolUnitId . '_' . $today;
 
-            // Smart Caching with Fast 1.5s Timeout and Stale Cache Fallback
-            $reports = Cache::remember($cacheKey, 300, function () use ($hrdUrl, $schoolUnitId, $yesterday, $today, $cacheKey) {
-                try {
-                    $response = Http::timeout(1.5)->withHeaders([
-                        'X-API-TOKEN' => config('app.hrd_api_token')
-                    ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
-                        'school_unit_id' => $schoolUnitId,
-                        'unit_id' => strtolower(config('app.school_unit', 'sd')),
-                        'start_date' => $yesterday,
-                        'end_date' => $today
-                    ]);
+            // Live Fetch with 4s Timeout and Stale Cache Fallback
+            $reports = [];
+            try {
+                $response = Http::timeout(4.0)->withHeaders([
+                    'X-API-TOKEN' => config('app.hrd_api_token')
+                ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
+                    'school_unit_id' => $schoolUnitId,
+                    'unit_id' => strtolower(config('app.school_unit', 'sd')),
+                    'start_date' => $yesterday,
+                    'end_date' => $today
+                ]);
 
-                    if ($response->successful()) {
-                        $data = $response->json()['data'] ?? [];
-                        Cache::put($cacheKey . '_stale', $data, 86400); // 24h backup
-                        return $data;
-                    }
-                } catch (\Exception $e) {
-                    Log::warning('Gagal memuat absensi dashboard dari HRD: ' . $e->getMessage());
+                if ($response->successful()) {
+                    $reports = $response->json()['data'] ?? [];
+                    Cache::put($cacheKey . '_stale', $reports, 86400); // 24h backup
+                } else {
+                    $reports = Cache::get($cacheKey . '_stale', []);
                 }
-
-                return Cache::get($cacheKey . '_stale', []);
-            });
+            } catch (\Exception $e) {
+                Log::warning('Gagal memuat absensi dashboard dari HRD: ' . $e->getMessage());
+                $reports = Cache::get($cacheKey . '_stale', []);
+            }
 
             foreach ($reports as $report) {
                 $empId = $report['employee']['id'] ?? null;
@@ -266,24 +265,23 @@ class DashboardController extends Controller
                     $month = $todayDate->day > $cutoffDate ? $todayDate->copy()->startOfMonth()->addMonth()->format('Y-m') : $todayDate->format('Y-m');
                     $bonusCacheKey = 'hrd_bonus_report_' . $schoolUnitId . '_' . $month;
 
-                    $reports = Cache::remember($bonusCacheKey, 600, function () use ($hrdUrl, $schoolUnitId, $month, $bonusCacheKey) {
-                        try {
-                            $response = Http::timeout(8.0)->withHeaders([
-                                'X-API-TOKEN' => config('app.hrd_api_token')
-                            ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
-                                'school_unit_id' => $schoolUnitId,
-                                'month' => $month
-                            ]);
-                            if ($response->successful()) {
-                                $data = $response->json()['data'] ?? [];
-                                Cache::put($bonusCacheKey . '_stale', $data, 604800); // 7 days stale cache
-                                return $data;
-                            }
-                        } catch (\Exception $e) {
-                            // Fallback to stale
+                    $reports = [];
+                    try {
+                        $response = Http::timeout(4.0)->withHeaders([
+                            'X-API-TOKEN' => config('app.hrd_api_token')
+                        ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                            'school_unit_id' => $schoolUnitId,
+                            'month' => $month
+                        ]);
+                        if ($response->successful()) {
+                            $reports = $response->json()['data'] ?? [];
+                            Cache::put($bonusCacheKey . '_stale', $reports, 604800); // 7 days stale cache
+                        } else {
+                            $reports = Cache::get($bonusCacheKey . '_stale', []);
                         }
-                        return Cache::get($bonusCacheKey . '_stale', []);
-                    });
+                    } catch (\Exception $e) {
+                        $reports = Cache::get($bonusCacheKey . '_stale', []);
+                    }
 
                     $reportsCol = collect($reports);
                     $myReport = $reportsCol->first(function ($item) use ($employee) {
