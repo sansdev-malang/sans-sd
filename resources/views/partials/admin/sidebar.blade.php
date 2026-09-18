@@ -287,13 +287,13 @@
                 </a>
 
                 @if(auth()->user()->hasRole('super_admin'))
-                <!-- Dropdown: Administrasi Sistem -->
+                <!-- Dropdown: Setting System -->
                 <div x-data="{ openSystem: {{ Request::routeIs('users.*', 'system-logs.*', 'settings') ? 'true' : 'false' }} }">
                     <button @click="openSystem = !openSystem"
                         class="menu-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors text-xs font-medium relative group cursor-pointer {{ Request::routeIs('users.*', 'system-logs.*', 'settings') ? 'text-slate-900 dark:text-slate-50 bg-slate-50/50 dark:bg-slate-900/30' : '' }}">
                         <div class="flex items-center gap-3">
                             <i data-lucide="sliders" class="menu-icon w-4 h-4"></i>
-                            <span class="menu-text">Administrasi Sistem</span>
+                            <span class="menu-text">Setting System</span>
                         </div>
                         <i data-lucide="chevron-right" class="w-3.5 h-3.5 transition-transform duration-200"
                             :style="openSystem ? 'transform: rotate(90deg);' : ''"></i>
@@ -305,15 +305,15 @@
                         style="margin-left:20px">
                         <a href="{{ route('users.index') }}"
                             class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('users.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
-                            <span>Manajemen User</span>
-                        </a>
-                        <a href="{{ route('system-logs.index') }}"
-                            class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('system-logs.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
-                            <span>Log Sistem</span>
+                            <span>Setting User</span>
                         </a>
                         <a href="{{ route('settings') }}"
                             class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('settings') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
-                            <span>Pengaturan Aplikasi</span>
+                            <span>Setting App</span>
+                        </a>
+                        <a href="{{ route('system-logs.index') }}"
+                            class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('system-logs.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
+                            <span>Log System</span>
                         </a>
                     </div>
                 </div>
