@@ -579,65 +579,6 @@ class EmployeeController extends Controller
         return redirect()->back()->with('success', "Berhasil mengimpor {$importedCount} data pegawai!");
     }
 
-    /**
-     * Display a listing of teachers.
-     */
-    public function guru(Request $request)
-    {
-        $teacherType = \App\Models\EmployeeType::where('code', 'teacher')->first();
-        $teacherTypeId = $teacherType ? $teacherType->id : 0;
-        
-        $query = Employee::where('employee_type_id', $teacherTypeId);
-
-        // Apply school unit filter if config-constrained
-        $schoolUnit = config('app.school_unit');
-        if ($schoolUnit) {
-            $query->where('unit', $schoolUnit);
-        }
-
-        // Apply search
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('nik', 'like', "%{$search}%")->orWhere('nuptk', 'like', "%{$search}%")
-                  ->orWhere('subject_position', 'like', "%{$search}%");
-            });
-        }
-
-        // Apply gender filter
-        if ($request->filled('gender')) {
-            $query->where('gender', $request->input('gender'));
-        }
-
-        // Apply status filter
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
-        }
-
-        // Get statistics (specific to the active school unit)
-        $statsQuery = Employee::where('employee_type_id', $teacherTypeId);
-        if ($schoolUnit) {
-            $statsQuery->where('unit', $schoolUnit);
-        }
-
-        $totalGuru = (clone $statsQuery)->count();
-        $guruMale = (clone $statsQuery)->where('gender', 'Male')->count();
-        $guruFemale = (clone $statsQuery)->where('gender', 'Female')->count();
-        
-        // Count certification based on NUPTK/NIP/NIK filled
-        $certifiedCount = (clone $statsQuery)->whereNotNull('nuptk')->where('nuptk', '!=', '')->count();
-        $certifiedPercent = $totalGuru > 0 ? round(($certifiedCount / $totalGuru) * 100) : 0;
-
-        $teachers = $query->orderBy('name', 'asc')->paginate($request->input('per_page', 10))->withQueryString();
-        $employeeTypes = \App\Models\EmployeeType::all();
-
-        return view('admin.guru', compact(
-            'teachers', 'totalGuru', 'guruMale', 'guruFemale', 'certifiedPercent', 'employeeTypes'
-        ));
-    }
-
     public function generateAccounts()
     {
         $employees = \App\Models\Employee::whereNotNull('email')->where('email', '!=', '')->doesntHave('user')->get();
