@@ -11,8 +11,8 @@
 <aside id="sidebar"
     class="fixed inset-y-0 left-0 z-[60] md:z-20 flex flex-col w-64 bg-white dark:bg-[#09090b] border-r border-slate-200 dark:border-slate-800 p-3 shrink-0 transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative shadow-sm md:shadow-none">
 
-    <!-- Workspace / School Selector (dropdown lookalike) -->
-    <div
+    <!-- App Brand / Dashboard Link -->
+    <a href="{{ route('dashboard') }}"
         class="workspace-selector flex items-center justify-between p-2 mb-4 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg cursor-pointer transition-colors relative group">
         <div class="flex items-center gap-2.5">
             @if (setting('app_logo'))
@@ -30,15 +30,13 @@
                 </h1>
             </div>
         </div>
-        <!-- Dropdown selector arrow -->
-        <!-- <i data-lucide="chevrons-up-down" class="chevron-icon w-4 h-4 text-slate-400 shrink-0 ml-1"></i> -->
 
         <!-- Tooltip for collapsed view -->
         <span
             class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
             {{ setting('unit_name', 'SANS Malang') }}
         </span>
-    </div>
+    </a>
 
     <!-- Grouped Navigation Links (sidebar-07 style) -->
     <div id="sidebar-nav-container" class="flex-1 space-y-4 overflow-y-auto px-1 py-2 no-scrollbar">
