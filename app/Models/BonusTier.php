@@ -13,6 +13,7 @@ class BonusTier extends Model
         'bonus_schema_id',
         'tier_level',
         'nominal',
+        'min_early_minutes',
         'max_late_minutes',
         'max_absent_days',
     ];

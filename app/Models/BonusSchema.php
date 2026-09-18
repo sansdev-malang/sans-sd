@@ -12,6 +12,7 @@ class BonusSchema extends Model
     protected $fillable = [
         'name',
         'is_active',
+        'calculation_mode',
     ];
 
     protected $casts = [

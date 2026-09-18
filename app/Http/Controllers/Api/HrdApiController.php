@@ -387,7 +387,8 @@ class HrdApiController extends Controller
             $schema = BonusSchema::updateOrCreate(
                 ['name' => $sData['name']],
                 [
-                    'is_active' => $sData['is_active'] ?? true
+                    'is_active' => $sData['is_active'] ?? true,
+                    'calculation_mode' => $sData['calculation_mode'] ?? 'early_arrival',
                 ]
             );
 
@@ -398,7 +399,8 @@ class HrdApiController extends Controller
                     $schema->tiers()->create([
                         'tier_level' => $tData['tier_level'],
                         'nominal' => $tData['nominal'],
-                        'max_late_minutes' => $tData['max_late_minutes'],
+                        'min_early_minutes' => $tData['min_early_minutes'] ?? 0,
+                        'max_late_minutes' => $tData['max_late_minutes'] ?? 0,
                         'max_absent_days' => $tData['max_absent_days'] ?? 0,
                     ]);
                 }
