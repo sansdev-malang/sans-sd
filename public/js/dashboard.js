@@ -277,6 +277,91 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // 8. Sidebar Scroll Preservation & Active Item Auto-Scroll
+    const setupSidebarScroll = () => {
+        const sidebarScroll = document.getElementById('sidebar-nav-container') || document.querySelector('#sidebar .overflow-y-auto');
+        if (!sidebarScroll) return;
+
+        // Save scroll position on scroll and link clicks
+        let scrollTimeout;
+        sidebarScroll.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                sessionStorage.setItem('sidebar_scroll_top', sidebarScroll.scrollTop);
+            }, 100);
+        }, { passive: true });
+
+        sidebarScroll.addEventListener('click', (e) => {
+            if (e.target.closest('a')) {
+                sessionStorage.setItem('sidebar_scroll_top', sidebarScroll.scrollTop);
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            sessionStorage.setItem('sidebar_scroll_top', sidebarScroll.scrollTop);
+        });
+
+        // Find active menu item
+        const findActiveItem = () => {
+            // 1. Direct class matching
+            let active = sidebarScroll.querySelector(
+                'a.bg-slate-100, a.text-indigo-600, a.bg-slate-50, .menu-item.bg-slate-100, a.font-semibold:not(h1):not(h2):not(h3):not(h4)'
+            );
+            if (active) return active;
+
+            // 2. URL pathname matching fallback
+            const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
+            const links = Array.from(sidebarScroll.querySelectorAll('a[href]'));
+            for (const link of links) {
+                try {
+                    const linkPath = new URL(link.href, window.location.origin).pathname.replace(/\/$/, '') || '/';
+                    if (linkPath === currentPath && linkPath !== '') {
+                        return link;
+                    }
+                } catch (err) {}
+            }
+            return null;
+        };
+
+        const activeItem = findActiveItem();
+        const savedScroll = sessionStorage.getItem('sidebar_scroll_top');
+        let hasRestored = false;
+
+        // Restore saved scroll position immediately if available
+        if (savedScroll !== null) {
+            const scrollVal = parseInt(savedScroll, 10);
+            if (!isNaN(scrollVal)) {
+                sidebarScroll.scrollTop = scrollVal;
+                hasRestored = true;
+            }
+        }
+
+        // Ensure active item is within comfortable visible range
+        const scrollActiveIntoView = () => {
+            if (!activeItem) return;
+            const containerRect = sidebarScroll.getBoundingClientRect();
+            const itemRect = activeItem.getBoundingClientRect();
+
+            // Check if item is above or below the container's visible bounds
+            const isAbove = itemRect.top < containerRect.top + 20;
+            const isBelow = itemRect.bottom > containerRect.bottom - 20;
+
+            if (isAbove || isBelow || !hasRestored) {
+                activeItem.scrollIntoView({
+                    block: 'nearest',
+                    behavior: hasRestored ? 'instant' : 'auto'
+                });
+            }
+        };
+
+        // Run immediately
+        scrollActiveIntoView();
+
+        // Run after potential Alpine.js accordion collapse/expand animation completes
+        setTimeout(scrollActiveIntoView, 150);
+        setTimeout(scrollActiveIntoView, 350);
+    };
+
     // Execute animations
     animateEntry();
     animateCounters();
@@ -285,4 +370,5 @@ document.addEventListener('DOMContentLoaded', () => {
     animateChart();
     setupThemeToggle();
     setupSidebarToggle();
+    setupSidebarScroll();
 });
