@@ -37,7 +37,6 @@
                     'employees.index' => 'Data Pegawai',
                     'announcements.index' => 'Pengumuman',
                     'zkteco-devices.index' => 'Mesin Absensi',
-                    'homebase_leaderboard' => 'Homebase Leaderboard',
                 ];
                 $title = $routeTitles[$routeName] ?? 'Dashboard';
             }

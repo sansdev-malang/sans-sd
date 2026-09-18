@@ -51,36 +51,6 @@ Route::post('/leaves/{id}/approve', [\App\Http\Controllers\LeaveRequestControlle
 Route::post('/leaves/{id}/reject', [\App\Http\Controllers\LeaveRequestController::class, 'reject'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leaves.reject');
 
 
-
-// Route Homebase
-Route::get('/homebase_leaderboard', function () {
-    return view('admin.homebase_leaderboard');
-})->middleware(['auth', 'verified'])->name('homebase_leaderboard');
-
-Route::get('/homebase_merah', function () {
-    return view('admin.homebase_merah');
-})->middleware(['auth', 'verified'])->name('homebase_merah');
-
-Route::get('/homebase_kuning', function () {
-    return view('admin.homebase_kuning');
-})->middleware(['auth', 'verified'])->name('homebase_kuning');
-
-Route::get('/homebase_hijau', function () {
-    return view('admin.homebase_hijau');
-})->middleware(['auth', 'verified'])->name('homebase_hijau');
-
-Route::get('/homebase_biru', function () {
-    return view('admin.homebase_biru');
-})->middleware(['auth', 'verified'])->name('homebase_biru');
-
-Route::get('/homebase_ungu', function () {
-    return view('admin.homebase_ungu');
-})->middleware(['auth', 'verified'])->name('homebase_ungu');
-
-Route::get('/form_homebase', function () {
-    return view('admin.form_homebase');
-})->middleware(['auth', 'verified'])->name('form_homebase');
-
 // SPMB Webhook Receiver (Real-time Push)
 Route::post('/api/spmb-webhook', [\App\Http\Controllers\Api\SpmbWebhookController::class, 'handleWebhook'])->name('api.spmb-webhook');
 

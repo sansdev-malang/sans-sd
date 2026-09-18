@@ -271,80 +271,9 @@
                 </a>
             </nav>
         </div>
-
-        <!-- Group 4: Homebase (Dropdown style) -->
-        <div>
-            <h3 class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
-                Homebase
-            </h3>
-            <nav class="space-y-1">
-                <div x-data="{ openHomebase: false, openDb: false }">
-                    <button @click="openHomebase = !openHomebase"
-                        class="menu-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors text-xs font-medium relative group cursor-pointer">
-                        <div class="flex items-center gap-3">
-                            <i data-lucide="podium" class="menu-icon w-4 h-4"></i>
-                            <span class="menu-text">Homebase System</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="menu-text text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
-                            <i data-lucide="chevron-right" class="w-3.5 h-3.5 transition-transform duration-200"
-                                :style="openHomebase ? 'transform: rotate(90deg);' : ''"></i>
-                        </div>
-                    </button>
-
-                    <!-- Dropdown content with line connector -->
-                    <div x-show="openHomebase" x-collapse
-                        class="mt-1 ml-5 pl-4 border-l border-slate-200 dark:border-slate-800 space-y-1"
-                        style="margin-left:20px">
-                        <a href="{{ route('coming-soon') }}"
-                            class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                            <span>Leaderboard</span>
-                            <span class="text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
-                        </a>
-                        <a href="{{ route('coming-soon') }}"
-                            class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                            <span>Input Poin</span>
-                            <span class="text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Dev</span>
-                        </a>
-
-                        <!-- Nested Database Colors -->
-                        <div>
-                            <button @click="openDb = !openDb"
-                                class="w-full flex items-center justify-between py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer">
-                                <span>Database Warna</span>
-                                <i data-lucide="chevron-right" class="w-3 h-3 transition-transform duration-200"
-                                    :style="openDb ? 'transform: rotate(90deg);' : ''"></i>
-                            </button>
-                            <div x-show="openDb" x-collapse class="ml-3 pl-2 border-l border-slate-200 dark:border-slate-800 space-y-1 mt-1">
-                                <a href="{{ route('coming-soon') }}" class="flex items-center gap-2 py-1 text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">
-                                    <i data-lucide="sparkles" class="w-3 h-3 text-red-600"></i>
-                                    <span>Merah</span>
-                                </a>
-                                <a href="{{ route('coming-soon') }}" class="flex items-center gap-2 py-1 text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">
-                                    <i data-lucide="sparkles" class="w-3 h-3 text-yellow-600"></i>
-                                    <span>Kuning</span>
-                                </a>
-                                <a href="{{ route('coming-soon') }}" class="flex items-center gap-2 py-1 text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">
-                                    <i data-lucide="sparkles" class="w-3 h-3 text-green-600"></i>
-                                    <span>Hijau</span>
-                                </a>
-                                <a href="{{ route('coming-soon') }}" class="flex items-center gap-2 py-1 text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">
-                                    <i data-lucide="sparkles" class="w-3 h-3 text-blue-600"></i>
-                                    <span>Biru</span>
-                                </a>
-                                <a href="{{ route('coming-soon') }}" class="flex items-center gap-2 py-1 text-xs text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">
-                                    <i data-lucide="sparkles" class="w-3 h-3 text-indigo-600"></i>
-                                    <span>Ungu</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-        </div>
         @endif
 
-        <!-- Group 5: Pengaturan & Sistem -->
+        <!-- Group 4: Pengaturan & Sistem -->
         <div>
             <h3 class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
                 Pengaturan & Sistem
