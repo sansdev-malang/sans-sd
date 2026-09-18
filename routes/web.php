@@ -46,47 +46,9 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
 
 
 
-// Route Absensi
-Route::get('/absensi_hari_ini', function () {
-    return view('admin.absensi_hari_ini');
-})->middleware(['auth', 'verified'])->name('absensi_hari_ini');
-
-Route::get('/absensi_laporan', function () {
-    return view('admin.absensi_laporan');
-})->middleware(['auth', 'verified'])->name('absensi_laporan');
-
-
-
-Route::get('/absensi_izin_cuti', function () {
-    return view('admin.absensi_izin_cuti');
-})->middleware(['auth', 'verified'])->name('absensi_izin_cuti');
-
+// Route Leave Actions
 Route::post('/leaves/{id}/approve', [\App\Http\Controllers\LeaveRequestController::class, 'approve'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leaves.approve');
 Route::post('/leaves/{id}/reject', [\App\Http\Controllers\LeaveRequestController::class, 'reject'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leaves.reject');
-
-Route::get('/absensi_mesin', function () {
-    return view('admin.absensi_mesin');
-})->middleware(['auth', 'verified', 'role:super_admin'])->name('absensi_mesin');
-
-Route::get('/absensi_log_penarikan', function () {
-    return view('admin.absensi_log_penarikan');
-})->middleware(['auth', 'verified', 'role:super_admin'])->name('absensi_log_penarikan');
-
-Route::get('/absensi_shift', function () {
-    return view('admin.absensi_shift');
-})->middleware(['auth', 'verified'])->name('absensi_shift');
-
-Route::get('/absensi_libur', function () {
-    return view('admin.absensi_libur');
-})->middleware(['auth', 'verified'])->name('absensi_libur');
-
-Route::get('/absensi_bonus_denda', function () {
-    return view('admin.absensi_bonus_denda');
-})->middleware(['auth', 'verified'])->name('absensi_bonus_denda');
-
-Route::get('/absensi_karyawan', function () {
-    return view('admin.absensi_karyawan');
-})->middleware(['auth', 'verified'])->name('absensi_karyawan');
 
 
 

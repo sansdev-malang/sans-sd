@@ -36,15 +36,7 @@
                     'teachers.index' => 'Data Guru',
                     'employees.index' => 'Data Pegawai',
                     'announcements.index' => 'Pengumuman',
-                    'absensi_hari_ini' => 'Absensi Hari Ini',
-                    'absensi_laporan' => 'Laporan Absensi',
-                    'absensi_izin_cuti' => 'Izin & Cuti',
-                    'absensi_mesin' => 'Mesin Absensi',
-                    'absensi_log_penarikan' => 'Log Penarikan Absensi',
-                    'absensi_shift' => 'Kelola Shift',
-                    'absensi_libur' => 'Kelola Hari Libur',
-                    'absensi_bonus_denda' => 'Bonus & Denda',
-                    'absensi_karyawan' => 'Data Karyawan',
+                    'zkteco-devices.index' => 'Mesin Absensi',
                     'homebase_leaderboard' => 'Homebase Leaderboard',
                 ];
                 $title = $routeTitles[$routeName] ?? 'Dashboard';
