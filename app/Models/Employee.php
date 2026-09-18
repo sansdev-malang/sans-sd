@@ -182,22 +182,10 @@ class Employee extends Model
             }
         }
 
-        // 4. Normalisasi dan hapus duplikasi pada gelar belakang
+        // 4. Normalisasi format gelar belakang
         if (!empty($backTitle)) {
-            $tokens = strpos($backTitle, ',') !== false 
-                ? array_map('trim', explode(',', $backTitle)) 
-                : array_map('trim', explode(',', str_replace('  ', ' ', $backTitle)));
-            
-            $uniqueTokens = [];
-            $seen = [];
-            foreach ($tokens as $token) {
-                $normalized = strtolower(trim(str_replace([' ', '.'], '', $token)));
-                if (!empty($normalized) && !isset($seen[$normalized])) {
-                    $seen[$normalized] = true;
-                    $uniqueTokens[] = trim($token);
-                }
-            }
-            $backTitle = implode(', ', $uniqueTokens);
+            $tokens = array_filter(array_map('trim', explode(',', $backTitle)), fn($t) => $t !== '');
+            $backTitle = implode(', ', $tokens);
         }
 
         // 5. Bersihkan sisa tanda koma atau spasi berlebih

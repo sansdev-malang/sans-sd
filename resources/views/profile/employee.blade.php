@@ -70,17 +70,7 @@
                         let reg = new RegExp('[\\s,]+' + part.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&') + '\\s*$', 'i');
                         name = name.replace(reg, '');
                     }
-
-                    let seen = new Set();
-                    let uniqueTokens = [];
-                    for (let token of backParts) {
-                        let norm = token.toLowerCase().replace(/[\s\.]/g, '');
-                        if (norm && !seen.has(norm)) {
-                            seen.add(norm);
-                            uniqueTokens.push(token);
-                        }
-                    }
-                    this.backTitle = uniqueTokens.join(', ');
+                    this.backTitle = backParts.join(', ');
                 }
 
                 this.rawName = name.replace(/^[\s,]+|[\s,]+$/g, '').trim();

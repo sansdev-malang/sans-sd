@@ -100,7 +100,7 @@ class EmployeeTypeController extends Controller
             ]);
         }
 
-        return redirect()->route('employee-types.index')->with('success', 'Tipe pegawai berhasil diperbarui!');
+        return redirect()->back()->with('success', 'Tipe pegawai berhasil diperbarui!');
     }
 
     /**
@@ -117,6 +117,6 @@ class EmployeeTypeController extends Controller
             ]);
         }
 
-        return redirect()->route('employee-types.index')->with('success', 'Tipe pegawai berhasil dihapus!');
+        return redirect()->back()->with('success', 'Tipe pegawai berhasil dihapus!');
     }
 }

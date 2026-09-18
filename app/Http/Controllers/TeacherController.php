@@ -276,7 +276,7 @@ class TeacherController extends Controller
 
         $teacher->update($validated);
 
-        return redirect()->route('teachers.index')->with('success', 'Berhasil memperbarui data guru!');
+        return redirect()->back()->with('success', 'Berhasil memperbarui data guru!');
     }
 
     /**
@@ -295,7 +295,7 @@ class TeacherController extends Controller
 
         $teacher->delete();
 
-        return redirect()->route('teachers.index')->with('success', 'Berhasil menghapus data guru!');
+        return redirect()->back()->with('success', 'Berhasil menghapus data guru!');
     }
 
     /**
@@ -566,12 +566,12 @@ class TeacherController extends Controller
         }
 
         if (count($errors) > 0) {
-            return redirect()->route('teachers.index')
+            return redirect()->back()
                 ->with('success', "Impor selesai. Berhasil mengimpor {$importedCount} data guru.")
                 ->with('import_errors', $errors);
         }
 
-        return redirect()->route('teachers.index')->with('success', "Berhasil mengimpor {$importedCount} data guru!");
+        return redirect()->back()->with('success', "Berhasil mengimpor {$importedCount} data guru!");
     }
 }
 

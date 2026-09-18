@@ -295,7 +295,7 @@ class LeaveRequestController extends Controller
         $leave = LeaveRequest::findOrFail($id);
         $leave->delete();
 
-        return redirect()->route('leaves.index')
+        return redirect()->back()
             ->with('success', 'Data izin berhasil dihapus.');
     }
 }

@@ -36,7 +36,7 @@ class LeaveTypeController extends Controller
             ], 403);
         }
 
-        return redirect()->route('leave-types.index')
+        return redirect()->back()
             ->with('error', 'Tipe izin dikelola secara terpusat melalui portal HRD Yayasan.');
     }
 
@@ -63,7 +63,7 @@ class LeaveTypeController extends Controller
             ], 403);
         }
 
-        return redirect()->route('leave-types.index')
+        return redirect()->back()
             ->with('error', 'Tipe izin dikelola secara terpusat melalui portal HRD Yayasan.');
     }
 
@@ -79,7 +79,7 @@ class LeaveTypeController extends Controller
             ], 403);
         }
 
-        return redirect()->route('leave-types.index')
+        return redirect()->back()
             ->with('error', 'Tipe izin dikelola secara terpusat melalui portal HRD Yayasan.');
     }
 }

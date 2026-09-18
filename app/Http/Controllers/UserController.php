@@ -88,7 +88,7 @@ class UserController extends Controller
 
         $user->update($updateData);
 
-        return redirect()->route('users.index')
+        return redirect()->back()
             ->with('success', 'User berhasil diperbarui.');
     }
 
@@ -97,13 +97,13 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         if (auth()->id() === $user->id) {
-            return redirect()->route('users.index')
+            return redirect()->back()
                 ->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
         }
 
         $user->delete();
 
-        return redirect()->route('users.index')
+        return redirect()->back()
             ->with('success', 'User berhasil dihapus.');
     }
 }

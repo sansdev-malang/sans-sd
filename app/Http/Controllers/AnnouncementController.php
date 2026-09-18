@@ -192,7 +192,7 @@ class AnnouncementController extends Controller
 
         $announcement->update($validated);
 
-        return redirect()->route('announcements.index')->with('success', 'Pengumuman berhasil diupdate.');
+        return redirect()->back()->with('success', 'Pengumuman berhasil diupdate.');
     }
 
     public function destroy(Announcement $announcement)
@@ -206,7 +206,7 @@ class AnnouncementController extends Controller
         }
         $announcement->delete();
 
-        return redirect()->route('announcements.index')->with('success', 'Pengumuman berhasil dihapus.');
+        return redirect()->back()->with('success', 'Pengumuman berhasil dihapus.');
     }
 
     public function download(Announcement $announcement)

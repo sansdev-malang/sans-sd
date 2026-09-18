@@ -299,7 +299,7 @@ class EmployeeController extends Controller
             ]);
         }
 
-        return redirect()->route('employees.index')->with('success', 'Data pegawai berhasil diperbarui!');
+        return redirect()->back()->with('success', 'Data pegawai berhasil diperbarui!');
     }
 
     /**
@@ -316,7 +316,7 @@ class EmployeeController extends Controller
             ]);
         }
 
-        return redirect()->route('employees.index')->with('success', 'Data pegawai berhasil dihapus!');
+        return redirect()->back()->with('success', 'Data pegawai berhasil dihapus!');
     }
 
     /**
@@ -571,12 +571,12 @@ class EmployeeController extends Controller
         }
 
         if (count($errors) > 0) {
-            return redirect()->route('employees.index')
+            return redirect()->back()
                 ->with('success', "Impor selesai. Berhasil mengimpor {$importedCount} data pegawai.")
                 ->with('import_errors', $errors);
         }
 
-        return redirect()->route('employees.index')->with('success', "Berhasil mengimpor {$importedCount} data pegawai!");
+        return redirect()->back()->with('success', "Berhasil mengimpor {$importedCount} data pegawai!");
     }
 
     /**
