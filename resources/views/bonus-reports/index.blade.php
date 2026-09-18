@@ -4,8 +4,8 @@
         <!-- HEADER -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex flex-col gap-0.5">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Rekap Bonus Kehadiran</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Evaluasi kehadiran pegawai berdasarkan skema bonus aktif.</p>
+                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Rekap Bonus Ketepatan Waktu</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Evaluasi ketepatan waktu kedatangan pegawai berdasarkan skema bonus aktif.</p>
             </div>
             
             <!-- EXPORT DATA (Pusat Style & Position) -->

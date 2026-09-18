@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Rekap Bonus Kehadiran</title>
+    <title>Rekap Bonus Ketepatan Waktu</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -59,7 +59,7 @@
 </head>
 <body>
 
-    <h2>Rekap Bonus Kehadiran</h2>
+    <h2>Rekap Bonus Ketepatan Waktu</h2>
     <div class="subtitle">
         Periode: {{ $periodeStr }} <br>
         Unit: {{ count($reports) > 0 ? ($reports[0]['employee']['unit']['name'] ?? ($reports[0]['employee']['unit_name'] ?? 'Semua Unit')) : 'Semua Unit' }}

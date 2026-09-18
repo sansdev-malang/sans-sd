@@ -111,7 +111,7 @@
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex flex-col gap-0.5">
                 <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Data Riwayat Absensi</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Memantau waktu kedatangan, kepulangan, dan estimasi bonus kehadiran Anda.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Memantau waktu kedatangan, kepulangan, dan estimasi bonus ketepatan waktu Anda.</p>
             </div>
             <div>
                 <a href="{{ route('attendances.index', array_merge(request()->query(), ['refresh' => 1])) }}" 
@@ -472,7 +472,7 @@
                             <span class="mt-0.5 inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
                             <div>
                                 <p class="text-xs font-semibold text-slate-900 dark:text-slate-50">Hadir Tepat Waktu</p>
-                                <p class="text-[11px] leading-4 text-slate-500 dark:text-slate-400 mt-0.5">Memenuhi syarat bonus kehadiran penuh.</p>
+                                <p class="text-[11px] leading-4 text-slate-500 dark:text-slate-400 mt-0.5">Memenuhi syarat bonus ketepatan waktu penuh.</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-3">
@@ -571,7 +571,7 @@
                     </div>
                     <!-- Attendance Bonus Section -->
                     <div class="flex items-center justify-between bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/30 dark:border-emerald-900/30 rounded-lg px-2 py-1.5 text-[10px]">
-                        <span class="text-slate-500 dark:text-slate-400 font-medium">Bonus Kehadiran</span>
+                        <span class="text-slate-500 dark:text-slate-400 font-medium">Bonus Ketepatan Waktu</span>
                         <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="tooltip.bonus > 0 ? 'Rp ' + Number(tooltip.bonus).toLocaleString('id-ID') : 'Rp 0'"></span>
                     </div>
                 </div>
@@ -579,7 +579,7 @@
             <template x-if="tooltip.status !== 'Hadir' && tooltip.bonus > 0">
                 <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
                     <div class="flex items-center justify-between bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/30 dark:border-emerald-900/30 rounded-lg px-2 py-1.5 text-[10px]">
-                        <span class="text-slate-500 dark:text-slate-400 font-medium">Bonus Kehadiran</span>
+                        <span class="text-slate-500 dark:text-slate-400 font-medium">Bonus Ketepatan Waktu</span>
                         <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="'Rp ' + Number(tooltip.bonus).toLocaleString('id-ID')"></span>
                     </div>
                 </div>
