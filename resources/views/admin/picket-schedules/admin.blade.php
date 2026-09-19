@@ -5,7 +5,7 @@
     showAreaModal: false,
     showAssignModal: false,
     editAreaMode: false,
-    areaForm: { id: '', name: '', jobs: '', duty_hours: '06.30 - 07.00', is_active: 1 },
+    areaForm: { id: '', name: '', jobs: '', start_time: '06:30', end_time: '07:00', is_active: 1 },
     dragOverCell: null,
     teacherSearch: '',
     schedules: @js($schedules->map(fn($s) => [
@@ -19,12 +19,19 @@
     ])),
     openAreaCreate() {
         this.editAreaMode = false;
-        this.areaForm = { id: '', name: '', jobs: '', duty_hours: '06.30 - 07.00', is_active: 1 };
+        this.areaForm = { id: '', name: '', jobs: '', start_time: '06:30', end_time: '07:00', is_active: 1 };
         this.showAreaModal = true;
     },
     openAreaEdit(area) {
         this.editAreaMode = true;
-        this.areaForm = { id: area.id, name: area.name, jobs: area.jobs, duty_hours: area.duty_hours, is_active: area.is_active ? 1 : 0 };
+        this.areaForm = { 
+            id: area.id, 
+            name: area.name, 
+            jobs: area.jobs, 
+            start_time: area.start_time ? area.start_time.substring(0, 5) : '06:30', 
+            end_time: area.end_time ? area.end_time.substring(0, 5) : '07:00', 
+            is_active: area.is_active ? 1 : 0 
+        };
         this.showAreaModal = true;
     },
     async handleDrop(event, areaId, dayOfWeek) {
@@ -427,10 +434,16 @@
                             <input type="text" name="name" x-model="areaForm.name" required placeholder="Contoh: Depan Masjid" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all">
                         </div>
 
-                        <!-- Duty Hours -->
-                        <div>
-                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Jam Bertugas</label>
-                            <input type="text" name="duty_hours" x-model="areaForm.duty_hours" required placeholder="Contoh: 06.30 - 07.00" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all">
+                        <!-- Duty Hours (Start Time & End Time) -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Jam Mulai Piket <span class="text-rose-500">*</span></label>
+                                <input type="time" name="start_time" x-model="areaForm.start_time" required class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-mono dark:[color-scheme:dark] transition-all">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Jam Selesai Piket <span class="text-rose-500">*</span></label>
+                                <input type="time" name="end_time" x-model="areaForm.end_time" required class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-mono dark:[color-scheme:dark] transition-all">
+                            </div>
                         </div>
 
                         <!-- Area Tupoksi (Jobs) -->

@@ -788,6 +788,78 @@ class HrdApiController extends Controller
     }
 
     /**
+     * Get all picket schedules and approved picket swaps for HRD attendance & bonus calculation.
+     */
+    public function picketAssignments(Request $request)
+    {
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        // Fetch regular weekly picket schedules with active areas
+        $schedulesQuery = \App\Models\PicketSchedule::with(['picketArea', 'employee'])
+            ->whereHas('picketArea', function($q) {
+                $q->where('is_active', true);
+            });
+
+        if ($startDate && $endDate) {
+            $schedulesQuery->where(function($q) use ($startDate, $endDate) {
+                $q->where(function($sq) use ($startDate, $endDate) {
+                    $sq->whereNull('start_date')
+                       ->orWhere('start_date', '<=', $endDate);
+                })->where(function($sq) use ($startDate) {
+                    $sq->whereNull('end_date')
+                       ->orWhere('end_date', '>=', $startDate);
+                });
+            });
+        }
+
+        $schedules = $schedulesQuery->get()->map(function($s) {
+            $startTime = $s->picketArea->start_time ? substr($s->picketArea->start_time, 0, 5) : '06:30';
+            $endTime = $s->picketArea->end_time ? substr($s->picketArea->end_time, 0, 5) : '07:00';
+            return [
+                'id' => $s->id,
+                'employee_id' => $s->employee_id,
+                'employee_name' => $s->employee->name ?? '-',
+                'day_of_week' => (int) $s->day_of_week,
+                'start_date' => $s->start_date ? $s->start_date->format('Y-m-d') : null,
+                'end_date' => $s->end_date ? $s->end_date->format('Y-m-d') : null,
+                'picket_area_id' => $s->picket_area_id,
+                'picket_area_name' => $s->picketArea->name ?? 'Area Piket',
+                'start_time' => $startTime . ':00',
+                'end_time' => $endTime . ':00',
+                'duty_hours' => $s->picketArea->duty_hours ?? "{$startTime} - {$endTime}",
+            ];
+        });
+
+        // Fetch approved swaps in date range (if provided)
+        $swapsQuery = \App\Models\PicketSwap::where('status', 'approved');
+        if ($startDate && $endDate) {
+            $swapsQuery->where(function($q) use ($startDate, $endDate) {
+                $q->whereBetween('requested_date', [$startDate, $endDate])
+                  ->orWhereBetween('target_date', [$startDate, $endDate]);
+            });
+        }
+        $swaps = $swapsQuery->get()->map(function($sw) {
+            return [
+                'id' => $sw->id,
+                'requester_id' => $sw->requester_id,
+                'requested_date' => $sw->requested_date ? $sw->requested_date->format('Y-m-d') : null,
+                'target_employee_id' => $sw->target_employee_id,
+                'target_date' => $sw->target_date ? $sw->target_date->format('Y-m-d') : null,
+                'status' => $sw->status,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'schedules' => $schedules,
+                'swaps' => $swaps,
+            ]
+        ]);
+    }
+
+    /**
      * Invalidate dashboard performance caches on sync events.
      */
     protected function invalidateDashboardCache()

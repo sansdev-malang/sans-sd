@@ -147,6 +147,7 @@ Route::middleware('hrd.api')->prefix('api/v1/hrd')->group(function () {
     Route::post('sync/leave-types', [\App\Http\Controllers\Api\HrdApiController::class, 'syncLeaveType']);
     Route::get('leave-requests', [\App\Http\Controllers\Api\HrdApiController::class, 'leaveRequests']);
     Route::post('leave-requests/decision', [\App\Http\Controllers\Api\HrdApiController::class, 'leaveDecision']);
+    Route::get('picket-assignments', [\App\Http\Controllers\Api\HrdApiController::class, 'picketAssignments']);
 });
 
 Route::middleware(['auth', 'role:super_admin'])->group(function () {

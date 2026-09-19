@@ -151,8 +151,14 @@ class PicketScheduleController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'jobs' => 'nullable|string',
-            'duty_hours' => 'required|string|max:100',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i',
+            'duty_hours' => 'nullable|string|max:100',
         ]);
+
+        if (empty($validated['duty_hours'])) {
+            $validated['duty_hours'] = $validated['start_time'] . ' - ' . $validated['end_time'];
+        }
 
         PicketArea::create($validated);
 
@@ -169,9 +175,15 @@ class PicketScheduleController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'jobs' => 'nullable|string',
-            'duty_hours' => 'required|string|max:100',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i',
+            'duty_hours' => 'nullable|string|max:100',
             'is_active' => 'required|boolean',
         ]);
+
+        if (empty($validated['duty_hours'])) {
+            $validated['duty_hours'] = $validated['start_time'] . ' - ' . $validated['end_time'];
+        }
 
         $area->update($validated);
 

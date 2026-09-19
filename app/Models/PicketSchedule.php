@@ -11,6 +11,13 @@ class PicketSchedule extends Model
         'picket_area_id',
         'day_of_week',
         'employee_id',
+        'start_date',
+        'end_date',
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     public function picketArea(): BelongsTo
