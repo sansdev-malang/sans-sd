@@ -10,11 +10,26 @@
         <div>
             <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Jadwal Piket</h3>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Berlaku Periode: <span class="font-semibold text-indigo-600 dark:text-indigo-400">Agustus - Desember 2026</span>
+                Tahun Ajaran: <span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ $selectedYear ? $selectedYear->name : 'Tahun Ajaran Aktif' }}</span>
+                @if($selectedYear && $selectedYear->is_active)
+                    <span class="ml-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200/30">Aktif</span>
+                @endif
             </p>
         </div>
-        <div class="flex items-center gap-2.5">
-            <a href="{{ route('picket-schedules.download') }}" class="h-9 px-4 inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-xs text-xs font-semibold cursor-pointer transition-all duration-150">
+        <div class="flex flex-wrap items-center gap-2.5">
+            @if(isset($academicYears) && $academicYears->isNotEmpty())
+            <form method="GET" action="{{ route('picket-schedules.index') }}" class="inline-flex items-center">
+                <select name="academic_year_id" onchange="this.form.submit()" class="h-9 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-2xs focus:outline-none focus:border-indigo-500 cursor-pointer">
+                    @foreach($academicYears as $year)
+                        <option value="{{ $year->id }}" {{ ($selectedYear && $selectedYear->id == $year->id) ? 'selected' : '' }}>
+                            {{ $year->name }} {{ $year->is_active ? '(Aktif)' : '' }}
+                        </option>
+                    @endforeach
+                </select>
+            </form>
+            @endif
+
+            <a href="{{ route('picket-schedules.download', ['academic_year_id' => $selectedYear?->id]) }}" class="h-9 px-4 inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-xs text-xs font-semibold cursor-pointer transition-all duration-150">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 Download Jadwal Piket
             </a>
@@ -161,7 +176,7 @@
             <!-- PRINT-ONLY HEADER POSTER STYLE -->
             <div class="hidden print:block text-center mb-6" style="font-family: system-ui, sans-serif;">
                 <h1 class="text-2xl font-black uppercase tracking-wider text-slate-900 leading-normal">THE DUTY SCHEDULE FOR TEACHERS</h1>
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">APPLICABLE FOR AUGUST - DECEMBER 2026</p>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">APPLICABLE FOR {{ strtoupper($selectedYear?->name ?? '2026/2027') }}</p>
                 <div class="inline-block mt-3 border border-amber-300 bg-amber-50 px-4 py-1.5 rounded-full text-xs font-extrabold text-amber-800 tracking-wider">
                     ⏰ DUTY HOURS: 06.30 - 07.00
                 </div>
@@ -171,8 +186,7 @@
                 <table class="w-full text-xs border-collapse print:text-[10px]">
                     <thead>
                         <tr class="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
-                            <th class="px-4 py-4 text-left font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 min-w-[160px] md:min-w-[180px] w-48">Area</th>
-                            <th class="px-4 py-4 text-left font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 min-w-[340px] md:min-w-[420px] print:min-w-[260px] w-96">Jobs (Tupoksi)</th>
+                            <th class="px-4 py-4 text-left font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 min-w-[220px] max-w-xs w-72">Area & Tupoksi Piket</th>
                             @php
                                 $days = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday'];
                             @endphp
@@ -186,35 +200,35 @@
                     <tbody class="divide-y divide-slate-200 dark:divide-slate-850">
                         @forelse($areas as $area)
                         <tr class="hover:bg-slate-50/40 dark:hover:bg-slate-900/10 transition-colors">
-                            <!-- AREA COLUMN -->
-                            <td class="px-4 py-4 align-top font-bold text-slate-800 dark:text-slate-200">
+                            <!-- AREA & TUPOKSI COLUMN -->
+                            <td class="px-4 py-4 align-top font-medium text-slate-800 dark:text-slate-200 border-r border-slate-100 dark:border-slate-850/50 space-y-3">
                                 <div class="flex items-start gap-2.5">
-                                    <div class="w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100/10 shadow-3xs mt-0.5 print:hidden">
-                                        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                                    <div class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100/10 shadow-3xs mt-0.5 print:hidden">
+                                        <i data-lucide="map-pin" class="w-4 h-4"></i>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span>{{ $area->name }}</span>
-                                        <span class="text-[10px] text-slate-400 font-normal mt-0.5 print:mt-0.5">Jam: {{ $area->duty_hours }}</span>
+                                        <span class="font-bold text-slate-900 dark:text-slate-100 text-xs">{{ $area->name }}</span>
+                                        <span class="text-[10px] font-mono text-amber-600 dark:text-amber-400 font-bold mt-0.5">Jam: {{ $area->duty_hours }}</span>
                                     </div>
                                 </div>
-                            </td>
 
-                            <!-- JOBS COLUMN -->
-                            <td class="px-4 py-4 align-top text-slate-600 dark:text-slate-455 pr-4 border-r border-slate-100 dark:border-slate-850/50 leading-relaxed font-medium">
-                                <div class="space-y-1.5 whitespace-normal break-words">
-                                    @if($area->jobs)
-                                        @foreach(explode("\n", $area->jobs) as $job)
-                                            @if(trim($job))
-                                            <div class="flex items-start gap-2">
-                                                <span class="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-600 mt-1.5 shrink-0"></span>
-                                                <p>{{ trim($job) }}</p>
-                                            </div>
-                                            @endif
-                                        @endforeach
-                                    @else
-                                        <span class="italic text-slate-400">Tidak ada tupoksi khusus.</span>
-                                    @endif
+                                <!-- Tupoksi Under Area -->
+                                @if($area->jobs)
+                                <div class="p-2.5 rounded-xl bg-slate-50/80 dark:bg-slate-950/70 border border-slate-200/60 dark:border-slate-800/80 text-[10.5px] text-slate-600 dark:text-slate-400 leading-relaxed space-y-1.5">
+                                    <div class="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                        <i data-lucide="clipboard-list" class="w-3 h-3 text-indigo-500"></i>
+                                        <span>Tupoksi:</span>
+                                    </div>
+                                    @foreach(explode("\n", $area->jobs) as $job)
+                                        @if(trim($job))
+                                        <div class="flex items-start gap-1.5">
+                                            <span class="w-1 h-1 rounded-full bg-indigo-500 mt-1.5 shrink-0"></span>
+                                            <p class="text-slate-600 dark:text-slate-300 leading-tight">{{ trim($job) }}</p>
+                                        </div>
+                                        @endif
+                                    @endforeach
                                 </div>
+                                @endif
                             </td>
 
                             <!-- DAYS COLUMNS -->

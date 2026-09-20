@@ -4,7 +4,11 @@
     tab: 'scheduler',
     showAreaModal: false,
     showAssignModal: false,
+    showCloneModal: false,
     editAreaMode: false,
+    selectedAcademicYearId: '{{ $selectedYear?->id }}',
+    academicYearStartDate: '{{ $selectedYear?->start_date ? $selectedYear->start_date->format('Y-m-d') : '' }}',
+    academicYearEndDate: '{{ $selectedYear?->end_date ? $selectedYear->end_date->format('Y-m-d') : '' }}',
     areaForm: { id: '', name: '', jobs: '', start_time: '06:30', end_time: '07:00', is_active: 1 },
     dragOverCell: null,
     teacherSearch: '',
@@ -50,7 +54,9 @@
                     body: JSON.stringify({
                         picket_area_id: areaId,
                         day_of_week: dayOfWeek,
-                        employee_id: data.employeeId
+                        employee_id: data.employeeId,
+                        start_date: this.academicYearStartDate || null,
+                        end_date: this.academicYearEndDate || null
                     })
                 });
                 const res = await response.json();
@@ -93,10 +99,32 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
             <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Manajemen Piket</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Konfigurasi jadwal mingguan, tupoksi area, dan verifikasi tukar piket</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Tahun Ajaran: <span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ $selectedYear ? $selectedYear->name : 'Tahun Ajaran Aktif' }}</span>
+                @if($selectedYear && $selectedYear->is_active)
+                    <span class="ml-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200/30">Aktif</span>
+                @endif
+            </p>
         </div>
-        <div class="flex items-center gap-2">
-            <a href="{{ route('picket-schedules.index') }}" class="h-9 px-4 inline-flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl shadow-2xs text-xs font-semibold cursor-pointer transition-colors">
+        <div class="flex flex-wrap items-center gap-2">
+            @if(isset($academicYears) && $academicYears->isNotEmpty())
+            <form method="GET" action="{{ route('picket-schedules.admin') }}" class="inline-flex items-center">
+                <select name="academic_year_id" onchange="this.form.submit()" class="h-9 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-2xs focus:outline-none focus:border-indigo-500 cursor-pointer">
+                    @foreach($academicYears as $year)
+                        <option value="{{ $year->id }}" {{ ($selectedYear && $selectedYear->id == $year->id) ? 'selected' : '' }}>
+                            {{ $year->name }} {{ $year->is_active ? '(Aktif)' : '' }}
+                        </option>
+                    @endforeach
+                </select>
+            </form>
+            @endif
+
+            <button @click="showCloneModal = true" class="h-9 px-3.5 inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100/60 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/30 rounded-xl shadow-2xs text-xs font-semibold cursor-pointer transition-colors">
+                <i data-lucide="copy" class="w-4 h-4 text-indigo-500"></i>
+                Salin Jadwal Dari Periode Lalu
+            </button>
+
+            <a href="{{ route('picket-schedules.index', ['academic_year_id' => $selectedYear?->id]) }}" class="h-9 px-4 inline-flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl shadow-2xs text-xs font-semibold cursor-pointer transition-colors">
                 <i data-lucide="eye" class="w-4 h-4 text-indigo-500"></i>
                 Lihat Matriks Jadwal
             </a>
@@ -494,6 +522,10 @@
 
                     <form action="{{ route('picket-schedules.assignment.store') }}" method="POST" class="p-6 space-y-4 text-xs">
                         @csrf
+                        @if($selectedYear && $selectedYear->start_date && $selectedYear->end_date)
+                            <input type="hidden" name="start_date" value="{{ $selectedYear->start_date->format('Y-m-d') }}">
+                            <input type="hidden" name="end_date" value="{{ $selectedYear->end_date->format('Y-m-d') }}">
+                        @endif
                         <div>
                             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Pilih Area Piket</label>
                             <select name="picket_area_id" required class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer">
@@ -531,6 +563,71 @@
                         <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
                             <button type="button" @click="showAssignModal = false" class="h-9 px-4 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold cursor-pointer transition-colors">Batal</button>
                             <button type="submit" class="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold cursor-pointer transition-colors shadow-2xs">Simpan Penugasan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- CLONE PREVIOUS YEAR MODAL -->
+    <template x-teleport="body">
+        <div x-cloak x-show="showCloneModal" class="fixed inset-0 z-[9999] overflow-y-auto" style="display: none;">
+            <div class="flex items-center justify-center min-h-screen p-4 text-center">
+                <!-- Backdrop -->
+                <div x-show="showCloneModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="showCloneModal = false" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity"></div>
+
+                <!-- Modal Panel -->
+                <div x-show="showCloneModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-left shadow-xl overflow-hidden z-10 flex flex-col">
+                    <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Salin Jadwal Periode Lalu</h4>
+                                <p class="text-[10px] text-slate-400">Duplikasi seluruh susunan jadwal piket ke tahun ajaran baru</p>
+                            </div>
+                        </div>
+                        <button @click="showCloneModal = false" class="p-1 rounded-lg text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-850 hover:text-slate-700 cursor-pointer border-0 bg-transparent flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        </button>
+                    </div>
+
+                    <form action="{{ route('picket-schedules.clone-year') }}" method="POST" class="p-6 space-y-4 text-xs">
+                        @csrf
+                        <div>
+                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Salin Dari Tahun Ajaran (Sumber)</label>
+                            <select name="source_academic_year_id" required class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer">
+                                <option value="">Pilih Tahun Ajaran Asal...</option>
+                                @foreach($academicYears as $year)
+                                    <option value="{{ $year->id }}">
+                                        {{ $year->name }} {{ $year->is_active ? '(Aktif)' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Terapkan Ke Tahun Ajaran (Target)</label>
+                            <select name="target_academic_year_id" required class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer">
+                                <option value="">Pilih Tahun Ajaran Target...</option>
+                                @foreach($academicYears as $year)
+                                    <option value="{{ $year->id }}" {{ ($selectedYear && $selectedYear->id == $year->id) ? 'selected' : '' }}>
+                                        {{ $year->name }} {{ $year->is_active ? '(Aktif)' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/40 rounded-xl text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                            <strong>Perhatian:</strong> Sistem hanya akan menyalin jadwal guru yang statusnya masih <em>Active</em> pada tahun ajaran target. Jadwal yang sudah ada tidak akan diduplikasi ganda.
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex justify-end gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
+                            <button type="button" @click="showCloneModal = false" class="h-9 px-4 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold cursor-pointer transition-colors">Batal</button>
+                            <button type="submit" class="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold cursor-pointer transition-colors shadow-2xs">Salin Jadwal Sekarang</button>
                         </div>
                     </form>
                 </div>

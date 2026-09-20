@@ -820,11 +820,14 @@ class HrdApiController extends Controller
                 'id' => $s->id,
                 'employee_id' => $s->employee_id,
                 'employee_name' => $s->employee->name ?? '-',
+                'employee_position' => $s->employee->position ?? $s->employee->subject_position ?? null,
+                'employee_photo' => $s->employee->photo ?? null,
                 'day_of_week' => (int) $s->day_of_week,
                 'start_date' => $s->start_date ? $s->start_date->format('Y-m-d') : null,
                 'end_date' => $s->end_date ? $s->end_date->format('Y-m-d') : null,
                 'picket_area_id' => $s->picket_area_id,
                 'picket_area_name' => $s->picketArea->name ?? 'Area Piket',
+                'picket_area_jobs' => $s->picketArea->jobs ?? null,
                 'start_time' => $startTime . ':00',
                 'end_time' => $endTime . ':00',
                 'duty_hours' => $s->picketArea->duty_hours ?? "{$startTime} - {$endTime}",
@@ -832,7 +835,7 @@ class HrdApiController extends Controller
         });
 
         // Fetch approved swaps in date range (if provided)
-        $swapsQuery = \App\Models\PicketSwap::where('status', 'approved');
+        $swapsQuery = \App\Models\PicketSwap::with(['requester', 'targetEmployee'])->where('status', 'approved');
         if ($startDate && $endDate) {
             $swapsQuery->where(function($q) use ($startDate, $endDate) {
                 $q->whereBetween('requested_date', [$startDate, $endDate])
@@ -843,10 +846,13 @@ class HrdApiController extends Controller
             return [
                 'id' => $sw->id,
                 'requester_id' => $sw->requester_id,
+                'requester_name' => $sw->requester->name ?? '-',
                 'requested_date' => $sw->requested_date ? $sw->requested_date->format('Y-m-d') : null,
                 'target_employee_id' => $sw->target_employee_id,
+                'target_employee_name' => $sw->targetEmployee->name ?? '-',
                 'target_date' => $sw->target_date ? $sw->target_date->format('Y-m-d') : null,
                 'status' => $sw->status,
+                'notes' => $sw->notes,
             ];
         });
 

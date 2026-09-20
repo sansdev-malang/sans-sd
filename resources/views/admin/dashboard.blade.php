@@ -662,8 +662,8 @@
 
             </div>
 
-            <!-- Jadwal Piket Saya Card (Hanya untuk Pegawai Biasa di SD) -->
-            @if(config('app.school_unit') === 'sd' && $myPicketSchedules->isNotEmpty())
+            <!-- Jadwal Piket Saya Card -->
+            @if(isset($myPicketSchedules) && $myPicketSchedules->isNotEmpty())
             <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 flex flex-col justify-between" x-data="{ openJobs: null }">
                 <div>
                     <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4 font-nasalization">Jadwal Piket Saya</h3>
@@ -785,7 +785,7 @@
             @endif
 
             <!-- Recent Activity Logs -->
-            <div class="animate-card {{ (config('app.school_unit') !== 'sd' || $myPicketSchedules->isEmpty()) ? 'lg:col-span-2' : 'lg:col-span-1' }} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+            <div class="animate-card {{ (!isset($myPicketSchedules) || $myPicketSchedules->isEmpty()) ? 'lg:col-span-2' : 'lg:col-span-1' }} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                 @if($isAdmin)
                     <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">Log Aktivitas Terbaru</h3>
                      <div class="space-y-3.5 max-h-[380px] overflow-y-auto pr-1.5 scrollbar-thin">

@@ -2,33 +2,71 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AcademicYear;
 use App\Models\Employee;
 use App\Models\PicketArea;
 use App\Models\PicketSchedule;
 use App\Models\PicketSwap;
+use App\Models\Setting;
+use App\Models\User;
+use App\Notifications\PicketSwapNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Notification;
 
 class PicketScheduleController extends Controller
 {
     /**
      * Display the main weekly matrix board for teachers.
      */
-    public function index()
+    public function index(Request $request)
     {
         $todayDayOfWeek = Carbon::now()->dayOfWeek; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
         $myEmployeeId = auth()->user()->employee_id;
+        $schoolUnit = config('app.school_unit', 'sd');
 
-        // Fetch Picket Areas with schedules
-        $areas = PicketArea::with(['schedules.employee'])->where('is_active', true)->get();
+        // Academic Year Resolution
+        $academicYears = AcademicYear::orderBy('start_date', 'desc')->get();
+        $activeYear = AcademicYear::where('is_active', true)->first() ?? $academicYears->first();
+        $selectedYearId = $request->input('academic_year_id', $activeYear?->id);
+        $selectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? $activeYear;
+
+        // Fetch Picket Areas with schedules filtered by academic year date range
+        $areasQuery = PicketArea::with(['schedules' => function($q) use ($selectedYear) {
+            $q->with('employee');
+            if ($selectedYear && $selectedYear->start_date && $selectedYear->end_date) {
+                $q->where(function($sq) use ($selectedYear) {
+                    $sq->whereNull('start_date')
+                       ->orWhere('start_date', '<=', $selectedYear->end_date->format('Y-m-d'));
+                })->where(function($sq) use ($selectedYear) {
+                    $sq->whereNull('end_date')
+                       ->orWhere('end_date', '>=', $selectedYear->start_date->format('Y-m-d'));
+                });
+            }
+        }])->where('is_active', true);
+
+        $areas = $areasQuery->get();
 
         // Get my picket duty today (if any)
         $myPicketToday = null;
         if ($myEmployeeId && $todayDayOfWeek >= 1 && $todayDayOfWeek <= 6) {
-            $myPicketToday = PicketSchedule::where('employee_id', $myEmployeeId)
+            $myPicketTodayQuery = PicketSchedule::where('employee_id', $myEmployeeId)
                 ->where('day_of_week', $todayDayOfWeek)
-                ->with('picketArea')
-                ->first();
+                ->with('picketArea');
+
+            if ($selectedYear && $selectedYear->start_date && $selectedYear->end_date) {
+                $todayDateStr = Carbon::today()->format('Y-m-d');
+                $myPicketTodayQuery->where(function($sq) use ($todayDateStr) {
+                    $sq->whereNull('start_date')
+                       ->orWhere('start_date', '<=', $todayDateStr);
+                })->where(function($sq) use ($todayDateStr) {
+                    $sq->whereNull('end_date')
+                       ->orWhere('end_date', '>=', $todayDateStr);
+                });
+            }
+
+            $myPicketToday = $myPicketTodayQuery->first();
         }
 
         // Fetch Swap Requests
@@ -47,7 +85,6 @@ class PicketScheduleController extends Controller
         }
 
         // Fetch all employees in current unit for swap options
-        $schoolUnit = config('app.school_unit', 'sd');
         $employees = Employee::where('unit', $schoolUnit)
             ->where('status', 'Active')
             ->orderBy('name')
@@ -58,16 +95,24 @@ class PicketScheduleController extends Controller
             'myPicketToday',
             'pendingSwapsForMe',
             'mySubmittedSwaps',
-            'employees'
+            'employees',
+            'academicYears',
+            'selectedYear'
         ));
     }
 
     /**
      * Display the admin panel for picket scheduling.
      */
-    public function adminDashboard()
+    public function adminDashboard(Request $request)
     {
         $schoolUnit = config('app.school_unit', 'sd');
+
+        // Academic Year Resolution
+        $academicYears = AcademicYear::orderBy('start_date', 'desc')->get();
+        $activeYear = AcademicYear::where('is_active', true)->first() ?? $academicYears->first();
+        $selectedYearId = $request->input('academic_year_id', $activeYear?->id);
+        $selectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? $activeYear;
 
         $areas = PicketArea::all();
         $employees = Employee::where('unit', $schoolUnit)
@@ -75,13 +120,30 @@ class PicketScheduleController extends Controller
             ->orderBy('name')
             ->get();
 
-        $schedules = PicketSchedule::with(['picketArea', 'employee'])->get();
+        $schedulesQuery = PicketSchedule::with(['picketArea', 'employee']);
+        if ($selectedYear && $selectedYear->start_date && $selectedYear->end_date) {
+            $schedulesQuery->where(function($sq) use ($selectedYear) {
+                $sq->whereNull('start_date')
+                   ->orWhere('start_date', '<=', $selectedYear->end_date->format('Y-m-d'));
+            })->where(function($sq) use ($selectedYear) {
+                $sq->whereNull('end_date')
+                   ->orWhere('end_date', '>=', $selectedYear->start_date->format('Y-m-d'));
+            });
+        }
+        $schedules = $schedulesQuery->get();
 
         $swaps = PicketSwap::with(['requester', 'targetEmployee'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.picket-schedules.admin', compact('areas', 'employees', 'schedules', 'swaps'));
+        return view('admin.picket-schedules.admin', compact(
+            'areas',
+            'employees',
+            'schedules',
+            'swaps',
+            'academicYears',
+            'selectedYear'
+        ));
     }
 
     /**
@@ -93,18 +155,41 @@ class PicketScheduleController extends Controller
             'picket_area_id' => 'required|exists:picket_areas,id',
             'day_of_week' => 'required|integer|between:1,6',
             'employee_id' => 'required|exists:employees,id',
+            'academic_year_id' => 'nullable|exists:academic_years,id',
         ]);
+
+        $year = null;
+        if (!empty($validated['academic_year_id'])) {
+            $year = AcademicYear::find($validated['academic_year_id']);
+        } else {
+            $year = AcademicYear::where('is_active', true)->first();
+        }
+
+        $startDate = $year?->start_date ? $year->start_date->format('Y-m-d') : '2026-07-01';
+        $endDate = $year?->end_date ? $year->end_date->format('Y-m-d') : '2027-06-30';
 
         $schedule = PicketSchedule::updateOrCreate(
             [
                 'picket_area_id' => $validated['picket_area_id'],
                 'day_of_week' => $validated['day_of_week'],
                 'employee_id' => $validated['employee_id'],
+                'start_date' => $startDate,
+                'end_date' => $endDate,
             ],
-            $validated
+            [
+                'picket_area_id' => $validated['picket_area_id'],
+                'day_of_week' => $validated['day_of_week'],
+                'employee_id' => $validated['employee_id'],
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ]
         );
 
         $schedule->load(['employee', 'picketArea']);
+
+        // Invalidate employee picket cache & dashboard caches
+        Cache::forget('user_has_picket_' . $validated['employee_id']);
+        $this->invalidateUnitCaches();
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -131,7 +216,12 @@ class PicketScheduleController extends Controller
     public function destroyAssignment(Request $request, $id)
     {
         $schedule = PicketSchedule::findOrFail($id);
+        $empId = $schedule->employee_id;
         $schedule->delete();
+
+        // Invalidate employee picket cache & dashboard caches
+        Cache::forget('user_has_picket_' . $empId);
+        $this->invalidateUnitCaches();
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -144,6 +234,64 @@ class PicketScheduleController extends Controller
     }
 
     /**
+     * Clone all picket schedules from previous academic year to the new academic year.
+     */
+    public function clonePreviousYearSchedules(Request $request)
+    {
+        $validated = $request->validate([
+            'source_academic_year_id' => 'required|exists:academic_years,id',
+            'target_academic_year_id' => 'required|exists:academic_years,id|different:source_academic_year_id',
+        ]);
+
+        $sourceYear = AcademicYear::findOrFail($validated['source_academic_year_id']);
+        $targetYear = AcademicYear::findOrFail($validated['target_academic_year_id']);
+
+        $sourceSchedules = PicketSchedule::where(function($q) use ($sourceYear) {
+            $q->where(function($sq) use ($sourceYear) {
+                $sq->whereNull('start_date')
+                   ->orWhere('start_date', '<=', $sourceYear->end_date->format('Y-m-d'));
+            })->where(function($sq) use ($sourceYear) {
+                $sq->whereNull('end_date')
+                   ->orWhere('end_date', '>=', $sourceYear->start_date->format('Y-m-d'));
+            });
+        })->get();
+
+        if ($sourceSchedules->isEmpty()) {
+            return back()->with('error', "Tidak ditemukan jadwal piket pada Tahun Ajaran {$sourceYear->name} untuk disalin.");
+        }
+
+        $targetStartDate = $targetYear->start_date->format('Y-m-d');
+        $targetEndDate = $targetYear->end_date->format('Y-m-d');
+        $clonedCount = 0;
+
+        foreach ($sourceSchedules as $src) {
+            PicketSchedule::updateOrCreate(
+                [
+                    'picket_area_id' => $src->picket_area_id,
+                    'day_of_week' => $src->day_of_week,
+                    'employee_id' => $src->employee_id,
+                    'start_date' => $targetStartDate,
+                    'end_date' => $targetEndDate,
+                ],
+                [
+                    'picket_area_id' => $src->picket_area_id,
+                    'day_of_week' => $src->day_of_week,
+                    'employee_id' => $src->employee_id,
+                    'start_date' => $targetStartDate,
+                    'end_date' => $targetEndDate,
+                ]
+            );
+
+            Cache::forget('user_has_picket_' . $src->employee_id);
+            $clonedCount++;
+        }
+
+        $this->invalidateUnitCaches();
+
+        return back()->with('success', "Berhasil menyalin {$clonedCount} penugasan piket dari {$sourceYear->name} ke {$targetYear->name}.");
+    }
+
+    /**
      * Store a new picket area.
      */
     public function storeArea(Request $request)
@@ -151,16 +299,19 @@ class PicketScheduleController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'jobs' => 'nullable|string',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i',
+            'start_time' => 'nullable|string',
+            'end_time' => 'nullable|string',
             'duty_hours' => 'nullable|string|max:100',
         ]);
 
         if (empty($validated['duty_hours'])) {
-            $validated['duty_hours'] = $validated['start_time'] . ' - ' . $validated['end_time'];
+            $validated['duty_hours'] = (!empty($validated['start_time']) && !empty($validated['end_time']))
+                ? $validated['start_time'] . ' - ' . $validated['end_time']
+                : '06.30 - 07.00';
         }
 
         PicketArea::create($validated);
+        $this->invalidateUnitCaches();
 
         return back()->with('success', 'Area piket baru berhasil ditambahkan.');
     }
@@ -175,17 +326,20 @@ class PicketScheduleController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'jobs' => 'nullable|string',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i',
+            'start_time' => 'nullable|string',
+            'end_time' => 'nullable|string',
             'duty_hours' => 'nullable|string|max:100',
             'is_active' => 'required|boolean',
         ]);
 
         if (empty($validated['duty_hours'])) {
-            $validated['duty_hours'] = $validated['start_time'] . ' - ' . $validated['end_time'];
+            $validated['duty_hours'] = (!empty($validated['start_time']) && !empty($validated['end_time']))
+                ? $validated['start_time'] . ' - ' . $validated['end_time']
+                : ($area->duty_hours ?? '06.30 - 07.00');
         }
 
         $area->update($validated);
+        $this->invalidateUnitCaches();
 
         return back()->with('success', 'Data area piket berhasil diperbarui.');
     }
@@ -197,6 +351,7 @@ class PicketScheduleController extends Controller
     {
         $area = PicketArea::findOrFail($id);
         $area->delete();
+        $this->invalidateUnitCaches();
 
         return back()->with('success', 'Area piket berhasil dihapus.');
     }
@@ -226,6 +381,16 @@ class PicketScheduleController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
+        // Prevent duplicate pending swap requests on the same requested_date
+        $hasPendingDuplicate = PicketSwap::where('requester_id', $myEmployeeId)
+            ->whereDate('requested_date', $validated['requested_date'])
+            ->whereIn('status', ['pending', 'approved_by_target'])
+            ->exists();
+
+        if ($hasPendingDuplicate) {
+            return back()->with('error', 'Anda sudah memiliki permohonan tukar piket yang sedang berjalan pada tanggal ' . Carbon::parse($validated['requested_date'])->translatedFormat('d M Y') . '.');
+        }
+
         // Validate requester picket schedule day of week matches requested_date
         $reqDayOfWeek = Carbon::parse($validated['requested_date'])->dayOfWeek;
         if ($reqDayOfWeek === 0) {
@@ -252,14 +417,24 @@ class PicketScheduleController extends Controller
             return back()->with('error', 'Guru target tidak memiliki jadwal piket pada hari ' . Carbon::parse($validated['target_date'])->translatedFormat('l') . '.');
         }
 
-        PicketSwap::create([
+        $swap = PicketSwap::create([
             'requester_id' => $myEmployeeId,
             'requested_date' => $validated['requested_date'],
             'target_employee_id' => $validated['target_employee_id'],
             'target_date' => $validated['target_date'],
             'status' => 'pending',
-            'notes' => $validated['notes'],
+            'notes' => $validated['notes'] ?? null,
         ]);
+
+        // Send Notification to Target Teacher
+        try {
+            $targetUser = User::where('employee_id', $validated['target_employee_id'])->first();
+            if ($targetUser) {
+                $targetUser->notify(new PicketSwapNotification($swap, 'requested'));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning("Failed sending swap notification to target teacher: " . $e->getMessage());
+        }
 
         return back()->with('success', 'Permohonan tukar jadwal piket berhasil diajukan.');
     }
@@ -276,6 +451,14 @@ class PicketScheduleController extends Controller
 
         $swap->update(['status' => 'approved_by_target']);
 
+        // Send Notification to Admins / Waka / Kepsek
+        try {
+            $admins = User::whereIn('role', ['super_admin', 'admin_sd', 'admin_smp', 'admin_paud', 'kepala_sekolah', 'waka'])->get();
+            Notification::send($admins, new PicketSwapNotification($swap, 'approved_by_target'));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning("Failed sending swap notification to admins: " . $e->getMessage());
+        }
+
         return back()->with('success', 'Persetujuan Anda telah disimpan. Menunggu verifikasi akhir dari Kepala Sekolah/Waka.');
     }
 
@@ -290,52 +473,53 @@ class PicketScheduleController extends Controller
             return back()->with('error', 'Permohonan ini harus disetujui terlebih dahulu oleh guru target.');
         }
 
-        // Perform actual schedule swap!
-        $reqDayOfWeek = Carbon::parse($swap->requested_date)->dayOfWeek;
-        $targetDayOfWeek = Carbon::parse($swap->target_date)->dayOfWeek;
-
-        $reqSchedule = PicketSchedule::where('employee_id', $swap->requester_id)
-            ->where('day_of_week', $reqDayOfWeek)
-            ->first();
-
-        $targetSchedule = PicketSchedule::where('employee_id', $swap->target_employee_id)
-            ->where('day_of_week', $targetDayOfWeek)
-            ->first();
-
-        if ($reqSchedule && $targetSchedule) {
-            // Swap employee_ids in the schedules
-            $tempEmp = $reqSchedule->employee_id;
-            $reqSchedule->update(['employee_id' => $targetSchedule->employee_id]);
-            $targetSchedule->update(['employee_id' => $tempEmp]);
-        }
-
+        // Record official swap approval without permanently mutating master routine
         $swap->update([
             'status' => 'approved',
             'approved_by_id' => auth()->id(),
         ]);
 
-        return back()->with('success', 'Tukar jadwal piket berhasil disetujui secara resmi. Penugasan jadwal di matriks telah otomatis diperbarui.');
+        $this->invalidateUnitCaches();
+
+        // Send Notification to both Requester and Target
+        try {
+            $users = User::whereIn('employee_id', [$swap->requester_id, $swap->target_employee_id])->get();
+            Notification::send($users, new PicketSwapNotification($swap, 'approved'));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning("Failed sending swap approval notification: " . $e->getMessage());
+        }
+
+        return back()->with('success', 'Tukar jadwal piket berhasil disetujui secara resmi. Penyesuaian jam kedatangan 06.30 WIB akan otomatis berlaku untuk tanggal bersangkutan.');
     }
 
     /**
-     * Reject swap request.
+     * Reject or Cancel swap request.
      */
     public function rejectSwap($id)
     {
         $myEmployeeId = auth()->user()->employee_id;
-        $isAdmin = auth()->user()->hasRole('super_admin') || 
-                   auth()->user()->hasRole('admin_sd') || 
-                   auth()->user()->hasRole('kepala_sekolah') || 
-                   auth()->user()->hasRole('waka');
+        $userRole = auth()->user()->role ?? '';
+        $isAdmin = in_array($userRole, ['super_admin', 'admin_sd', 'admin_smp', 'admin_paud', 'kepala_sekolah', 'waka']);
 
         $swap = PicketSwap::findOrFail($id);
 
-        // Verify authorization
+        // Verify authorization (requester, target, or admin)
         if ($swap->target_employee_id != $myEmployeeId && $swap->requester_id != $myEmployeeId && !$isAdmin) {
             abort(403);
         }
 
         $swap->update(['status' => 'rejected']);
+        $this->invalidateUnitCaches();
+
+        // Send Notification
+        try {
+            $users = User::whereIn('employee_id', [$swap->requester_id, $swap->target_employee_id])
+                ->where('id', '!=', auth()->id())
+                ->get();
+            Notification::send($users, new PicketSwapNotification($swap, 'rejected'));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning("Failed sending swap rejection notification: " . $e->getMessage());
+        }
 
         return back()->with('success', 'Permohonan tukar piket berhasil ditolak/dibatalkan.');
     }
@@ -343,12 +527,56 @@ class PicketScheduleController extends Controller
     /**
      * Download the weekly picket schedule matrix as PDF.
      */
-    public function downloadPdf()
+    public function downloadPdf(Request $request)
     {
-        $areas = PicketArea::with(['schedules.employee'])->where('is_active', true)->get();
-        $days = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday'];
+        $academicYears = AcademicYear::orderBy('start_date', 'desc')->get();
+        $activeYear = AcademicYear::where('is_active', true)->first() ?? $academicYears->first();
+        $selectedYearId = $request->input('academic_year_id', $activeYear?->id);
+        $selectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? $activeYear;
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.picket-schedules.export-pdf', compact('areas', 'days'));
-        return $pdf->setPaper('a4', 'landscape')->download('Jadwal_Piket_Guru_SD.pdf');
+        $areas = PicketArea::with(['schedules' => function($q) use ($selectedYear) {
+            $q->with('employee');
+            if ($selectedYear && $selectedYear->start_date && $selectedYear->end_date) {
+                $q->where(function($sq) use ($selectedYear) {
+                    $sq->whereNull('start_date')
+                       ->orWhere('start_date', '<=', $selectedYear->end_date->format('Y-m-d'));
+                })->where(function($sq) use ($selectedYear) {
+                    $sq->whereNull('end_date')
+                       ->orWhere('end_date', '>=', $selectedYear->start_date->format('Y-m-d'));
+                });
+            }
+        }])->where('is_active', true)->get();
+
+        $days = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday'];
+        $unit = config('app.school_unit') ?: 'sd';
+        $unitUpper = strtoupper($unit);
+
+        // Fetch Principal Name
+        $principal = Employee::where(function($q) {
+            $q->where('position', 'like', '%Kepala Sekolah%')
+              ->orWhere('position', 'like', '%Kepsek%');
+        })->where('unit', $unit)->first();
+
+        $principalName = $principal ? $principal->name : Setting::get('school_principal_name', 'Kepala Sekolah');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.picket-schedules.export-pdf', compact(
+            'areas',
+            'days',
+            'selectedYear',
+            'principalName',
+            'unitUpper'
+        ));
+
+        return $pdf->setPaper('a4', 'landscape')->download("Jadwal_Piket_Guru_{$unitUpper}.pdf");
+    }
+
+    /**
+     * Invalidate dashboard caches on picket changes.
+     */
+    protected function invalidateUnitCaches()
+    {
+        $schoolUnitId = config('app.school_unit_id', 2);
+        Cache::forget('dashboard_master_counts_' . $schoolUnitId);
+        Cache::forget('hrd_matrix_unit_' . $schoolUnitId . '_' . date('Y-m-d'));
     }
 }

@@ -139,7 +139,7 @@
     <!-- HEADER -->
     <div class="header">
         <h1 class="title">THE DUTY SCHEDULE FOR TEACHERS</h1>
-        <p class="subtitle">APPLICABLE FOR AUGUST - DECEMBER 2026</p>
+        <p class="subtitle">{{ $periodLabel ?? ($selectedYear ? 'TAHUN AJARAN ' . strtoupper($selectedYear->name) : 'TAHUN AJARAN 2026/2027') }}</p>
         <span class="badge">⏰ DUTY HOURS: 06.30 - 07.00</span>
     </div>
 
@@ -211,7 +211,7 @@
         <div class="signature-box">
             <div class="signature-title">Mengetahui,</div>
             <div>Kepala Sekolah</div>
-            <div style="margin-top: 40px; font-weight: bold;">( ___________________________ )</div>
+            <div style="margin-top: 40px; font-weight: bold; text-decoration: underline;">{{ $principalName ?? '( ___________________________ )' }}</div>
         </div>
         <div class="clear"></div>
     </div>

@@ -96,6 +96,7 @@ Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepal
     Route::get('admin/picket-schedules', [PicketScheduleController::class, 'adminDashboard'])->name('picket-schedules.admin');
     Route::post('admin/picket-schedules/assignment', [PicketScheduleController::class, 'storeAssignment'])->name('picket-schedules.assignment.store');
     Route::delete('admin/picket-schedules/assignment/{id}', [PicketScheduleController::class, 'destroyAssignment'])->name('picket-schedules.assignment.destroy');
+    Route::post('admin/picket-schedules/clone-year', [PicketScheduleController::class, 'clonePreviousYearSchedules'])->name('picket-schedules.clone-year');
     Route::post('admin/picket-schedules/areas', [PicketScheduleController::class, 'storeArea'])->name('picket-schedules.areas.store');
     Route::put('admin/picket-schedules/areas/{id}', [PicketScheduleController::class, 'updateArea'])->name('picket-schedules.areas.update');
     Route::delete('admin/picket-schedules/areas/{id}', [PicketScheduleController::class, 'destroyArea'])->name('picket-schedules.areas.destroy');
