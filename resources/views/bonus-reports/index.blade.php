@@ -192,13 +192,19 @@
                                     $detail = $report['daily_details'][$dateStr] ?? null;
                                 @endphp
                                 <td class="py-1 px-1 text-center border-r border-slate-50 dark:border-slate-800/30">
-                                    @if($detail && !in_array($detail['status'] ?? '', ['Off', 'Libur']))
+                                     @if($detail && !in_array($detail['status'] ?? '', ['Off', 'Libur']))
                                         @if($detail['bonus_nominal'] > 0)
                                             @php 
                                                 $nominal = $detail['bonus_nominal'];
                                                 $shortNominal = ($nominal >= 1000) ? ($nominal / 1000) . 'k' : $nominal;
+                                                if (isset($detail['status']) && $detail['status'] === 'Reward Libur') {
+                                                    $rName = $detail['reward_name'] ?? 'Libur Reward';
+                                                    $titleText = "🎁 Reward Libur ({$rName}): Rp " . number_format($nominal, 0, ',', '.');
+                                                } else {
+                                                    $titleText = "Rp " . number_format($nominal, 0, ',', '.');
+                                                }
                                             @endphp
-                                            <div class="mx-auto w-9 h-6 flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold text-[10px] rounded shadow-sm border border-emerald-200 dark:border-emerald-800/50" title="Rp {{ number_format($nominal, 0, ',', '.') }}">
+                                            <div class="mx-auto w-9 h-6 flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold text-[10px] rounded shadow-sm border border-emerald-200 dark:border-emerald-800/50" title="{{ $titleText }}">
                                                 {{ $shortNominal }}
                                             </div>
                                         @else
@@ -206,7 +212,7 @@
                                                 <div class="mx-auto flex items-center justify-center text-slate-300 dark:text-slate-700 font-medium text-[10px]">-</div>
                                             @else
                                                 <div class="mx-auto w-9 h-6 flex items-center justify-center bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold text-[10px] rounded shadow-sm border border-red-200 dark:border-red-800/50" title="Tidak ada bonus">
-                                                    0K
+                                                    0k
                                                 </div>
                                             @endif
                                         @endif

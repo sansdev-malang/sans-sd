@@ -111,7 +111,7 @@
                                     @endphp
                                     <span class="badge-green">{{ $shortNominal }}</span>
                                 @else
-                                    <span style="color: #ef4444; font-weight: bold;">0K</span>
+                                    <span style="color: #ef4444; font-weight: bold;">0k</span>
                                 @endif
                             @else
                                 <span class="text-muted" style="font-weight: bold; font-size: 7px;">OFF</span>

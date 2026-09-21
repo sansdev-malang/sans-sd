@@ -102,7 +102,9 @@
                             @if($detail)
                                 @if($detail['status'] === 'Hadir')
                                     <div class="cell-content badge-green">{{ $detail['check_in'] ?? '-' }}</div>
-                                    @if(!empty($detail['pending_leave']))
+                                    @if(!empty($detail['is_reward']))
+                                        <div style="font-size: 5.5px; color: #059669; font-weight: bold; line-height: 1; margin: 1px 0;">OFF</div>
+                                    @elseif(!empty($detail['pending_leave']))
                                         @php
                                             $pCode = $detail['pending_leave']['leave_code'];
                                             $pdfStyleMap = [
@@ -116,6 +118,8 @@
                                         <div style="font-size: 5.5px; line-height: 1; margin: 1px 0;"><span style="{{ $pStyle }} padding: 0 1px;">{{ $pCode }}</span></div>
                                     @endif
                                     <div class="cell-content text-muted">{{ $detail['check_out'] ?? '-' }}</div>
+                                @elseif($detail['status'] === 'Reward Libur')
+                                    <span class="badge-green" style="font-size: 6.5px; font-weight: bold; color: #059669;">OFF</span>
                                 @elseif($detail['status'] === 'Alfa')
                                     <span class="text-red">A</span>
                                     @if(!empty($detail['pending_leave']))

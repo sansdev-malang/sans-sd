@@ -125,7 +125,7 @@
                         $bonusNominal = $detail['bonus_nominal'] ?? 0;
                         
                         $modalColor = 'slate';
-                        if ($bonusNominal > 0) {
+                        if ($bonusNominal > 0 || $status === 'Reward Libur' || !empty($detail['is_reward'])) {
                             $numberColor = 'text-emerald-600 dark:text-emerald-400';
                             $modalColor = 'emerald';
                         } elseif ($status === 'Present' || $status === 'Hadir') {
@@ -174,7 +174,7 @@
                                      </div>
                                  @else
                                      <div class="mt-2 text-[10px] sm:text-xs font-bold text-rose-600 dark:text-rose-400 bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded-full shadow-sm">
-                                         0K
+                                         0k
                                      </div>
                                  @endif
                              @endif

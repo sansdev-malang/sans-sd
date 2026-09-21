@@ -153,7 +153,7 @@
                 if ($dateStr >= $cutOffStart && $dateStr <= $cutOffEnd) {
                     $cutoffBonus += $detail['calculated_bonus'] ?? 0;
                     $st = $detail['status'] ?? '';
-                    if ($st === 'Hadir') {
+                    if ($st === 'Hadir' || $st === 'Reward Libur' || !empty($detail['is_reward'])) {
                         if (!empty($detail['is_late'])) {
                             $countTelat++;
                         } else {
@@ -339,6 +339,10 @@
                                         if ($status === 'Hadir') {
                                             $numberColor = $isLate ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400';
                                             $modalColor = $isLate ? 'amber' : 'emerald';
+                                        } elseif ($status === 'Reward Libur' || !empty($detail['is_reward'])) {
+                                            $numberColor = 'text-emerald-600 dark:text-emerald-400';
+                                            $modalColor = 'emerald';
+                                            $status = 'Reward Libur';
                                         } elseif ($status === 'Off' || $status === 'Libur' || strtolower($status) === 'x') {
                                             $numberColor = 'text-red-500';
                                             $modalColor = 'red';
@@ -471,7 +475,7 @@
                         <div class="flex items-start gap-3">
                             <span class="mt-0.5 inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
                             <div>
-                                <p class="text-xs font-semibold text-slate-900 dark:text-slate-50">Hadir Tepat Waktu</p>
+                                <p class="text-xs font-semibold text-slate-900 dark:text-slate-50">Hadir Tepat Waktu / Libur Reward</p>
                                 <p class="text-[11px] leading-4 text-slate-500 dark:text-slate-400 mt-0.5">Memenuhi syarat bonus ketepatan waktu penuh.</p>
                             </div>
                         </div>

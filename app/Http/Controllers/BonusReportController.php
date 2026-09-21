@@ -235,7 +235,7 @@ class BonusReportController extends Controller
                                 if (in_array($status, ['Off', 'Libur'])) {
                                     $sheet->setCellValue($colLetter . $row, 'OFF');
                                 } else {
-                                    $sheet->setCellValue($colLetter . $row, '0K');
+                                    $sheet->setCellValue($colLetter . $row, '0k');
                                     $sheet->getStyle($colLetter . $row)->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED));
                                 }
                             }
