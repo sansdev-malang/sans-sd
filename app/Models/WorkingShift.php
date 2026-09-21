@@ -13,11 +13,13 @@ class WorkingShift extends Model
         'name',
         'code',
         'is_shift',
+        'is_active',
         'description',
     ];
 
     protected $casts = [
         'is_shift' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     public function details()

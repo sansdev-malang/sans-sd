@@ -286,6 +286,7 @@ class HrdApiController extends Controller
                 [
                     'name' => $sData['name'],
                     'is_shift' => $sData['is_shift'],
+                    'is_active' => $sData['is_active'] ?? true,
                     'description' => $sData['description'] ?? null
                 ]
             );
