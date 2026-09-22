@@ -18,6 +18,8 @@ class PayslipController extends Controller
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
 
         $payslips = [];
+        $globalNote = '';
+        $periodNote = '';
 
         try {
             $response = Http::timeout(10)->withHeaders([
@@ -29,6 +31,8 @@ class PayslipController extends Controller
 
             if ($response->successful()) {
                 $payslips = $response->json('data') ?? [];
+                $globalNote = $response->json('global_note') ?? '';
+                $periodNote = $response->json('period_note') ?? '';
             }
         } catch (\Exception $e) {
             // Ignore for now
@@ -50,10 +54,12 @@ class PayslipController extends Controller
 
         $employees = $employees->map(function($emp) use ($payslips) {
             $emp->payslip_url = $payslips[$emp->id]['file_url'] ?? null;
+            $emp->original_filename = $payslips[$emp->id]['original_filename'] ?? null;
             $emp->attachment_url = $payslips[$emp->id]['attachment_url'] ?? null;
+            $emp->original_attachment_name = $payslips[$emp->id]['original_attachment_name'] ?? null;
             return $emp;
         })->sortBy('name');
 
-        return view('admin.payslips.index', compact('employees', 'month'));
+        return view('admin.payslips.index', compact('employees', 'month', 'globalNote', 'periodNote'));
     }
 }
