@@ -1207,15 +1207,22 @@
                     <!-- Body -->
                     <div class="p-6 space-y-4 text-xs">
                         <div class="p-4 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 space-y-2.5">
-                            <div class="flex items-center justify-between">
+                            <div class="flex items-center justify-between gap-3">
                                 <span class="font-bold text-indigo-900 dark:text-indigo-300">Format Template Excel</span>
-                                <a href="{{ route('students.download-template') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-xs">
-                                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                                    Unduh Template (.xlsx)
-                                </a>
+                                <button type="button" 
+                                    @click="downloadTemplate()" 
+                                    :disabled="downloadingTemplate"
+                                    class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-lg text-xs font-semibold transition-all shadow-xs cursor-pointer disabled:cursor-not-allowed">
+                                    <svg x-show="downloadingTemplate" class="animate-spin w-3.5 h-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <i x-show="!downloadingTemplate" data-lucide="download" class="w-3.5 h-3.5"></i>
+                                    <span x-text="downloadingTemplate ? 'Mengunduh...' : 'Unduh Template (.xlsx)'"></span>
+                                </button>
                             </div>
                             <p class="text-[11px] text-indigo-800/80 dark:text-indigo-300/80 leading-relaxed">
-                                Gunakan template resmi untuk mengisi data siswa. Sistem akan otomatis mencocokkan nama rombel permata (1A Berlian - 6D Kuarsa) dan Tahun Pelajaran (Tapel).
+                                Gunakan template resmi untuk mengisi data siswa. Di dalam file Excel terdapat lembar <strong>"Referensi Rombel & Tapel"</strong> untuk melihat daftar nama rombel yang aktif di sistem.
                             </p>
                         </div>
 
@@ -1272,6 +1279,7 @@
                 detailModalOpen: false,
                 formModalOpen: false,
                 importModalOpen: false,
+                downloadingTemplate: false,
                 activeDetailTab: 1,
                 activeFormTab: 1,
                 isEdit: false,
@@ -1351,6 +1359,44 @@
 
                     status: 'aktif',
                     notes: '',
+                },
+
+                async downloadTemplate() {
+                    if (this.downloadingTemplate) return;
+                    this.downloadingTemplate = true;
+                    try {
+                        if (typeof NProgress !== 'undefined') {
+                            NProgress.start();
+                        }
+                        const response = await fetch('{{ route('students.download-template') }}');
+                        if (!response.ok) throw new Error('Gagal mengunduh file template Excel.');
+                        
+                        const blob = await response.blob();
+                        const blobUrl = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.setAttribute('data-no-loader', 'true');
+                        a.href = blobUrl;
+                        a.download = 'Template_Import_Siswa_SD.xlsx';
+                        document.body.appendChild(a);
+                        a.click();
+                        
+                        setTimeout(() => {
+                            window.URL.revokeObjectURL(blobUrl);
+                            a.remove();
+                        }, 2000);
+
+                        if (window.showToastNotification) {
+                            window.showToastNotification('Template Excel berhasil diunduh!', 'success');
+                        }
+                    } catch (err) {
+                        alert('Gagal mengunduh template: ' + err.message);
+                    } finally {
+                        this.downloadingTemplate = false;
+                        if (typeof NProgress !== 'undefined') {
+                            NProgress.done();
+                        }
+                    }
                 },
 
                 openDetailModal(id) {

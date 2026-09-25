@@ -669,7 +669,7 @@
                     const href = link.getAttribute('href');
                     const target = link.getAttribute('target');
                     
-                    if (!href || href.startsWith('#') || href.startsWith('javascript:') || target === '_blank') return;
+                    if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('blob:') || href.startsWith('data:') || target === '_blank') return;
                     
                     // Check if it's an export/download link
                     const isDownload = href.includes('export') || href.includes('download') || link.hasAttribute('download');

@@ -53,6 +53,39 @@ class AcademicYear extends Model
      }
  
     /**
+     * Get human-friendly period label (e.g. "Juli – Desember 2026").
+     */
+    public function getPeriodLabelAttribute(): string
+    {
+        if ($this->start_date && $this->end_date) {
+            $startMonth = $this->start_date->translatedFormat('F');
+            $endMonth = $this->end_date->translatedFormat('F');
+            $year = $this->end_date->format('Y');
+            
+            if ($this->start_date->format('Y') !== $year) {
+                return "{$startMonth} " . $this->start_date->format('Y') . " – {$endMonth} {$year}";
+            }
+            return "{$startMonth} – {$endMonth} {$year}";
+        }
+
+        // Fallback based on name & semester
+        if (preg_match('/(\d{4})[\/\-](\d{4})/', (string)$this->name, $matches)) {
+            $y1 = $matches[1];
+            $y2 = $matches[2];
+        } elseif (preg_match('/(\d{4})/', (string)$this->name, $matches)) {
+            $y1 = $matches[1];
+            $y2 = (int)$y1 + 1;
+        } else {
+            $y1 = date('Y');
+            $y2 = (int)$y1 + 1;
+        }
+
+        return strtolower($this->semester) === 'genap'
+            ? "Januari – Juni {$y2}"
+            : "Juli – Desember {$y1}";
+    }
+
+    /**
      * Scope for active academic year.
      */
     public function scopeActive($query)

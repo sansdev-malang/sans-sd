@@ -127,7 +127,7 @@
                             <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-12">No</th>
                             <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Tahun Pelajaran</th>
                             <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32">Semester</th>
-                            <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-44">Periode Tanggal</th>
+                            <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-48">Periode Semester</th>
                             <th class="px-5 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-36">Status Aktif</th>
                             <th class="px-5 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">Rombel</th>
                             <th class="px-5 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">Siswa</th>
@@ -160,12 +160,11 @@
                                         {{ $year->semester }}
                                     </span>
                                 </td>
-                                <td class="px-5 py-3.5 text-slate-600 dark:text-slate-300 font-mono text-[11px]">
-                                    @if($year->start_date && $year->end_date)
-                                        {{ $year->start_date->format('d/m/Y') }} - {{ $year->end_date->format('d/m/Y') }}
-                                    @else
-                                        <span class="text-slate-400 italic">Belum diset</span>
-                                    @endif
+                                <td class="px-5 py-3.5 text-slate-600 dark:text-slate-300 text-[11px] font-medium">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                                        <i data-lucide="calendar-days" class="w-3.5 h-3.5 text-slate-400"></i>
+                                        {{ $year->period_label }}
+                                    </span>
                                 </td>
                                 <td class="px-5 py-3.5 text-center">
                                     @if($year->is_active)
@@ -256,17 +255,20 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tanggal Mulai</label>
-                                <input type="date" x-model="formData.start_date"
-                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900 dark:text-slate-50">
+                        <!-- AUTO-CALCULATED MONTH PERIOD PREVIEW -->
+                        <div class="p-3 bg-indigo-50/60 dark:bg-indigo-950/40 rounded-xl border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg">
+                                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Periode Kalender Akademik</span>
+                                    <span class="font-bold text-indigo-700 dark:text-indigo-300 text-xs" x-text="computedPeriodLabel()"></span>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tanggal Selesai</label>
-                                <input type="date" x-model="formData.end_date"
-                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900 dark:text-slate-50">
-                            </div>
+                            <span class="text-[10px] font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800 shadow-2xs">
+                                Otomatis Sistem
+                            </span>
                         </div>
 
                         <div class="pt-2 p-3 bg-indigo-50/50 dark:bg-indigo-950/30 rounded-xl border border-indigo-100 dark:border-indigo-900/40">
@@ -343,8 +345,6 @@
                     id: null,
                     name: '',
                     semester: 'Ganjil',
-                    start_date: '',
-                    end_date: '',
                     is_active: false,
                     description: '',
                 },
@@ -358,14 +358,28 @@
                     loading: false
                 },
 
+                computedPeriodLabel() {
+                    const name = (this.formData.name || '').trim();
+                    const sem = (this.formData.semester || 'Ganjil').toLowerCase();
+                    let y1 = new Date().getFullYear();
+                    let y2 = y1 + 1;
+                    const match = name.match(/(\d{4})/g);
+                    if (match && match.length >= 2) {
+                        y1 = parseInt(match[0]);
+                        y2 = parseInt(match[1]);
+                    } else if (match && match.length === 1) {
+                        y1 = parseInt(match[0]);
+                        y2 = y1 + 1;
+                    }
+                    return sem === 'genap' ? `Januari – Juni ${y2}` : `Juli – Desember ${y1}`;
+                },
+
                 openCreateModal() {
                     this.isEdit = false;
                     this.formData = {
                         id: null,
                         name: '',
                         semester: 'Ganjil',
-                        start_date: '',
-                        end_date: '',
                         is_active: false,
                         description: '',
                     };
@@ -392,8 +406,6 @@
                                 id: y.id,
                                 name: y.name || '',
                                 semester: semStr === 'genap' ? 'Genap' : 'Ganjil',
-                                start_date: y.start_date ? y.start_date.substring(0, 10) : '',
-                                end_date: y.end_date ? y.end_date.substring(0, 10) : '',
                                 is_active: Boolean(y.is_active),
                                 description: y.description || '',
                             };

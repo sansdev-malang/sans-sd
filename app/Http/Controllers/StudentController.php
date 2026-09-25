@@ -495,6 +495,8 @@ class StudentController extends Controller
     public function downloadTemplate()
     {
         $spreadsheet = new Spreadsheet();
+        
+        // Sheet 1: Data Siswa (Template Input)
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Data Siswa');
 
@@ -533,7 +535,7 @@ class StudentController extends Controller
             '0123456789',
             '3573010101190001',
             'Islam',
-            '2-A (Ibnu Rusyd)',
+            '1-A (Ibnu Sina)',
             '2026/2027',
             'Jl. Soekarno Hatta No. 45, Malang',
             'Budi Santoso',
@@ -552,10 +554,10 @@ class StudentController extends Controller
             $sheet->setCellValue($colLetter . '1', $header);
         }
 
-        // Put example in row 2
+        // Put example in row 2 with string data types for numbers (preserves leading zeros & prevents scientific notation)
         foreach ($example as $colIndex => $val) {
             $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1);
-            $sheet->setCellValue($colLetter . '2', $val);
+            $sheet->setCellValueExplicit($colLetter . '2', $val, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
         }
 
         // Header styling
@@ -569,6 +571,44 @@ class StudentController extends Controller
         foreach (range(1, count($headers)) as $colIndex) {
             $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
             $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+        }
+
+        // Sheet 2: Referensi Rombel & Tapel
+        $refSheet = $spreadsheet->createSheet();
+        $refSheet->setTitle('Referensi Rombel & Tapel');
+
+        $refHeaders = ['No', 'Nama Rombel', 'Kode Rombel', 'Tingkat Kelas', 'Tahun Pelajaran', 'Wali Kelas'];
+        foreach ($refHeaders as $idx => $rh) {
+            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($idx + 1);
+            $refSheet->setCellValue($colLetter . '1', $rh);
+        }
+        $refSheet->getStyle('A1:F1')->getFont()->setBold(true)->getColor()->setARGB('FFFFFFFF');
+        $refSheet->getStyle('A1:F1')->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FF10B981'); // Emerald color
+
+        $classrooms = Classroom::with(['classLevel', 'academicYear', 'homeroomTeacher'])->orderBy('academic_year_id', 'desc')->orderBy('name')->get();
+        $rowIdx = 2;
+        foreach ($classrooms as $no => $cr) {
+            $refSheet->setCellValue('A' . $rowIdx, $no + 1);
+            $refSheet->setCellValue('B' . $rowIdx, $cr->name);
+            $refSheet->setCellValue('C' . $rowIdx, $cr->code ?: '-');
+            $refSheet->setCellValue('D' . $rowIdx, $cr->classLevel?->name ?: '-');
+            $refSheet->setCellValue('E' . $rowIdx, $cr->academicYear?->name ?: '-');
+            $refSheet->setCellValue('F' . $rowIdx, $cr->homeroomTeacher?->name ?: '-');
+            $rowIdx++;
+        }
+
+        foreach (range(1, 6) as $colIndex) {
+            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
+            $refSheet->getColumnDimension($colLetter)->setAutoSize(true);
+        }
+
+        // Set active sheet back to Sheet 1
+        $spreadsheet->setActiveSheetIndex(0);
+
+        if (request()->filled('download_token')) {
+            setcookie('download_token', request()->query('download_token'), time() + 60, '/', '', false, false);
         }
 
         $writer = new Xlsx($spreadsheet);

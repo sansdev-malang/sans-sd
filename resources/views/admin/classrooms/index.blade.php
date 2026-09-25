@@ -274,7 +274,7 @@
                                             title="Edit Rombel">
                                             <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                                         </button>
-                                        <button type="button" @click="deleteRombel({{ $c->id }}, '{{ addslashes($c->name) }}')"
+                                        <button type="button" @click="confirmDeleteRombel({{ $c->id }}, '{{ addslashes($c->name) }}')"
                                             class="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg transition-colors cursor-pointer"
                                             title="Hapus Rombel">
                                             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
@@ -453,15 +453,46 @@
 
                     <!-- Modal Footer -->
                     <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex justify-end gap-2">
-                        <button type="button" @click="formModalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold transition-colors">
+                        <button type="button" @click="formModalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold transition-colors cursor-pointer">
                             Batal
                         </button>
-                        <button type="submit" :disabled="saving" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-xs">
+                        <button type="submit" :disabled="saving" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+                            <span x-show="saving" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                             <span x-text="saving ? 'Menyimpan...' : (isEdit ? 'Simpan Perubahan' : 'Tambah Rombel')"></span>
                         </button>
                     </div>
                 </form>
 
+            </div>
+        </div>
+
+        <!-- MODAL KONFIRMASI IN-APP (Aman dari native alert/confirm loop) -->
+        <div x-show="confirmModal.open" x-cloak style="display: none; margin-top: 0px !important; z-index: 9999;"
+            class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+            @click.self="confirmModal.open = false"
+            @keydown.escape.window="confirmModal.open = false">
+            
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col p-6 text-center animate-in fade-in zoom-in-95 duration-150"
+                @click.stop>
+                
+                <div class="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-4 bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
+                    <i data-lucide="trash-2" class="w-6 h-6"></i>
+                </div>
+
+                <h3 class="text-base font-bold text-slate-900 dark:text-slate-50" x-text="confirmModal.title"></h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed" x-html="confirmModal.message"></p>
+
+                <div class="mt-6 flex items-center justify-center gap-3">
+                    <button type="button" @click="confirmModal.open = false" :disabled="confirmModal.loading"
+                        class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold transition-colors cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="button" @click="executeConfirmDelete()" :disabled="confirmModal.loading"
+                        class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+                        <span x-show="confirmModal.loading" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span>Hapus Permanen</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -486,6 +517,13 @@
                     homeroom_teacher_id: '',
                     capacity: 28,
                 },
+                confirmModal: {
+                    open: false,
+                    id: null,
+                    title: '',
+                    message: '',
+                    loading: false
+                },
 
                 openStudentsModal(id) {
                     fetch(`/classrooms/${id}/students`, {
@@ -505,7 +543,13 @@
                             });
                         }
                     })
-                    .catch(err => alert("Gagal memuat siswa rombel: " + err.message));
+                    .catch(err => {
+                        if (window.showToastNotification) {
+                            window.showToastNotification("Gagal memuat siswa rombel: " + err.message, "error");
+                        } else {
+                            alert("Gagal memuat siswa rombel: " + err.message);
+                        }
+                    });
                 },
 
                 openCreateModal() {
@@ -520,6 +564,9 @@
                         capacity: 28,
                     };
                     this.formModalOpen = true;
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
                 },
 
                 openEditModal(id, name, code, classLevelId, academicYearId, teacherId, capacity) {
@@ -534,6 +581,9 @@
                         capacity: capacity || 28,
                     };
                     this.formModalOpen = true;
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
                 },
 
                 submitForm() {
@@ -552,43 +602,84 @@
                         },
                         body: JSON.stringify(this.formData)
                     })
-                    .then(res => res.json())
-                    .then(res => {
+                    .then(async res => {
                         this.saving = false;
-                        if (res.success) {
+                        const data = await res.json();
+                        if (res.ok && data.success) {
                             this.formModalOpen = false;
-                            alert(res.message || 'Rombel berhasil disimpan!');
-                            window.location.reload();
+                            if (window.showToastNotification) {
+                                window.showToastNotification(data.message || 'Rombel berhasil disimpan!', 'success');
+                            }
+                            setTimeout(() => window.location.reload(), 500);
                         } else {
-                            alert(res.message || 'Terjadi kesalahan saat menyimpan.');
+                            const errMsg = data.message || (data.errors ? Object.values(data.errors).flat().join(', ') : 'Terjadi kesalahan saat menyimpan.');
+                            if (window.showToastNotification) {
+                                window.showToastNotification(errMsg, 'error');
+                            } else {
+                                alert(errMsg);
+                            }
                         }
                     })
                     .catch(err => {
                         this.saving = false;
-                        alert('Error: ' + err.message);
+                        if (window.showToastNotification) {
+                            window.showToastNotification('Error: ' + err.message, 'error');
+                        } else {
+                            alert('Error: ' + err.message);
+                        }
                     });
                 },
 
-                deleteRombel(id, name) {
-                    if (!confirm(`Apakah Anda yakin ingin menghapus rombel "${name}"?`)) return;
+                confirmDeleteRombel(id, name) {
+                    this.confirmModal = {
+                        open: true,
+                        id: id,
+                        title: 'Hapus Rombongan Belajar?',
+                        message: `Apakah Anda yakin ingin menghapus rombel <strong>${name}</strong>? Data yang telah dihapus tidak dapat dipulihkan.`,
+                        loading: false
+                    };
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
+                },
 
-                    fetch(`/classrooms/${id}`, {
+                executeConfirmDelete() {
+                    if (this.confirmModal.loading) return;
+                    this.confirmModal.loading = true;
+
+                    fetch(`/classrooms/${this.confirmModal.id}`, {
                         method: 'DELETE',
                         headers: {
                             'Accept': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         }
                     })
-                    .then(res => res.json())
-                    .then(res => {
-                        if (res.success) {
-                            alert(res.message || 'Rombel berhasil dihapus!');
-                            window.location.reload();
+                    .then(async res => {
+                        this.confirmModal.loading = false;
+                        const data = await res.json();
+                        if (res.ok && data.success) {
+                            this.confirmModal.open = false;
+                            if (window.showToastNotification) {
+                                window.showToastNotification(data.message || 'Rombel berhasil dihapus!', 'success');
+                            }
+                            setTimeout(() => window.location.reload(), 500);
                         } else {
-                            alert(res.message || 'Gagal menghapus rombel.');
+                            const errMsg = data.message || 'Gagal menghapus rombel.';
+                            if (window.showToastNotification) {
+                                window.showToastNotification(errMsg, 'error');
+                            } else {
+                                alert(errMsg);
+                            }
                         }
                     })
-                    .catch(err => alert('Error: ' + err.message));
+                    .catch(err => {
+                        this.confirmModal.loading = false;
+                        if (window.showToastNotification) {
+                            window.showToastNotification('Error: ' + err.message, 'error');
+                        } else {
+                            alert('Error: ' + err.message);
+                        }
+                    });
                 }
             }
         }

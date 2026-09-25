@@ -398,6 +398,10 @@ class TeacherController extends Controller
             $sheet->getColumnDimension($colLetter)->setAutoSize(true);
         }
 
+        if (request()->filled('download_token')) {
+            setcookie('download_token', request()->query('download_token'), time() + 60, '/', '', false, false);
+        }
+
         $writer = new Xlsx($spreadsheet);
 
         return response()->streamDownload(function () use ($writer) {
