@@ -500,7 +500,7 @@ class StudentController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Data Siswa');
 
-        // Headers
+        // Headers (Separated Grade Dapodik & Nama Kelas Julukan)
         $headers = [
             'NIS (Wajib)',
             'Nama Lengkap (Wajib)',
@@ -511,8 +511,9 @@ class StudentController extends Controller
             'NISN',
             'NIK',
             'Agama',
-            'Rombel / Kelas (Nama atau Kode)',
-            'Tahun Ajaran (e.g. 2026/2027)',
+            'Kelas / Grade (e.g. 1A)',
+            'Nama Kelas (e.g. Berlian)',
+            'Tahun Pelajaran (e.g. 2026/2027)',
             'Alamat',
             'Nama Ayah',
             'No HP Ayah',
@@ -535,7 +536,8 @@ class StudentController extends Controller
             '0123456789',
             '3573010101190001',
             'Islam',
-            '1-A (Ibnu Sina)',
+            '1A',
+            'Berlian',
             '2026/2027',
             'Jl. Soekarno Hatta No. 45, Malang',
             'Budi Santoso',
@@ -577,29 +579,35 @@ class StudentController extends Controller
         $refSheet = $spreadsheet->createSheet();
         $refSheet->setTitle('Referensi Rombel & Tapel');
 
-        $refHeaders = ['No', 'Nama Rombel', 'Kode Rombel', 'Tingkat Kelas', 'Tahun Pelajaran', 'Wali Kelas'];
+        $refHeaders = ['No', 'Tingkat', 'Kelas / Grade', 'Nama Kelas (Julukan)', 'Nama Rombel Resmi', 'Tahun Pelajaran', 'Wali Kelas'];
         foreach ($refHeaders as $idx => $rh) {
             $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($idx + 1);
             $refSheet->setCellValue($colLetter . '1', $rh);
         }
-        $refSheet->getStyle('A1:F1')->getFont()->setBold(true)->getColor()->setARGB('FFFFFFFF');
-        $refSheet->getStyle('A1:F1')->getFill()
+        $refSheet->getStyle('A1:G1')->getFont()->setBold(true)->getColor()->setARGB('FFFFFFFF');
+        $refSheet->getStyle('A1:G1')->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setARGB('FF10B981'); // Emerald color
 
-        $classrooms = Classroom::with(['classLevel', 'academicYear', 'homeroomTeacher'])->orderBy('academic_year_id', 'desc')->orderBy('name')->get();
+        $classrooms = Classroom::with(['classLevel', 'academicYear', 'homeroomTeacher'])
+            ->orderBy('academic_year_id', 'desc')
+            ->orderBy('class_level_id')
+            ->orderBy('code')
+            ->get();
+
         $rowIdx = 2;
         foreach ($classrooms as $no => $cr) {
             $refSheet->setCellValue('A' . $rowIdx, $no + 1);
-            $refSheet->setCellValue('B' . $rowIdx, $cr->name);
+            $refSheet->setCellValue('B' . $rowIdx, $cr->classLevel?->name ?: '-');
             $refSheet->setCellValue('C' . $rowIdx, $cr->code ?: '-');
-            $refSheet->setCellValue('D' . $rowIdx, $cr->classLevel?->name ?: '-');
-            $refSheet->setCellValue('E' . $rowIdx, $cr->academicYear?->name ?: '-');
-            $refSheet->setCellValue('F' . $rowIdx, $cr->homeroomTeacher?->name ?: '-');
+            $refSheet->setCellValue('D' . $rowIdx, $cr->name ?: '-');
+            $refSheet->setCellValue('E' . $rowIdx, $cr->full_name ?: '-');
+            $refSheet->setCellValue('F' . $rowIdx, $cr->academicYear?->name ?: '-');
+            $refSheet->setCellValue('G' . $rowIdx, $cr->homeroomTeacher?->name ?: '-');
             $rowIdx++;
         }
 
-        foreach (range(1, 6) as $colIndex) {
+        foreach (range(1, 7) as $colIndex) {
             $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
             $refSheet->getColumnDimension($colLetter)->setAutoSize(true);
         }
@@ -648,6 +656,86 @@ class StudentController extends Controller
         $defaultClassroom = $request->filled('default_classroom_id') ? Classroom::find($request->input('default_classroom_id')) : null;
         $defaultAcademicYear = $request->filled('default_academic_year_id') ? AcademicYear::find($request->input('default_academic_year_id')) : AcademicYear::where('is_active', true)->first();
 
+        // Smart column mapping from header text
+        $map = [
+            'nis' => 0,
+            'full_name' => 1,
+            'nickname' => 2,
+            'gender' => 3,
+            'birth_place' => 4,
+            'birth_date' => 5,
+            'nisn' => 6,
+            'nik' => 7,
+            'religion' => 8,
+            'code' => 9,          // Grade (1A)
+            'class_name' => 10,   // Classname (Berlian)
+            'rombel_combined' => null,
+            'academic_year' => 11,
+            'address' => 12,
+            'father_name' => 13,
+            'father_phone' => 14,
+            'father_job' => 15,
+            'mother_name' => 16,
+            'mother_phone' => 17,
+            'mother_job' => 18,
+            'parent_phone' => 19,
+            'status' => 20,
+        ];
+
+        if (is_array($header) && count($header) > 0) {
+            $hasSeparateRombel = false;
+            foreach ($header as $cIdx => $cVal) {
+                $clean = strtolower(trim((string)$cVal));
+                if (str_contains($clean, 'nis') && !str_contains($clean, 'nisn')) {
+                    $map['nis'] = $cIdx;
+                } elseif (str_contains($clean, 'nama lengkap')) {
+                    $map['full_name'] = $cIdx;
+                } elseif (str_contains($clean, 'panggilan')) {
+                    $map['nickname'] = $cIdx;
+                } elseif (str_contains($clean, 'kelamin') || $clean === 'jk' || $clean === 'l/p') {
+                    $map['gender'] = $cIdx;
+                } elseif (str_contains($clean, 'tempat lahir')) {
+                    $map['birth_place'] = $cIdx;
+                } elseif (str_contains($clean, 'tanggal lahir') || str_contains($clean, 'tgl lahir')) {
+                    $map['birth_date'] = $cIdx;
+                } elseif (str_contains($clean, 'nisn')) {
+                    $map['nisn'] = $cIdx;
+                } elseif (str_contains($clean, 'nik')) {
+                    $map['nik'] = $cIdx;
+                } elseif (str_contains($clean, 'agama')) {
+                    $map['religion'] = $cIdx;
+                } elseif (str_contains($clean, 'grade') || str_contains($clean, 'kode rombel')) {
+                    $map['code'] = $cIdx;
+                    $hasSeparateRombel = true;
+                } elseif (str_contains($clean, 'nama kelas') || str_contains($clean, 'julukan') || str_contains($clean, 'classname')) {
+                    $map['class_name'] = $cIdx;
+                    $hasSeparateRombel = true;
+                } elseif (str_contains($clean, 'rombel') && !$hasSeparateRombel) {
+                    $map['rombel_combined'] = $cIdx;
+                } elseif (str_contains($clean, 'tahun') || str_contains($clean, 'tapel')) {
+                    $map['academic_year'] = $cIdx;
+                } elseif (str_contains($clean, 'alamat')) {
+                    $map['address'] = $cIdx;
+                } elseif (str_contains($clean, 'nama ayah')) {
+                    $map['father_name'] = $cIdx;
+                } elseif (str_contains($clean, 'hp ayah') || str_contains($clean, 'telepon ayah')) {
+                    $map['father_phone'] = $cIdx;
+                } elseif (str_contains($clean, 'pekerjaan ayah')) {
+                    $map['father_job'] = $cIdx;
+                } elseif (str_contains($clean, 'nama ibu')) {
+                    $map['mother_name'] = $cIdx;
+                } elseif (str_contains($clean, 'hp ibu') || str_contains($clean, 'telepon ibu')) {
+                    $map['mother_phone'] = $cIdx;
+                } elseif (str_contains($clean, 'pekerjaan ibu')) {
+                    $map['mother_job'] = $cIdx;
+                } elseif (str_contains($clean, 'whatsapp') || str_contains($clean, 'kontak') || str_contains($clean, 'hp ortu')) {
+                    $map['parent_phone'] = $cIdx;
+                } elseif (str_contains($clean, 'status')) {
+                    $map['status'] = $cIdx;
+                }
+            }
+        }
+
         $errors = [];
         $importedCount = 0;
         $updatedCount = 0;
@@ -660,26 +748,30 @@ class StudentController extends Controller
                 continue;
             }
 
-            $nis = !empty($row[0]) ? trim((string)$row[0]) : null;
-            $fullName = !empty($row[1]) ? trim((string)$row[1]) : null;
-            $nickname = !empty($row[2]) ? trim((string)$row[2]) : null;
-            $gender = !empty($row[3]) ? trim((string)$row[3]) : null;
-            $birthPlace = !empty($row[4]) ? trim((string)$row[4]) : null;
-            $birthDateRaw = !empty($row[5]) ? trim((string)$row[5]) : null;
-            $nisn = !empty($row[6]) ? trim((string)$row[6]) : null;
-            $nik = !empty($row[7]) ? trim((string)$row[7]) : null;
-            $religion = !empty($row[8]) ? trim((string)$row[8]) : 'Islam';
-            $classroomStr = !empty($row[9]) ? trim((string)$row[9]) : null;
-            $academicYearStr = !empty($row[10]) ? trim((string)$row[10]) : null;
-            $address = !empty($row[11]) ? trim((string)$row[11]) : null;
-            $fatherName = !empty($row[12]) ? trim((string)$row[12]) : null;
-            $fatherPhone = !empty($row[13]) ? trim((string)$row[13]) : null;
-            $fatherJob = !empty($row[14]) ? trim((string)$row[14]) : null;
-            $motherName = !empty($row[15]) ? trim((string)$row[15]) : null;
-            $motherPhone = !empty($row[16]) ? trim((string)$row[16]) : null;
-            $motherJob = !empty($row[17]) ? trim((string)$row[17]) : null;
-            $parentPhone = !empty($row[18]) ? trim((string)$row[18]) : null;
-            $status = !empty($row[19]) ? strtolower(trim((string)$row[19])) : 'aktif';
+            $nis = !empty($row[$map['nis']]) ? trim((string)$row[$map['nis']]) : null;
+            $fullName = !empty($row[$map['full_name']]) ? trim((string)$row[$map['full_name']]) : null;
+            $nickname = !empty($row[$map['nickname']]) ? trim((string)$row[$map['nickname']]) : null;
+            $gender = !empty($row[$map['gender']]) ? trim((string)$row[$map['gender']]) : null;
+            $birthPlace = !empty($row[$map['birth_place']]) ? trim((string)$row[$map['birth_place']]) : null;
+            $birthDateRaw = !empty($row[$map['birth_date']]) ? trim((string)$row[$map['birth_date']]) : null;
+            $nisn = !empty($row[$map['nisn']]) ? trim((string)$row[$map['nisn']]) : null;
+            $nik = !empty($row[$map['nik']]) ? trim((string)$row[$map['nik']]) : null;
+            $religion = !empty($row[$map['religion']]) ? trim((string)$row[$map['religion']]) : 'Islam';
+
+            $gradeCode = !empty($row[$map['code']]) ? trim((string)$row[$map['code']]) : null;
+            $className = !empty($row[$map['class_name']]) ? trim((string)$row[$map['class_name']]) : null;
+            $combinedRombel = isset($map['rombel_combined']) && !empty($row[$map['rombel_combined']]) ? trim((string)$row[$map['rombel_combined']]) : null;
+
+            $academicYearStr = !empty($row[$map['academic_year']]) ? trim((string)$row[$map['academic_year']]) : null;
+            $address = !empty($row[$map['address']]) ? trim((string)$row[$map['address']]) : null;
+            $fatherName = !empty($row[$map['father_name']]) ? trim((string)$row[$map['father_name']]) : null;
+            $fatherPhone = !empty($row[$map['father_phone']]) ? trim((string)$row[$map['father_phone']]) : null;
+            $fatherJob = !empty($row[$map['father_job']]) ? trim((string)$row[$map['father_job']]) : null;
+            $motherName = !empty($row[$map['mother_name']]) ? trim((string)$row[$map['mother_name']]) : null;
+            $motherPhone = !empty($row[$map['mother_phone']]) ? trim((string)$row[$map['mother_phone']]) : null;
+            $motherJob = !empty($row[$map['mother_job']]) ? trim((string)$row[$map['mother_job']]) : null;
+            $parentPhone = !empty($row[$map['parent_phone']]) ? trim((string)$row[$map['parent_phone']]) : null;
+            $status = !empty($row[$map['status']]) ? strtolower(trim((string)$row[$map['status']])) : 'aktif';
 
             if (empty($nis)) {
                 $errors[] = "Baris {$rowNumber}: NIS wajib diisi.";
@@ -730,27 +822,53 @@ class StudentController extends Controller
 
             // Resolusi Rombel (Classroom)
             $classroomId = null;
-            if ($classroomStr) {
-                $cr = Classroom::where('name', $classroomStr)
-                    ->orWhere('code', $classroomStr)
+
+            if ($gradeCode && $className) {
+                $cr = Classroom::where('code', $gradeCode)
                     ->when($academicYearId, function($q) use ($academicYearId) {
                         $q->where('academic_year_id', $academicYearId);
                     })
                     ->first();
                 if (!$cr) {
-                    // Coba cari fuzzy berdasarkan awalan nama
-                    $cr = Classroom::where('name', 'like', "%{$classroomStr}%")
+                    $cr = Classroom::where('name', $className)
                         ->when($academicYearId, function($q) use ($academicYearId) {
                             $q->where('academic_year_id', $academicYearId);
                         })
                         ->first();
                 }
-                if ($cr) {
-                    $classroomId = $cr->id;
-                    if (!$academicYearId && $cr->academic_year_id) {
-                        $academicYearId = $cr->academic_year_id;
-                    }
-                }
+                if ($cr) $classroomId = $cr->id;
+            } elseif ($gradeCode) {
+                $cr = Classroom::where('code', $gradeCode)
+                    ->orWhere('name', $gradeCode)
+                    ->when($academicYearId, function($q) use ($academicYearId) {
+                        $q->where('academic_year_id', $academicYearId);
+                    })
+                    ->first();
+                if ($cr) $classroomId = $cr->id;
+            } elseif ($className) {
+                $cr = Classroom::where('name', $className)
+                    ->orWhere('name', 'like', "%{$className}%")
+                    ->when($academicYearId, function($q) use ($academicYearId) {
+                        $q->where('academic_year_id', $academicYearId);
+                    })
+                    ->first();
+                if ($cr) $classroomId = $cr->id;
+            } elseif ($combinedRombel) {
+                $cleanCombined = trim(preg_replace('/[^a-zA-Z0-9\s]/', ' ', $combinedRombel));
+                $parts = preg_split('/\s+/', $cleanCombined);
+                $firstPart = $parts[0] ?? '';
+                $secondPart = $parts[1] ?? '';
+
+                $cr = Classroom::where('name', $combinedRombel)
+                    ->orWhere('code', $combinedRombel)
+                    ->orWhere('code', $firstPart)
+                    ->orWhere('name', $secondPart)
+                    ->orWhere('name', 'like', "%{$combinedRombel}%")
+                    ->when($academicYearId, function($q) use ($academicYearId) {
+                        $q->where('academic_year_id', $academicYearId);
+                    })
+                    ->first();
+                if ($cr) $classroomId = $cr->id;
             }
 
             if (!$classroomId && $defaultClassroom) {
@@ -761,7 +879,8 @@ class StudentController extends Controller
             }
 
             if (!$classroomId) {
-                $errors[] = "Baris {$rowNumber}: Rombel '{$classroomStr}' tidak ditemukan di sistem. Harap periksa nama rombel atau pilih Rombel default.";
+                $identifier = $gradeCode ? ($gradeCode . ' ' . $className) : ($className ?: ($combinedRombel ?: 'tidak terdefinisi'));
+                $errors[] = "Baris {$rowNumber}: Rombel '{$identifier}' tidak ditemukan di sistem. Harap periksa nama rombel atau pilih Rombel default.";
                 continue;
             }
 
