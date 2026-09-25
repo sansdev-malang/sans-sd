@@ -199,16 +199,23 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/60 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
-                                            {{ substr($c->name, 0, 2) }}
+                                        <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/60 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0 font-mono">
+                                            {{ $c->code ?: substr($c->name, 0, 2) }}
                                         </div>
                                         <div>
-                                            <span class="font-bold text-slate-900 dark:text-slate-100 text-xs">
-                                                {{ $c->name }}
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="font-bold text-slate-900 dark:text-slate-100 text-xs">
+                                                    {{ $c->name }}
+                                                </span>
+                                                @if($c->code)
+                                                    <span class="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                                        Grade {{ $c->code }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            <span class="text-[11px] text-slate-400">
+                                                {{ $c->full_name }}
                                             </span>
-                                            @if($c->code)
-                                                <span class="block font-mono text-[10px] text-slate-400">Kode: {{ $c->code }}</span>
-                                            @endif
                                         </div>
                                     </div>
                                 </td>
@@ -402,11 +409,17 @@
                     </div>
 
                     <!-- Modal Body -->
-                    <div class="p-6 space-y-4 text-xs">
-                        <div>
-                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Rombel <span class="text-rose-500">*</span></label>
-                            <input type="text" x-model="formData.name" required placeholder="Contoh: 1-A (Ibnu Sina), 2-B"
-                                class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-50">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode / Grade <span class="text-rose-500">*</span></label>
+                                <input type="text" x-model="formData.code" required placeholder="Contoh: 1A, 2B, 6D"
+                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-50 font-mono uppercase">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Rombel / Classname <span class="text-rose-500">*</span></label>
+                                <input type="text" x-model="formData.name" required placeholder="Contoh: Berlian, Mutiara, Ibnu Sina"
+                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-50">
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

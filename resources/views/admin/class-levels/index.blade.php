@@ -177,8 +177,8 @@
                                         @forelse($lvl->classrooms as $rombel)
                                             <a href="{{ route('classrooms.index', ['academic_year_id' => $selectedYearId, 'class_level_id' => $lvl->id]) }}"
                                                 class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50 transition-colors"
-                                                title="Lihat Rombel {{ $rombel->name }}">
-                                                {{ $rombel->name }}
+                                                title="Lihat Rombel {{ $rombel->full_name }}">
+                                                {{ $rombel->full_name }}
                                             </a>
                                         @empty
                                             <span class="text-slate-400 italic text-[11px]">Tidak ada rombel di Tapel ini</span>

@@ -211,7 +211,7 @@
                         <option value="all">Semua Rombel</option>
                         @foreach($classrooms as $rombel)
                             <option value="{{ $rombel->id }}" {{ request('classroom_id') == $rombel->id ? 'selected' : '' }}>
-                                {{ $rombel->name }}
+                                {{ $rombel->full_name }}
                             </option>
                         @endforeach
                     </select>
@@ -308,7 +308,7 @@
                                 <td class="px-4 py-3">
                                     <div class="flex flex-col">
                                         <span class="font-semibold text-slate-800 dark:text-slate-200">
-                                            {{ $s->classroom ? $s->classroom->name : 'Belum Ditentukan' }}
+                                            {{ $s->classroom ? $s->classroom->full_name : 'Belum Ditentukan' }}
                                         </span>
                                         <div class="flex items-center gap-1.5 mt-0.5">
                                             <span class="text-[11px] text-slate-400">

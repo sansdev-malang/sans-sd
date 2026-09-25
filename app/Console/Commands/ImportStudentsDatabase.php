@@ -94,7 +94,7 @@ class ImportStudentsDatabase extends Command
 
         $classroomMap = [];
         foreach ($classroomDefinitions as $code => $def) {
-            $formattedName = "{$code} ({$def['gem']})";
+            $pureClassName = ucwords(strtolower($def['gem']));
             
             // Cek jika guru wali kelas ada di database employees
             $homeroomEmployee = null;
@@ -110,18 +110,19 @@ class ImportStudentsDatabase extends Command
                     'academic_year_id' => $academicYear->id,
                 ],
                 [
-                    'name' => $formattedName,
+                    'name' => $pureClassName,
                     'class_level_id' => $levels[$def['level']]->id,
                     'homeroom_teacher_id' => $homeroomEmployee?->id,
                     'capacity' => 32,
                     'is_active' => true,
-                    'description' => "Rombel {$formattedName} SD Anak Saleh TA {$academicYear->name}",
+                    'description' => "Rombel {$code} {$pureClassName} SD Anak Saleh TA {$academicYear->name}",
                 ]
             );
 
             $classroomMap[$code] = $classroom;
             $classroomMap[strtoupper($def['gem'])] = $classroom;
-            $classroomMap[strtoupper($formattedName)] = $classroom;
+            $classroomMap[strtoupper("{$code} ({$def['gem']})")] = $classroom;
+            $classroomMap[strtoupper("{$code} {$def['gem']}")] = $classroom;
         }
 
         $this->info("24 Rombel resmi SD Anak Saleh berhasil disiapkan!");

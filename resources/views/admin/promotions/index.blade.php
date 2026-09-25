@@ -76,7 +76,7 @@
                             class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-semibold cursor-pointer">
                             <option value="">-- Pilih Rombel Asal --</option>
                             <template x-for="cr in filteredSourceClassrooms" :key="cr.id">
-                                <option :value="cr.id" x-text="cr.name + ' (' + (cr.class_level ? cr.class_level.name : 'Tingkat') + ')'"></option>
+                                <option :value="cr.id" x-text="(cr.code ? cr.code + ' ' : '') + cr.name + ' (' + (cr.class_level ? cr.class_level.name : 'Tingkat') + ')'"></option>
                             </template>
                         </select>
                     </div>
@@ -250,7 +250,7 @@
                             class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-semibold cursor-pointer">
                             <option value="">-- Pilih Rombel Kelas 6 --</option>
                             @foreach($grade6Classrooms as $cr)
-                                <option value="{{ $cr->id }}">{{ $cr->name }} (Tapel {{ $cr->academicYear->name ?? '-' }})</option>
+                                <option value="{{ $cr->id }}">{{ $cr->full_name }} (Tapel {{ $cr->academicYear->name ?? '-' }})</option>
                             @endforeach
                         </select>
                     </div>
