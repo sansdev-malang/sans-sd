@@ -118,13 +118,12 @@
 
                 <!-- Filter Toolbar -->
                 <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                    <!-- Filter Tahun Ajaran -->
+                    <!-- Filter Tahun Pelajaran (Tapel) -->
                     <select name="academic_year_id" onchange="this.form.submit()"
                         class="h-9 px-3 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-xs">
-                        <option value="all">Semua Tahun Ajaran</option>
                         @foreach($academicYears as $ay)
-                            <option value="{{ $ay->id }}" {{ ($selectedYearId == $ay->id || (empty($selectedYearId) && $ay->is_active)) ? 'selected' : '' }}>
-                                TA {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}
+                            <option value="{{ $ay->id }}" {{ $selectedYearId == $ay->id ? 'selected' : '' }}>
+                                Tapel {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}
                             </option>
                         @endforeach
                     </select>
@@ -140,7 +139,7 @@
                         @endforeach
                     </select>
 
-                    @if(request()->hasAny(['search', 'class_level_id', 'academic_year_id']))
+                    @if(request()->hasAny(['search', 'class_level_id']) || (request()->filled('academic_year_id') && request('academic_year_id') != ($academicYears->firstWhere('is_active', true)?->id ?? '')))
                         <a href="{{ route('classrooms.index') }}" 
                             class="h-9 px-3 inline-flex items-center justify-center text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors"
                             title="Reset Filter">
@@ -151,109 +150,160 @@
             </form>
         </section>
 
-        <!-- ROMBEL CARDS GRID -->
-        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            @forelse($classrooms as $c)
-                @php
-                    $filled = $c->active_students_count;
-                    $cap = $c->capacity ?: 28;
-                    $pct = min(100, round(($filled / $cap) * 100));
-                @endphp
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-emerald-500/40 dark:hover:border-emerald-500/30 transition-all group">
-                    <div>
-                        <!-- Header Card -->
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/60 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm shrink-0">
-                                    {{ substr($c->name, 0, 2) }}
-                                </div>
-                                <div>
-                                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-50 tracking-tight">
-                                        {{ $c->name }}
-                                    </h3>
-                                    <span class="inline-block px-2 py-0.2 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 mt-0.5">
-                                        {{ $c->classLevel->name ?? '-' }} | TA {{ $c->academicYear->name ?? '-' }}
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <!-- Dropdown Actions -->
-                            <div class="flex items-center gap-1">
-                                <button type="button" @click="openEditModal({{ $c->id }}, '{{ addslashes($c->name) }}', '{{ $c->code }}', {{ $c->class_level_id }}, {{ $c->academic_year_id ?? 'null' }}, {{ $c->homeroom_teacher_id ?? 'null' }}, {{ $c->capacity }})"
-                                    class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg transition-colors"
-                                    title="Edit Rombel">
-                                    <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
-                                </button>
-                                <button type="button" @click="deleteRombel({{ $c->id }}, '{{ addslashes($c->name) }}')"
-                                    class="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg transition-colors"
-                                    title="Hapus Rombel">
-                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Wali Kelas Info -->
-                        <div class="mt-4 p-3 rounded-xl bg-slate-50/75 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
-                            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Wali Kelas</span>
-                            <div class="flex items-center gap-2.5">
-                                <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
-                                    {{ $c->homeroomTeacher ? substr($c->homeroomTeacher->raw_name, 0, 1) : '?' }}
-                                </div>
-                                <div class="overflow-hidden">
-                                    <p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
-                                        {{ $c->homeroomTeacher ? $c->homeroomTeacher->name : 'Belum Ditentukan' }}
-                                    </p>
-                                    <p class="text-[10px] text-slate-400 truncate">
-                                        {{ $c->homeroomTeacher ? ($c->homeroomTeacher->phone ?: $c->homeroomTeacher->email) : 'Guru Kelas' }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Capacity Bar -->
-                        <div class="mt-4">
-                            <div class="flex justify-between items-center text-xs mb-1.5">
-                                <span class="text-slate-500 dark:text-slate-400 font-medium">Kapasitas Kelas</span>
-                                <span class="font-bold text-slate-800 dark:text-slate-200">
-                                    <span class="text-indigo-600 dark:text-indigo-400 font-bold">{{ $filled }}</span> / {{ $cap }} Siswa
-                                </span>
-                            </div>
-                            <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                                <div class="h-full rounded-full transition-all duration-300 {{ $pct >= 90 ? 'bg-rose-500' : ($pct >= 70 ? 'bg-amber-500' : 'bg-emerald-500') }}"
-                                    style="width: {{ $pct }}%"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Footer Action: Lihat Siswa Rombel -->
-                    <div class="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                        <span class="text-[11px] text-slate-400">
-                            {{ $pct }}% terisi
+        <!-- ROMBEL TABLE -->
+        <section class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden transition-all w-full">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                        <i data-lucide="layers" class="w-4 h-4 text-emerald-600"></i>
+                        Daftar Rombongan Belajar (Rombel)
+                    </h3>
+                    @php
+                        $currentSelectedYear = $academicYears->firstWhere('id', $selectedYearId);
+                    @endphp
+                    @if($currentSelectedYear)
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $currentSelectedYear->is_active ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700' }}">
+                            <i data-lucide="calendar" class="w-3 h-3"></i>
+                            Tapel {{ $currentSelectedYear->name }} {{ $currentSelectedYear->is_active ? '(Aktif)' : '' }}
                         </span>
-                        <button type="button" @click="openStudentsModal({{ $c->id }})"
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer">
-                            <i data-lucide="users" class="w-3.5 h-3.5"></i>
-                            Lihat Siswa ({{ $filled }})
-                        </button>
-                    </div>
+                    @endif
                 </div>
-            @empty
-                <div class="col-span-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center">
-                    <div class="max-w-sm mx-auto flex flex-col items-center justify-center">
-                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-emerald-500 mb-3 border border-emerald-100 dark:border-emerald-900/50">
-                            <i data-lucide="university" class="w-6 h-6"></i>
-                        </div>
-                        <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">Belum Ada Rombongan Belajar</h4>
-                        <p class="text-xs text-slate-400 mt-1 mb-4 text-center">
-                            Silakan tambahkan rombongan belajar baru untuk mengelompokkan siswa SD.
-                        </p>
-                        <button type="button" @click="openCreateModal()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs">
-                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                            Tambah Rombel Sekarang
-                        </button>
-                    </div>
-                </div>
-            @endforelse
+                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    Total: <strong class="text-slate-800 dark:text-slate-200">{{ $classrooms->count() }}</strong> rombel
+                </span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/50">
+                            <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-12">No</th>
+                            <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Rombel</th>
+                            <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">Tingkat</th>
+                            <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-40">Tahun Pelajaran</th>
+                            <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Wali Kelas</th>
+                            <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-48">Kapasitas & Kuota</th>
+                            <th class="px-4 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32">Daftar Siswa</th>
+                            <th class="px-4 py-3.5 text-right text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
+                        @forelse($classrooms as $index => $c)
+                            @php
+                                $filled = $c->active_students_count;
+                                $cap = $c->capacity ?: 28;
+                                $pct = min(100, round(($filled / $cap) * 100));
+                            @endphp
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+                                <td class="px-4 py-3 text-slate-400 font-mono text-[11px]">
+                                    {{ $index + 1 }}
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/60 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
+                                            {{ substr($c->name, 0, 2) }}
+                                        </div>
+                                        <div>
+                                            <span class="font-bold text-slate-900 dark:text-slate-100 text-xs">
+                                                {{ $c->name }}
+                                            </span>
+                                            @if($c->code)
+                                                <span class="block font-mono text-[10px] text-slate-400">Kode: {{ $c->code }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                        {{ $c->classLevel->name ?? '-' }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                                        <i data-lucide="calendar" class="w-3 h-3"></i>
+                                        Tapel {{ $c->academicYear->name ?? '-' }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    @if($c->homeroomTeacher)
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                                                {{ substr($c->homeroomTeacher->raw_name, 0, 1) }}
+                                            </div>
+                                            <div class="overflow-hidden">
+                                                <p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                                    {{ $c->homeroomTeacher->name }}
+                                                </p>
+                                                <p class="text-[10px] text-slate-400 truncate font-mono">
+                                                    {{ $c->homeroomTeacher->phone ?: ($c->homeroomTeacher->nip ?: 'Wali Kelas') }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 text-[11px] text-slate-400 italic">
+                                            <i data-lucide="alert-circle" class="w-3 h-3"></i>
+                                            Belum ditentukan
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="w-full max-w-xs">
+                                        <div class="flex justify-between items-center text-[11px] mb-1">
+                                            <span class="font-bold text-slate-800 dark:text-slate-200">
+                                                <span class="text-indigo-600 dark:text-indigo-400 font-bold">{{ $filled }}</span> / {{ $cap }} Siswa
+                                            </span>
+                                            <span class="text-[10px] font-semibold text-slate-400">{{ $pct }}%</span>
+                                        </div>
+                                        <div class="w-full h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                                            <div class="h-full rounded-full transition-all duration-300 {{ $pct >= 90 ? 'bg-rose-500' : ($pct >= 70 ? 'bg-amber-500' : 'bg-emerald-500') }}"
+                                                style="width: {{ $pct }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <button type="button" @click="openStudentsModal({{ $c->id }})"
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-400 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+                                        title="Lihat Daftar Siswa di Rombel">
+                                        <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-500"></i>
+                                        <span>{{ $filled }} Siswa</span>
+                                    </button>
+                                </td>
+                                <td class="px-4 py-3 text-right">
+                                    <div class="flex items-center justify-end gap-1">
+                                        <button type="button" @click="openEditModal({{ $c->id }}, '{{ addslashes($c->name) }}', '{{ $c->code }}', {{ $c->class_level_id }}, {{ $c->academic_year_id ?? 'null' }}, {{ $c->homeroom_teacher_id ?? 'null' }}, {{ $c->capacity }})"
+                                            class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg transition-colors cursor-pointer"
+                                            title="Edit Rombel">
+                                            <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                        <button type="button" @click="deleteRombel({{ $c->id }}, '{{ addslashes($c->name) }}')"
+                                            class="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg transition-colors cursor-pointer"
+                                            title="Hapus Rombel">
+                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="px-4 py-12 text-center">
+                                    <div class="max-w-sm mx-auto flex flex-col items-center justify-center">
+                                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-emerald-500 mb-3 border border-emerald-100 dark:border-emerald-900/50">
+                                            <i data-lucide="university" class="w-6 h-6"></i>
+                                        </div>
+                                        <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">Belum Ada Rombongan Belajar</h4>
+                                        <p class="text-xs text-slate-400 mt-1 mb-4 text-center">
+                                            Silakan tambahkan rombongan belajar baru untuk mengelompokkan siswa SD.
+                                        </p>
+                                        <button type="button" @click="openCreateModal()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer">
+                                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                            Tambah Rombel Sekarang
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </section>
 
         <!-- MODAL DAFTAR SISWA DI ROMBEL -->
@@ -371,12 +421,12 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tahun Ajaran <span class="text-rose-500">*</span></label>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tahun Pelajaran (Tapel) <span class="text-rose-500">*</span></label>
                                 <select x-model="formData.academic_year_id" required
                                     class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-50 cursor-pointer">
-                                    <option value="">Pilih Tahun Ajaran...</option>
+                                    <option value="">Pilih Tahun Pelajaran...</option>
                                     @foreach($academicYears as $ay)
-                                        <option value="{{ $ay->id }}">TA {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}</option>
+                                        <option value="{{ $ay->id }}">Tapel {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}</option>
                                     @endforeach
                                 </select>
                             </div>

@@ -42,6 +42,18 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
     Route::post('students/import', [StudentController::class, 'import'])->name('students.import');
     Route::resource('students', StudentController::class);
     Route::get('/siswa', fn() => redirect()->route('students.index'))->name('siswa');
+
+    // Class Promotions & Graduation (Kenaikan Kelas & Kelulusan)
+    Route::get('class-promotions', [\App\Http\Controllers\ClassPromotionController::class, 'index'])->name('promotions.index');
+    Route::get('class-promotions/students', [\App\Http\Controllers\ClassPromotionController::class, 'getStudents'])->name('promotions.students');
+    Route::post('class-promotions/process', [\App\Http\Controllers\ClassPromotionController::class, 'promote'])->name('promotions.process');
+    Route::post('class-promotions/graduate', [\App\Http\Controllers\ClassPromotionController::class, 'graduate'])->name('promotions.graduate');
+
+    // Alumni & Graduation Ledger
+    Route::get('alumni', [\App\Http\Controllers\AlumniController::class, 'index'])->name('alumni.index');
+    Route::get('alumni/{id}', [\App\Http\Controllers\AlumniController::class, 'show'])->name('alumni.show');
+    Route::get('alumni/{id}/print', [\App\Http\Controllers\AlumniController::class, 'print'])->name('alumni.print');
+    Route::put('alumni/{id}', [\App\Http\Controllers\AlumniController::class, 'update'])->name('alumni.update');
 });
 
 
@@ -67,6 +79,8 @@ Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepal
     Route::prefix('spmb')->name('spmb.')->group(function () {
         Route::get('/pendaftar', [SpmbCandidateController::class, 'index'])->name('candidates.index');
         Route::get('/pendaftar/{id}', [SpmbCandidateController::class, 'show'])->name('candidates.show');
+        Route::put('/pendaftar/{id}', [SpmbCandidateController::class, 'update'])->name('candidates.update');
+        Route::delete('/pendaftar/{id}', [SpmbCandidateController::class, 'destroy'])->name('candidates.destroy');
         Route::post('/pendaftar/sync', [SpmbCandidateController::class, 'sync'])->name('candidates.sync');
         Route::get('/pendaftar/{id}/enroll-data', [SpmbCandidateController::class, 'getEnrollData'])->name('candidates.enroll-data');
         Route::post('/pendaftar/{id}/enroll', [SpmbCandidateController::class, 'enroll'])->name('candidates.enroll');

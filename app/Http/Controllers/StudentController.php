@@ -41,9 +41,11 @@ class StudentController extends Controller
                   ->orWhere('nis', 'like', "%{$search}%")
                   ->orWhere('nisn', 'like', "%{$search}%")
                   ->orWhere('nik', 'like', "%{$search}%")
+                  ->orWhere('no_kk', 'like', "%{$search}%")
                   ->orWhere('parent_phone', 'like', "%{$search}%")
                   ->orWhere('father_name', 'like', "%{$search}%")
-                  ->orWhere('mother_name', 'like', "%{$search}%");
+                  ->orWhere('mother_name', 'like', "%{$search}%")
+                  ->orWhere('special_needs_type', 'like', "%{$search}%");
             });
         }
 
@@ -60,6 +62,22 @@ class StudentController extends Controller
         if ($classroomId = $request->get('classroom_id')) {
             if ($classroomId !== 'all') {
                 $query->where('classroom_id', $classroomId);
+            }
+        }
+
+        // Filter: Tipe Siswa (Reguler / Inklusi PDBK)
+        if ($studentType = $request->get('student_type')) {
+            if ($studentType === 'PDBK') {
+                $query->where(function($q) {
+                    $q->where('student_type', 'like', '%PDBK%')
+                      ->orWhere('student_type', 'like', '%KHUSUS%')
+                      ->orWhereNotNull('special_needs_type');
+                });
+            } elseif ($studentType === 'REGULER') {
+                $query->where(function($q) {
+                    $q->where('student_type', 'like', '%REGULER%')
+                      ->orWhereNull('student_type');
+                })->whereNull('special_needs_type');
             }
         }
 
@@ -87,6 +105,11 @@ class StudentController extends Controller
         $activeStudents = (clone $statsQuery)->where('status', 'aktif')->count();
         $maleStudents = (clone $statsQuery)->where('status', 'aktif')->whereIn('gender', ['L', 'Laki-laki', 'Male'])->count();
         $femaleStudents = (clone $statsQuery)->where('status', 'aktif')->whereIn('gender', ['P', 'Perempuan', 'Female'])->count();
+        $pdbkStudents = (clone $statsQuery)->where('status', 'aktif')->where(function($q) {
+            $q->where('student_type', 'like', '%PDBK%')
+              ->orWhere('student_type', 'like', '%KHUSUS%')
+              ->orWhereNotNull('special_needs_type');
+        })->count();
         
         $rombelQuery = Classroom::where('is_active', true);
         if ($selectedYearId) {
@@ -99,6 +122,7 @@ class StudentController extends Controller
             'total_all' => $totalStudents,
             'male' => $maleStudents,
             'female' => $femaleStudents,
+            'pdbk' => $pdbkStudents,
             'classrooms' => $totalClassrooms,
         ];
 
@@ -128,48 +152,143 @@ class StudentController extends Controller
     }
 
     /**
-     * Show single student detail (JSON).
+     * Show single student detail (JSON) with full profile & lifecycle history.
      */
     public function show($id): JsonResponse
     {
-        $student = Student::with(['classroom.classLevel', 'classroom.homeroomTeacher', 'academicYear', 'spmbCandidate'])->findOrFail($id);
+        $student = Student::with([
+            'classroom.classLevel', 
+            'classroom.homeroomTeacher', 
+            'academicYear', 
+            'spmbCandidate',
+            'classroomHistories.classroom.classLevel',
+            'classroomHistories.classroom.homeroomTeacher',
+            'classroomHistories.academicYear'
+        ])->findOrFail($id);
+
+        // Hitung kelengkapan data (Completeness %)
+        $requiredFields = [
+            'nis', 'nik', 'full_name', 'gender', 'birth_place', 'birth_date', 
+            'religion', 'address', 'father_name', 'mother_name', 'parent_phone',
+            'no_kk', 'birth_certificate_no', 'blood_type'
+        ];
+        $filledCount = 0;
+        foreach ($requiredFields as $field) {
+            if (!empty($student->$field)) {
+                $filledCount++;
+            }
+        }
+        $completenessPercent = round(($filledCount / count($requiredFields)) * 100);
 
         return response()->json([
             'success' => true,
             'student' => $student,
+            'completeness_percent' => $completenessPercent,
             'formatted_gender' => $student->formatted_gender,
             'age' => $student->age,
             'whatsapp_url' => $student->whatsapp_url,
             'clean_phone' => $student->clean_parent_phone,
+            'classroom_histories' => $student->classroomHistories,
         ]);
     }
 
     /**
-     * Store a newly created student in storage.
+     * Store a newly created student in storage (All 7 categories).
      */
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            // 1. Identitas & Legalitas
             'nis' => 'required|string|max:50|unique:students,nis',
             'nisn' => 'nullable|string|max:50',
             'nik' => 'nullable|string|max:50',
+            'no_kk' => 'nullable|string|max:50',
+            'birth_certificate_no' => 'nullable|string|max:100',
+            'citizenship' => 'nullable|string|max:100',
             'full_name' => 'required|string|max:255',
             'nickname' => 'nullable|string|max:100',
             'gender' => 'required|string|in:L,P,Laki-laki,Perempuan',
             'birth_place' => 'nullable|string|max:100',
             'birth_date' => 'nullable|date',
             'religion' => 'nullable|string|max:50',
+            
+            // 2. Inklusi & Kekhususan
+            'student_type' => 'nullable|string|max:100',
+            'special_needs_type' => 'nullable|string|max:255',
+            'special_needs_notes' => 'nullable|string',
+
+            // 3. Alamat & Domisili
             'address' => 'nullable|string',
+            'rt' => 'nullable|string|max:20',
+            'rw' => 'nullable|string|max:20',
+            'village' => 'nullable|string|max:100',
+            'district' => 'nullable|string|max:100',
+            'district_category' => 'nullable|string|max:100',
             'city' => 'nullable|string|max:100',
             'province' => 'nullable|string|max:100',
+            'postal_code' => 'nullable|string|max:20',
+            'residence_status' => 'nullable|string|max:100',
+            'distance_to_school' => 'nullable|string|max:50',
+            'home_phone' => 'nullable|string|max:50',
+
+            // 4. Keluarga & Saudara
+            'child_number' => 'nullable|integer',
+            'siblings_count' => 'nullable|integer',
+            'step_siblings_count' => 'nullable|integer',
+            'adoptive_siblings_count' => 'nullable|integer',
+            'home_language' => 'nullable|string|max:100',
+
+            // 5. Kesehatan & UKS
+            'weight' => 'nullable|string|max:20',
+            'height' => 'nullable|string|max:20',
+            'blood_type' => 'nullable|string|max:10',
+            'severe_disease_history' => 'nullable|string',
+            'frequent_disease' => 'nullable|string',
+
+            // 6. Orang Tua & Wali
+            'father_name' => 'nullable|string|max:255',
+            'father_nik' => 'nullable|string|max:50',
+            'father_birth_place' => 'nullable|string|max:100',
+            'father_birth_date' => 'nullable|date',
+            'father_religion' => 'nullable|string|max:50',
+            'father_phone' => 'nullable|string|max:50',
+            'father_education' => 'nullable|string|max:100',
+            'father_job' => 'nullable|string|max:100',
+            'father_company' => 'nullable|string|max:255',
+            'father_income' => 'nullable|string|max:100',
+            'father_email' => 'nullable|email|max:100',
+
+            'mother_name' => 'nullable|string|max:255',
+            'mother_nik' => 'nullable|string|max:50',
+            'mother_birth_place' => 'nullable|string|max:100',
+            'mother_birth_date' => 'nullable|date',
+            'mother_religion' => 'nullable|string|max:50',
+            'mother_phone' => 'nullable|string|max:50',
+            'mother_education' => 'nullable|string|max:100',
+            'mother_job' => 'nullable|string|max:100',
+            'mother_company' => 'nullable|string|max:255',
+            'mother_income' => 'nullable|string|max:100',
+            'mother_email' => 'nullable|email|max:100',
+
+            'guardian_name' => 'nullable|string|max:255',
+            'guardian_relation' => 'nullable|string|max:100',
+            'guardian_phone' => 'nullable|string|max:50',
+            'guardian_job' => 'nullable|string|max:100',
+            'guardian_address' => 'nullable|string',
+
+            'parent_phone' => 'nullable|string|max:50',
+            'parent_email' => 'nullable|email|max:100',
+
+            // 7. Riwayat Asal Sekolah & Dokumen
             'previous_school' => 'nullable|string|max:255',
+            'origin_category' => 'nullable|string|max:100',
+            'previous_school_address' => 'nullable|string',
+            'sttb_number_date' => 'nullable|string|max:255',
+            'checklist_documents' => 'nullable|array',
+
+            // Penempatan Kelas & Status
             'classroom_id' => 'required|exists:classrooms,id',
             'academic_year_id' => 'nullable|exists:academic_years,id',
-            'father_name' => 'nullable|string|max:255',
-            'father_phone' => 'nullable|string|max:50',
-            'mother_name' => 'nullable|string|max:255',
-            'mother_phone' => 'nullable|string|max:50',
-            'parent_phone' => 'nullable|string|max:50',
             'status' => 'required|string|in:aktif,lulus,mutasi,keluar,nonaktif',
             'enrolled_date' => 'nullable|date',
             'notes' => 'nullable|string',
@@ -189,7 +308,24 @@ class StudentController extends Controller
             $validated['enrolled_date'] = now()->toDateString();
         }
 
+        // WhatsApp / Parent Phone fallback
+        if (empty($validated['parent_phone'])) {
+            $validated['parent_phone'] = $validated['father_phone'] ?? ($validated['mother_phone'] ?? ($validated['guardian_phone'] ?? null));
+        }
+
         $student = Student::create($validated);
+
+        // Catat riwayat kelas awal (Lifecycle History)
+        if ($student->classroom_id && $student->academic_year_id) {
+            \App\Models\StudentClassroomHistory::firstOrCreate([
+                'student_id' => $student->id,
+                'academic_year_id' => $student->academic_year_id,
+            ], [
+                'classroom_id' => $student->classroom_id,
+                'status' => 'naik_kelas',
+                'notes' => 'Pendaftaran / Penempatan Rombel Awal',
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -199,38 +335,125 @@ class StudentController extends Controller
     }
 
     /**
-     * Update student details.
+     * Update student details (All 7 categories).
      */
     public function update(Request $request, $id): JsonResponse
     {
         $student = Student::findOrFail($id);
 
         $validated = $request->validate([
+            // 1. Identitas & Legalitas
             'nis' => 'required|string|max:50|unique:students,nis,' . $student->id,
             'nisn' => 'nullable|string|max:50',
             'nik' => 'nullable|string|max:50',
+            'no_kk' => 'nullable|string|max:50',
+            'birth_certificate_no' => 'nullable|string|max:100',
+            'citizenship' => 'nullable|string|max:100',
             'full_name' => 'required|string|max:255',
             'nickname' => 'nullable|string|max:100',
             'gender' => 'required|string|in:L,P,Laki-laki,Perempuan',
             'birth_place' => 'nullable|string|max:100',
             'birth_date' => 'nullable|date',
             'religion' => 'nullable|string|max:50',
+            
+            // 2. Inklusi & Kekhususan
+            'student_type' => 'nullable|string|max:100',
+            'special_needs_type' => 'nullable|string|max:255',
+            'special_needs_notes' => 'nullable|string',
+
+            // 3. Alamat & Domisili
             'address' => 'nullable|string',
+            'rt' => 'nullable|string|max:20',
+            'rw' => 'nullable|string|max:20',
+            'village' => 'nullable|string|max:100',
+            'district' => 'nullable|string|max:100',
+            'district_category' => 'nullable|string|max:100',
             'city' => 'nullable|string|max:100',
             'province' => 'nullable|string|max:100',
+            'postal_code' => 'nullable|string|max:20',
+            'residence_status' => 'nullable|string|max:100',
+            'distance_to_school' => 'nullable|string|max:50',
+            'home_phone' => 'nullable|string|max:50',
+
+            // 4. Keluarga & Saudara
+            'child_number' => 'nullable|integer',
+            'siblings_count' => 'nullable|integer',
+            'step_siblings_count' => 'nullable|integer',
+            'adoptive_siblings_count' => 'nullable|integer',
+            'home_language' => 'nullable|string|max:100',
+
+            // 5. Kesehatan & UKS
+            'weight' => 'nullable|string|max:20',
+            'height' => 'nullable|string|max:20',
+            'blood_type' => 'nullable|string|max:10',
+            'severe_disease_history' => 'nullable|string',
+            'frequent_disease' => 'nullable|string',
+
+            // 6. Orang Tua & Wali
+            'father_name' => 'nullable|string|max:255',
+            'father_nik' => 'nullable|string|max:50',
+            'father_birth_place' => 'nullable|string|max:100',
+            'father_birth_date' => 'nullable|date',
+            'father_religion' => 'nullable|string|max:50',
+            'father_phone' => 'nullable|string|max:50',
+            'father_education' => 'nullable|string|max:100',
+            'father_job' => 'nullable|string|max:100',
+            'father_company' => 'nullable|string|max:255',
+            'father_income' => 'nullable|string|max:100',
+            'father_email' => 'nullable|email|max:100',
+
+            'mother_name' => 'nullable|string|max:255',
+            'mother_nik' => 'nullable|string|max:50',
+            'mother_birth_place' => 'nullable|string|max:100',
+            'mother_birth_date' => 'nullable|date',
+            'mother_religion' => 'nullable|string|max:50',
+            'mother_phone' => 'nullable|string|max:50',
+            'mother_education' => 'nullable|string|max:100',
+            'mother_job' => 'nullable|string|max:100',
+            'mother_company' => 'nullable|string|max:255',
+            'mother_income' => 'nullable|string|max:100',
+            'mother_email' => 'nullable|email|max:100',
+
+            'guardian_name' => 'nullable|string|max:255',
+            'guardian_relation' => 'nullable|string|max:100',
+            'guardian_phone' => 'nullable|string|max:50',
+            'guardian_job' => 'nullable|string|max:100',
+            'guardian_address' => 'nullable|string',
+
+            'parent_phone' => 'nullable|string|max:50',
+            'parent_email' => 'nullable|email|max:100',
+
+            // 7. Riwayat Asal Sekolah & Dokumen
             'previous_school' => 'nullable|string|max:255',
+            'origin_category' => 'nullable|string|max:100',
+            'previous_school_address' => 'nullable|string',
+            'sttb_number_date' => 'nullable|string|max:255',
+            'checklist_documents' => 'nullable|array',
+
+            // Penempatan Kelas & Status
             'classroom_id' => 'required|exists:classrooms,id',
             'academic_year_id' => 'nullable|exists:academic_years,id',
-            'father_name' => 'nullable|string|max:255',
-            'father_phone' => 'nullable|string|max:50',
-            'mother_name' => 'nullable|string|max:255',
-            'mother_phone' => 'nullable|string|max:50',
-            'parent_phone' => 'nullable|string|max:50',
             'status' => 'required|string|in:aktif,lulus,mutasi,keluar,nonaktif',
             'notes' => 'nullable|string',
         ]);
 
+        // WhatsApp / Parent Phone fallback
+        if (empty($validated['parent_phone'])) {
+            $validated['parent_phone'] = $validated['father_phone'] ?? ($validated['mother_phone'] ?? ($validated['guardian_phone'] ?? null));
+        }
+
         $student->update($validated);
+
+        // Update / create history record for current academic year & classroom
+        if ($student->classroom_id && $student->academic_year_id) {
+            \App\Models\StudentClassroomHistory::updateOrCreate([
+                'student_id' => $student->id,
+                'academic_year_id' => $student->academic_year_id,
+            ], [
+                'classroom_id' => $student->classroom_id,
+                'status' => $student->status === 'lulus' ? 'lulus' : ($student->status === 'mutasi' ? 'mutasi' : 'naik_kelas'),
+            ]);
+        }
 
         return response()->json([
             'success' => true,

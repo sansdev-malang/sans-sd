@@ -102,11 +102,35 @@
 
         <!-- TABLE DAFTAR TINGKAT KELAS -->
         <section class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden transition-all w-full">
-            <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                    <i data-lucide="list-ordered" class="w-4 h-4 text-indigo-600"></i>
-                    Daftar Tingkat & Jenjang Kelas
-                </h3>
+            <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                        <i data-lucide="list-ordered" class="w-4 h-4 text-indigo-600"></i>
+                        Daftar Tingkat & Jenjang Kelas
+                    </h3>
+                    @php
+                        $currentSelectedYear = $academicYears->firstWhere('id', $selectedYearId);
+                    @endphp
+                    @if($currentSelectedYear)
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $currentSelectedYear->is_active ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700' }}">
+                            <i data-lucide="calendar" class="w-3 h-3"></i>
+                            Tapel {{ $currentSelectedYear->name }} {{ $currentSelectedYear->is_active ? '(Aktif)' : '' }}
+                        </span>
+                    @endif
+                </div>
+
+                <!-- Filter Tahun Pelajaran (Tapel) -->
+                <form method="GET" action="{{ route('class-levels.index') }}" class="flex items-center gap-2">
+                    <label class="text-xs text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">Filter Tapel:</label>
+                    <select name="academic_year_id" onchange="this.form.submit()"
+                        class="h-9 px-3 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer shadow-xs">
+                        @foreach($academicYears as $ay)
+                            <option value="{{ $ay->id }}" {{ $selectedYearId == $ay->id ? 'selected' : '' }}>
+                                Tapel {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </form>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs border-collapse">
@@ -151,11 +175,13 @@
                                 <td class="px-5 py-3.5">
                                     <div class="flex flex-wrap gap-1.5">
                                         @forelse($lvl->classrooms as $rombel)
-                                            <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50">
+                                            <a href="{{ route('classrooms.index', ['academic_year_id' => $selectedYearId, 'class_level_id' => $lvl->id]) }}"
+                                                class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50 transition-colors"
+                                                title="Lihat Rombel {{ $rombel->name }}">
                                                 {{ $rombel->name }}
-                                            </span>
+                                            </a>
                                         @empty
-                                            <span class="text-slate-400 italic text-[11px]">Belum ada rombel</span>
+                                            <span class="text-slate-400 italic text-[11px]">Tidak ada rombel di Tapel ini</span>
                                         @endforelse
                                     </div>
                                 </td>

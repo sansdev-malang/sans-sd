@@ -27,15 +27,15 @@
                     <div class="relative">
                         <select name="period" onchange="this.form.submit()" 
                             class="appearance-none pl-8 pr-8 py-2 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer">
-                            <option value="all" {{ $selectedYear === 'all' ? 'selected' : '' }}>Semua Tahun Ajaran</option>
+                            <option value="all" {{ $selectedYear === 'all' ? 'selected' : '' }}>Semua Tahun Pelajaran (Tapel)</option>
                             @foreach($academicYears as $year)
                                 <option value="{{ $year }}" {{ $selectedYear === $year ? 'selected' : '' }}>
-                                    Tahun Ajaran {{ $year }}
+                                    Tapel {{ $year }}
                                 </option>
                             @endforeach
                             @if(empty($academicYears))
                                 <option value="{{ date('Y') . '/' . (date('Y') + 1) }}" selected>
-                                    Tahun Ajaran {{ date('Y') . '/' . (date('Y') + 1) }}
+                                    Tapel {{ date('Y') . '/' . (date('Y') + 1) }}
                                 </option>
                             @endif
                         </select>
@@ -278,8 +278,8 @@
                                 </td>
                                 <td class="px-5 py-3.5 text-center">
                                     @if($c->is_enrolled)
-                                        <div class="inline-flex flex-col items-center">
-                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                                        <div class="inline-flex flex-col items-center cursor-pointer group" @click="openEnrollModal({{ $c->id }})" title="Klik untuk ubah kelas / batalkan status">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900 transition-colors">
                                                 <i data-lucide="check" class="w-3 h-3"></i>
                                                 Siswa Aktif
                                             </span>
@@ -304,10 +304,15 @@
                                             title="Lihat Detail Pendaftaran">
                                             <i data-lucide="eye" class="w-4 h-4"></i>
                                         </button>
-                                        <button type="button" @click="openEnrollModal({{ $c->id }})"
-                                            class="p-1.5 hover:bg-purple-50 dark:hover:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-lg transition-colors cursor-pointer"
-                                            title="Atur Kelas & NIS">
-                                            <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+                                        <button type="button" @click="openEditModal({{ $c->id }})"
+                                            class="p-1.5 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-lg transition-colors cursor-pointer"
+                                            title="Edit Data Pendaftar">
+                                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                                        </button>
+                                        <button type="button" @click="deleteCandidate({{ $c->id }}, '{{ addslashes($c->full_name) }}')"
+                                            class="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-lg transition-colors cursor-pointer"
+                                            title="Hapus Data Pendaftar">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -462,12 +467,246 @@
                         <button @click="modalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-lg font-bold transition-colors cursor-pointer">
                             Tutup
                         </button>
+                        <button type="button" @click="modalOpen = false; openEditModal(selectedCandidate.id)" class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/60 rounded-lg font-bold transition-colors border border-amber-200 dark:border-amber-800 flex items-center gap-1.5 cursor-pointer">
+                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                            Edit Data
+                        </button>
                         <button type="button" @click="modalOpen = false; openEnrollModal(selectedCandidate.id)" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold transition-colors shadow-xs flex items-center gap-1.5">
                             <i data-lucide="graduation-cap" class="w-4 h-4"></i>
                             Kelola Siswa Aktif
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- MODAL EDIT DATA PENDAFTAR -->
+        <div x-show="editModalOpen" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="display: none; margin-top: 0px !important; z-index: 9999; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">
+            <div @click.outside="editModalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+                
+                <form @submit.prevent="submitEdit" class="flex flex-col h-full overflow-hidden">
+                    <!-- Modal Header -->
+                    <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-amber-50/50 dark:bg-amber-950/20 shrink-0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shadow-xs">
+                                <i data-lucide="edit-3" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-slate-900 dark:text-slate-50 flex items-center gap-2">
+                                    Edit Data Pendaftar SPMB
+                                </h3>
+                                <p class="text-xs text-slate-400 mt-0.5">Perbarui biodata calon murid, data orang tua, dan status pendaftaran.</p>
+                            </div>
+                        </div>
+                        <button type="button" @click="editModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="p-6 space-y-6 text-xs overflow-y-auto max-h-[calc(90vh-140px)]">
+                        
+                        <!-- Section 1: Data Calon Siswa -->
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                                <i data-lucide="user" class="w-4 h-4 text-amber-600"></i>
+                                1. Biodata Calon Siswa
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                                <div class="sm:col-span-2">
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                        Nama Lengkap <span class="text-rose-500">*</span>
+                                    </label>
+                                    <input type="text" x-model="editForm.full_name" required placeholder="Nama lengkap calon siswa"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Panggilan</label>
+                                    <input type="text" x-model="editForm.nickname" placeholder="Nama panggilan"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                        Jenis Kelamin <span class="text-rose-500">*</span>
+                                    </label>
+                                    <select x-model="editForm.gender" required
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50 cursor-pointer">
+                                        <option value="male">Laki-laki</option>
+                                        <option value="female">Perempuan</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tempat Lahir</label>
+                                    <input type="text" x-model="editForm.birth_place" placeholder="Kota lahir"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tanggal Lahir</label>
+                                    <input type="date" x-model="editForm.birth_date"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">NIK / No. KK</label>
+                                    <input type="text" x-model="editForm.nik" placeholder="16 digit NIK"
+                                        class="w-full h-9 px-3 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">NISN</label>
+                                    <input type="text" x-model="editForm.nisn" placeholder="10 digit NISN (jika ada)"
+                                        class="w-full h-9 px-3 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Asal Sekolah TK/Sebelumnya</label>
+                                    <input type="text" x-model="editForm.previous_school" placeholder="Nama TK asal"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div class="sm:col-span-2 lg:col-span-3">
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Alamat Lengkap</label>
+                                    <textarea x-model="editForm.address" rows="2" placeholder="Alamat jalan, nomor rumah, RT/RW..."
+                                        class="w-full p-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50"></textarea>
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Kota / Kabupaten</label>
+                                    <input type="text" x-model="editForm.city" placeholder="Contoh: Malang"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Provinsi</label>
+                                    <input type="text" x-model="editForm.province" placeholder="Contoh: Jawa Timur"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Data Orang Tua / Wali -->
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                                <i data-lucide="users" class="w-4 h-4 text-amber-600"></i>
+                                2. Data Orang Tua / Wali
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Ayah</label>
+                                    <input type="text" x-model="editForm.father_name" placeholder="Nama ayah kandung"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">No. HP / WA Ayah</label>
+                                    <input type="text" x-model="editForm.father_phone" placeholder="08..."
+                                        class="w-full h-9 px-3 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Pekerjaan Ayah</label>
+                                    <input type="text" x-model="editForm.father_job" placeholder="Pekerjaan ayah"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Ibu</label>
+                                    <input type="text" x-model="editForm.mother_name" placeholder="Nama ibu kandung"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">No. HP / WA Ibu</label>
+                                    <input type="text" x-model="editForm.mother_phone" placeholder="08..."
+                                        class="w-full h-9 px-3 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Pekerjaan Ibu</label>
+                                    <input type="text" x-model="editForm.mother_job" placeholder="Pekerjaan ibu"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div class="sm:col-span-2 lg:col-span-3">
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                        Kontak Utama WhatsApp Orang Tua <span class="text-rose-500">*</span>
+                                    </label>
+                                    <input type="text" x-model="editForm.parent_phone" placeholder="081234567890"
+                                        class="w-full h-9 px-3 text-xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                    <p class="text-[10px] text-slate-400 mt-1">Nomor ini digunakan untuk tombol kirim WhatsApp cepat dan komunikasi sekolah.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Status SPMB & Pembayaran -->
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                                <i data-lucide="badge-check" class="w-4 h-4 text-amber-600"></i>
+                                3. Informasi Pendaftaran & Status
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tahun Pelajaran (Tapel)</label>
+                                    <input type="text" x-model="editForm.academic_year" placeholder="Contoh: 2026/2027"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Gelombang</label>
+                                    <input type="text" x-model="editForm.wave" placeholder="Contoh: Gelombang 1"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Target Kelas</label>
+                                    <input type="text" x-model="editForm.target_class" placeholder="Contoh: Kelas 1"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Status Pendaftaran</label>
+                                    <select x-model="editForm.registration_status"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50 cursor-pointer">
+                                        <option value="verified">Terverifikasi (Verified)</option>
+                                        <option value="accepted">Diterima (Accepted)</option>
+                                        <option value="pending">Menunggu Verifikasi (Pending)</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Status Pembayaran</label>
+                                    <select x-model="editForm.payment_status"
+                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50 cursor-pointer">
+                                        <option value="paid">Lunas (Paid)</option>
+                                        <option value="unpaid">Belum Lunas (Unpaid)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 flex items-center justify-between shrink-0">
+                        <span class="text-[11px] text-slate-400">
+                            * Perubahan otomatis menyinkronkan data siswa aktif jika calon siswa sudah resmi terdaftar.
+                        </span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" @click="editModalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer">
+                                Batal
+                            </button>
+                            <button type="submit" :disabled="editing" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+                                <i data-lucide="check" class="w-4 h-4"></i>
+                                <span x-text="editing ? 'Menyimpan...' : 'Simpan Perubahan'"></span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
             </div>
         </div>
 
@@ -521,16 +760,16 @@
                             <p class="text-[10px] text-slate-400 mt-1">Saran format otomatis berdasarkan tahun masuk dan nomor urut SD.</p>
                         </div>
 
-                        <!-- Tahun Ajaran & Rombel Grid -->
+                        <!-- Tahun Pelajaran & Rombel Grid -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                    Tahun Ajaran <span class="text-rose-500">*</span>
+                                    Tahun Pelajaran (Tapel) <span class="text-rose-500">*</span>
                                 </label>
                                 <select x-model="enrollForm.academic_year_id" required
                                     class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-50 cursor-pointer">
                                     <template x-for="ay in enrollData.academic_years" :key="ay.id">
-                                        <option :value="ay.id" x-text="'TA ' + ay.name + (ay.is_active ? ' (Aktif)' : '')"></option>
+                                        <option :value="ay.id" x-text="'Tapel ' + ay.name + (ay.is_active ? ' (Aktif)' : '')"></option>
                                     </template>
                                 </select>
                             </div>
@@ -600,7 +839,9 @@
                 syncing: false,
                 modalOpen: false,
                 enrollModalOpen: false,
+                editModalOpen: false,
                 enrolling: false,
+                editing: false,
                 selectedCandidate: null,
                 modalWaUrl: null,
                 formattedDocuments: [],
@@ -615,6 +856,34 @@
                     academic_year_id: '',
                     enrolled_date: '{{ date("Y-m-d") }}',
                     notes: '',
+                },
+                editForm: {
+                    id: null,
+                    full_name: '',
+                    nickname: '',
+                    gender: 'male',
+                    birth_place: '',
+                    birth_date: '',
+                    nik: '',
+                    nisn: '',
+                    target_class: 'Kelas 1',
+                    academic_year: '{{ $selectedYear !== "all" ? $selectedYear : date("Y") . "/" . (date("Y") + 1) }}',
+                    wave: 'Gelombang 1',
+                    father_name: '',
+                    father_phone: '',
+                    father_job: '',
+                    mother_name: '',
+                    mother_phone: '',
+                    mother_job: '',
+                    guardian_name: '',
+                    guardian_phone: '',
+                    parent_phone: '',
+                    address: '',
+                    city: '',
+                    province: '',
+                    previous_school: '',
+                    registration_status: 'verified',
+                    payment_status: 'unpaid',
                 },
 
                 syncData() {
@@ -749,6 +1018,109 @@
                         }
                     })
                     .catch(err => alert('Error: ' + err.message));
+                },
+
+                openEditModal(id) {
+                    fetch(`/spmb/pendaftar/${id}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.success && res.candidate) {
+                            const c = res.candidate;
+                            this.editForm = {
+                                id: c.id,
+                                full_name: c.full_name || '',
+                                nickname: c.nickname || '',
+                                gender: (c.gender === 'female' || c.gender === 'P') ? 'female' : 'male',
+                                birth_place: c.birth_place || '',
+                                birth_date: c.birth_date ? c.birth_date.substring(0, 10) : '',
+                                nik: c.nik || '',
+                                nisn: c.nisn || '',
+                                target_class: c.target_class || 'Kelas 1',
+                                academic_year: c.academic_year || '{{ $selectedYear !== "all" ? $selectedYear : date("Y") . "/" . (date("Y") + 1) }}',
+                                wave: c.wave || 'Gelombang 1',
+                                father_name: c.father_name || '',
+                                father_phone: c.father_phone || '',
+                                father_job: c.father_job || '',
+                                mother_name: c.mother_name || '',
+                                mother_phone: c.mother_phone || '',
+                                mother_job: c.mother_job || '',
+                                guardian_name: c.guardian_name || '',
+                                guardian_phone: c.guardian_phone || '',
+                                parent_phone: c.parent_phone || '',
+                                address: c.address || '',
+                                city: c.city || '',
+                                province: c.province || '',
+                                previous_school: c.previous_school || '',
+                                registration_status: c.registration_status || c.spmb_status || 'verified',
+                                payment_status: c.payment_status || c.spmb_payment_status || 'unpaid',
+                            };
+                            this.editModalOpen = true;
+
+                            this.$nextTick(() => {
+                                if (window.lucide) lucide.createIcons();
+                            });
+                        }
+                    })
+                    .catch(err => alert("Gagal memuat data pendaftar: " + err.message));
+                },
+
+                submitEdit() {
+                    if (this.editing) return;
+                    this.editing = true;
+
+                    fetch(`/spmb/pendaftar/${this.editForm.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify(this.editForm)
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        this.editing = false;
+                        if (res.success) {
+                            this.editModalOpen = false;
+                            alert(res.message || 'Data pendaftar berhasil diperbarui!');
+                            window.location.reload();
+                        } else {
+                            alert('Gagal: ' + (res.message || 'Terjadi kesalahan saat menyimpan'));
+                        }
+                    })
+                    .catch(err => {
+                        this.editing = false;
+                        alert('Kesalahan jaringan: ' + err.message);
+                    });
+                },
+
+                deleteCandidate(id, name) {
+                    if (!confirm(`Apakah Anda yakin ingin menghapus data calon pendaftar "${name}"?\n\nJika calon siswa ini sudah terdaftar sebagai Siswa Aktif, data siswa di tabel siswa juga akan dihapus.`)) {
+                        return;
+                    }
+
+                    fetch(`/spmb/pendaftar/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.success) {
+                            alert(res.message || 'Data pendaftar berhasil dihapus.');
+                            window.location.reload();
+                        } else {
+                            alert('Gagal: ' + (res.message || 'Terjadi kesalahan saat menghapus'));
+                        }
+                    })
+                    .catch(err => alert('Kesalahan jaringan: ' + err.message));
                 }
             }
         }

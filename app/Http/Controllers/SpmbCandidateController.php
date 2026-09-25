@@ -216,26 +216,44 @@ class SpmbCandidateController extends Controller
             'nis' => $validated['nis'],
             'nisn' => $candidate->nisn,
             'nik' => $candidate->nik,
+            'no_kk' => $candidate->no_kk,
             'spmb_candidate_id' => $candidate->id,
             'classroom_id' => $validated['classroom_id'],
             'academic_year_id' => $validated['academic_year_id'],
             'full_name' => $candidate->full_name,
             'nickname' => $candidate->nickname,
-            'gender' => $candidate->gender,
+            'gender' => in_array(strtolower((string)$candidate->gender), ['female', 'p', 'perempuan']) ? 'P' : 'L',
+            'student_type' => $candidate->student_type ?? 'REGULER',
+            'special_needs_type' => $candidate->special_needs_type,
             'birth_place' => $candidate->birth_place,
             'birth_date' => $candidate->birth_date,
             'religion' => $candidate->religion ?: 'Islam',
             'address' => $candidate->address,
+            'rt' => $candidate->rt,
+            'rw' => $candidate->rw,
+            'village' => $candidate->village,
+            'district' => $candidate->district,
             'city' => $candidate->city,
             'province' => $candidate->province,
+            'postal_code' => $candidate->postal_code,
+            'child_number' => $candidate->child_number,
+            'siblings_count' => $candidate->siblings_count,
+            'blood_type' => $candidate->blood_type,
+            'weight' => $candidate->weight,
+            'height' => $candidate->height,
             'previous_school' => $candidate->previous_school,
+            'previous_school_address' => $candidate->previous_school_address,
             'student_photo_url' => $candidate->student_photo_url,
             'father_name' => $candidate->father_name,
+            'father_nik' => $candidate->father_nik,
             'father_phone' => $candidate->father_phone,
             'father_job' => $candidate->father_job,
+            'father_education' => $candidate->father_education,
             'mother_name' => $candidate->mother_name,
+            'mother_nik' => $candidate->mother_nik,
             'mother_phone' => $candidate->mother_phone,
             'mother_job' => $candidate->mother_job,
+            'mother_education' => $candidate->mother_education,
             'guardian_name' => $candidate->guardian_name,
             'guardian_phone' => $candidate->guardian_phone,
             'parent_phone' => $candidate->parent_phone,
@@ -257,6 +275,24 @@ class SpmbCandidateController extends Controller
         $candidate->enrolled_at = now();
         $candidate->student_id = $student->id;
         $candidate->save();
+
+        // Rekam riwayat rombel / enrollment history
+        $student->load(['classroom.classLevel', 'classroom.homeroomTeacher']);
+        \App\Models\StudentClassroomHistory::updateOrCreate(
+            [
+                'student_id' => $student->id,
+                'academic_year_id' => $validated['academic_year_id'],
+            ],
+            [
+                'classroom_id' => $validated['classroom_id'],
+                'classroom_name' => $student->classroom ? $student->classroom->name : null,
+                'grade_level' => $student->classroom && $student->classroom->classLevel ? $student->classroom->classLevel->name : '1',
+                'homeroom_teacher_name' => $student->classroom && $student->classroom->homeroomTeacher ? $student->classroom->homeroomTeacher->name : null,
+                'status' => 'aktif',
+                'start_date' => $validated['enrolled_date'] ?? now()->toDateString(),
+                'notes' => 'Penerimaan Siswa Baru SPMB',
+            ]
+        );
 
         $appName = function_exists('setting') ? setting('app_name', 'SD Anak Saleh') : 'SD Anak Saleh';
 
@@ -289,6 +325,130 @@ class SpmbCandidateController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Status Siswa Aktif untuk {$candidate->full_name} berhasil dibatalkan.",
+        ]);
+    }
+
+    /**
+     * Update SPMB Candidate data.
+     */
+    public function update(Request $request, $id): JsonResponse
+    {
+        $candidate = SpmbCandidate::findOrFail($id);
+
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'nickname' => 'nullable|string|max:100',
+            'gender' => 'nullable|string|in:male,female,L,P,Laki-laki,Perempuan',
+            'birth_place' => 'nullable|string|max:100',
+            'birth_date' => 'nullable|date',
+            'nik' => 'nullable|string|max:30',
+            'nisn' => 'nullable|string|max:30',
+            'target_class' => 'nullable|string|max:100',
+            'academic_year' => 'nullable|string|max:50',
+            'wave' => 'nullable|string|max:100',
+            'father_name' => 'nullable|string|max:255',
+            'father_phone' => 'nullable|string|max:50',
+            'father_job' => 'nullable|string|max:100',
+            'mother_name' => 'nullable|string|max:255',
+            'mother_phone' => 'nullable|string|max:50',
+            'mother_job' => 'nullable|string|max:100',
+            'guardian_name' => 'nullable|string|max:255',
+            'guardian_phone' => 'nullable|string|max:50',
+            'parent_phone' => 'nullable|string|max:50',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string|max:100',
+            'province' => 'nullable|string|max:100',
+            'previous_school' => 'nullable|string|max:255',
+            'spmb_status' => 'nullable|string|max:50',
+            'registration_status' => 'nullable|string|max:50',
+            'spmb_payment_status' => 'nullable|string|max:50',
+            'payment_status' => 'nullable|string|max:50',
+        ]);
+
+        // Normalize gender
+        if (!empty($validated['gender'])) {
+            $g = strtolower($validated['gender']);
+            if (in_array($g, ['l', 'laki-laki', 'male'])) {
+                $validated['gender'] = 'male';
+            } elseif (in_array($g, ['p', 'perempuan', 'female'])) {
+                $validated['gender'] = 'female';
+            }
+        }
+
+        // Handle status column compatibility
+        $hasRegStatus = \Illuminate\Support\Facades\Schema::hasColumn('spmb_candidates', 'registration_status');
+        $hasSpmbStatus = \Illuminate\Support\Facades\Schema::hasColumn('spmb_candidates', 'spmb_status');
+        $statusVal = $request->input('registration_status', $request->input('spmb_status'));
+        if ($statusVal) {
+            if ($hasRegStatus) $validated['registration_status'] = $statusVal;
+            if ($hasSpmbStatus) $validated['spmb_status'] = $statusVal;
+        }
+
+        $hasPayStatus = \Illuminate\Support\Facades\Schema::hasColumn('spmb_candidates', 'payment_status');
+        $hasSpmbPayStatus = \Illuminate\Support\Facades\Schema::hasColumn('spmb_candidates', 'spmb_payment_status');
+        $payVal = $request->input('payment_status', $request->input('spmb_payment_status'));
+        if ($payVal) {
+            if ($hasPayStatus) $validated['payment_status'] = $payVal;
+            if ($hasSpmbPayStatus) $validated['spmb_payment_status'] = $payVal;
+        }
+
+        $candidate->update($validated);
+
+        // If enrolled to an active student, sync matching fields
+        if ($candidate->student_id && ($student = Student::find($candidate->student_id))) {
+            $studentUpdate = [
+                'full_name' => $candidate->full_name,
+                'nickname' => $candidate->nickname,
+                'gender' => $candidate->gender === 'female' ? 'P' : 'L',
+                'birth_place' => $candidate->birth_place,
+                'birth_date' => $candidate->birth_date,
+                'nik' => $candidate->nik,
+                'nisn' => $candidate->nisn,
+                'father_name' => $candidate->father_name,
+                'father_phone' => $candidate->father_phone,
+                'father_job' => $candidate->father_job,
+                'mother_name' => $candidate->mother_name,
+                'mother_phone' => $candidate->mother_phone,
+                'mother_job' => $candidate->mother_job,
+                'guardian_name' => $candidate->guardian_name,
+                'guardian_phone' => $candidate->guardian_phone,
+                'parent_phone' => $candidate->parent_phone,
+                'address' => $candidate->address,
+                'city' => $candidate->city,
+                'province' => $candidate->province,
+                'previous_school' => $candidate->previous_school,
+            ];
+            $student->update(array_filter($studentUpdate, fn($v) => !is_null($v)));
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Data pendaftar {$candidate->full_name} berhasil diperbarui.",
+            'candidate' => $candidate->fresh(['student.classroom']),
+        ]);
+    }
+
+    /**
+     * Delete SPMB Candidate.
+     */
+    public function destroy($id): JsonResponse
+    {
+        $candidate = SpmbCandidate::findOrFail($id);
+        $name = $candidate->full_name;
+
+        // If candidate is linked to a student, delete the student record first
+        if ($candidate->student_id) {
+            $student = Student::find($candidate->student_id);
+            if ($student) {
+                $student->delete();
+            }
+        }
+
+        $candidate->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Data calon pendaftar {$name} berhasil dihapus.",
         ]);
     }
 }

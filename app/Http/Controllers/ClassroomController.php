@@ -16,14 +16,20 @@ class ClassroomController extends Controller
      */
     public function index(Request $request)
     {
-        $selectedYearId = $request->get('academic_year_id');
+        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
+        $activeYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
+
+        // Always filter per Tapel, defaulting to currently active Tapel
+        $selectedYearId = $request->filled('academic_year_id')
+            ? $request->get('academic_year_id')
+            : ($activeYear?->id ?? null);
 
         $query = Classroom::with(['classLevel', 'academicYear', 'homeroomTeacher'])
             ->withCount(['students as active_students_count' => function ($q) {
                 $q->where('status', 'aktif');
             }]);
 
-        if ($selectedYearId && $selectedYearId !== 'all') {
+        if ($selectedYearId) {
             $query->where('academic_year_id', $selectedYearId);
         }
 
@@ -53,7 +59,6 @@ class ClassroomController extends Controller
         ];
 
         $classLevels = ClassLevel::orderBy('order')->get();
-        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
         $teachers = Employee::where('status', 'Active')->orderBy('name')->get();
 
         return view('admin.classrooms.index', compact(

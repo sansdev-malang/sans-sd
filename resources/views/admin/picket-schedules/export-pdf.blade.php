@@ -139,7 +139,7 @@
     <!-- HEADER -->
     <div class="header">
         <h1 class="title">THE DUTY SCHEDULE FOR TEACHERS</h1>
-        <p class="subtitle">{{ $periodLabel ?? ($selectedYear ? 'TAHUN AJARAN ' . strtoupper($selectedYear->name) : 'TAHUN AJARAN 2026/2027') }}</p>
+        <p class="subtitle">{{ $periodLabel ?? ($selectedYear ? 'TAHUN PELAJARAN ' . strtoupper($selectedYear->name) : 'TAHUN PELAJARAN 2026/2027') }}</p>
         <span class="badge">⏰ DUTY HOURS: 06.30 - 07.00</span>
     </div>
 

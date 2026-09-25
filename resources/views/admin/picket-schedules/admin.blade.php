@@ -100,7 +100,7 @@
         <div>
             <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Manajemen Piket</h3>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Tahun Ajaran: <span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ $selectedYear ? $selectedYear->name : 'Tahun Ajaran Aktif' }}</span>
+                Tahun Pelajaran: <span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ $selectedYear ? 'Tapel ' . $selectedYear->name : 'Tapel Aktif' }}</span>
                 @if($selectedYear && $selectedYear->is_active)
                     <span class="ml-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200/30">Aktif</span>
                 @endif
@@ -586,7 +586,7 @@
                             </div>
                             <div>
                                 <h4 class="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Salin Jadwal Periode Lalu</h4>
-                                <p class="text-[10px] text-slate-400">Duplikasi seluruh susunan jadwal piket ke tahun ajaran baru</p>
+                                <p class="text-[10px] text-slate-400">Duplikasi seluruh susunan jadwal piket ke tahun pelajaran baru</p>
                             </div>
                         </div>
                         <button @click="showCloneModal = false" class="p-1 rounded-lg text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-850 hover:text-slate-700 cursor-pointer border-0 bg-transparent flex items-center justify-center">
@@ -597,9 +597,9 @@
                     <form action="{{ route('picket-schedules.clone-year') }}" method="POST" class="p-6 space-y-4 text-xs">
                         @csrf
                         <div>
-                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Salin Dari Tahun Ajaran (Sumber)</label>
+                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Salin Dari Tahun Pelajaran (Sumber)</label>
                             <select name="source_academic_year_id" required class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer">
-                                <option value="">Pilih Tahun Ajaran Asal...</option>
+                                <option value="">Pilih Tahun Pelajaran Asal...</option>
                                 @foreach($academicYears as $year)
                                     <option value="{{ $year->id }}">
                                         {{ $year->name }} {{ $year->is_active ? '(Aktif)' : '' }}
@@ -609,9 +609,9 @@
                         </div>
 
                         <div>
-                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Terapkan Ke Tahun Ajaran (Target)</label>
+                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Terapkan Ke Tahun Pelajaran (Target)</label>
                             <select name="target_academic_year_id" required class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all cursor-pointer">
-                                <option value="">Pilih Tahun Ajaran Target...</option>
+                                <option value="">Pilih Tahun Pelajaran Target...</option>
                                 @foreach($academicYears as $year)
                                     <option value="{{ $year->id }}" {{ ($selectedYear && $selectedYear->id == $year->id) ? 'selected' : '' }}>
                                         {{ $year->name }} {{ $year->is_active ? '(Aktif)' : '' }}
@@ -621,7 +621,7 @@
                         </div>
 
                         <div class="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/40 rounded-xl text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
-                            <strong>Perhatian:</strong> Sistem hanya akan menyalin jadwal guru yang statusnya masih <em>Active</em> pada tahun ajaran target. Jadwal yang sudah ada tidak akan diduplikasi ganda.
+                            <strong>Perhatian:</strong> Sistem hanya akan menyalin jadwal guru yang statusnya masih <em>Active</em> pada tahun pelajaran target. Jadwal yang sudah ada tidak akan diduplikasi ganda.
                         </div>
 
                         <!-- Actions -->

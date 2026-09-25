@@ -60,7 +60,7 @@
                 Layanan Pegawai
             </h3>
             <nav class="space-y-1">
-                @if(auth()->user()->employee_id)
+                @if(auth()->user()?->employee_id)
                 <a href="{{ route('my-employee-profile.edit') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('my-employee-profile.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} text-xs relative group">
                     <i data-lucide="user" class="menu-icon w-4 h-4"></i>
                     <span class="menu-text">Profil Pegawai</span>
@@ -78,7 +78,7 @@
                     </span>
                 </a>
 
-                @if(auth()->user()->employee_id)
+                @if(auth()->user()?->employee_id)
                 <a href="{{ route('my-leaves.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('my-leaves.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} text-xs relative group">
                     <i data-lucide="file-signature" class="menu-icon w-4 h-4"></i>
                     <span class="menu-text">Pengajuan Izin</span>
@@ -97,7 +97,7 @@
                 </a>
 
                 @php
-                    $empId = auth()->user()->employee_id;
+                    $empId = auth()->user()?->employee_id;
                     $showPicketMenu = $isAdmin || ($empId && \Illuminate\Support\Facades\Cache::remember('user_has_picket_' . $empId, 300, function() use ($empId) {
                         return \App\Models\PicketSchedule::where('employee_id', $empId)->exists();
                     }));
@@ -154,22 +154,34 @@
                     </span>
                 </a>
 
-                <a href="{{ route('classrooms.index') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg 
-                    {{ Request::routeIs('classrooms.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
+                <a href="{{ route('promotions.index') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg 
+                    {{ Request::routeIs('promotions.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
                     text-xs font-medium relative group">
                     <div class="flex items-center gap-3">
-                        <i data-lucide="university" class="menu-icon w-4 h-4"></i>
-                        <span class="menu-text">Rombongan Belajar</span>
+                        <i data-lucide="arrow-up-circle" class="menu-icon w-4 h-4 text-indigo-600 dark:text-indigo-400"></i>
+                        <span class="menu-text">Kenaikan & Kelulusan</span>
                     </div>
                     <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
-                        Rombongan Belajar
+                        Kenaikan & Kelulusan
+                    </span>
+                </a>
+
+                <a href="{{ route('alumni.index') }}" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg 
+                    {{ Request::routeIs('alumni.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} 
+                    text-xs font-medium relative group">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="book-marked" class="menu-icon w-4 h-4 text-blue-600 dark:text-blue-400"></i>
+                        <span class="menu-text">Buku Induk Alumni</span>
+                    </div>
+                    <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
+                        Buku Induk Alumni
                     </span>
                 </a>
 
                 <!-- Dropdown: Master Akademik -->
-                <div x-data="{ openAcademic: {{ Request::routeIs('class-levels.*', 'academic-years.*') ? 'true' : 'false' }} }">
+                <div x-data="{ openAcademic: {{ Request::routeIs('class-levels.*', 'classrooms.*', 'academic-years.*') ? 'true' : 'false' }} }">
                     <button @click="openAcademic = !openAcademic"
-                        class="menu-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors text-xs font-medium relative group cursor-pointer {{ Request::routeIs('class-levels.*', 'academic-years.*') ? 'text-slate-900 dark:text-slate-50 bg-slate-50/50 dark:bg-slate-900/30' : '' }}">
+                        class="menu-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors text-xs font-medium relative group cursor-pointer {{ Request::routeIs('class-levels.*', 'classrooms.*', 'academic-years.*') ? 'text-slate-900 dark:text-slate-50 bg-slate-50/50 dark:bg-slate-900/30' : '' }}">
                         <div class="flex items-center gap-3">
                             <i data-lucide="layers" class="menu-icon w-4 h-4"></i>
                             <span class="menu-text">Master Akademik</span>
@@ -186,9 +198,13 @@
                             class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('class-levels.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
                             <span>Tingkat Kelas</span>
                         </a>
+                        <a href="{{ route('classrooms.index') }}"
+                            class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('classrooms.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
+                            <span>Rombongan Belajar</span>
+                        </a>
                         <a href="{{ route('academic-years.index') }}"
                             class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('academic-years.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
-                            <span>Tahun Ajaran</span>
+                            <span>Tahun Pelajaran (Tapel)</span>
                         </a>
                     </div>
                 </div>
@@ -278,7 +294,7 @@
         </div>
         @endif
 
-        @if(auth()->user()->hasRole('super_admin'))
+        @if(auth()->user()?->hasRole('super_admin'))
         <!-- Group 4: Pengaturan & Sistem -->
         <div>
             <h3 class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">

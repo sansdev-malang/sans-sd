@@ -11,43 +11,129 @@ class Student extends Model
     use HasFactory;
 
     protected $fillable = [
+        // Identitas & Legalitas
         'nis',
         'nisn',
         'nik',
+        'no_kk',
+        'birth_certificate_no',
+        'citizenship',
         'spmb_candidate_id',
         'classroom_id',
         'academic_year_id',
         'full_name',
         'nickname',
         'gender',
+        'student_type',
+        'special_needs_type',
+        'special_needs_notes',
         'birth_place',
         'birth_date',
         'religion',
+        'student_photo_url',
+
+        // Alamat & Domisili
         'address',
+        'rt',
+        'rw',
+        'village',
+        'district',
+        'district_category',
         'city',
         'province',
-        'previous_school',
-        'student_photo_url',
+        'postal_code',
+        'residence_status',
+        'distance_to_school',
+        'home_phone',
+
+        // Keluarga & Saudara
+        'child_number',
+        'siblings_count',
+        'step_siblings_count',
+        'adoptive_siblings_count',
+        'home_language',
+
+        // Kesehatan & Fisik
+        'weight',
+        'height',
+        'blood_type',
+        'severe_disease_history',
+        'frequent_disease',
+
+        // Data Ayah
         'father_name',
+        'father_nik',
+        'father_birth_place',
+        'father_birth_date',
+        'father_religion',
         'father_phone',
+        'father_education',
         'father_job',
+        'father_company',
+        'father_company_address',
+        'father_company_phone',
+        'father_income',
+        'father_email',
+
+        // Data Ibu
         'mother_name',
+        'mother_nik',
+        'mother_birth_place',
+        'mother_birth_date',
+        'mother_religion',
         'mother_phone',
+        'mother_education',
         'mother_job',
+        'mother_company',
+        'mother_company_address',
+        'mother_company_phone',
+        'mother_income',
+        'mother_email',
+
+        // Data Wali
         'guardian_name',
+        'guardian_relation',
+        'guardian_birth_place',
+        'guardian_birth_date',
+        'guardian_education',
+        'guardian_job',
+        'guardian_religion',
         'guardian_phone',
+        'guardian_address',
+
+        // Kontak Utama
         'parent_phone',
         'parent_email',
+
+        // Asal Sekolah
+        'previous_school',
+        'origin_category',
+        'previous_school_address',
+        'sttb_number_date',
+
+        // Dokumen & Status
         'documents',
+        'checklist_documents',
         'status',
         'enrolled_date',
         'notes',
+        'graduation_year',
+        'diploma_number',
+        'continued_school',
     ];
 
     protected $casts = [
         'birth_date' => 'date',
+        'father_birth_date' => 'date',
+        'mother_birth_date' => 'date',
+        'guardian_birth_date' => 'date',
         'enrolled_date' => 'date',
         'documents' => 'array',
+        'checklist_documents' => 'array',
+        'child_number' => 'integer',
+        'siblings_count' => 'integer',
+        'step_siblings_count' => 'integer',
+        'adoptive_siblings_count' => 'integer',
     ];
 
     protected $appends = [
@@ -71,6 +157,11 @@ class Student extends Model
     public function spmbCandidate(): BelongsTo
     {
         return $this->belongsTo(SpmbCandidate::class);
+    }
+
+    public function classroomHistories(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(StudentClassroomHistory::class)->orderBy('academic_year_id', 'asc');
     }
 
     /**

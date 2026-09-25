@@ -10,7 +10,7 @@
         <div>
             <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Jadwal Piket</h3>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Tahun Ajaran: <span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ $selectedYear ? $selectedYear->name : 'Tahun Ajaran Aktif' }}</span>
+                Tahun Pelajaran: <span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ $selectedYear ? 'Tapel ' . $selectedYear->name : 'Tapel Aktif' }}</span>
                 @if($selectedYear && $selectedYear->is_active)
                     <span class="ml-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200/30">Aktif</span>
                 @endif
