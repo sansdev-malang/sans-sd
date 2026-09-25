@@ -124,23 +124,23 @@
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/50">
-                            <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-12 whitespace-nowrap">No</th>
-                            <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-48 whitespace-nowrap">Tahun Pelajaran</th>
-                            <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28 whitespace-nowrap">Semester</th>
-                            <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider min-w-[200px] whitespace-nowrap">Periode Semester</th>
-                            <th class="px-4 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-36 whitespace-nowrap">Status Aktif</th>
-                            <th class="px-4 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24 whitespace-nowrap">Rombel</th>
-                            <th class="px-4 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24 whitespace-nowrap">Siswa</th>
+                            <th class="px-4 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-14 whitespace-nowrap">No</th>
+                            <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Tahun Pelajaran</th>
+                            <th class="px-4 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32 whitespace-nowrap">Semester</th>
+                            <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-56 whitespace-nowrap">Periode Semester</th>
+                            <th class="px-4 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-40 whitespace-nowrap">Status Aktif</th>
+                            <th class="px-4 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28 whitespace-nowrap">Rombel</th>
+                            <th class="px-4 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28 whitespace-nowrap">Siswa</th>
                             <th class="px-4 py-3.5 text-right text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24 whitespace-nowrap">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
                         @forelse($academicYears as $index => $year)
                             <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group {{ $year->is_active ? 'bg-indigo-50/20 dark:bg-indigo-950/10' : '' }}">
-                                <td class="px-4 py-3.5 text-slate-400 font-mono text-[11px] whitespace-nowrap">
+                                <td class="px-4 py-3.5 text-center text-slate-400 font-mono text-[11px] whitespace-nowrap">
                                     {{ $index + 1 }}
                                 </td>
-                                <td class="px-4 py-3.5 whitespace-nowrap">
+                                <td class="px-5 py-3.5 whitespace-nowrap">
                                     <div class="flex items-center gap-2.5">
                                         <div class="w-8 h-8 rounded-lg {{ $year->is_active ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500' }} flex items-center justify-center font-bold text-xs shrink-0">
                                             <i data-lucide="calendar" class="w-4 h-4"></i>
@@ -155,8 +155,8 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3.5 whitespace-nowrap">
-                                    <span class="px-2.5 py-1 rounded-md text-[11px] font-semibold {{ $year->semester === 'Ganjil' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400 border border-blue-200 dark:border-blue-800' : 'bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-400 border border-purple-200 dark:border-purple-800' }}">
+                                <td class="px-4 py-3.5 text-center whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold {{ $year->semester === 'Ganjil' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400 border border-blue-200 dark:border-blue-800' : 'bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-400 border border-purple-200 dark:border-purple-800' }}">
                                         {{ $year->semester }}
                                     </span>
                                 </td>
