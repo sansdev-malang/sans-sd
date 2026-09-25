@@ -199,23 +199,18 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/60 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0 font-mono">
+                                        <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/60 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0 font-mono">
                                             {{ $c->code ?: substr($c->name, 0, 2) }}
                                         </div>
                                         <div>
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="font-bold text-slate-900 dark:text-slate-100 text-xs">
-                                                    {{ $c->name }}
-                                                </span>
-                                                @if($c->code)
-                                                    <span class="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                                                        Grade {{ $c->code }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                            <span class="text-[11px] text-slate-400">
+                                            <span class="font-bold text-slate-900 dark:text-slate-100 text-xs tracking-tight block">
                                                 {{ $c->full_name }}
                                             </span>
+                                            <div class="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-400 font-mono">
+                                                <span>Grade: <strong class="text-slate-600 dark:text-slate-300 font-semibold">{{ $c->code ?: '-' }}</strong></span>
+                                                <span>•</span>
+                                                <span>Nama: <strong class="text-slate-600 dark:text-slate-300 font-semibold">{{ $c->name }}</strong></span>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -320,12 +315,12 @@
                 <!-- Modal Header -->
                 <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm z-10">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 font-bold text-sm flex items-center justify-center">
-                            <i data-lucide="users" class="w-5 h-5"></i>
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 font-bold text-sm flex items-center justify-center font-mono">
+                            <span x-text="selectedClassroom?.code || 'R'"></span>
                         </div>
                         <div>
                             <h3 class="text-base font-bold text-slate-900 dark:text-slate-50 flex items-center gap-2">
-                                <span x-text="selectedClassroom?.name || 'Rombel'"></span>
+                                <span x-text="selectedClassroom?.full_name || (selectedClassroom?.code ? selectedClassroom.code + ' ' + selectedClassroom.name : 'Rombel')"></span>
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400" x-text="classroomStudents.length + ' Siswa'"></span>
                             </h3>
                             <p class="text-xs text-slate-400 mt-0.5">Wali Kelas: <span class="font-semibold text-slate-700 dark:text-slate-300" x-text="selectedClassroom?.homeroom_teacher?.name || 'Belum Ditentukan'"></span></p>
@@ -401,7 +396,7 @@
                     <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                         <div>
                             <h3 class="text-base font-bold text-slate-900 dark:text-slate-50" x-text="isEdit ? 'Edit Rombongan Belajar' : 'Tambah Rombel Baru'"></h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Tentukan nama rombel, tingkat kelas, dan wali kelas.</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Kelola tingkat, kode kelas Dapodik, julukan rombel, dan wali kelas.</p>
                         </div>
                         <button type="button" @click="formModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                             <i data-lucide="x" class="w-5 h-5"></i>
@@ -409,22 +404,12 @@
                     </div>
 
                     <!-- Modal Body -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode / Grade <span class="text-rose-500">*</span></label>
-                                <input type="text" x-model="formData.code" required placeholder="Contoh: 1A, 2B, 6D"
-                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-50 font-mono uppercase">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Rombel / Classname <span class="text-rose-500">*</span></label>
-                                <input type="text" x-model="formData.name" required placeholder="Contoh: Berlian, Mutiara, Ibnu Sina"
-                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-50">
-                            </div>
-                        </div>
-
+                    <div class="p-6 space-y-4 text-xs">
+                        
+                        <!-- Tingkat & Tapel -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tingkat Kelas <span class="text-rose-500">*</span></label>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tingkat / Level <span class="text-rose-500">*</span></label>
                                 <select x-model="formData.class_level_id" required
                                     class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-50 cursor-pointer">
                                     <option value="">Pilih Tingkat...</option>
@@ -445,6 +430,34 @@
                             </div>
                         </div>
 
+                        <!-- Kelas / Grade & Nama Kelas -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Kelas / Grade <span class="text-rose-500">*</span></label>
+                                <input type="text" x-model="formData.code" required placeholder="Contoh: 1A, 2B, 6D"
+                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-50 font-mono uppercase">
+                                <span class="text-[10px] text-slate-400 mt-0.5 block">Format Dapodik</span>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Kelas / Julukan <span class="text-rose-500">*</span></label>
+                                <input type="text" x-model="formData.name" required placeholder="Contoh: Berlian, Mutiara, Ibnu Sina"
+                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-50">
+                                <span class="text-[10px] text-slate-400 mt-0.5 block">Khas SD Anak Saleh</span>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Preview Nama Rombel -->
+                        <div class="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-800/40 flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">Pratinjau Nama Rombel Resmi</span>
+                                <span class="text-xs font-bold text-slate-900 dark:text-slate-100 mt-0.5 block" x-text="(formData.code ? formData.code + ' ' : '') + (formData.name || 'Nama Rombel')"></span>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">
+                                SANS & Rapor
+                            </span>
+                        </div>
+
+                        <!-- Wali Kelas & Kuota -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Wali Kelas</label>
@@ -458,7 +471,7 @@
                             </div>
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Kapasitas Kuota (Siswa) <span class="text-rose-500">*</span></label>
-                                <input type="number" x-model="formData.capacity" min="1" max="100" required
+                                <input type="number" x-model.number="formData.capacity" min="1" max="100" required
                                     class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-50">
                             </div>
                         </div>

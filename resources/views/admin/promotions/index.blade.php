@@ -76,7 +76,7 @@
                             class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-semibold cursor-pointer">
                             <option value="">-- Pilih Rombel Asal --</option>
                             <template x-for="cr in filteredSourceClassrooms" :key="cr.id">
-                                <option :value="cr.id" x-text="(cr.code ? cr.code + ' ' : '') + cr.name + ' (' + (cr.class_level ? cr.class_level.name : 'Tingkat') + ')'"></option>
+                                <option :value="cr.id" x-text="(cr.full_name || (cr.code ? cr.code + ' ' + cr.name : cr.name)) + ' (' + (cr.class_level ? cr.class_level.name : 'Tingkat') + ')'"></option>
                             </template>
                         </select>
                     </div>
@@ -99,7 +99,7 @@
                             class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-semibold cursor-pointer">
                             <option value="">-- Pilih Rombel Tujuan --</option>
                             <template x-for="cr in filteredTargetClassrooms" :key="cr.id">
-                                <option :value="cr.id" x-text="cr.name + ' (' + (cr.class_level ? cr.class_level.name : 'Tingkat') + ')'"></option>
+                                <option :value="cr.id" x-text="(cr.full_name || (cr.code ? cr.code + ' ' + cr.name : cr.name)) + ' (' + (cr.class_level ? cr.class_level.name : 'Tingkat') + ')'"></option>
                             </template>
                         </select>
                     </div>
@@ -186,7 +186,7 @@
                                                 class="w-full h-8 px-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
                                                 <option value="">Gunakan Rombel Default</option>
                                                 <template x-for="cr in filteredTargetClassrooms" :key="cr.id">
-                                                    <option :value="cr.id" x-text="cr.name"></option>
+                                                    <option :value="cr.id" x-text="cr.full_name || (cr.code ? cr.code + ' ' + cr.name : cr.name)"></option>
                                                 </template>
                                             </select>
                                         </template>
@@ -195,7 +195,7 @@
                                                 class="w-full h-8 px-2 text-xs bg-amber-50/50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700 rounded-lg text-amber-900 dark:text-amber-300 font-semibold">
                                                 <option value="">Pilih Rombel Mengulang...</option>
                                                 <template x-for="cr in allClassroomsForStay" :key="cr.id">
-                                                    <option :value="cr.id" x-text="cr.name"></option>
+                                                    <option :value="cr.id" x-text="cr.full_name || (cr.code ? cr.code + ' ' + cr.name : cr.name)"></option>
                                                 </template>
                                             </select>
                                         </template>

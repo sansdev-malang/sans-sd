@@ -1119,7 +1119,7 @@
                                         <option value="">Pilih Rombel...</option>
                                         @foreach($allClassrooms as $r)
                                             <option value="{{ $r->id }}">
-                                                {{ $r->name }} (TA {{ $r->academicYear->name ?? '-' }})
+                                                {{ $r->full_name }} (Tapel {{ $r->academicYear->name ?? '-' }})
                                             </option>
                                         @endforeach
                                     </select>
@@ -1233,7 +1233,7 @@
                                     class="w-full h-8.5 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-50 cursor-pointer">
                                     <option value="">Gunakan kolom di Excel</option>
                                     @foreach($allClassrooms as $r)
-                                        <option value="{{ $r->id }}">{{ $r->name }} (Tapel {{ $r->academicYear->name ?? '-' }})</option>
+                                        <option value="{{ $r->id }}">{{ $r->full_name }} (Tapel {{ $r->academicYear->name ?? '-' }})</option>
                                     @endforeach
                                 </select>
                             </div>

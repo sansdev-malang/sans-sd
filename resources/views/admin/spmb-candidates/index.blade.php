@@ -782,7 +782,7 @@
                                     class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-50 cursor-pointer">
                                     <option value="">Pilih Rombel...</option>
                                     <template x-for="r in enrollData.classrooms" :key="r.id">
-                                        <option :value="r.id" x-text="r.name + ' (' + (r.class_level ? r.class_level.name : '') + ') • ' + r.active_students_count + '/' + r.capacity + ' siswa'"></option>
+                                        <option :value="r.id" x-text="(r.full_name || (r.code ? r.code + ' ' + r.name : r.name)) + ' (' + (r.class_level ? r.class_level.name : '') + ') • ' + r.active_students_count + '/' + r.capacity + ' siswa'"></option>
                                     </template>
                                 </select>
                             </div>

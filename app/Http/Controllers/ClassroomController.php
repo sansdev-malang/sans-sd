@@ -40,10 +40,13 @@ class ClassroomController extends Controller
         }
 
         if ($search = $request->get('search')) {
-            $query->where('name', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%");
+            });
         }
 
-        $classrooms = $query->orderBy('class_level_id')->orderBy('name')->get();
+        $classrooms = $query->orderBy('class_level_id')->orderBy('code')->orderBy('name')->get();
 
         // Calculate statistics
         $totalClassrooms = $classrooms->count();
@@ -106,7 +109,7 @@ class ClassroomController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Rombel {$classroom->name} berhasil dibuat.",
+            'message' => "Rombel {$classroom->full_name} berhasil dibuat.",
             'classroom' => $classroom,
         ]);
     }
@@ -133,7 +136,7 @@ class ClassroomController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Rombel {$classroom->name} berhasil diperbarui.",
+            'message' => "Rombel {$classroom->full_name} berhasil diperbarui.",
             'classroom' => $classroom,
         ]);
     }
