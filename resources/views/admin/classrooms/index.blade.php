@@ -215,10 +215,14 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     @if($c->homeroomTeacher)
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
-                                                {{ substr($c->homeroomTeacher->raw_name, 0, 1) }}
-                                            </div>
+                                        <div class="flex items-center gap-2.5">
+                                            @if($c->homeroomTeacher->photo_url)
+                                                <img src="{{ $c->homeroomTeacher->photo_url }}" alt="{{ $c->homeroomTeacher->name }}" class="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-slate-200 dark:ring-slate-700 shadow-xs">
+                                            @else
+                                                <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                                                    {{ substr($c->homeroomTeacher->raw_name, 0, 1) }}
+                                                </div>
+                                            @endif
                                             <div class="overflow-hidden">
                                                 <p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
                                                     {{ $c->homeroomTeacher->name }}
@@ -311,7 +315,12 @@
                                 <span x-text="selectedClassroom?.full_name || (selectedClassroom?.code ? selectedClassroom.code + ' ' + selectedClassroom.name : 'Rombel')"></span>
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400" x-text="classroomStudents.length + ' Siswa'"></span>
                             </h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Wali Kelas: <span class="font-semibold text-slate-700 dark:text-slate-300" x-text="selectedClassroom?.homeroom_teacher?.name || 'Belum Ditentukan'"></span></p>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <template x-if="selectedClassroom?.homeroom_teacher?.photo_url">
+                                    <img :src="selectedClassroom.homeroom_teacher.photo_url" class="w-4 h-4 rounded-full object-cover ring-1 ring-slate-200">
+                                </template>
+                                <p class="text-xs text-slate-400">Wali Kelas: <span class="font-semibold text-slate-700 dark:text-slate-300" x-text="selectedClassroom?.homeroom_teacher?.name || 'Belum Ditentukan'"></span></p>
+                            </div>
                         </div>
                     </div>
                     <button type="button" @click="studentsModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
