@@ -52,16 +52,7 @@
             </div>
         </section>
 
-        <!-- SESSION FLASH NOTIFICATIONS -->
-        @if(session('success'))
-            <div class="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs flex items-center justify-between shadow-xs">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0"></i>
-                    <span>{{ session('success') }}</span>
-                </div>
-            </div>
-        @endif
-
+        <!-- IMPORT ERRORS NOTIFICATION (IF ANY ROWS SKIPPED) -->
         @if(session('import_errors'))
             <div class="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs space-y-2 shadow-xs">
                 <div class="flex items-center gap-2 font-bold">
@@ -170,7 +161,7 @@
         </section>
 
         <!-- SEARCH & FILTERS -->
-        <section class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-xs w-full">
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-xs w-full">
             <form method="GET" action="{{ route('students.index') }}" class="flex flex-col lg:flex-row gap-2.5 items-stretch lg:items-center justify-between">
                 <!-- Search Box -->
                 <div class="relative w-full lg:max-w-xs">
@@ -188,8 +179,8 @@
                     <select name="academic_year_id" onchange="this.form.submit()"
                         class="h-8.5 px-2.5 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer shadow-xs">
                         @foreach($academicYears as $year)
-                            <option value="{{ $year->id }}" {{ $selectedYearId == $year->id ? 'selected' : '' }}>
-                                Tapel {{ $year->name }} {{ $year->is_active ? '★' : '' }}
+                            <option value="{{ $year->id }}" {{ ($selectedYearName ?? '') == $year->name || $selectedYearId == $year->id ? 'selected' : '' }}>
+                                Tapel {{ $year->name }} {{ $year->has_active || $year->is_active ? '★' : '' }}
                             </option>
                         @endforeach
                     </select>
@@ -247,7 +238,7 @@
         </section>
 
         <!-- TABLE LIST SISWA -->
-        <section class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden transition-all w-full">
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden w-full">
             <div class="overflow-x-auto">
                 <table class="w-full text-xs border-collapse">
                     <thead>
@@ -374,9 +365,8 @@
                                             title="Edit 7 Kategori Data">
                                             <i data-lucide="edit-2" class="w-4 h-4"></i>
                                         </button>
-                                        <button type="button" @click="deleteStudent({{ $s->id }}, '{{ $s->full_name }}')"
-                                            class="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg transition-colors cursor-pointer"
-                                            title="Hapus Siswa">
+                                        <button type="button" @click="confirmDeleteStudent({{ $s->id }}, '{{ addslashes($s->full_name) }}')"
+                                            class="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg transition-colors cursor-pointer">
                                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                                         </button>
                                     </div>
@@ -1228,23 +1218,25 @@
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Rombel Default (Opsional)</label>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Rombel Tujuan (Default)</label>
                                 <select name="default_classroom_id"
                                     class="w-full h-8.5 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-50 cursor-pointer">
-                                    <option value="">Gunakan kolom di Excel</option>
+                                    <option value="">Gunakan kolom di Excel (Otomatis)</option>
                                     @foreach($allClassrooms as $r)
                                         <option value="{{ $r->id }}">{{ $r->full_name }} (Tapel {{ $r->academicYear->name ?? '-' }})</option>
                                     @endforeach
                                 </select>
+                                <p class="text-[10px] text-slate-400 mt-1">Pilih rombel jika file tidak memuat kolom kelas, atau pilih "Gunakan kolom di Excel" jika rombel tercantum per baris.</p>
                             </div>
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tahun Pelajaran Default</label>
                                 <select name="default_academic_year_id"
                                     class="w-full h-8.5 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-50 cursor-pointer">
                                     @foreach($academicYears as $y)
-                                        <option value="{{ $y->id }}" {{ $y->is_active ? 'selected' : '' }}>Tapel {{ $y->name }} {{ $y->is_active ? '(Aktif)' : '' }}</option>
+                                        <option value="{{ $y->id }}" {{ $y->has_active || $y->is_active ? 'selected' : '' }}>Tapel {{ $y->name }} {{ ($y->has_active || $y->is_active) ? '(Aktif)' : '' }}</option>
                                     @endforeach
                                 </select>
+                                <p class="text-[10px] text-slate-400 mt-1">Tahun pelajaran acuan jika kolom tahun pelajaran di Excel kosong.</p>
                             </div>
                         </div>
 
@@ -1267,6 +1259,36 @@
                     </div>
                 </form>
 
+            </div>
+        </div>
+
+        <!-- MODAL KONFIRMASI IN-APP (Aman dari native alert/confirm loop) -->
+        <div x-show="confirmModal.open" x-cloak style="display: none; margin-top: 0px !important; z-index: 9999;"
+            class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+            @click.self="confirmModal.open = false"
+            @keydown.escape.window="confirmModal.open = false">
+            
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col p-6 text-center animate-in fade-in zoom-in-95 duration-150"
+                @click.stop>
+                
+                <div class="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-4 bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
+                    <i data-lucide="trash-2" class="w-6 h-6"></i>
+                </div>
+
+                <h3 class="text-base font-bold text-slate-900 dark:text-slate-50" x-text="confirmModal.title"></h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed" x-html="confirmModal.message"></p>
+
+                <div class="mt-6 flex items-center justify-center gap-3">
+                    <button type="button" @click="confirmModal.open = false" :disabled="confirmModal.loading"
+                        class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold transition-colors cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="button" @click="executeConfirmDelete()" :disabled="confirmModal.loading"
+                        class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+                        <span x-show="confirmModal.loading" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span>Hapus Permanen</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1390,7 +1412,11 @@
                             window.showToastNotification('Template Excel berhasil diunduh!', 'success');
                         }
                     } catch (err) {
-                        alert('Gagal mengunduh template: ' + err.message);
+                        if (window.showToastNotification) {
+                            window.showToastNotification('Gagal mengunduh template: ' + err.message, 'error');
+                        } else if (window.showToast) {
+                            window.showToast('Gagal', err.message, 'error');
+                        }
                     } finally {
                         this.downloadingTemplate = false;
                         if (typeof NProgress !== 'undefined') {
@@ -1418,7 +1444,13 @@
                             });
                         }
                     })
-                    .catch(err => alert("Gagal memuat detail siswa: " + err.message));
+                    .catch(err => {
+                        if (window.showToastNotification) {
+                            window.showToastNotification("Gagal memuat detail siswa: " + err.message, "error");
+                        } else if (window.showToast) {
+                            window.showToast("Gagal", err.message, "error");
+                        }
+                    });
                 },
 
                 openCreateModal() {
@@ -1598,7 +1630,13 @@
                             });
                         }
                     })
-                    .catch(err => alert("Gagal mengambil data siswa: " + err.message));
+                    .catch(err => {
+                        if (window.showToastNotification) {
+                            window.showToastNotification("Gagal mengambil data siswa: " + err.message, "error");
+                        } else if (window.showToast) {
+                            window.showToast("Gagal", err.message, "error");
+                        }
+                    });
                 },
 
                 submitForm() {
@@ -1622,38 +1660,86 @@
                         this.saving = false;
                         if (res.success) {
                             this.formModalOpen = false;
-                            alert(res.message || 'Data siswa berhasil disimpan!');
+                            if (window.setPendingToast) {
+                                window.setPendingToast(res.message || 'Data siswa berhasil disimpan!', 'success');
+                            }
                             window.location.reload();
                         } else {
-                            alert(res.message || 'Terjadi kesalahan saat menyimpan.');
+                            if (window.showToastNotification) {
+                                window.showToastNotification(res.message || 'Terjadi kesalahan saat menyimpan.', 'error');
+                            } else if (window.showToast) {
+                                window.showToast('Gagal', res.message || 'Terjadi kesalahan saat menyimpan.', 'error');
+                            }
                         }
                     })
                     .catch(err => {
                         this.saving = false;
-                        alert('Error: ' + err.message);
+                        if (window.showToastNotification) {
+                            window.showToastNotification('Error: ' + err.message, 'error');
+                        } else if (window.showToast) {
+                            window.showToast('Error', err.message, 'error');
+                        }
                     });
                 },
 
-                deleteStudent(id, name) {
-                    if (!confirm(`Apakah Anda yakin ingin menghapus data siswa "${name}"?`)) return;
+                confirmModal: {
+                    open: false,
+                    id: null,
+                    title: '',
+                    message: '',
+                    loading: false
+                },
 
-                    fetch(`/students/${id}`, {
+                confirmDeleteStudent(id, name) {
+                    this.confirmModal = {
+                        open: true,
+                        id: id,
+                        title: 'Hapus Data Siswa?',
+                        message: `Apakah Anda yakin ingin menghapus data siswa <strong>${name}</strong>? Data yang telah dihapus tidak dapat dipulihkan.`,
+                        loading: false
+                    };
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
+                },
+
+                executeConfirmDelete() {
+                    if (this.confirmModal.loading) return;
+                    this.confirmModal.loading = true;
+
+                    fetch(`/students/${this.confirmModal.id}`, {
                         method: 'DELETE',
                         headers: {
                             'Accept': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         }
                     })
-                    .then(res => res.json())
-                    .then(res => {
-                        if (res.success) {
-                            alert(res.message || 'Siswa berhasil dihapus!');
+                    .then(async res => {
+                        this.confirmModal.loading = false;
+                        const data = await res.json();
+                        if (res.ok && data.success) {
+                            this.confirmModal.open = false;
+                            if (window.setPendingToast) {
+                                window.setPendingToast(data.message || 'Data siswa berhasil dihapus!', 'success');
+                            }
                             window.location.reload();
                         } else {
-                            alert(res.message || 'Gagal menghapus siswa.');
+                            const errMsg = data.message || 'Gagal menghapus data siswa.';
+                            if (window.showToastNotification) {
+                                window.showToastNotification(errMsg, 'error');
+                            } else {
+                                alert(errMsg);
+                            }
                         }
                     })
-                    .catch(err => alert('Error: ' + err.message));
+                    .catch(err => {
+                        this.confirmModal.loading = false;
+                        if (window.showToastNotification) {
+                            window.showToastNotification('Error: ' + err.message, 'error');
+                        } else {
+                            alert('Error: ' + err.message);
+                        }
+                    });
                 }
             }
         }

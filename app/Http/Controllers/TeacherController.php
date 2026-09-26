@@ -452,7 +452,7 @@ class TeacherController extends Controller
             $unit = strtolower(trim($row[4]));
             $gender = trim($row[5]);
             $birth_place = !empty($row[6]) ? trim($row[6]) : null;
-            $birth_date = !empty($row[7]) ? date('Y-m-d', strtotime(trim($row[7]))) : null;
+            $birth_date = !empty($row[7]) ? $this->parseDateSafely($row[7]) : null;
             $nik = !empty($row[8]) ? trim($row[8]) : null;
             $niy = !empty($row[9]) ? trim($row[9]) : null;
             $nuptk = !empty($row[10]) ? trim($row[10]) : null;
@@ -463,10 +463,10 @@ class TeacherController extends Controller
             $major = !empty($row[15]) ? trim($row[15]) : null;
             $position = !empty($row[16]) ? trim($row[16]) : null;
             $additional_position = !empty($row[17]) ? trim($row[17]) : null;
-            $task_start_date = !empty($row[18]) ? date('Y-m-d', strtotime(trim($row[18]))) : null;
+            $task_start_date = !empty($row[18]) ? $this->parseDateSafely($row[18]) : null;
             $employment_status = !empty($row[19]) ? trim($row[19]) : null;
-            $appointment_date = !empty($row[20]) ? date('Y-m-d', strtotime(trim($row[20]))) : null;
-            $last_sk_date = !empty($row[21]) ? date('Y-m-d', strtotime(trim($row[21]))) : null;
+            $appointment_date = !empty($row[20]) ? $this->parseDateSafely($row[20]) : null;
+            $last_sk_date = !empty($row[21]) ? $this->parseDateSafely($row[21]) : null;
             $last_sk_number = !empty($row[22]) ? trim($row[22]) : null;
             $work_period = !empty($row[23]) ? trim($row[23]) : null;
             $address = !empty($row[24]) ? trim($row[24]) : null;
@@ -576,6 +576,37 @@ class TeacherController extends Controller
         }
 
         return redirect()->back()->with('success', "Berhasil mengimpor {$importedCount} data guru!");
+    }
+
+    /**
+     * Helper to safely parse dates in various formats (d/m/Y, Y-m-d, Excel serial).
+     */
+    private function parseDateSafely($raw): ?string
+    {
+        if (empty($raw)) return null;
+        try {
+            $val = trim((string)$raw);
+            if (is_numeric($val) && (int)$val > 10000 && (int)$val < 70000) {
+                return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float)$val)->format('Y-m-d');
+            }
+            if (preg_match('/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/', $val, $m)) {
+                $day = str_pad($m[1], 2, '0', STR_PAD_LEFT);
+                $month = str_pad($m[2], 2, '0', STR_PAD_LEFT);
+                $year = $m[3];
+                if ((int)$day <= 31 && (int)$month <= 12) {
+                    return "{$year}-{$month}-{$day}";
+                }
+            }
+            if (preg_match('/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/', $val, $m)) {
+                $year = $m[1];
+                $month = str_pad($m[2], 2, '0', STR_PAD_LEFT);
+                $day = str_pad($m[3], 2, '0', STR_PAD_LEFT);
+                return "{$year}-{$month}-{$day}";
+            }
+            return \Carbon\Carbon::parse($val)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }
 

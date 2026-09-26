@@ -5,40 +5,22 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Initial Entry Animations (Staggered fade-in and scale-up)
+    // 1. Initial Entry Animations (Staggered fade-in - ONLY on main Dashboard)
     const animateEntry = () => {
+        const isDashboard = window.location.pathname === '/dashboard' || window.location.pathname === '/admin/dashboard' || window.location.pathname === '/';
+        if (!isDashboard) return;
+
         const isDesktop = window.innerWidth >= 768;
 
-        // Sidebar entrance (Desktop only to prevent auto-opening on mobile)
-        if (isDesktop) {
-            anime({
-                targets: '#sidebar',
-                translateX: [-100, 0],
-                opacity: [0, 1],
-                easing: 'easeOutExpo',
-                duration: 1200
-            });
-        }
-
-        // Header entrance
+        // Grid cards entrance (staggered, fast & crisp)
         anime({
-            targets: '#header',
-            translateY: [-50, 0],
+            targets: '.dashboard-grid .animate-card, .dashboard-overview-container .animate-card',
+            scale: [0.98, 1],
+            translateY: [10, 0],
             opacity: [0, 1],
-            easing: 'easeOutExpo',
-            duration: 1200,
-            delay: 150
-        });
-
-        // Grid cards entrance (staggered)
-        anime({
-            targets: '.animate-card',
-            scale: [0.9, 1],
-            translateY: [30, 0],
-            opacity: [0, 1],
-            delay: anime.stagger(100, { start: 300 }),
-            duration: 1000,
-            easing: 'easeOutElastic(1, .8)'
+            delay: anime.stagger(40, { start: 100 }),
+            duration: 300,
+            easing: 'easeOutQuad'
         });
     };
 
@@ -54,8 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 value: targetVal,
                 round: 1,
                 easing: 'easeOutExpo',
-                duration: 2000,
-                delay: 500,
+                duration: 1200,
+                delay: 200,
                 update: () => {
                     counter.innerHTML = obj.value.toLocaleString('id-ID');
                 }
@@ -74,17 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (icon) {
                     anime({
                         targets: icon,
-                        scale: 1.2,
-                        rotate: '5deg',
-                        duration: 300,
+                        scale: 1.15,
+                        duration: 150,
                         easing: 'easeOutQuad'
                     });
                 }
                 if (text) {
                     anime({
                         targets: text,
-                        translateX: 5,
-                        duration: 300,
+                        translateX: 3,
+                        duration: 150,
                         easing: 'easeOutQuad'
                     });
                 }
@@ -97,8 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     anime({
                         targets: icon,
                         scale: 1.0,
-                        rotate: '0deg',
-                        duration: 300,
+                        duration: 150,
                         easing: 'easeOutQuad'
                     });
                 }
@@ -106,23 +86,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     anime({
                         targets: text,
                         translateX: 0,
-                        duration: 300,
+                        duration: 150,
                         easing: 'easeOutQuad'
                     });
                 }
             });
         });
 
-        // Stat Card hovers
-        const cards = document.querySelectorAll('.animate-card');
+        // Stat Card hovers (ONLY for small grid stat cards, never for tables or sections)
+        const cards = document.querySelectorAll('.grid > div.animate-card');
         cards.forEach(card => {
             card.addEventListener('mouseenter', () => {
                 anime({
                     targets: card,
-                    translateY: -6,
-                    scale: 1.02,
-                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                    duration: 250,
+                    translateY: -2,
+                    duration: 150,
                     easing: 'easeOutQuad'
                 });
             });
@@ -130,9 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 anime({
                     targets: card,
                     translateY: 0,
-                    scale: 1.0,
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                    duration: 250,
+                    duration: 150,
                     easing: 'easeOutQuad'
                 });
             });

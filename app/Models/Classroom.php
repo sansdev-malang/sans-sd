@@ -11,6 +11,11 @@ class Classroom extends Model
 {
     use HasFactory;
 
+    protected $attributes = [
+        'capacity' => 32,
+        'is_active' => true,
+    ];
+
     protected $fillable = [
         'name',
         'code',

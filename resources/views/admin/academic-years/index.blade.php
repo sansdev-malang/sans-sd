@@ -113,7 +113,7 @@
         </section>
 
         <!-- TABLE DAFTAR TAHUN PELAJARAN -->
-        <section class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden transition-all w-full">
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden w-full">
             <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     <i data-lucide="list" class="w-4 h-4 text-indigo-600"></i>
@@ -445,10 +445,10 @@
                         const data = await res.json();
                         if (res.ok && data.success) {
                             this.modalOpen = false;
-                            if (window.showToastNotification) {
-                                window.showToastNotification(data.message || 'Tahun pelajaran berhasil disimpan!', 'success');
+                            if (window.setPendingToast) {
+                                window.setPendingToast(data.message || 'Tahun pelajaran berhasil disimpan!', 'success');
                             }
-                            setTimeout(() => window.location.reload(), 500);
+                            window.location.reload();
                         } else {
                             const errMsg = data.message || (data.errors ? Object.values(data.errors).flat().join(', ') : 'Terjadi kesalahan saat menyimpan.');
                             if (window.showToastNotification) {
@@ -515,10 +515,10 @@
                             const data = await res.json();
                             if (res.ok && data.success) {
                                 this.confirmModal.open = false;
-                                if (window.showToastNotification) {
-                                    window.showToastNotification(data.message || 'Tahun pelajaran berhasil diaktifkan!', 'success');
+                                if (window.setPendingToast) {
+                                    window.setPendingToast(data.message || 'Tahun pelajaran berhasil diaktifkan!', 'success');
                                 }
-                                setTimeout(() => window.location.reload(), 500);
+                                window.location.reload();
                             } else {
                                 if (window.showToastNotification) {
                                     window.showToastNotification(data.message || 'Gagal mengubah status aktif.', 'error');
@@ -548,10 +548,10 @@
                             const data = await res.json();
                             if (res.ok && data.success) {
                                 this.confirmModal.open = false;
-                                if (window.showToastNotification) {
-                                    window.showToastNotification(data.message || 'Tahun pelajaran berhasil dihapus!', 'success');
+                                if (window.setPendingToast) {
+                                    window.setPendingToast(data.message || 'Tahun pelajaran berhasil dihapus!', 'success');
                                 }
-                                setTimeout(() => window.location.reload(), 500);
+                                window.location.reload();
                             } else {
                                 if (window.showToastNotification) {
                                     window.showToastNotification(data.message || 'Gagal menghapus tahun pelajaran.', 'error');

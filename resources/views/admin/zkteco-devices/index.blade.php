@@ -134,7 +134,7 @@
         </div>
 
         <!-- MAIN MACHINE TABLE CARD -->
-        <section class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-all w-full p-6 space-y-6">
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full p-6 space-y-6">
             
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left">
                 <div class="space-y-1">

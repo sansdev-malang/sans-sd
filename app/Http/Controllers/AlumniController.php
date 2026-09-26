@@ -22,10 +22,20 @@ class AlumniController extends Controller
             'classroomHistories.academicYear'
         ])->where('status', 'lulus');
 
+        $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
+        $uniqueAcademicYears = $academicYears->groupBy('name')->map(function ($group) {
+            $activeInGroup = $group->firstWhere('is_active', true);
+            $chosen = $activeInGroup ?: $group->first();
+            $chosen->has_active = (bool) $activeInGroup;
+            return $chosen;
+        })->values();
+
         // Filter: Academic Year (Tahun Ajaran Kelulusan)
         if ($academicYearId = $request->get('academic_year_id')) {
             if ($academicYearId !== 'all') {
-                $query->where('academic_year_id', $academicYearId);
+                $selectedYear = $academicYears->firstWhere('id', $academicYearId);
+                $matchingIds = $selectedYear ? $academicYears->where('name', $selectedYear->name)->pluck('id') : [$academicYearId];
+                $query->whereIn('academic_year_id', $matchingIds);
             }
         }
 
@@ -67,19 +77,16 @@ class AlumniController extends Controller
             'with_continued_school' => (clone $alumniQuery)->whereNotNull('continued_school')->where('continued_school', '!=', '')->count(),
         ];
 
-        // Academic Years from master
-        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
-
         $students = $query->orderBy('academic_year_id', 'desc')
             ->orderBy('full_name', 'asc')
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.alumni.index', compact(
-            'students',
-            'stats',
-            'academicYears'
-        ));
+        return view('admin.alumni.index', [
+            'students' => $students,
+            'stats' => $stats,
+            'academicYears' => $uniqueAcademicYears,
+        ]);
     }
 
     /**

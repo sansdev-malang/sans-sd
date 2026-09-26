@@ -304,8 +304,8 @@
             // Initialize Lucide Icons
             lucide.createIcons();
 
-            // Global Toast helper function
-            function showToast(title, message, type = 'success') {
+            // Unified Global Toast helper function
+            window.showToast = function(title, message, type = 'success') {
                 const toast = document.getElementById('toast-notification');
                 const titleEl = document.getElementById('toast-title');
                 const messageEl = document.getElementById('toast-message');
@@ -314,12 +314,15 @@
                 
                 if (!toast) return;
 
-                titleEl.textContent = title;
-                messageEl.textContent = message;
+                titleEl.textContent = title || (type === 'error' ? 'Perhatian!' : 'Sukses!');
+                messageEl.textContent = message || '';
 
                 if (type === 'success') {
                     iconBg.className = 'w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0';
                     icon.setAttribute('data-lucide', 'check');
+                } else if (type === 'info') {
+                    iconBg.className = 'w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0';
+                    icon.setAttribute('data-lucide', 'info');
                 } else {
                     iconBg.className = 'w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0';
                     icon.setAttribute('data-lucide', 'alert-circle');
@@ -332,20 +335,22 @@
                 toast.classList.remove('hidden');
                 
                 if (window.anime) {
+                    window.anime.remove(toast);
                     window.anime({
                         targets: toast,
-                        translateX: [300, 0],
+                        translateX: [100, 0],
                         opacity: [0, 1],
-                        duration: 400,
+                        duration: 300,
                         easing: 'easeOutExpo'
                     });
 
-                    setTimeout(() => {
+                    if (window._toastTimeout) clearTimeout(window._toastTimeout);
+                    window._toastTimeout = setTimeout(() => {
                         window.anime({
                             targets: toast,
-                            translateX: [0, 300],
+                            translateX: [0, 100],
                             opacity: [1, 0],
-                            duration: 400,
+                            duration: 300,
                             easing: 'easeInExpo',
                             complete: () => {
                                 toast.classList.add('hidden');
@@ -353,25 +358,57 @@
                         });
                     }, 4000);
                 } else {
-                    setTimeout(() => {
+                    toast.style.opacity = '1';
+                    if (window._toastTimeout) clearTimeout(window._toastTimeout);
+                    window._toastTimeout = setTimeout(() => {
                         toast.classList.add('hidden');
                     }, 4000);
                 }
-            }
+            };
+
+            window.showToastNotification = function(message, type = 'info', title = null) {
+                const defaultTitle = type === 'success' ? 'Sukses!' : (type === 'error' ? 'Perhatian!' : 'Notifikasi');
+                window.showToast(title || defaultTitle, message, type);
+            };
+
+            // Support pending toast after page reload (for CRUD operations)
+            window.setPendingToast = function(message, type = 'success', title = null) {
+                try {
+                    sessionStorage.setItem('pending_toast', JSON.stringify({
+                        title: title || (type === 'error' ? 'Perhatian!' : 'Sukses!'),
+                        message: message,
+                        type: type
+                    }));
+                } catch(e) {}
+            };
+
+            // Check and trigger pending toast on page load
+            document.addEventListener('DOMContentLoaded', () => {
+                try {
+                    const pending = sessionStorage.getItem('pending_toast');
+                    if (pending) {
+                        sessionStorage.removeItem('pending_toast');
+                        const data = JSON.parse(pending);
+                        setTimeout(() => {
+                            window.showToast(data.title, data.message, data.type);
+                        }, 250);
+                    }
+                } catch(e) {}
+            });
         </script>
 
         <!-- Session Message Trigger Script -->
         @if(session('success'))
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
-                    showToast('Sukses!', @json(session('success')), 'success');
+                    window.showToast('Sukses!', @json(session('success')), 'success');
                 });
             </script>
         @endif
         @if(session('error'))
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
-                    showToast('Perhatian!', @json(session('error')), 'error');
+                    window.showToast('Perhatian!', @json(session('error')), 'error');
                 });
             </script>
         @endif

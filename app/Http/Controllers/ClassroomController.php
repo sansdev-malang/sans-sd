@@ -16,21 +16,33 @@ class ClassroomController extends Controller
      */
     public function index(Request $request)
     {
-        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
         $activeYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
+
+        // Unique yearly academic years for annual entities (Rombel)
+        $uniqueAcademicYears = $academicYears->groupBy('name')->map(function ($group) {
+            $activeInGroup = $group->firstWhere('is_active', true);
+            $chosen = $activeInGroup ?: $group->first();
+            $chosen->has_active = (bool) $activeInGroup;
+            return $chosen;
+        })->values();
 
         // Always filter per Tapel, defaulting to currently active Tapel
         $selectedYearId = $request->filled('academic_year_id')
-            ? $request->get('academic_year_id')
+            ? (int) $request->get('academic_year_id')
             : ($activeYear?->id ?? null);
+
+        $selectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? $activeYear;
+        $selectedYearName = $selectedYear?->name;
+        $matchingYearIds = $academicYears->where('name', $selectedYearName)->pluck('id');
 
         $query = Classroom::with(['classLevel', 'academicYear', 'homeroomTeacher'])
             ->withCount(['students as active_students_count' => function ($q) {
                 $q->where('status', 'aktif');
             }]);
 
-        if ($selectedYearId) {
-            $query->where('academic_year_id', $selectedYearId);
+        if ($matchingYearIds->isNotEmpty()) {
+            $query->whereIn('academic_year_id', $matchingYearIds);
         }
 
         if ($classLevelId = $request->get('class_level_id')) {
@@ -62,15 +74,36 @@ class ClassroomController extends Controller
         ];
 
         $classLevels = ClassLevel::orderBy('order')->get();
-        $teachers = Employee::where('status', 'Active')->orderBy('name')->get();
+        
+        $schoolUnit = config('app.school_unit');
+        $teachers = Employee::where('status', 'Active')
+            ->where(function ($q) {
+                $q->whereHas('employeeType', function ($typeQ) {
+                    $typeQ->where('code', 'teacher')
+                          ->orWhere('name', 'like', '%guru%')
+                          ->orWhere('name', 'like', '%pendidik%');
+                })
+                ->orWhere('position', 'like', '%guru%')
+                ->orWhere('position', 'like', '%wali kelas%');
+            })
+            ->when($schoolUnit, function ($q) use ($schoolUnit) {
+                $q->where(function ($sub) use ($schoolUnit) {
+                    $sub->where('unit', $schoolUnit)->orWhereNull('unit');
+                });
+            })
+            ->select(['id', 'name', 'front_title', 'back_title', 'photo', 'position'])
+            ->orderBy('name')
+            ->get();
 
         return view('admin.classrooms.index', compact(
             'classrooms',
             'stats',
             'classLevels',
             'academicYears',
+            'uniqueAcademicYears',
             'teachers',
-            'selectedYearId'
+            'selectedYearId',
+            'selectedYear'
         ));
     }
 

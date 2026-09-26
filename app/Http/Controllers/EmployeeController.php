@@ -475,7 +475,7 @@ class EmployeeController extends Controller
             $unit = strtolower(trim($row[5]));
             $gender = trim($row[6]);
             $birth_place = !empty($row[7]) ? trim($row[7]) : null;
-            $birth_date = !empty($row[8]) ? date('Y-m-d', strtotime(trim($row[8]))) : null;
+            $birth_date = !empty($row[8]) ? $this->parseDateSafely($row[8]) : null;
             $nik = !empty($row[9]) ? trim($row[9]) : null;
             $niy = !empty($row[10]) ? trim($row[10]) : null;
             $nuptk = !empty($row[11]) ? trim($row[11]) : null;
@@ -486,10 +486,10 @@ class EmployeeController extends Controller
             $major = !empty($row[16]) ? trim($row[16]) : null;
             $position = !empty($row[17]) ? trim($row[17]) : null;
             $additional_position = !empty($row[18]) ? trim($row[18]) : null;
-            $task_start_date = !empty($row[19]) ? date('Y-m-d', strtotime(trim($row[19]))) : null;
+            $task_start_date = !empty($row[19]) ? $this->parseDateSafely($row[19]) : null;
             $employment_status = !empty($row[20]) ? trim($row[20]) : null;
-            $appointment_date = !empty($row[21]) ? date('Y-m-d', strtotime(trim($row[21]))) : null;
-            $last_sk_date = !empty($row[22]) ? date('Y-m-d', strtotime(trim($row[22]))) : null;
+            $appointment_date = !empty($row[21]) ? $this->parseDateSafely($row[21]) : null;
+            $last_sk_date = !empty($row[22]) ? $this->parseDateSafely($row[22]) : null;
             $last_sk_number = !empty($row[23]) ? trim($row[23]) : null;
             $work_period = !empty($row[24]) ? trim($row[24]) : null;
             $address = !empty($row[25]) ? trim($row[25]) : null;
@@ -810,6 +810,37 @@ class EmployeeController extends Controller
             $response->headers->setCookie(cookie('download_token', $request->query('download_token'), 1, '/', null, false, false));
         }
         return $response;
+    }
+
+    /**
+     * Helper to safely parse dates in various formats (d/m/Y, Y-m-d, Excel serial).
+     */
+    private function parseDateSafely($raw): ?string
+    {
+        if (empty($raw)) return null;
+        try {
+            $val = trim((string)$raw);
+            if (is_numeric($val) && (int)$val > 10000 && (int)$val < 70000) {
+                return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float)$val)->format('Y-m-d');
+            }
+            if (preg_match('/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/', $val, $m)) {
+                $day = str_pad($m[1], 2, '0', STR_PAD_LEFT);
+                $month = str_pad($m[2], 2, '0', STR_PAD_LEFT);
+                $year = $m[3];
+                if ((int)$day <= 31 && (int)$month <= 12) {
+                    return "{$year}-{$month}-{$day}";
+                }
+            }
+            if (preg_match('/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/', $val, $m)) {
+                $year = $m[1];
+                $month = str_pad($m[2], 2, '0', STR_PAD_LEFT);
+                $day = str_pad($m[3], 2, '0', STR_PAD_LEFT);
+                return "{$year}-{$month}-{$day}";
+            }
+            return \Carbon\Carbon::parse($val)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }
 

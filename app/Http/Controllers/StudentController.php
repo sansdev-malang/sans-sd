@@ -19,19 +19,31 @@ class StudentController extends Controller
      */
     public function index(Request $request)
     {
-        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
         $activeAcademicYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
 
+        // Unique yearly academic years for annual entities (Tahunan - Opsi A)
+        $uniqueAcademicYears = $academicYears->groupBy('name')->map(function ($group) {
+            $activeInGroup = $group->firstWhere('is_active', true);
+            $chosen = $activeInGroup ?: $group->first();
+            $chosen->has_active = (bool) $activeInGroup;
+            return $chosen;
+        })->values();
+
         // Default to active academic year if not explicitly selected
-        $selectedYearId = $request->get('academic_year_id', $activeAcademicYear?->id);
+        $selectedYearId = $request->filled('academic_year_id')
+            ? (int) $request->get('academic_year_id')
+            : ($activeAcademicYear?->id ?? null);
+
         $selectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? $activeAcademicYear;
-        $selectedYearId = $selectedYear?->id;
+        $selectedYearName = $selectedYear?->name;
+        $matchingYearIds = $academicYears->where('name', $selectedYearName)->pluck('id');
 
         $query = Student::with(['classroom.classLevel', 'academicYear', 'spmbCandidate']);
 
-        // Academic Year Filter
-        if ($selectedYearId) {
-            $query->where('academic_year_id', $selectedYearId);
+        // Academic Year Filter (covers all semester records of the selected annual year)
+        if ($matchingYearIds->isNotEmpty()) {
+            $query->whereIn('academic_year_id', $matchingYearIds);
         }
 
         // Search query
@@ -97,8 +109,8 @@ class StudentController extends Controller
 
         // Stats calculation based on selected academic year
         $statsQuery = Student::query();
-        if ($selectedYearId) {
-            $statsQuery->where('academic_year_id', $selectedYearId);
+        if ($matchingYearIds->isNotEmpty()) {
+            $statsQuery->whereIn('academic_year_id', $matchingYearIds);
         }
 
         $totalStudents = (clone $statsQuery)->count();
@@ -112,8 +124,8 @@ class StudentController extends Controller
         })->count();
         
         $rombelQuery = Classroom::where('is_active', true);
-        if ($selectedYearId) {
-            $rombelQuery->where('academic_year_id', $selectedYearId);
+        if ($matchingYearIds->isNotEmpty()) {
+            $rombelQuery->whereIn('academic_year_id', $matchingYearIds);
         }
         $totalClassrooms = $rombelQuery->count();
 
@@ -130,25 +142,26 @@ class StudentController extends Controller
         $classLevels = ClassLevel::orderBy('order')->get();
         
         $classroomListQuery = Classroom::with(['classLevel', 'academicYear'])->where('is_active', true);
-        if ($selectedYearId) {
-            $classroomListQuery->where('academic_year_id', $selectedYearId);
+        if ($matchingYearIds->isNotEmpty()) {
+            $classroomListQuery->whereIn('academic_year_id', $matchingYearIds);
         }
-        $classrooms = $classroomListQuery->orderBy('class_level_id')->orderBy('name')->get();
+        $classrooms = $classroomListQuery->orderBy('class_level_id')->orderBy('code')->orderBy('name')->get();
         $allClassrooms = Classroom::with(['classLevel', 'academicYear'])->where('is_active', true)->orderBy('academic_year_id', 'desc')->orderBy('name')->get();
 
         $students = $query->orderBy('status', 'asc')->orderBy('full_name', 'asc')->paginate(15)->withQueryString();
 
-        return view('admin.students.index', compact(
-            'students',
-            'stats',
-            'classLevels',
-            'classrooms',
-            'allClassrooms',
-            'academicYears',
-            'activeAcademicYear',
-            'selectedYearId',
-            'selectedYear'
-        ));
+        return view('admin.students.index', [
+            'students' => $students,
+            'stats' => $stats,
+            'classLevels' => $classLevels,
+            'classrooms' => $classrooms,
+            'allClassrooms' => $allClassrooms,
+            'academicYears' => $uniqueAcademicYears,
+            'activeAcademicYear' => $activeAcademicYear,
+            'selectedYearId' => $selectedYearId,
+            'selectedYear' => $selectedYear,
+            'selectedYearName' => $selectedYearName,
+        ]);
     }
 
     /**
@@ -481,6 +494,9 @@ class StudentController extends Controller
             }
         }
 
+        // Clean any linked classroom history
+        \App\Models\StudentClassroomHistory::where('student_id', $student->id)->delete();
+
         $student->delete();
 
         return response()->json([
@@ -686,25 +702,26 @@ class StudentController extends Controller
             $hasSeparateRombel = false;
             foreach ($header as $cIdx => $cVal) {
                 $clean = strtolower(trim((string)$cVal));
-                if (str_contains($clean, 'nis') && !str_contains($clean, 'nisn')) {
+                
+                if (str_contains($clean, 'nisn')) {
+                    $map['nisn'] = $cIdx;
+                } elseif ((preg_match('/\bnis\b/', $clean) || str_starts_with($clean, 'nis')) && !str_contains($clean, 'jenis')) {
                     $map['nis'] = $cIdx;
                 } elseif (str_contains($clean, 'nama lengkap')) {
                     $map['full_name'] = $cIdx;
                 } elseif (str_contains($clean, 'panggilan')) {
                     $map['nickname'] = $cIdx;
-                } elseif (str_contains($clean, 'kelamin') || $clean === 'jk' || $clean === 'l/p') {
+                } elseif (str_contains($clean, 'kelamin') || str_contains($clean, 'jenis') || $clean === 'jk' || $clean === 'l/p') {
                     $map['gender'] = $cIdx;
                 } elseif (str_contains($clean, 'tempat lahir')) {
                     $map['birth_place'] = $cIdx;
                 } elseif (str_contains($clean, 'tanggal lahir') || str_contains($clean, 'tgl lahir')) {
                     $map['birth_date'] = $cIdx;
-                } elseif (str_contains($clean, 'nisn')) {
-                    $map['nisn'] = $cIdx;
-                } elseif (str_contains($clean, 'nik')) {
+                } elseif (preg_match('/\bnik\b/', $clean) || str_starts_with($clean, 'nik')) {
                     $map['nik'] = $cIdx;
                 } elseif (str_contains($clean, 'agama')) {
                     $map['religion'] = $cIdx;
-                } elseif (str_contains($clean, 'grade') || str_contains($clean, 'kode rombel')) {
+                } elseif (str_contains($clean, 'grade') || str_contains($clean, 'kode rombel') || str_contains($clean, 'kode kelas') || $clean === 'kelas') {
                     $map['code'] = $cIdx;
                     $hasSeparateRombel = true;
                 } elseif (str_contains($clean, 'nama kelas') || str_contains($clean, 'julukan') || str_contains($clean, 'classname')) {
@@ -716,18 +733,18 @@ class StudentController extends Controller
                     $map['academic_year'] = $cIdx;
                 } elseif (str_contains($clean, 'alamat')) {
                     $map['address'] = $cIdx;
-                } elseif (str_contains($clean, 'nama ayah')) {
-                    $map['father_name'] = $cIdx;
-                } elseif (str_contains($clean, 'hp ayah') || str_contains($clean, 'telepon ayah')) {
+                } elseif (str_contains($clean, 'ayah') && (str_contains($clean, 'hp') || str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'wa'))) {
                     $map['father_phone'] = $cIdx;
-                } elseif (str_contains($clean, 'pekerjaan ayah')) {
+                } elseif (str_contains($clean, 'ayah') && str_contains($clean, 'pekerjaan')) {
                     $map['father_job'] = $cIdx;
-                } elseif (str_contains($clean, 'nama ibu')) {
-                    $map['mother_name'] = $cIdx;
-                } elseif (str_contains($clean, 'hp ibu') || str_contains($clean, 'telepon ibu')) {
+                } elseif (str_contains($clean, 'nama ayah') || (str_contains($clean, 'ayah') && !str_contains($clean, 'ibu'))) {
+                    $map['father_name'] = $cIdx;
+                } elseif (str_contains($clean, 'ibu') && (str_contains($clean, 'hp') || str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'wa'))) {
                     $map['mother_phone'] = $cIdx;
-                } elseif (str_contains($clean, 'pekerjaan ibu')) {
+                } elseif (str_contains($clean, 'ibu') && str_contains($clean, 'pekerjaan')) {
                     $map['mother_job'] = $cIdx;
+                } elseif (str_contains($clean, 'nama ibu') || (str_contains($clean, 'ibu') && !str_contains($clean, 'ayah'))) {
+                    $map['mother_name'] = $cIdx;
                 } elseif (str_contains($clean, 'whatsapp') || str_contains($clean, 'kontak') || str_contains($clean, 'hp ortu')) {
                     $map['parent_phone'] = $cIdx;
                 } elseif (str_contains($clean, 'status')) {
@@ -797,17 +814,55 @@ class StudentController extends Controller
                 $gender = 'L';
             }
 
-            // Normalisasi Tanggal Lahir
+            // Normalisasi Tanggal Lahir (Mendukung dd/mm/yyyy, dd-mm-yyyy, yyyy-mm-dd, Serial Excel, dsb.)
             $birthDate = null;
             if ($birthDateRaw) {
                 try {
-                    $birthDate = \Carbon\Carbon::parse($birthDateRaw)->format('Y-m-d');
+                    $raw = trim((string)$birthDateRaw);
+                    
+                    // 1. Cek jika serial numeric Excel (misal: 43637 / 44002)
+                    if (is_numeric($raw) && (int)$raw > 10000 && (int)$raw < 70000) {
+                        $birthDate = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float)$raw)->format('Y-m-d');
+                    }
+                    // 2. Format dd/mm/yyyy atau dd-mm-yyyy (Contoh gambar: 20/06/2020, 03/06/2020)
+                    elseif (preg_match('/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/', $raw, $m)) {
+                        $day = str_pad($m[1], 2, '0', STR_PAD_LEFT);
+                        $month = str_pad($m[2], 2, '0', STR_PAD_LEFT);
+                        $year = $m[3];
+                        if ((int)$day <= 31 && (int)$month <= 12) {
+                            $birthDate = "{$year}-{$month}-{$day}";
+                        } else {
+                            $birthDate = \Carbon\Carbon::parse($raw)->format('Y-m-d');
+                        }
+                    }
+                    // 3. Format yyyy-mm-dd atau yyyy/mm/dd (Contoh: 2020-06-20)
+                    elseif (preg_match('/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/', $raw, $m)) {
+                        $year = $m[1];
+                        $month = str_pad($m[2], 2, '0', STR_PAD_LEFT);
+                        $day = str_pad($m[3], 2, '0', STR_PAD_LEFT);
+                        $birthDate = "{$year}-{$month}-{$day}";
+                    }
+                    // 4. Fallback jika ada nama bulan teks Indonesia (misal: 20 Juni 2020)
+                    else {
+                        $indoMonths = [
+                            'januari' => 'january', 'februari' => 'february', 'maret' => 'march',
+                            'april' => 'april', 'mei' => 'may', 'juni' => 'june',
+                            'juli' => 'july', 'agustus' => 'august', 'september' => 'september',
+                            'oktober' => 'october', 'november' => 'november', 'desember' => 'december',
+                            'agu' => 'aug', 'okt' => 'oct', 'des' => 'dec'
+                        ];
+                        $cleanDate = strtolower($raw);
+                        foreach ($indoMonths as $idm => $enm) {
+                            $cleanDate = str_replace($idm, $enm, $cleanDate);
+                        }
+                        $birthDate = \Carbon\Carbon::parse($cleanDate)->format('Y-m-d');
+                    }
                 } catch (\Exception $e) {
                     $birthDate = null;
                 }
             }
 
-            // Resolusi Tahun Ajaran
+            // Resolusi Tahun Ajaran (Mendukung Opsi A: Tahunan)
             $academicYearId = null;
             if ($academicYearStr) {
                 $cleanAY = str_replace('-', '/', $academicYearStr);
@@ -820,52 +875,70 @@ class StudentController extends Controller
                 $academicYearId = $defaultAcademicYear?->id;
             }
 
-            // Resolusi Rombel (Classroom)
+            // Dapatkan semua ID semester dalam tahun ajaran yang sama
+            $targetAY = $academicYearId ? AcademicYear::find($academicYearId) : null;
+            $targetYearIds = $targetAY ? AcademicYear::where('name', $targetAY->name)->pluck('id')->toArray() : ($academicYearId ? [$academicYearId] : []);
+
+            // Resolusi Rombel (Classroom) - Case-Insensitive (BERLIAN / Berlian / berlian)
             $classroomId = null;
 
             if ($gradeCode && $className) {
-                $cr = Classroom::where('code', $gradeCode)
-                    ->when($academicYearId, function($q) use ($academicYearId) {
-                        $q->where('academic_year_id', $academicYearId);
+                $cr = Classroom::whereRaw('LOWER(code) = ?', [strtolower($gradeCode)])
+                    ->whereRaw('LOWER(name) = ?', [strtolower($className)])
+                    ->when(!empty($targetYearIds), function($q) use ($targetYearIds) {
+                        $q->whereIn('academic_year_id', $targetYearIds);
                     })
                     ->first();
                 if (!$cr) {
-                    $cr = Classroom::where('name', $className)
-                        ->when($academicYearId, function($q) use ($academicYearId) {
-                            $q->where('academic_year_id', $academicYearId);
+                    $cr = Classroom::whereRaw('LOWER(code) = ?', [strtolower($gradeCode)])
+                        ->when(!empty($targetYearIds), function($q) use ($targetYearIds) {
+                            $q->whereIn('academic_year_id', $targetYearIds);
+                        })
+                        ->first();
+                }
+                if (!$cr) {
+                    $cr = Classroom::whereRaw('LOWER(name) = ?', [strtolower($className)])
+                        ->when(!empty($targetYearIds), function($q) use ($targetYearIds) {
+                            $q->whereIn('academic_year_id', $targetYearIds);
                         })
                         ->first();
                 }
                 if ($cr) $classroomId = $cr->id;
             } elseif ($gradeCode) {
-                $cr = Classroom::where('code', $gradeCode)
-                    ->orWhere('name', $gradeCode)
-                    ->when($academicYearId, function($q) use ($academicYearId) {
-                        $q->where('academic_year_id', $academicYearId);
+                $cr = Classroom::where(function($q) use ($gradeCode) {
+                        $q->whereRaw('LOWER(code) = ?', [strtolower($gradeCode)])
+                          ->orWhereRaw('LOWER(name) = ?', [strtolower($gradeCode)]);
+                    })
+                    ->when(!empty($targetYearIds), function($q) use ($targetYearIds) {
+                        $q->whereIn('academic_year_id', $targetYearIds);
                     })
                     ->first();
                 if ($cr) $classroomId = $cr->id;
             } elseif ($className) {
-                $cr = Classroom::where('name', $className)
-                    ->orWhere('name', 'like', "%{$className}%")
-                    ->when($academicYearId, function($q) use ($academicYearId) {
-                        $q->where('academic_year_id', $academicYearId);
+                $cr = Classroom::where(function($q) use ($className) {
+                        $q->whereRaw('LOWER(name) = ?', [strtolower($className)])
+                          ->orWhere('name', 'like', "%{$className}%");
+                    })
+                    ->when(!empty($targetYearIds), function($q) use ($targetYearIds) {
+                        $q->whereIn('academic_year_id', $targetYearIds);
                     })
                     ->first();
                 if ($cr) $classroomId = $cr->id;
             } elseif ($combinedRombel) {
                 $cleanCombined = trim(preg_replace('/[^a-zA-Z0-9\s]/', ' ', $combinedRombel));
                 $parts = preg_split('/\s+/', $cleanCombined);
-                $firstPart = $parts[0] ?? '';
-                $secondPart = $parts[1] ?? '';
+                $firstPart = strtolower($parts[0] ?? '');
+                $secondPart = strtolower($parts[1] ?? '');
 
-                $cr = Classroom::where('name', $combinedRombel)
-                    ->orWhere('code', $combinedRombel)
-                    ->orWhere('code', $firstPart)
-                    ->orWhere('name', $secondPart)
-                    ->orWhere('name', 'like', "%{$combinedRombel}%")
-                    ->when($academicYearId, function($q) use ($academicYearId) {
-                        $q->where('academic_year_id', $academicYearId);
+                $cr = Classroom::where(function($q) use ($combinedRombel, $firstPart, $secondPart) {
+                        $q->whereRaw('LOWER(name) = ?', [strtolower($combinedRombel)])
+                          ->orWhereRaw('LOWER(code) = ?', [strtolower($combinedRombel)])
+                          ->orWhereRaw('LOWER(code) = ?', [$firstPart])
+                          ->orWhereRaw('LOWER(name) = ?', [$secondPart])
+                          ->orWhere('name', 'like', "%{$combinedRombel}%");
+                    })
+                    ->when(!empty($targetYearIds), function($q) use ($targetYearIds) {
+                        $q->whereIn('academic_year_id', $targetYearIds);
                     })
                     ->first();
                 if ($cr) $classroomId = $cr->id;

@@ -27,8 +27,15 @@ class PicketScheduleController extends Controller
         $schoolUnit = config('app.school_unit', 'sd');
 
         // Academic Year Resolution
-        $academicYears = AcademicYear::orderBy('start_date', 'desc')->get();
-        $activeYear = AcademicYear::where('is_active', true)->first() ?? $academicYears->first();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
+        $uniqueAcademicYears = $academicYears->groupBy('name')->map(function ($group) {
+            $activeInGroup = $group->firstWhere('is_active', true);
+            $chosen = $activeInGroup ?: $group->first();
+            $chosen->has_active = (bool) $activeInGroup;
+            return $chosen;
+        })->values();
+
+        $activeYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
         $selectedYearId = $request->input('academic_year_id', $activeYear?->id);
         $selectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? $activeYear;
 
@@ -90,15 +97,15 @@ class PicketScheduleController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.picket-schedules.index', compact(
-            'areas',
-            'myPicketToday',
-            'pendingSwapsForMe',
-            'mySubmittedSwaps',
-            'employees',
-            'academicYears',
-            'selectedYear'
-        ));
+        return view('admin.picket-schedules.index', [
+            'areas' => $areas,
+            'myPicketToday' => $myPicketToday,
+            'pendingSwapsForMe' => $pendingSwapsForMe,
+            'mySubmittedSwaps' => $mySubmittedSwaps,
+            'employees' => $employees,
+            'academicYears' => $uniqueAcademicYears,
+            'selectedYear' => $selectedYear,
+        ]);
     }
 
     /**
@@ -109,8 +116,15 @@ class PicketScheduleController extends Controller
         $schoolUnit = config('app.school_unit', 'sd');
 
         // Academic Year Resolution
-        $academicYears = AcademicYear::orderBy('start_date', 'desc')->get();
-        $activeYear = AcademicYear::where('is_active', true)->first() ?? $academicYears->first();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
+        $uniqueAcademicYears = $academicYears->groupBy('name')->map(function ($group) {
+            $activeInGroup = $group->firstWhere('is_active', true);
+            $chosen = $activeInGroup ?: $group->first();
+            $chosen->has_active = (bool) $activeInGroup;
+            return $chosen;
+        })->values();
+
+        $activeYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
         $selectedYearId = $request->input('academic_year_id', $activeYear?->id);
         $selectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? $activeYear;
 
@@ -136,14 +150,14 @@ class PicketScheduleController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.picket-schedules.admin', compact(
-            'areas',
-            'employees',
-            'schedules',
-            'swaps',
-            'academicYears',
-            'selectedYear'
-        ));
+        return view('admin.picket-schedules.admin', [
+            'areas' => $areas,
+            'employees' => $employees,
+            'schedules' => $schedules,
+            'swaps' => $swaps,
+            'academicYears' => $uniqueAcademicYears,
+            'selectedYear' => $selectedYear,
+        ]);
     }
 
     /**
@@ -529,8 +543,8 @@ class PicketScheduleController extends Controller
      */
     public function downloadPdf(Request $request)
     {
-        $academicYears = AcademicYear::orderBy('start_date', 'desc')->get();
-        $activeYear = AcademicYear::where('is_active', true)->first() ?? $academicYears->first();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
+        $activeYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
         $selectedYearId = $request->input('academic_year_id', $activeYear?->id);
         $selectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? $activeYear;
 

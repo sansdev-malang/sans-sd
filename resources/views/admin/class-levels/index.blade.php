@@ -101,7 +101,7 @@
         </section>
 
         <!-- TABLE DAFTAR TINGKAT KELAS -->
-        <section class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden transition-all w-full">
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden w-full">
             <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="flex items-center gap-2.5">
                     <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -109,12 +109,12 @@
                         Daftar Tingkat & Jenjang Kelas
                     </h3>
                     @php
-                        $currentSelectedYear = $academicYears->firstWhere('id', $selectedYearId);
+                        $currentSelectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? ($academicYears->firstWhere('has_active', true) ?? $academicYears->first());
                     @endphp
                     @if($currentSelectedYear)
-                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $currentSelectedYear->is_active ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700' }}">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $currentSelectedYear->has_active || $currentSelectedYear->is_active ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700' }}">
                             <i data-lucide="calendar" class="w-3 h-3"></i>
-                            Tapel {{ $currentSelectedYear->name }} {{ $currentSelectedYear->is_active ? '(Aktif)' : '' }}
+                            Tapel {{ $currentSelectedYear->name }} {{ ($currentSelectedYear->has_active || $currentSelectedYear->is_active) ? '(Aktif)' : '' }}
                         </span>
                     @endif
                 </div>
@@ -125,8 +125,8 @@
                     <select name="academic_year_id" onchange="this.form.submit()"
                         class="h-9 px-3 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer shadow-xs">
                         @foreach($academicYears as $ay)
-                            <option value="{{ $ay->id }}" {{ $selectedYearId == $ay->id ? 'selected' : '' }}>
-                                Tapel {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}
+                            <option value="{{ $ay->id }}" {{ ($selectedYearName ?? '') == $ay->name || $selectedYearId == $ay->id ? 'selected' : '' }}>
+                                Tapel {{ $ay->name }} {{ ($ay->has_active || $ay->is_active) ? '(Aktif)' : '' }}
                             </option>
                         @endforeach
                     </select>
@@ -394,10 +394,10 @@
                         const data = await res.json();
                         if (res.ok && data.success) {
                             this.modalOpen = false;
-                            if (window.showToastNotification) {
-                                window.showToastNotification(data.message || 'Tingkat kelas berhasil disimpan!', 'success');
+                            if (window.setPendingToast) {
+                                window.setPendingToast(data.message || 'Tingkat kelas berhasil disimpan!', 'success');
                             }
-                            setTimeout(() => window.location.reload(), 500);
+                            window.location.reload();
                         } else {
                             const errMsg = data.message || (data.errors ? Object.values(data.errors).flat().join(', ') : 'Terjadi kesalahan saat menyimpan.');
                             if (window.showToastNotification) {
@@ -446,10 +446,10 @@
                         const data = await res.json();
                         if (res.ok && data.success) {
                             this.confirmModal.open = false;
-                            if (window.showToastNotification) {
-                                window.showToastNotification(data.message || 'Tingkat kelas berhasil dihapus!', 'success');
+                            if (window.setPendingToast) {
+                                window.setPendingToast(data.message || 'Tingkat kelas berhasil dihapus!', 'success');
                             }
-                            setTimeout(() => window.location.reload(), 500);
+                            window.location.reload();
                         } else {
                             const errMsg = data.message || 'Gagal menghapus tingkat kelas.';
                             if (window.showToastNotification) {

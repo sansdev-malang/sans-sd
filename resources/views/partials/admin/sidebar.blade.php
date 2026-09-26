@@ -194,17 +194,17 @@
                     <div x-show="openAcademic" x-collapse
                         class="mt-1 ml-5 pl-4 border-l border-slate-200 dark:border-slate-800 space-y-1"
                         style="margin-left:20px">
-                        <a href="{{ route('class-levels.index') }}"
-                            class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('class-levels.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
-                            <span>Tingkat Kelas</span>
-                        </a>
                         <a href="{{ route('classrooms.index') }}"
                             class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('classrooms.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
                             <span>Rombongan Belajar</span>
                         </a>
+                        <a href="{{ route('class-levels.index') }}"
+                            class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('class-levels.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
+                            <span>Tingkat Kelas</span>
+                        </a>
                         <a href="{{ route('academic-years.index') }}"
                             class="flex items-center justify-between gap-2 py-1.5 text-xs font-medium {{ Request::routeIs('academic-years.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
-                            <span>Tahun Pelajaran (Tapel)</span>
+                            <span>Tahun Pelajaran</span>
                         </a>
                     </div>
                 </div>

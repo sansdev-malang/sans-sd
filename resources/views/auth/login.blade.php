@@ -29,7 +29,7 @@
                     <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
                         autocomplete="username"
                         class="w-full bg-transparent border border-slate-200 dark:border-slate-800 focus:border-slate-400 dark:focus:border-slate-600 rounded-lg px-3.5 py-2 text-sm outline-none transition-colors dark:text-slate-50 text-slate-900 placeholder:text-slate-400 @error('email') border-red-500 dark:border-red-500 @enderror"
-                        placeholder="admin@sansmalang.sch.id">
+                        placeholder="user@sekolahanaksaleh.sch.id">
                 </div>
 
                 @if ($errors->has('email'))

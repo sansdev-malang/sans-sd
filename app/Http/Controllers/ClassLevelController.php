@@ -15,57 +15,77 @@ class ClassLevelController extends Controller
      */
     public function index(Request $request)
     {
-        $academicYears = \App\Models\AcademicYear::orderBy('name', 'desc')->get();
+        $academicYears = \App\Models\AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
         $activeYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
+
+        // Unique yearly academic years for annual entities (Tahunan - Opsi A)
+        $uniqueAcademicYears = $academicYears->groupBy('name')->map(function ($group) {
+            $activeInGroup = $group->firstWhere('is_active', true);
+            $chosen = $activeInGroup ?: $group->first();
+            $chosen->has_active = (bool) $activeInGroup;
+            return $chosen;
+        })->values();
 
         // Filter per Tapel, defaulting to active Tapel
         $selectedYearId = $request->filled('academic_year_id')
-            ? $request->get('academic_year_id')
+            ? (int) $request->get('academic_year_id')
             : ($activeYear?->id ?? null);
 
-        $classLevels = ClassLevel::with(['classrooms' => function ($q) use ($selectedYearId) {
-                if ($selectedYearId) {
-                    $q->where('academic_year_id', $selectedYearId);
+        $selectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? $activeYear;
+        $selectedYearName = $selectedYear?->name;
+        $matchingYearIds = $academicYears->where('name', $selectedYearName)->pluck('id');
+
+        $classLevels = ClassLevel::with(['classrooms' => function ($q) use ($matchingYearIds) {
+                if ($matchingYearIds->isNotEmpty()) {
+                    $q->whereIn('academic_year_id', $matchingYearIds);
                 }
                 $q->orderBy('name');
             }])
             ->orderBy('order', 'asc')
             ->get();
 
-        // Calculate student counts per class level via classrooms in selected Tapel
+        // 1-Query optimization for student counts per class level in selected Tapel
+        $studentCounts = Student::query()
+            ->join('classrooms', 'students.classroom_id', '=', 'classrooms.id')
+            ->where('students.status', 'aktif')
+            ->when($matchingYearIds->isNotEmpty(), function ($q) use ($matchingYearIds) {
+                $q->whereIn('classrooms.academic_year_id', $matchingYearIds);
+            })
+            ->groupBy('classrooms.class_level_id')
+            ->selectRaw('classrooms.class_level_id, count(students.id) as count')
+            ->pluck('count', 'class_level_id');
+
         foreach ($classLevels as $lvl) {
-            $classLevelId = $lvl->id;
-            $lvl->active_students_count = Student::whereHas('classroom', function ($q) use ($classLevelId, $selectedYearId) {
-                $q->where('class_level_id', $classLevelId);
-                if ($selectedYearId) {
-                    $q->where('academic_year_id', $selectedYearId);
-                }
-            })->where('status', 'aktif')->count();
+            $lvl->active_students_count = (int) ($studentCounts->get($lvl->id, 0));
         }
 
         $totalLevels = $classLevels->count();
         
         $rombelQuery = Classroom::query();
-        if ($selectedYearId) {
-            $rombelQuery->where('academic_year_id', $selectedYearId);
+        if ($matchingYearIds->isNotEmpty()) {
+            $rombelQuery->whereIn('academic_year_id', $matchingYearIds);
         }
-        $totalClassrooms = (clone $rombelQuery)->count();
-        $totalCapacity = (clone $rombelQuery)->sum('capacity');
+        $rombelStats = (clone $rombelQuery)
+            ->selectRaw('COUNT(*) as total_classrooms, COALESCE(SUM(capacity), 0) as total_capacity')
+            ->first();
 
-        $totalStudents = Student::whereHas('classroom', function ($q) use ($selectedYearId) {
-            if ($selectedYearId) {
-                $q->where('academic_year_id', $selectedYearId);
-            }
-        })->where('status', 'aktif')->count();
+        $totalStudents = (int) $studentCounts->sum();
 
         $stats = [
             'total_levels' => $totalLevels,
-            'total_classrooms' => $totalClassrooms,
-            'total_capacity' => $totalCapacity,
+            'total_classrooms' => (int) ($rombelStats->total_classrooms ?? 0),
+            'total_capacity' => (int) ($rombelStats->total_capacity ?? 0),
             'total_students' => $totalStudents,
         ];
 
-        return view('admin.class-levels.index', compact('classLevels', 'stats', 'academicYears', 'selectedYearId'));
+        return view('admin.class-levels.index', [
+            'classLevels' => $classLevels,
+            'stats' => $stats,
+            'academicYears' => $uniqueAcademicYears,
+            'selectedYearId' => $selectedYearId,
+            'selectedYear' => $selectedYear,
+            'selectedYearName' => $selectedYearName,
+        ]);
     }
 
     /**

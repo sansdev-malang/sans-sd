@@ -18,16 +18,25 @@ class ClassPromotionController extends Controller
      */
     public function index(Request $request)
     {
-        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
         $activeAcademicYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
+
+        // Unique yearly academic years for annual entities
+        $uniqueAcademicYears = $academicYears->groupBy('name')->map(function ($group) {
+            $activeInGroup = $group->firstWhere('is_active', true);
+            $chosen = $activeInGroup ?: $group->first();
+            $chosen->has_active = (bool) $activeInGroup;
+            return $chosen;
+        })->values();
 
         $sourceYearId = $request->get('source_year_id', $activeAcademicYear?->id);
         $sourceYear = $academicYears->firstWhere('id', $sourceYearId) ?? $activeAcademicYear;
+        $matchingSourceIds = $sourceYear ? $academicYears->where('name', $sourceYear->name)->pluck('id') : ($sourceYearId ? [$sourceYearId] : []);
 
         // Classrooms in source academic year
         $sourceClassrooms = Classroom::with(['classLevel', 'academicYear', 'homeroomTeacher'])
             ->where('is_active', true)
-            ->where('academic_year_id', $sourceYear?->id)
+            ->whereIn('academic_year_id', $matchingSourceIds)
             ->orderBy('class_level_id')
             ->orderBy('name')
             ->get();
@@ -49,15 +58,15 @@ class ClassPromotionController extends Controller
 
         $classLevels = ClassLevel::orderBy('order')->get();
 
-        return view('admin.promotions.index', compact(
-            'academicYears',
-            'activeAcademicYear',
-            'sourceYear',
-            'sourceClassrooms',
-            'allClassrooms',
-            'grade6Classrooms',
-            'classLevels'
-        ));
+        return view('admin.promotions.index', [
+            'academicYears' => $uniqueAcademicYears,
+            'activeAcademicYear' => $activeAcademicYear,
+            'sourceYear' => $sourceYear,
+            'sourceClassrooms' => $sourceClassrooms,
+            'allClassrooms' => $allClassrooms,
+            'grade6Classrooms' => $grade6Classrooms,
+            'classLevels' => $classLevels
+        ]);
     }
 
     /**
