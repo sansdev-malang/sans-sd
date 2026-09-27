@@ -479,11 +479,11 @@
         <!-- ========================================================= -->
         <!-- MODAL DETAIL SISWA (7-TAB SYSTEM) -->
         <!-- ========================================================= -->
-        <div x-show="detailModalOpen" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="display: none; margin-top: 0px !important; z-index: 9999; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
-            <div @click.outside="detailModalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden shadow-2xl flex flex-col">
+        <div x-show="detailModalOpen" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4" style="display: none; margin-top: 0px !important; z-index: 9999; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
+            <div @click.outside="detailModalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
                 
                 <!-- Modal Top Header -->
-                <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-900/80">
+                <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-900/80 shrink-0">
                     <div class="flex items-center gap-3.5">
                         <template x-if="selectedStudent?.student_photo_url">
                             <img :src="selectedStudent.student_photo_url" class="w-12 h-12 rounded-xl object-cover ring-2 ring-indigo-500/30">
@@ -521,32 +521,32 @@
                 </div>
 
                 <!-- 7-Tab Navigation Bar -->
-                <div class="flex items-center gap-1 px-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-x-auto text-xs font-semibold scrollbar-thin">
-                    <button type="button" @click="activeDetailTab = 1" :class="activeDetailTab === 1 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+                <div class="flex items-center gap-1 px-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-x-auto text-xs font-semibold scrollbar-thin shrink-0">
+                    <button type="button" @click="activeDetailTab = 1" :class="activeDetailTab === 1 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                         <i data-lucide="id-card" class="w-4 h-4"></i> 1. Identitas & Legalitas
                     </button>
-                    <button type="button" @click="activeDetailTab = 2" :class="activeDetailTab === 2 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+                    <button type="button" @click="activeDetailTab = 2" :class="activeDetailTab === 2 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                         <i data-lucide="heart-handshake" class="w-4 h-4"></i> 2. Inklusi / PDBK
                     </button>
-                    <button type="button" @click="activeDetailTab = 3" :class="activeDetailTab === 3 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+                    <button type="button" @click="activeDetailTab = 3" :class="activeDetailTab === 3 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                         <i data-lucide="map-pin" class="w-4 h-4"></i> 3. Alamat & Domisili
                     </button>
-                    <button type="button" @click="activeDetailTab = 4" :class="activeDetailTab === 4 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+                    <button type="button" @click="activeDetailTab = 4" :class="activeDetailTab === 4 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                         <i data-lucide="users-round" class="w-4 h-4"></i> 4. Orang Tua & Wali
                     </button>
-                    <button type="button" @click="activeDetailTab = 5" :class="activeDetailTab === 5 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+                    <button type="button" @click="activeDetailTab = 5" :class="activeDetailTab === 5 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                         <i data-lucide="git-fork" class="w-4 h-4"></i> 5. Keluarga & Saudara
                     </button>
-                    <button type="button" @click="activeDetailTab = 6" :class="activeDetailTab === 6 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+                    <button type="button" @click="activeDetailTab = 6" :class="activeDetailTab === 6 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                         <i data-lucide="activity" class="w-4 h-4"></i> 6. Kesehatan & UKS
                     </button>
-                    <button type="button" @click="activeDetailTab = 7" :class="activeDetailTab === 7 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+                    <button type="button" @click="activeDetailTab = 7" :class="activeDetailTab === 7 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                         <i data-lucide="history" class="w-4 h-4"></i> 7. Asal & Riwayat Kelas
                     </button>
                 </div>
 
                 <!-- Tab Body Content -->
-                <div class="p-6 overflow-y-auto min-h-[440px] max-h-[72vh] space-y-4 text-xs">
+                <div class="p-5 sm:p-6 overflow-y-auto flex-1 min-h-0 space-y-4 text-xs">
                     
                     <!-- TAB 1: IDENTITAS & LEGALITAS -->
                     <div x-show="activeDetailTab === 1" class="space-y-4">
@@ -853,12 +853,12 @@
         <!-- ========================================================= -->
         <!-- MODAL FORM TAMBAH / EDIT SISWA (7-TAB WIZARD) -->
         <!-- ========================================================= -->
-        <div x-show="formModalOpen" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="display: none; margin-top: 0px !important; z-index: 9999; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
-            <div @click.outside="formModalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden shadow-2xl flex flex-col">
+        <div x-show="formModalOpen" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4" style="display: none; margin-top: 0px !important; z-index: 9999; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
+            <div @click.outside="formModalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
                 
-                <form @submit.prevent="submitForm">
+                <form @submit.prevent="submitForm" class="flex flex-col flex-1 min-h-0 overflow-hidden">
                     <!-- Form Top Header -->
-                    <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-900/80">
+                    <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-900/80 shrink-0">
                         <div>
                             <h3 class="text-base font-black text-slate-900 dark:text-slate-50" x-text="isEdit ? 'Edit Data Siswa (7 Kategori)' : 'Tambah Siswa Baru (7 Kategori)'"></h3>
                             <p class="text-xs text-slate-400 mt-0.5">Kelola identitas Dapodik, inklusi, domisili, orang tua, fisik, dan asal sekolah.</p>
@@ -869,7 +869,7 @@
                     </div>
 
                     <!-- 7-Tab Form Navigation -->
-                    <div class="flex items-center gap-1 px-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-x-auto text-xs font-semibold scrollbar-thin">
+                    <div class="flex items-center gap-1 px-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-x-auto text-xs font-semibold scrollbar-thin shrink-0">
                         <button type="button" @click="activeFormTab = 1" :class="activeFormTab === 1 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                             <i data-lucide="id-card" class="w-3.5 h-3.5"></i> 1. Identitas
                         </button>
@@ -894,7 +894,7 @@
                     </div>
 
                     <!-- Form Body Fields -->
-                    <div class="p-6 overflow-y-auto min-h-[440px] max-h-[72vh] space-y-4 text-xs">
+                    <div class="p-5 sm:p-6 overflow-y-auto flex-1 min-h-0 space-y-4 text-xs">
 
                         <!-- TAB 1: IDENTITAS & LEGALITAS -->
                         <div x-show="activeFormTab === 1" class="space-y-4">
@@ -1391,20 +1391,21 @@
                     </div>
 
                     <!-- Form Footer Buttons -->
-                    <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 flex items-center justify-between">
+                    <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center justify-between shrink-0">
                         <div class="flex items-center gap-1.5">
-                            <button type="button" x-show="activeFormTab > 1" @click="activeFormTab--" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1">
+                            <button type="button" x-show="activeFormTab > 1" @click="activeFormTab--" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer">
                                 <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Sebelumnya
                             </button>
-                            <button type="button" x-show="activeFormTab < 7" @click="activeFormTab++" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1">
+                            <button type="button" x-show="activeFormTab < 7" @click="activeFormTab++" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer">
                                 Selanjutnya <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
                             </button>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button type="button" @click="formModalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold transition-colors">
+                            <button type="button" @click="formModalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold transition-colors cursor-pointer">
                                 Batal
                             </button>
-                            <button type="submit" :disabled="saving" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5">
+                            <button type="submit" :disabled="saving" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+                                <span x-show="saving" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                                 <span x-text="saving ? 'Menyimpan...' : (isEdit ? 'Simpan Perubahan' : 'Simpan Siswa Baru')"></span>
                             </button>
                         </div>
