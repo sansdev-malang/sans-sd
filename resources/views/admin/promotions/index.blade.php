@@ -1,5 +1,5 @@
 <x-admin-layout>
-    <div class="p-6 space-y-6" x-data="promotionApp()">
+    <div class="p-6 space-y-6" x-data="promotionApp()" x-cloak>
 
         <!-- GREETING / PAGE TITLE -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left">
@@ -33,13 +33,13 @@
         <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800">
             <button type="button" @click="activeTab = 'promotion'"
                 :class="activeTab === 'promotion' ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400'"
-                class="px-4 py-3 border-b-2 font-bold text-xs flex items-center gap-2 transition-all">
+                class="px-4 py-3 border-b-2 font-bold text-xs flex items-center gap-2 transition-all cursor-pointer">
                 <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
                 1. Kenaikan Kelas Massal (Kelas 1–5)
             </button>
             <button type="button" @click="activeTab = 'graduation'"
                 :class="activeTab === 'graduation' ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400'"
-                class="px-4 py-3 border-b-2 font-bold text-xs flex items-center gap-2 transition-all">
+                class="px-4 py-3 border-b-2 font-bold text-xs flex items-center gap-2 transition-all cursor-pointer">
                 <i data-lucide="graduation-cap" class="w-4 h-4"></i>
                 2. Kelulusan Siswa (Kelas 6)
             </button>
@@ -48,7 +48,7 @@
         <!-- ========================================================= -->
         <!-- TAB 1: KENAIKAN KELAS MASSAL (KELAS 1 - 5) -->
         <!-- ========================================================= -->
-        <div x-show="activeTab === 'promotion'" class="space-y-6">
+        <div x-show="activeTab === 'promotion'" x-cloak class="space-y-6">
 
             <!-- SELECTION TOOLBAR CARD -->
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4">
@@ -107,7 +107,7 @@
             </div>
 
             <!-- STUDENT LIST FOR PROMOTION -->
-            <div x-show="sourceClassroomId" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden space-y-0">
+            <div x-show="sourceClassroomId" x-cloak class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden space-y-0">
                 
                 <!-- Table Header & Summary Bar -->
                 <div class="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -146,6 +146,16 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
+                            <template x-if="loading">
+                                <tr>
+                                    <td colspan="6" class="px-4 py-10 text-center text-slate-500 dark:text-slate-400">
+                                        <div class="flex flex-col items-center justify-center gap-2">
+                                            <i data-lucide="loader-2" class="w-5 h-5 animate-spin text-indigo-600 dark:text-indigo-400"></i>
+                                            <span class="text-xs font-semibold">Memuat data siswa rombel...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
                             <template x-for="(s, idx) in students" :key="s.id">
                                 <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                                     <td class="px-4 py-3 text-slate-400 font-mono text-[11px]" x-text="idx + 1"></td>
@@ -165,17 +175,17 @@
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" @click="s.action = 'promote'"
                                                 :class="s.action === 'promote' ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'"
-                                                class="px-2.5 py-1 rounded-md text-[11px] transition-all">
+                                                class="px-2.5 py-1 rounded-md text-[11px] transition-all cursor-pointer">
                                                 🟢 Naik
                                             </button>
                                             <button type="button" @click="s.action = 'stay'"
                                                 :class="s.action === 'stay' ? 'bg-amber-600 text-white font-bold' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'"
-                                                class="px-2.5 py-1 rounded-md text-[11px] transition-all">
+                                                class="px-2.5 py-1 rounded-md text-[11px] transition-all cursor-pointer">
                                                 🟡 Tinggal Kelas
                                             </button>
                                             <button type="button" @click="s.action = 'transfer_out'"
                                                 :class="s.action === 'transfer_out' ? 'bg-rose-600 text-white font-bold' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'"
-                                                class="px-2.5 py-1 rounded-md text-[11px] transition-all">
+                                                class="px-2.5 py-1 rounded-md text-[11px] transition-all cursor-pointer">
                                                 🔴 Mutasi
                                             </button>
                                         </div>
@@ -235,7 +245,7 @@
         <!-- ========================================================= -->
         <!-- TAB 2: KELULUSAN SISWA KELAS 6 -->
         <!-- ========================================================= -->
-        <div x-show="activeTab === 'graduation'" class="space-y-6">
+        <div x-show="activeTab === 'graduation'" x-cloak class="space-y-6">
 
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4">
                 <h3 class="font-bold text-slate-900 dark:text-slate-50 text-xs uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
@@ -267,7 +277,7 @@
             </div>
 
             <!-- GRADE 6 STUDENTS LIST -->
-            <div x-show="gradClassroomId" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden space-y-0">
+            <div x-show="gradClassroomId" x-cloak class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden space-y-0">
                 
                 <div class="p-4 border-b border-slate-200 dark:border-slate-800 bg-blue-50/40 dark:bg-blue-950/20 flex justify-between items-center">
                     <span class="font-bold text-blue-900 dark:text-blue-200 text-xs">
@@ -288,6 +298,16 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
+                            <template x-if="gradLoading">
+                                <tr>
+                                    <td colspan="5" class="px-4 py-10 text-center text-slate-500 dark:text-slate-400">
+                                        <div class="flex flex-col items-center justify-center gap-2">
+                                            <i data-lucide="loader-2" class="w-5 h-5 animate-spin text-blue-600 dark:text-blue-400"></i>
+                                            <span class="text-xs font-semibold">Memuat data siswa kelas 6...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
                             <template x-for="(s, idx) in gradStudents" :key="s.id">
                                 <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                                     <td class="px-4 py-3 text-slate-400 font-mono text-[11px]" x-text="idx + 1"></td>
@@ -297,6 +317,13 @@
                                     <td class="px-4 py-3">
                                         <input type="text" x-model="s.diploma_number" placeholder="No. Seri Ijazah..."
                                             class="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg font-mono">
+                                    </td>
+                                </tr>
+                            </template>
+                            <template x-if="gradStudents.length === 0 && !gradLoading">
+                                <tr>
+                                    <td colspan="5" class="px-4 py-8 text-center text-slate-400">
+                                        Tidak ada siswa aktif di rombel kelas 6 ini.
                                     </td>
                                 </tr>
                             </template>
@@ -343,6 +370,7 @@
                 gradClassroomId: '',
                 gradAcademicYearId: '{{ $sourceYear?->id ?? $activeAcademicYear?->id }}',
                 gradStudents: [],
+                gradLoading: false,
                 gradProcessing: false,
 
                 allAcademicYears: allAcademicYearsData,
@@ -385,7 +413,6 @@
                     })
                     .then(res => res.json())
                     .then(res => {
-                        this.loading = false;
                         if (res.success) {
                             this.currentClassroomName = res.classroom?.name || '';
                             this.students = res.students.map(s => ({
@@ -398,8 +425,11 @@
                         }
                     })
                     .catch(err => {
-                        this.loading = false;
                         alert('Error: ' + err.message);
+                    })
+                    .finally(() => {
+                        this.loading = false;
+                        this.$nextTick(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); });
                     });
                 },
 
@@ -478,6 +508,7 @@
                         return;
                     }
 
+                    this.gradLoading = true;
                     fetch(`/class-promotions/students?classroom_id=${this.gradClassroomId}`, {
                         headers: {
                             'Accept': 'application/json',
@@ -493,7 +524,11 @@
                             }));
                         }
                     })
-                    .catch(err => alert('Error: ' + err.message));
+                    .catch(err => alert('Error: ' + err.message))
+                    .finally(() => {
+                        this.gradLoading = false;
+                        this.$nextTick(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); });
+                    });
                 },
 
                 submitGraduation() {
