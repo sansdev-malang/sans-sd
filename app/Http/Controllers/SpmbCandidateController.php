@@ -24,22 +24,61 @@ class SpmbCandidateController extends Controller
      */
     public function index(Request $request)
     {
-        // 1. Get available academic years
-        $academicYears = SpmbCandidate::select('academic_year')
+        // 1. Get available academic years from SANS Unit master
+        $unitAcademicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
+        $activeAcademicYear = $unitAcademicYears->firstWhere('is_active', true) ?? $unitAcademicYears->first();
+
+        // Unique yearly academic years for annual entities
+        $uniqueAcademicYears = $unitAcademicYears->groupBy('name')->map(function ($group) {
+            $activeInGroup = $group->firstWhere('is_active', true);
+            $chosen = $activeInGroup ?: $group->first();
+            $chosen->has_active = (bool) $activeInGroup;
+            return $chosen;
+        })->values();
+
+        // Also gather any academic years present in spmb_candidates table
+        $spmbDistinctYears = SpmbCandidate::select('academic_year')
             ->whereNotNull('academic_year')
             ->distinct()
-            ->orderBy('academic_year', 'desc')
             ->pluck('academic_year')
-            ->toArray();
+            ->map(function($y) { return str_replace('-', '/', trim($y)); })
+            ->filter()
+            ->unique();
 
-        // Default to latest year or 'all' if empty
-        $selectedYear = $request->get('period', $academicYears[0] ?? 'all');
+        // Build unified list of academic year options for SANS Unit
+        $academicYearOptions = collect();
+        foreach ($uniqueAcademicYears as $ay) {
+            $academicYearOptions->push([
+                'value' => $ay->name,
+                'label' => $ay->name,
+                'is_active' => (bool) $ay->has_active,
+            ]);
+        }
+        foreach ($spmbDistinctYears as $sy) {
+            if (!$academicYearOptions->contains('value', $sy)) {
+                $academicYearOptions->push([
+                    'value' => $sy,
+                    'label' => $sy,
+                    'is_active' => false,
+                ]);
+            }
+        }
+        $academicYearOptions = $academicYearOptions->sortByDesc('value')->values();
+
+        // Default period: if request has 'period', use it; otherwise default to active year or 'all'
+        $defaultPeriod = $activeAcademicYear ? $activeAcademicYear->name : ($academicYearOptions->first()['value'] ?? 'all');
+        $selectedYear = $request->get('period', $defaultPeriod);
 
         // 2. Base Query
         $query = SpmbCandidate::with('student.classroom');
 
         if ($selectedYear && $selectedYear !== 'all') {
-            $query->where('academic_year', $selectedYear);
+            $slashYear = str_replace('-', '/', $selectedYear);
+            $hyphenYear = str_replace('/', '-', $selectedYear);
+            $query->where(function ($q) use ($slashYear, $hyphenYear) {
+                $q->where('academic_year', $slashYear)
+                  ->orWhere('academic_year', $hyphenYear);
+            });
         }
 
         // Search Filter
@@ -79,10 +118,37 @@ class SpmbCandidateController extends Controller
             }
         }
 
+        // Student Type (Kategori Murid: Reguler / PDBK) Filter
+        if ($studentType = $request->get('student_type')) {
+            if ($studentType === 'PDBK' || $studentType === 'MBK') {
+                $query->where(function ($q) {
+                    $q->where('student_type', 'like', '%PDBK%')
+                      ->orWhere('student_type', 'like', '%MBK%')
+                      ->orWhere('student_type', 'like', '%ABK%')
+                      ->orWhere('student_type', 'like', '%INKLUSI%')
+                      ->orWhere('target_class', 'like', '%MBK%')
+                      ->orWhere('target_class', 'like', '%INKLUSI%')
+                      ->orWhereNotNull('special_needs_type');
+                });
+            } elseif ($studentType === 'REGULER') {
+                $query->where(function ($q) {
+                    $q->where('student_type', 'like', '%REGULER%')
+                      ->orWhereNull('student_type');
+                })->where('target_class', 'not like', '%MBK%')
+                  ->where('target_class', 'not like', '%INKLUSI%')
+                  ->whereNull('special_needs_type');
+            }
+        }
+
         // 3. Stats Calculation (based on selected year)
         $statsQuery = SpmbCandidate::query();
         if ($selectedYear && $selectedYear !== 'all') {
-            $statsQuery->where('academic_year', $selectedYear);
+            $slashYear = str_replace('-', '/', $selectedYear);
+            $hyphenYear = str_replace('/', '-', $selectedYear);
+            $statsQuery->where(function ($q) use ($slashYear, $hyphenYear) {
+                $q->where('academic_year', $slashYear)
+                  ->orWhere('academic_year', $hyphenYear);
+            });
         }
 
         $stats = [
@@ -97,7 +163,18 @@ class SpmbCandidateController extends Controller
 
         $candidates = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
 
-        return view('admin.spmb-candidates.index', compact('candidates', 'academicYears', 'selectedYear', 'stats', 'availableWaves'));
+        $academicYears = $academicYearOptions->pluck('value')->toArray();
+
+        return view('admin.spmb-candidates.index', compact(
+            'candidates', 
+            'academicYears', 
+            'academicYearOptions', 
+            'uniqueAcademicYears',
+            'selectedYear', 
+            'stats', 
+            'availableWaves',
+            'activeAcademicYear'
+        ));
     }
 
     /**
@@ -147,7 +224,7 @@ class SpmbCandidateController extends Controller
     {
         $candidate = SpmbCandidate::with('student.classroom')->findOrFail($id);
 
-        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
 
         // Match academic year from candidate's period
         $matchedYear = null;
@@ -159,21 +236,41 @@ class SpmbCandidateController extends Controller
             $matchedYear = AcademicYear::where('is_active', true)->first();
         }
 
-        // Get active classrooms
-        $classrooms = Classroom::with(['classLevel', 'homeroomTeacher'])
+        // Unique yearly academic years for enrollment selector
+        $uniqueYears = $academicYears->groupBy('name')->map(function ($group) {
+            $activeInGroup = $group->firstWhere('is_active', true);
+            $chosen = $activeInGroup ?: $group->first();
+            return [
+                'id' => $chosen->id,
+                'name' => $chosen->name . ($activeInGroup ? ' (Aktif)' : ''),
+                'raw_name' => $chosen->name,
+                'is_active' => (bool) $activeInGroup,
+            ];
+        })->values();
+
+        // Matching academic year IDs (all semesters for that annual year)
+        $matchingYearIds = $matchedYear ? $academicYears->where('name', $matchedYear->name)->pluck('id')->toArray() : [];
+
+        // Get active classrooms (including all classrooms with academic_year_id for dynamic client-side filtering)
+        $classrooms = Classroom::with(['classLevel', 'homeroomTeacher', 'academicYear'])
             ->withCount(['students as active_students_count' => function ($q) {
                 $q->where('status', 'aktif');
             }])
             ->where('is_active', true)
-            ->when($matchedYear, function ($q) use ($matchedYear) {
-                $q->where('academic_year_id', $matchedYear->id);
-            })
             ->orderBy('class_level_id')
             ->orderBy('name')
             ->get();
 
-        // Generate suggested NIS for SD (e.g. 27.SD.001)
-        $yearDigits = $matchedYear ? substr(explode('/', $matchedYear->name)[0] ?? '2027', -2) : date('y');
+        // Filter classrooms for the matched academic year if available
+        $matchedClassrooms = $classrooms->filter(function($cr) use ($matchingYearIds) {
+            return empty($matchingYearIds) || in_array($cr->academic_year_id, $matchingYearIds);
+        })->values();
+
+        // If no classrooms matched for future year, fallback to all active classrooms
+        $finalClassrooms = $matchedClassrooms->isNotEmpty() ? $matchedClassrooms : $classrooms;
+
+        // Generate suggested NIS for SD (e.g. 26.SD.001 or 27.SD.001)
+        $yearDigits = $matchedYear ? substr(explode('/', $matchedYear->name)[0] ?? '2026', -2) : date('y');
         $prefix = "{$yearDigits}.SD.";
 
         $latestStudent = Student::where('nis', 'like', "{$prefix}%")
@@ -191,9 +288,10 @@ class SpmbCandidateController extends Controller
             'candidate' => $candidate,
             'student' => $candidate->student,
             'suggested_nis' => $suggestedNis,
-            'academic_years' => $academicYears,
+            'academic_years' => $uniqueYears,
             'selected_year_id' => $matchedYear?->id,
-            'classrooms' => $classrooms,
+            'classrooms' => $finalClassrooms,
+            'all_classrooms' => $classrooms,
         ]);
     }
 
@@ -343,6 +441,8 @@ class SpmbCandidateController extends Controller
             'birth_date' => 'nullable|date',
             'nik' => 'nullable|string|max:30',
             'nisn' => 'nullable|string|max:30',
+            'student_type' => 'nullable|string|max:50',
+            'special_needs_type' => 'nullable|string|max:255',
             'target_class' => 'nullable|string|max:100',
             'academic_year' => 'nullable|string|max:50',
             'wave' => 'nullable|string|max:100',
@@ -364,6 +464,12 @@ class SpmbCandidateController extends Controller
             'spmb_payment_status' => 'nullable|string|max:50',
             'payment_status' => 'nullable|string|max:50',
         ]);
+
+        // Normalize student_type
+        if ($request->has('student_type')) {
+            $stUpper = strtoupper(trim((string)$request->input('student_type')));
+            $validated['student_type'] = (str_contains($stUpper, 'PDBK') || str_contains($stUpper, 'MBK') || str_contains($stUpper, 'ABK') || str_contains($stUpper, 'INKLUSI')) ? 'PDBK' : 'REGULER';
+        }
 
         // Normalize gender
         if (!empty($validated['gender'])) {
@@ -436,10 +542,18 @@ class SpmbCandidateController extends Controller
         $candidate = SpmbCandidate::findOrFail($id);
         $name = $candidate->full_name;
 
-        // If candidate is linked to a student, delete the student record first
+        // 1. Unlink any student record referencing this candidate
+        Student::where('spmb_candidate_id', $candidate->id)->update(['spmb_candidate_id' => null]);
+
+        // 2. If candidate is linked to a student, delete student & student histories cleanly
         if ($candidate->student_id) {
-            $student = Student::find($candidate->student_id);
+            $studentId = $candidate->student_id;
+            $candidate->student_id = null;
+            $candidate->save();
+
+            $student = Student::find($studentId);
             if ($student) {
+                \App\Models\StudentClassroomHistory::where('student_id', $student->id)->delete();
                 $student->delete();
             }
         }

@@ -19,7 +19,12 @@
                     </div>
                 </div>
             </div>
-            <div class="flex items-center gap-3 shrink-0">
+            <div class="flex items-center gap-2.5 shrink-0">
+                <a href="{{ route('student-reports.index') }}"
+                    class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-800 shadow-xs transition-all cursor-pointer">
+                    <i data-lucide="file-bar-chart-2" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
+                    Rekapitulasi Rombel
+                </a>
                 <button type="button" @click="openCreateModal()"
                     class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all duration-100 cursor-pointer">
                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>

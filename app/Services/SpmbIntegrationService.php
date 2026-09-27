@@ -147,7 +147,12 @@ class SpmbIntegrationService
             $syncedIds = array_values(array_filter(array_unique($syncedIds)));
             $pruneQuery = SpmbCandidate::query();
             if (!empty($filters['period']) && $filters['period'] !== 'all') {
-                $pruneQuery->where('academic_year', $filters['period']);
+                $slashPeriod = str_replace('-', '/', $filters['period']);
+                $hyphenPeriod = str_replace('/', '-', $filters['period']);
+                $pruneQuery->where(function($q) use ($slashPeriod, $hyphenPeriod) {
+                    $q->where('academic_year', $slashPeriod)
+                      ->orWhere('academic_year', $hyphenPeriod);
+                });
             }
             if (!empty($syncedIds)) {
                 $pruneQuery->whereNotIn('spmb_registration_id', $syncedIds);
@@ -251,6 +256,14 @@ class SpmbIntegrationService
                 'nisn' => $bio['nisn'] ?? null,
                 'child_number' => $bio['child_number'] ?? null,
                 'siblings_count' => $bio['siblings_count'] ?? null,
+
+                // Student Type (MBK / ABK / Inklusi -> PDBK)
+                'student_type' => (function() use ($payload, $bio) {
+                    $raw = $payload['student_type'] ?? ($payload['type'] ?? ($payload['applicant_type'] ?? ($bio['student_type'] ?? 'REGULER')));
+                    $upper = strtoupper(trim((string)$raw));
+                    return (str_contains($upper, 'MBK') || str_contains($upper, 'ABK') || str_contains($upper, 'PDBK') || str_contains($upper, 'KHUSUS') || str_contains($upper, 'INKLUSI')) ? 'PDBK' : 'REGULER';
+                })(),
+                'special_needs_type' => $payload['special_needs_type'] ?? ($bio['special_needs_type'] ?? ($bio['special_needs'] ?? null)),
 
                 // Academic
                 'target_unit' => $unit['code'] ?? ($unit['name'] ?? ($payload['target_unit'] ?? 'SD')),

@@ -1,15 +1,15 @@
 <x-admin-layout>
-    <div class="p-6 space-y-6" x-data="studentApp()">
+    <div class="p-4 sm:p-5 lg:p-6 space-y-4 lg:space-y-5" x-data="studentApp()">
 
         <!-- GREETING / PAGE TITLE -->
-        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left">
+        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3.5 w-full text-left">
             <div class="flex flex-col gap-0.5">
                 <div class="flex items-center gap-2.5">
                     <div class="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl border border-indigo-500/20">
                         <i data-lucide="users" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
+                        <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
                             Daftar Siswa
                             <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 font-semibold border border-indigo-200 dark:border-indigo-800">
                                 {{ setting('app_name', 'SD Anak Saleh') }}
@@ -20,7 +20,7 @@
                 </div>
             </div>
             <!-- ACTION CONTROLS: INFO TAHUN AJARAN AKTIF & ACTION BUTTONS -->
-            <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
                 <!-- Info Badge Tahun Pelajaran Aktif -->
                 <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 rounded-xl text-xs shadow-xs">
                     <span class="flex h-2 w-2 relative">
@@ -32,6 +32,12 @@
                         {{ $activeAcademicYear ? $activeAcademicYear->name : '2026/2027' }}
                     </span>
                 </div>
+
+                <a href="{{ route('student-reports.index') }}"
+                    class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-800 shadow-xs transition-all cursor-pointer">
+                    <i data-lucide="file-bar-chart-2" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
+                    Rekapitulasi Rombel
+                </a>
 
                 <button type="button" @click="importModalOpen = true"
                     class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-800 shadow-xs transition-all cursor-pointer">
@@ -68,18 +74,18 @@
         @endif
 
         <!-- STATS CARDS GRID -->
-        <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+        <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-3.5">
             <!-- Stat Card 1: Total Siswa Aktif -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex flex-col justify-between">
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-xs flex flex-col justify-between">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Siswa Aktif</p>
-                        <h3 class="text-xl font-black tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                        <h3 class="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-slate-50 mt-1">
                             {{ number_format($stats['total_active']) }}
                         </h3>
                     </div>
-                    <div class="p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
-                        <i data-lucide="users" class="w-4 h-4"></i>
+                    <div class="p-1.5 sm:p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
+                        <i data-lucide="users" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                     </div>
                 </div>
                 <div class="mt-2 text-[10px] text-slate-400">
@@ -88,16 +94,16 @@
             </div>
 
             <!-- Stat Card 2: Laki-laki -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex flex-col justify-between">
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-xs flex flex-col justify-between">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Putra (L)</p>
-                        <h3 class="text-xl font-black tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                        <h3 class="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-slate-50 mt-1">
                             {{ number_format($stats['male']) }}
                         </h3>
                     </div>
-                    <div class="p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-100 dark:border-blue-900/50">
-                        <i data-lucide="user" class="w-4 h-4"></i>
+                    <div class="p-1.5 sm:p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-100 dark:border-blue-900/50">
+                        <i data-lucide="user" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                     </div>
                 </div>
                 <div class="mt-2 text-[10px] text-slate-400">
@@ -106,16 +112,16 @@
             </div>
 
             <!-- Stat Card 3: Perempuan -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex flex-col justify-between">
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-xs flex flex-col justify-between">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Putri (P)</p>
-                        <h3 class="text-xl font-black tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                        <h3 class="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-slate-50 mt-1">
                             {{ number_format($stats['female']) }}
                         </h3>
                     </div>
-                    <div class="p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-lg border border-rose-100 dark:border-rose-900/50">
-                        <i data-lucide="user-check" class="w-4 h-4"></i>
+                    <div class="p-1.5 sm:p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-lg border border-rose-100 dark:border-rose-900/50">
+                        <i data-lucide="user-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                     </div>
                 </div>
                 <div class="mt-2 text-[10px] text-slate-400">
@@ -124,16 +130,16 @@
             </div>
 
             <!-- Stat Card 4: Inklusi (PDBK) -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex flex-col justify-between">
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-xs flex flex-col justify-between">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Inklusi (PDBK)</p>
-                        <h3 class="text-xl font-black tracking-tight text-purple-700 dark:text-purple-300 mt-1">
+                        <h3 class="text-lg sm:text-xl font-black tracking-tight text-purple-700 dark:text-purple-300 mt-1">
                             {{ number_format($stats['pdbk']) }}
                         </h3>
                     </div>
-                    <div class="p-2 bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-lg border border-purple-100 dark:border-purple-900/50">
-                        <i data-lucide="heart-handshake" class="w-4 h-4"></i>
+                    <div class="p-1.5 sm:p-2 bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-lg border border-purple-100 dark:border-purple-900/50">
+                        <i data-lucide="heart-handshake" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                     </div>
                 </div>
                 <div class="mt-2 text-[10px] text-purple-600/80 dark:text-purple-400/80">
@@ -142,16 +148,16 @@
             </div>
 
             <!-- Stat Card 5: Rombongan Belajar -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex flex-col justify-between col-span-2 sm:col-span-1">
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-xs flex flex-col justify-between col-span-2 sm:col-span-1">
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Rombel</p>
-                        <h3 class="text-xl font-black tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                        <h3 class="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-slate-50 mt-1">
                             {{ number_format($stats['classrooms']) }}
                         </h3>
                     </div>
-                    <div class="p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-lg border border-emerald-100 dark:border-emerald-900/50">
-                        <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                    <div class="p-1.5 sm:p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-lg border border-emerald-100 dark:border-emerald-900/50">
+                        <i data-lucide="layout-grid" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                     </div>
                 </div>
                 <div class="mt-2 text-[10px] text-slate-400">
@@ -161,7 +167,7 @@
         </section>
 
         <!-- SEARCH & FILTERS -->
-        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-xs w-full">
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs w-full">
             <form method="GET" action="{{ route('students.index') }}" class="flex flex-col lg:flex-row gap-2.5 items-stretch lg:items-center justify-between">
                 <!-- Search Box -->
                 <div class="relative w-full lg:max-w-xs">
@@ -243,14 +249,14 @@
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/50">
-                            <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-12">No</th>
-                            <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">NIS</th>
-                            <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Siswa & Tipe</th>
-                            <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-40">Tingkat & Rombel</th>
-                            <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">L/P & Usia</th>
-                            <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-44">Orang Tua & WA</th>
-                            <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24">Status</th>
-                            <th class="px-4 py-3 text-right text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">Aksi</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-12">No</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">NIS</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Siswa & Tipe</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider min-w-[200px] sm:min-w-[220px]">Tingkat & Rombel</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24 sm:w-28">L/P & Usia</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider min-w-[160px]">Orang Tua & WA</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24">Status</th>
+                            <th class="px-3 py-2.5 sm:px-4 sm:py-3 text-right text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24 sm:w-28">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
@@ -259,18 +265,18 @@
                                 $isPdbk = ($s->student_type && (str_contains(strtoupper($s->student_type), 'PDBK') || str_contains(strtoupper($s->student_type), 'KHUSUS'))) || !empty($s->special_needs_type);
                             @endphp
                             <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors group">
-                                <td class="px-4 py-3 text-slate-400 font-mono text-[11px]">
+                                <td class="px-3 py-2.5 sm:px-4 sm:py-3 text-slate-400 font-mono text-[11px]">
                                     {{ $students->firstItem() + $index }}
                                 </td>
-                                <td class="px-4 py-3 font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                                <td class="px-3 py-2.5 sm:px-4 sm:py-3 font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
                                     {{ $s->nis }}
                                 </td>
-                                <td class="px-4 py-3">
-                                    <div class="flex items-center gap-3">
+                                <td class="px-3 py-2.5 sm:px-4 sm:py-3">
+                                    <div class="flex items-center gap-2.5 sm:gap-3">
                                         @if($s->student_photo_url)
-                                            <img src="{{ $s->student_photo_url }}" alt="{{ $s->full_name }}" class="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700 shrink-0">
+                                            <img src="{{ $s->student_photo_url }}" alt="{{ $s->full_name }}" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700 shrink-0">
                                         @else
-                                            <div class="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
+                                            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
                                                 {{ $s->avatar_initials }}
                                             </div>
                                         @endif
@@ -280,9 +286,15 @@
                                                     {{ $s->full_name }}
                                                 </span>
                                                 @if($isPdbk)
-                                                    <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800" title="{{ $s->special_needs_type ?: 'PDBK' }}">
+                                                    <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0" title="{{ $s->special_needs_type ?: 'PDBK' }}">
                                                         PDBK
                                                     </span>
+                                                    @if($s->gpkTeacher)
+                                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60 shrink-0" title="Guru Pendamping Khusus: {{ $s->gpkTeacher->full_name }}">
+                                                            <i data-lucide="user-check" class="w-2.5 h-2.5"></i>
+                                                            <span>GPK: {{ Str::limit($s->gpkTeacher->name, 14) }}</span>
+                                                        </span>
+                                                    @endif
                                                 @endif
                                             </div>
                                             <div class="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400">
@@ -296,30 +308,30 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-3 py-2.5 sm:px-4 sm:py-3 min-w-[200px] sm:min-w-[220px]">
                                     <div class="flex flex-col">
-                                        <span class="font-semibold text-slate-800 dark:text-slate-200">
+                                        <span class="font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap">
                                             {{ $s->classroom ? $s->classroom->full_name : 'Belum Ditentukan' }}
                                         </span>
-                                        <div class="flex items-center gap-1.5 mt-0.5">
+                                        <div class="flex items-center gap-1.5 mt-0.5 whitespace-nowrap">
                                             <span class="text-[11px] text-slate-400">
                                                 {{ $s->classroom && $s->classroom->classLevel ? $s->classroom->classLevel->name : '-' }}
                                             </span>
                                             @if($s->academicYear)
-                                                <span class="text-[10px] px-1.5 py-0.2 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-medium font-mono border border-indigo-100 dark:border-indigo-900/50">
+                                                <span class="text-[10px] px-1.5 py-0.2 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-medium font-mono border border-indigo-100 dark:border-indigo-900/50 shrink-0">
                                                     {{ $s->academicYear->name }}
                                                 </span>
                                             @endif
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-3 py-2.5 sm:px-4 sm:py-3">
                                     <div class="flex flex-col text-slate-600 dark:text-slate-300">
                                         <span class="font-medium">{{ $s->formatted_gender }}</span>
                                         <span class="text-[10px] text-slate-400">{{ $s->age ?: '-' }}</span>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-3 py-2.5 sm:px-4 sm:py-3">
                                     <div class="flex flex-col">
                                         <span class="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[160px]">
                                             {{ $s->father_name ?: ($s->mother_name ?: ($s->guardian_name ?: '-')) }}
@@ -334,7 +346,7 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-3 py-2.5 sm:px-4 sm:py-3">
                                     @if($s->status === 'aktif')
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">
                                             Aktif
@@ -353,7 +365,7 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-right">
+                                <td class="px-3 py-2.5 sm:px-4 sm:py-3 text-right">
                                     <div class="flex items-center justify-end gap-1">
                                         <button type="button" @click="openDetailModal({{ $s->id }})"
                                             class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg transition-colors cursor-pointer"
@@ -545,7 +557,24 @@
                                     <span class="font-bold text-slate-800 dark:text-slate-200 text-xs" x-text="selectedStudent?.special_needs_type || 'Tidak Ada / Reguler'"></span>
                                 </div>
                                 <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-purple-100 dark:border-purple-900/40">
-                                    <span class="text-slate-400 text-[10px] block font-bold uppercase">Catatan Pendampingan Guru / Shadow Teacher</span>
+                                    <span class="text-slate-400 text-[10px] block font-bold uppercase">Guru Pendamping Khusus (GPK)</span>
+                                    <template x-if="selectedStudent?.gpk_teacher">
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <div class="w-6 h-6 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 flex items-center justify-center font-bold text-[10px]">
+                                                <i data-lucide="user-check" class="w-3 h-3"></i>
+                                            </div>
+                                            <div>
+                                                <span class="font-bold text-slate-800 dark:text-slate-200 text-xs block" x-text="selectedStudent.gpk_teacher.full_name || selectedStudent.gpk_teacher.name"></span>
+                                                <span class="text-[10px] text-slate-400" x-text="selectedStudent.gpk_teacher.phone_number ? 'No. HP: ' + selectedStudent.gpk_teacher.phone_number : 'NIP: ' + (selectedStudent.gpk_teacher.nip || '-')"></span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <template x-if="!selectedStudent?.gpk_teacher">
+                                        <span class="font-medium text-slate-400 dark:text-slate-500 text-xs italic block mt-1">Belum ditentukan / Tidak Ada GPK</span>
+                                    </template>
+                                </div>
+                                <div class="sm:col-span-2 p-3 rounded-xl bg-white dark:bg-slate-900 border border-purple-100 dark:border-purple-900/40">
+                                    <span class="text-slate-400 text-[10px] block font-bold uppercase">Catatan Pendampingan Guru / Penanganan Khusus</span>
                                     <span class="font-medium text-slate-700 dark:text-slate-300 text-xs" x-text="selectedStudent?.special_needs_notes || selectedStudent?.notes || '-'"></span>
                                 </div>
                             </div>
@@ -708,10 +737,24 @@
                                         <div class="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-indigo-600 border-2 border-white dark:border-slate-900"></div>
                                         <div class="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/40 text-xs">
                                             <div class="flex items-center justify-between">
-                                                <span class="font-bold text-slate-800 dark:text-slate-200" x-text="hist.classroom ? hist.classroom.name : 'Rombel'"></span>
+                                                <span class="font-bold text-slate-800 dark:text-slate-200" x-text="hist.classroom_name || (hist.classroom ? hist.classroom.name : 'Rombel')"></span>
                                                 <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-semibold" x-text="hist.academic_year ? hist.academic_year.name : '-'"></span>
                                             </div>
-                                            <p class="text-[11px] text-slate-400 mt-0.5" x-text="hist.notes || 'Status: ' + (hist.status || 'naik_kelas')"></p>
+                                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                                                <template x-if="hist.homeroom_teacher_name">
+                                                    <span class="flex items-center gap-1">
+                                                        <i data-lucide="user" class="w-3 h-3 text-slate-400"></i>
+                                                        <span>Wali: <strong class="text-slate-700 dark:text-slate-300" x-text="hist.homeroom_teacher_name"></strong></span>
+                                                    </span>
+                                                </template>
+                                                <template x-if="hist.gpk_teacher_name">
+                                                    <span class="flex items-center gap-1 text-purple-600 dark:text-purple-400">
+                                                        <i data-lucide="user-check" class="w-3 h-3"></i>
+                                                        <span>GPK: <strong class="text-purple-700 dark:text-purple-300" x-text="hist.gpk_teacher_name"></strong></span>
+                                                    </span>
+                                                </template>
+                                            </div>
+                                            <p class="text-[11px] text-slate-400 mt-1" x-text="hist.notes || ('Status: ' + (hist.status || 'aktif'))"></p>
                                         </div>
                                     </div>
                                 </template>
@@ -854,6 +897,14 @@
                                         <option value="Konghucu">Konghucu</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                        Tanggal Terdaftar / Masuk
+                                        <span class="text-[10px] font-normal text-slate-400 ml-1">(Opsional)</span>
+                                    </label>
+                                    <input type="date" x-model="formData.enrolled_date"
+                                        class="w-full h-8.5 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900 dark:text-slate-50">
+                                </div>
                             </div>
                         </div>
 
@@ -873,6 +924,19 @@
                                         <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Jenis Kekhususan / Ketunaan</label>
                                         <input type="text" x-model="formData.special_needs_type" placeholder="Contoh: ADHD, Spektrum Autis, Slow Learner, Speech Delay..."
                                             class="w-full h-8.5 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                            Guru Pendamping Khusus (GPK / Shadow Teacher)
+                                            <span class="text-[10px] font-normal text-slate-400 ml-1">(Pilih guru pendamping untuk siswa PDBK)</span>
+                                        </label>
+                                        <select x-model="formData.gpk_employee_id"
+                                            class="w-full h-8.5 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 cursor-pointer">
+                                            <option value="">-- Belum Ditentukan / Tidak Ada GPK --</option>
+                                            @foreach($teachers as $teacher)
+                                                <option value="{{ $teacher->id }}">{{ $teacher->full_name }} ({{ $teacher->position ?: 'Guru' }})</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                     <div class="sm:col-span-2">
                                         <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan Pendampingan Guru / Penanganan Khusus</label>
@@ -1324,10 +1388,12 @@
                     birth_place: '',
                     birth_date: '',
                     religion: 'Islam',
+                    enrolled_date: '',
 
                     student_type: 'REGULER',
                     special_needs_type: '',
                     special_needs_notes: '',
+                    gpk_employee_id: '',
 
                     address: '',
                     rt: '',
@@ -1472,10 +1538,12 @@
                         birth_place: '',
                         birth_date: '',
                         religion: 'Islam',
+                        enrolled_date: '',
 
                         student_type: 'REGULER',
                         special_needs_type: '',
                         special_needs_notes: '',
+                        gpk_employee_id: '',
 
                         address: '',
                         rt: '',
@@ -1565,10 +1633,12 @@
                                 birth_place: s.birth_place || '',
                                 birth_date: s.birth_date ? s.birth_date.substring(0, 10) : '',
                                 religion: s.religion || 'Islam',
+                                enrolled_date: s.enrolled_date ? s.enrolled_date.substring(0, 10) : '',
 
                                 student_type: s.student_type || 'REGULER',
                                 special_needs_type: s.special_needs_type || '',
                                 special_needs_notes: s.special_needs_notes || '',
+                                gpk_employee_id: s.gpk_employee_id || '',
 
                                 address: s.address || '',
                                 rt: s.rt || '',

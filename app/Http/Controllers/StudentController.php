@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\ClassLevel;
 use App\Models\Classroom;
+use App\Models\Employee;
 use App\Models\Student;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -39,7 +40,7 @@ class StudentController extends Controller
         $selectedYearName = $selectedYear?->name;
         $matchingYearIds = $academicYears->where('name', $selectedYearName)->pluck('id');
 
-        $query = Student::with(['classroom.classLevel', 'academicYear', 'spmbCandidate']);
+        $query = Student::with(['classroom.classLevel', 'academicYear', 'spmbCandidate', 'gpkTeacher']);
 
         // Academic Year Filter (covers all semester records of the selected annual year)
         if ($matchingYearIds->isNotEmpty()) {
@@ -57,7 +58,10 @@ class StudentController extends Controller
                   ->orWhere('parent_phone', 'like', "%{$search}%")
                   ->orWhere('father_name', 'like', "%{$search}%")
                   ->orWhere('mother_name', 'like', "%{$search}%")
-                  ->orWhere('special_needs_type', 'like', "%{$search}%");
+                  ->orWhere('special_needs_type', 'like', "%{$search}%")
+                  ->orWhereHas('gpkTeacher', function($tq) use ($search) {
+                      $tq->where('name', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -83,13 +87,15 @@ class StudentController extends Controller
                 $query->where(function($q) {
                     $q->where('student_type', 'like', '%PDBK%')
                       ->orWhere('student_type', 'like', '%KHUSUS%')
+                      ->orWhere('student_type', 'like', '%INKLUSI%')
+                      ->orWhereNotNull('gpk_employee_id')
                       ->orWhereNotNull('special_needs_type');
                 });
             } elseif ($studentType === 'REGULER') {
                 $query->where(function($q) {
                     $q->where('student_type', 'like', '%REGULER%')
                       ->orWhereNull('student_type');
-                })->whereNull('special_needs_type');
+                })->whereNull('special_needs_type')->whereNull('gpk_employee_id');
             }
         }
 
@@ -120,6 +126,8 @@ class StudentController extends Controller
         $pdbkStudents = (clone $statsQuery)->where('status', 'aktif')->where(function($q) {
             $q->where('student_type', 'like', '%PDBK%')
               ->orWhere('student_type', 'like', '%KHUSUS%')
+              ->orWhere('student_type', 'like', '%INKLUSI%')
+              ->orWhereNotNull('gpk_employee_id')
               ->orWhereNotNull('special_needs_type');
         })->count();
         
@@ -148,6 +156,20 @@ class StudentController extends Controller
         $classrooms = $classroomListQuery->orderBy('class_level_id')->orderBy('code')->orderBy('name')->get();
         $allClassrooms = Classroom::with(['classLevel', 'academicYear'])->where('is_active', true)->orderBy('academic_year_id', 'desc')->orderBy('name')->get();
 
+        // Master daftar guru untuk pilihan Guru Pendamping Khusus (GPK)
+        $teachers = Employee::whereIn('status', ['Active', 'aktif', 'active', 'Aktif'])
+            ->where(function($q) {
+                $q->whereHas('employeeType', fn($et) => $et->where('name', 'like', '%Guru%'))
+                  ->orWhere('position', 'like', '%Guru%')
+                  ->orWhere('position', 'like', '%GPK%')
+                  ->orWhere('position', 'like', '%GPQ%');
+            })
+            ->orderBy('name')
+            ->get();
+        if ($teachers->isEmpty()) {
+            $teachers = Employee::whereIn('status', ['Active', 'aktif', 'active', 'Aktif'])->orderBy('name')->get();
+        }
+
         $students = $query->orderBy('status', 'asc')->orderBy('full_name', 'asc')->paginate(15)->withQueryString();
 
         return view('admin.students.index', [
@@ -156,6 +178,7 @@ class StudentController extends Controller
             'classLevels' => $classLevels,
             'classrooms' => $classrooms,
             'allClassrooms' => $allClassrooms,
+            'teachers' => $teachers,
             'academicYears' => $uniqueAcademicYears,
             'activeAcademicYear' => $activeAcademicYear,
             'selectedYearId' => $selectedYearId,
@@ -174,6 +197,7 @@ class StudentController extends Controller
             'classroom.homeroomTeacher', 
             'academicYear', 
             'spmbCandidate',
+            'gpkTeacher',
             'classroomHistories.classroom.classLevel',
             'classroomHistories.classroom.homeroomTeacher',
             'classroomHistories.academicYear'
@@ -195,13 +219,13 @@ class StudentController extends Controller
 
         return response()->json([
             'success' => true,
-            'student' => $student,
+            'student' => $student->load(['gpkTeacher', 'classroom.classLevel', 'academicYear']),
             'completeness_percent' => $completenessPercent,
             'formatted_gender' => $student->formatted_gender,
             'age' => $student->age,
             'whatsapp_url' => $student->whatsapp_url,
             'clean_phone' => $student->clean_parent_phone,
-            'classroom_histories' => $student->classroomHistories,
+            'classroom_histories' => $student->classroomHistories()->with(['academicYear', 'classroom'])->get(),
         ]);
     }
 
@@ -229,6 +253,7 @@ class StudentController extends Controller
             'student_type' => 'nullable|string|max:100',
             'special_needs_type' => 'nullable|string|max:255',
             'special_needs_notes' => 'nullable|string',
+            'gpk_employee_id' => 'nullable|exists:employees,id',
 
             // 3. Alamat & Domisili
             'address' => 'nullable|string',
@@ -317,8 +342,8 @@ class StudentController extends Controller
             }
         }
 
-        if (empty($validated['enrolled_date'])) {
-            $validated['enrolled_date'] = now()->toDateString();
+        if (array_key_exists('enrolled_date', $validated) && empty($validated['enrolled_date'])) {
+            $validated['enrolled_date'] = null;
         }
 
         // WhatsApp / Parent Phone fallback
@@ -326,16 +351,29 @@ class StudentController extends Controller
             $validated['parent_phone'] = $validated['father_phone'] ?? ($validated['mother_phone'] ?? ($validated['guardian_phone'] ?? null));
         }
 
+        // Reset GPK jika tipe siswa reguler
+        if (isset($validated['student_type']) && strtoupper($validated['student_type']) === 'REGULER') {
+            $validated['gpk_employee_id'] = null;
+        }
+
         $student = Student::create($validated);
 
         // Catat riwayat kelas awal (Lifecycle History)
         if ($student->classroom_id && $student->academic_year_id) {
+            $currentClassroom = Classroom::with(['classLevel', 'homeroomTeacher'])->find($student->classroom_id);
+            $gpkTeacher = $student->gpkTeacher;
+
             \App\Models\StudentClassroomHistory::firstOrCreate([
                 'student_id' => $student->id,
                 'academic_year_id' => $student->academic_year_id,
             ], [
                 'classroom_id' => $student->classroom_id,
-                'status' => 'naik_kelas',
+                'grade_level' => $currentClassroom?->classLevel?->name ?? ($currentClassroom?->classLevel?->order ? 'Kelas ' . $currentClassroom->classLevel->order : substr($currentClassroom?->name ?? '', 0, 1)),
+                'classroom_name' => $currentClassroom?->name,
+                'homeroom_teacher_name' => $currentClassroom?->homeroomTeacher?->name,
+                'gpk_teacher_name' => $gpkTeacher?->name,
+                'status' => 'aktif',
+                'start_date' => $student->enrolled_date ?: now()->toDateString(),
                 'notes' => 'Pendaftaran / Penempatan Rombel Awal',
             ]);
         }
@@ -343,7 +381,7 @@ class StudentController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Data siswa {$student->full_name} berhasil ditambahkan.",
-            'student' => $student,
+            'student' => $student->load('gpkTeacher'),
         ]);
     }
 
@@ -373,6 +411,7 @@ class StudentController extends Controller
             'student_type' => 'nullable|string|max:100',
             'special_needs_type' => 'nullable|string|max:255',
             'special_needs_notes' => 'nullable|string',
+            'gpk_employee_id' => 'nullable|exists:employees,id',
 
             // 3. Alamat & Domisili
             'address' => 'nullable|string',
@@ -447,24 +486,41 @@ class StudentController extends Controller
             'classroom_id' => 'required|exists:classrooms,id',
             'academic_year_id' => 'nullable|exists:academic_years,id',
             'status' => 'required|string|in:aktif,lulus,mutasi,keluar,nonaktif',
+            'enrolled_date' => 'nullable|date',
             'notes' => 'nullable|string',
         ]);
+
+        if (array_key_exists('enrolled_date', $validated) && empty($validated['enrolled_date'])) {
+            $validated['enrolled_date'] = null;
+        }
 
         // WhatsApp / Parent Phone fallback
         if (empty($validated['parent_phone'])) {
             $validated['parent_phone'] = $validated['father_phone'] ?? ($validated['mother_phone'] ?? ($validated['guardian_phone'] ?? null));
         }
 
+        // Reset GPK jika tipe siswa reguler
+        if (isset($validated['student_type']) && strtoupper($validated['student_type']) === 'REGULER') {
+            $validated['gpk_employee_id'] = null;
+        }
+
         $student->update($validated);
 
-        // Update / create history record for current academic year & classroom
+        // Update / create history record for current academic year & classroom with snapshots
         if ($student->classroom_id && $student->academic_year_id) {
+            $currentClassroom = Classroom::with(['classLevel', 'homeroomTeacher'])->find($student->classroom_id);
+            $gpkTeacher = $student->gpkTeacher;
+
             \App\Models\StudentClassroomHistory::updateOrCreate([
                 'student_id' => $student->id,
                 'academic_year_id' => $student->academic_year_id,
             ], [
                 'classroom_id' => $student->classroom_id,
-                'status' => $student->status === 'lulus' ? 'lulus' : ($student->status === 'mutasi' ? 'mutasi' : 'naik_kelas'),
+                'grade_level' => $currentClassroom?->classLevel?->name ?? ($currentClassroom?->classLevel?->order ? 'Kelas ' . $currentClassroom->classLevel->order : substr($currentClassroom?->name ?? '', 0, 1)),
+                'classroom_name' => $currentClassroom?->name,
+                'homeroom_teacher_name' => $currentClassroom?->homeroomTeacher?->name,
+                'gpk_teacher_name' => $gpkTeacher?->name,
+                'status' => $student->status === 'lulus' ? 'lulus' : ($student->status === 'mutasi' ? 'mutasi_keluar' : 'aktif'),
             ]);
         }
 
@@ -512,12 +568,15 @@ class StudentController extends Controller
     {
         $spreadsheet = new Spreadsheet();
         
-        // Sheet 1: Data Siswa (Template Input)
+        // ==========================================
+        // Sheet 1: Template Import Siswa
+        // ==========================================
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Data Siswa');
 
-        // Headers (Separated Grade Dapodik & Nama Kelas Julukan)
+        // Comprehensive Headers (All 7 Categories + Rombel/Tapel)
         $headers = [
+            // 1. Identitas & Legalitas
             'NIS (Wajib)',
             'Nama Lengkap (Wajib)',
             'Nama Panggilan',
@@ -525,45 +584,212 @@ class StudentController extends Controller
             'Tempat Lahir',
             'Tanggal Lahir (YYYY-MM-DD)',
             'NISN',
-            'NIK',
+            'NIK Siswa',
+            'No KK',
+            'No Akta Kelahiran',
             'Agama',
+            'Kewarganegaraan',
+
+            // 2. Inklusi & Kebutuhan Khusus
+            'Tipe Siswa (Reguler/PDBK)',
+            'Jenis Kebutuhan Khusus',
+            'Catatan Kebutuhan Khusus',
+
+            // 3. Penempatan Rombel & Tapel
             'Kelas / Grade (e.g. 1A)',
             'Nama Kelas (e.g. Berlian)',
             'Tahun Pelajaran (e.g. 2026/2027)',
-            'Alamat',
+            'Tanggal Diterima (YYYY-MM-DD)',
+            'Status Siswa (aktif/lulus/mutasi/keluar)',
+
+            // 4. Alamat & Domisili
+            'Alamat Rumah',
+            'RT',
+            'RW',
+            'Kelurahan / Desa',
+            'Kecamatan',
+            'Kategori Wilayah (Dalam Kota/Luar Kota)',
+            'Kota / Kabupaten',
+            'Provinsi',
+            'Kode Pos',
+            'Status Tempat Tinggal',
+            'Jarak ke Sekolah',
+            'Telepon Rumah',
+
+            // 5. Kontak Utama
+            'No WhatsApp Utama Ortu',
+            'Email Utama Ortu',
+
+            // 6. Keluarga & Saudara
+            'Anak Ke',
+            'Jumlah Saudara Kandung',
+            'Jumlah Saudara Tiri',
+            'Jumlah Saudara Angkat',
+            'Bahasa Sehari-hari',
+
+            // 7. Kesehatan & Fisik (UKS)
+            'Golongan Darah (A/B/AB/O)',
+            'Tinggi Badan (cm)',
+            'Berat Badan (kg)',
+            'Riwayat Penyakit Berat',
+            'Penyakit Sering Diderita',
+
+            // 8. Data Ayah
             'Nama Ayah',
+            'NIK Ayah',
+            'Tempat Lahir Ayah',
+            'Tanggal Lahir Ayah (YYYY-MM-DD)',
+            'Agama Ayah',
             'No HP Ayah',
+            'Pendidikan Ayah',
             'Pekerjaan Ayah',
+            'Instansi / Kantor Ayah',
+            'Alamat Kantor Ayah',
+            'Telp Kantor Ayah',
+            'Penghasilan Ayah',
+            'Email Ayah',
+
+            // 9. Data Ibu
             'Nama Ibu',
+            'NIK Ibu',
+            'Tempat Lahir Ibu',
+            'Tanggal Lahir Ibu (YYYY-MM-DD)',
+            'Agama Ibu',
             'No HP Ibu',
+            'Pendidikan Ibu',
             'Pekerjaan Ibu',
-            'No WhatsApp Ortu (Primary)',
-            'Status (aktif/lulus/mutasi/keluar)'
+            'Instansi / Kantor Ibu',
+            'Alamat Kantor Ibu',
+            'Telp Kantor Ibu',
+            'Penghasilan Ibu',
+            'Email Ibu',
+
+            // 10. Data Wali
+            'Nama Wali',
+            'Hubungan Wali',
+            'Tempat Lahir Wali',
+            'Tanggal Lahir Wali (YYYY-MM-DD)',
+            'Agama Wali',
+            'No HP Wali',
+            'Pendidikan Wali',
+            'Pekerjaan Wali',
+            'Alamat Wali',
+
+            // 11. Riwayat Asal Sekolah & Catatan
+            'Kategori Asal (TK/PAUD/Pindahan)',
+            'Nama Asal Sekolah',
+            'Alamat Asal Sekolah',
+            'Nomor & Tanggal STTB',
+            'Catatan Tambahan',
         ];
 
-        // Sample Row
+        // Sample Data Row (Carefully formatted strings to demonstrate correct data formats)
         $example = [
+            // Identitas
             '26.SD.001',
-            'Ahmad Fauzi',
+            'Muhammad Fauzi Pratama',
             'Fauzi',
             'L',
             'Malang',
             '2019-05-12',
             '0123456789',
             '3573010101190001',
+            '3573010101180001',
+            '12345/DIS/2019',
             'Islam',
+            'WNI',
+
+            // Inklusi
+            'reguler',
+            '',
+            '',
+
+            // Rombel & Tapel
             '1A',
             'Berlian',
             '2026/2027',
-            'Jl. Soekarno Hatta No. 45, Malang',
+            '2026-07-15',
+            'aktif',
+
+            // Alamat
+            'Jl. Soekarno Hatta No. 45, RT 02 RW 05',
+            '02',
+            '05',
+            'Mojolangu',
+            'Lowokwaru',
+            'Dalam Kota',
+            'Kota Malang',
+            'Jawa Timur',
+            '65142',
+            'Bersama Orang Tua',
+            '2.5 km',
+            '0341-412345',
+
+            // Kontak Utama
+            '081234567890',
+            'ortu.fauzi@gmail.com',
+
+            // Keluarga
+            '1',
+            '1',
+            '0',
+            '0',
+            'Bahasa Indonesia',
+
+            // UKS
+            'O',
+            '118',
+            '21',
+            'Tidak ada',
+            'Flu / Batuk ringan',
+
+            // Ayah
             'Budi Santoso',
+            '3573010101780001',
+            'Malang',
+            '1978-03-20',
+            'Islam',
             '081234567890',
-            'Wiraswasta',
+            'S1 Teknik',
+            'Karyawan Swasta',
+            'PT. Telkom Indonesia',
+            'Jl. Kayutangan No. 10 Malang',
+            '0341-362222',
+            'Rp 7.000.000 - Rp 10.000.000',
+            'budi.santoso@gmail.com',
+
+            // Ibu
             'Siti Aminah',
+            '3573010101820002',
+            'Surabaya',
+            '1982-08-14',
+            'Islam',
             '081234567891',
+            'S1 Pendidikan',
             'Guru',
-            '081234567890',
-            'aktif'
+            'SD Negeri 1 Malang',
+            'Jl. Bandung No. 5 Malang',
+            '0341-551234',
+            'Rp 3.000.000 - Rp 5.000.000',
+            'siti.aminah@gmail.com',
+
+            // Wali
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+
+            // Asal Sekolah
+            'TK',
+            'TK Anak Saleh',
+            'Jl. Candi Panggung No. 20, Malang',
+            '012/TK-AS/2026',
+            'Siswa pindahan atau peserta baru',
         ];
 
         // Put headers in row 1
@@ -572,10 +798,10 @@ class StudentController extends Controller
             $sheet->setCellValue($colLetter . '1', $header);
         }
 
-        // Put example in row 2 with string data types for numbers (preserves leading zeros & prevents scientific notation)
+        // Put example in row 2 using TYPE_STRING (preserves leading zeros & prevents scientific notation)
         foreach ($example as $colIndex => $val) {
             $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1);
-            $sheet->setCellValueExplicit($colLetter . '2', $val, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit($colLetter . '2', (string)$val, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
         }
 
         // Header styling
@@ -583,15 +809,17 @@ class StudentController extends Controller
         $sheet->getStyle('A1:' . $lastCol . '1')->getFont()->setBold(true)->getColor()->setARGB('FFFFFFFF');
         $sheet->getStyle('A1:' . $lastCol . '1')->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-            ->getStartColor()->setARGB('FF4F46E5'); // Indigo color
+            ->getStartColor()->setARGB('FF4F46E5'); // Premium Indigo
 
-        // Auto-size columns
+        // Auto-size all columns
         foreach (range(1, count($headers)) as $colIndex) {
             $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
             $sheet->getColumnDimension($colLetter)->setAutoSize(true);
         }
 
+        // ==========================================
         // Sheet 2: Referensi Rombel & Tapel
+        // ==========================================
         $refSheet = $spreadsheet->createSheet();
         $refSheet->setTitle('Referensi Rombel & Tapel');
 
@@ -603,7 +831,7 @@ class StudentController extends Controller
         $refSheet->getStyle('A1:G1')->getFont()->setBold(true)->getColor()->setARGB('FFFFFFFF');
         $refSheet->getStyle('A1:G1')->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-            ->getStartColor()->setARGB('FF10B981'); // Emerald color
+            ->getStartColor()->setARGB('FF10B981'); // Emerald
 
         $classrooms = Classroom::with(['classLevel', 'academicYear', 'homeroomTeacher'])
             ->orderBy('academic_year_id', 'desc')
@@ -628,6 +856,46 @@ class StudentController extends Controller
             $refSheet->getColumnDimension($colLetter)->setAutoSize(true);
         }
 
+        // ==========================================
+        // Sheet 3: Panduan Singkat
+        // ==========================================
+        $guideSheet = $spreadsheet->createSheet();
+        $guideSheet->setTitle('Panduan Pengisian');
+        $guideHeaders = ['Kolom / Data', 'Ketentuan Format & Nilai Valid', 'Contoh Pengisian'];
+        foreach ($guideHeaders as $idx => $gh) {
+            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($idx + 1);
+            $guideSheet->setCellValue($colLetter . '1', $gh);
+        }
+        $guideSheet->getStyle('A1:C1')->getFont()->setBold(true)->getColor()->setARGB('FFFFFFFF');
+        $guideSheet->getStyle('A1:C1')->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FF0284C7'); // Sky Blue
+
+        $guideData = [
+            ['NIS', 'Nomor Induk Siswa (Wajib & Unik di sistem)', '26.SD.001'],
+            ['Nama Lengkap', 'Nama lengkap siswa sesuai akta kelahiran (Wajib)', 'Muhammad Fauzi Pratama'],
+            ['Jenis Kelamin', 'Ketik "L" untuk Laki-laki atau "P" untuk Perempuan', 'L atau P'],
+            ['Tanggal Lahir / Diterima', 'Format tanggal YYYY-MM-DD atau DD/MM/YYYY atau teks nama bulan', '2019-05-12 atau 12/05/2019'],
+            ['Kelas / Grade & Nama Kelas', 'Sesuaikan dengan data di sheet "Referensi Rombel & Tapel"', 'Grade: 1A, Nama Kelas: Berlian'],
+            ['Tahun Pelajaran', 'Format tahun ajaran sekolah (misal: 2026/2027)', '2026/2027'],
+            ['Status Siswa', 'Pilihan: aktif, lulus, mutasi, keluar, nonaktif (default: aktif)', 'aktif'],
+            ['Tipe Siswa', 'Pilihan: reguler, pdbk, atau inklusi', 'reguler atau pdbk'],
+            ['Nomor Identitas (NIK/KK/NISN)', 'Disimpan sebagai teks sehingga angka 0 di depan tidak akan hilang', '3573010101190001'],
+            ['No Telepon / WhatsApp', 'Nomor HP aktif untuk broadcast WhatsApp pengumuman sekolah', '081234567890'],
+        ];
+
+        foreach ($guideData as $gRow => $gVals) {
+            $rNum = $gRow + 2;
+            $guideSheet->setCellValue('A' . $rNum, $gVals[0]);
+            $guideSheet->setCellValue('B' . $rNum, $gVals[1]);
+            $guideSheet->setCellValue('C' . $rNum, $gVals[2]);
+        }
+
+        foreach (range(1, 3) as $colIndex) {
+            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
+            $guideSheet->getColumnDimension($colLetter)->setAutoSize(true);
+        }
+
         // Set active sheet back to Sheet 1
         $spreadsheet->setActiveSheetIndex(0);
 
@@ -639,14 +907,14 @@ class StudentController extends Controller
 
         return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
-        }, 'Template_Import_Siswa_SD.xlsx', [
+        }, 'Template_Import_Siswa_SD_Lengkap.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Cache-Control' => 'max-age=0',
         ]);
     }
 
     /**
-     * Import students from Excel.
+     * Import students from Excel (Supports Official Template & Real TU Master Spreadsheets).
      */
     public function import(Request $request)
     {
@@ -662,96 +930,27 @@ class StudentController extends Controller
         $file = $request->file('file');
         $path = $file->getRealPath();
 
-        $spreadsheet = IOFactory::load($path);
-        $sheet = $spreadsheet->getActiveSheet();
+        // Optimized Reader for Speed and Large Datasets
+        $reader = IOFactory::createReaderForFile($path);
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($path);
+
+        // Select MASTER sheet if exists (like in TU files), otherwise use first sheet
+        $sheet = $spreadsheet->getSheetByName('MASTER') ?: ($spreadsheet->getSheetByName('Data Siswa') ?: $spreadsheet->getActiveSheet());
         $rows = $sheet->toArray();
 
-        // Remove header row
+        if (empty($rows)) {
+            return redirect()->route('students.index')->with('error', 'File Excel kosong atau tidak memiliki data.');
+        }
+
+        // Extract header row
         $header = array_shift($rows);
 
         $defaultClassroom = $request->filled('default_classroom_id') ? Classroom::find($request->input('default_classroom_id')) : null;
         $defaultAcademicYear = $request->filled('default_academic_year_id') ? AcademicYear::find($request->input('default_academic_year_id')) : AcademicYear::where('is_active', true)->first();
 
-        // Smart column mapping from header text
-        $map = [
-            'nis' => 0,
-            'full_name' => 1,
-            'nickname' => 2,
-            'gender' => 3,
-            'birth_place' => 4,
-            'birth_date' => 5,
-            'nisn' => 6,
-            'nik' => 7,
-            'religion' => 8,
-            'code' => 9,          // Grade (1A)
-            'class_name' => 10,   // Classname (Berlian)
-            'rombel_combined' => null,
-            'academic_year' => 11,
-            'address' => 12,
-            'father_name' => 13,
-            'father_phone' => 14,
-            'father_job' => 15,
-            'mother_name' => 16,
-            'mother_phone' => 17,
-            'mother_job' => 18,
-            'parent_phone' => 19,
-            'status' => 20,
-        ];
-
-        if (is_array($header) && count($header) > 0) {
-            $hasSeparateRombel = false;
-            foreach ($header as $cIdx => $cVal) {
-                $clean = strtolower(trim((string)$cVal));
-                
-                if (str_contains($clean, 'nisn')) {
-                    $map['nisn'] = $cIdx;
-                } elseif ((preg_match('/\bnis\b/', $clean) || str_starts_with($clean, 'nis')) && !str_contains($clean, 'jenis')) {
-                    $map['nis'] = $cIdx;
-                } elseif (str_contains($clean, 'nama lengkap')) {
-                    $map['full_name'] = $cIdx;
-                } elseif (str_contains($clean, 'panggilan')) {
-                    $map['nickname'] = $cIdx;
-                } elseif (str_contains($clean, 'kelamin') || str_contains($clean, 'jenis') || $clean === 'jk' || $clean === 'l/p') {
-                    $map['gender'] = $cIdx;
-                } elseif (str_contains($clean, 'tempat lahir')) {
-                    $map['birth_place'] = $cIdx;
-                } elseif (str_contains($clean, 'tanggal lahir') || str_contains($clean, 'tgl lahir')) {
-                    $map['birth_date'] = $cIdx;
-                } elseif (preg_match('/\bnik\b/', $clean) || str_starts_with($clean, 'nik')) {
-                    $map['nik'] = $cIdx;
-                } elseif (str_contains($clean, 'agama')) {
-                    $map['religion'] = $cIdx;
-                } elseif (str_contains($clean, 'grade') || str_contains($clean, 'kode rombel') || str_contains($clean, 'kode kelas') || $clean === 'kelas') {
-                    $map['code'] = $cIdx;
-                    $hasSeparateRombel = true;
-                } elseif (str_contains($clean, 'nama kelas') || str_contains($clean, 'julukan') || str_contains($clean, 'classname')) {
-                    $map['class_name'] = $cIdx;
-                    $hasSeparateRombel = true;
-                } elseif (str_contains($clean, 'rombel') && !$hasSeparateRombel) {
-                    $map['rombel_combined'] = $cIdx;
-                } elseif (str_contains($clean, 'tahun') || str_contains($clean, 'tapel')) {
-                    $map['academic_year'] = $cIdx;
-                } elseif (str_contains($clean, 'alamat')) {
-                    $map['address'] = $cIdx;
-                } elseif (str_contains($clean, 'ayah') && (str_contains($clean, 'hp') || str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'wa'))) {
-                    $map['father_phone'] = $cIdx;
-                } elseif (str_contains($clean, 'ayah') && str_contains($clean, 'pekerjaan')) {
-                    $map['father_job'] = $cIdx;
-                } elseif (str_contains($clean, 'nama ayah') || (str_contains($clean, 'ayah') && !str_contains($clean, 'ibu'))) {
-                    $map['father_name'] = $cIdx;
-                } elseif (str_contains($clean, 'ibu') && (str_contains($clean, 'hp') || str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'wa'))) {
-                    $map['mother_phone'] = $cIdx;
-                } elseif (str_contains($clean, 'ibu') && str_contains($clean, 'pekerjaan')) {
-                    $map['mother_job'] = $cIdx;
-                } elseif (str_contains($clean, 'nama ibu') || (str_contains($clean, 'ibu') && !str_contains($clean, 'ayah'))) {
-                    $map['mother_name'] = $cIdx;
-                } elseif (str_contains($clean, 'whatsapp') || str_contains($clean, 'kontak') || str_contains($clean, 'hp ortu')) {
-                    $map['parent_phone'] = $cIdx;
-                } elseif (str_contains($clean, 'status')) {
-                    $map['status'] = $cIdx;
-                }
-            }
-        }
+        // Build Flexible & Robust Column Map from Header Names
+        $map = $this->buildImportColumnMap($header);
 
         $errors = [];
         $importedCount = 0;
@@ -765,30 +964,9 @@ class StudentController extends Controller
                 continue;
             }
 
-            $nis = !empty($row[$map['nis']]) ? trim((string)$row[$map['nis']]) : null;
-            $fullName = !empty($row[$map['full_name']]) ? trim((string)$row[$map['full_name']]) : null;
-            $nickname = !empty($row[$map['nickname']]) ? trim((string)$row[$map['nickname']]) : null;
-            $gender = !empty($row[$map['gender']]) ? trim((string)$row[$map['gender']]) : null;
-            $birthPlace = !empty($row[$map['birth_place']]) ? trim((string)$row[$map['birth_place']]) : null;
-            $birthDateRaw = !empty($row[$map['birth_date']]) ? trim((string)$row[$map['birth_date']]) : null;
-            $nisn = !empty($row[$map['nisn']]) ? trim((string)$row[$map['nisn']]) : null;
-            $nik = !empty($row[$map['nik']]) ? trim((string)$row[$map['nik']]) : null;
-            $religion = !empty($row[$map['religion']]) ? trim((string)$row[$map['religion']]) : 'Islam';
-
-            $gradeCode = !empty($row[$map['code']]) ? trim((string)$row[$map['code']]) : null;
-            $className = !empty($row[$map['class_name']]) ? trim((string)$row[$map['class_name']]) : null;
-            $combinedRombel = isset($map['rombel_combined']) && !empty($row[$map['rombel_combined']]) ? trim((string)$row[$map['rombel_combined']]) : null;
-
-            $academicYearStr = !empty($row[$map['academic_year']]) ? trim((string)$row[$map['academic_year']]) : null;
-            $address = !empty($row[$map['address']]) ? trim((string)$row[$map['address']]) : null;
-            $fatherName = !empty($row[$map['father_name']]) ? trim((string)$row[$map['father_name']]) : null;
-            $fatherPhone = !empty($row[$map['father_phone']]) ? trim((string)$row[$map['father_phone']]) : null;
-            $fatherJob = !empty($row[$map['father_job']]) ? trim((string)$row[$map['father_job']]) : null;
-            $motherName = !empty($row[$map['mother_name']]) ? trim((string)$row[$map['mother_name']]) : null;
-            $motherPhone = !empty($row[$map['mother_phone']]) ? trim((string)$row[$map['mother_phone']]) : null;
-            $motherJob = !empty($row[$map['mother_job']]) ? trim((string)$row[$map['mother_job']]) : null;
-            $parentPhone = !empty($row[$map['parent_phone']]) ? trim((string)$row[$map['parent_phone']]) : null;
-            $status = !empty($row[$map['status']]) ? strtolower(trim((string)$row[$map['status']])) : 'aktif';
+            // Extract Identitas Wajib
+            $nis = isset($map['nis']) && !empty($row[$map['nis']]) ? trim((string)$row[$map['nis']]) : null;
+            $fullName = isset($map['full_name']) && !empty($row[$map['full_name']]) ? trim((string)$row[$map['full_name']]) : null;
 
             if (empty($nis)) {
                 $errors[] = "Baris {$rowNumber}: NIS wajib diisi.";
@@ -800,69 +978,164 @@ class StudentController extends Controller
                 continue;
             }
 
-            // Normalisasi Gender
-            if ($gender) {
-                $gUpper = strtoupper($gender);
-                if (in_array($gUpper, ['L', 'LAKI-LAKI', 'MALE', 'PRIA'])) {
-                    $gender = 'L';
-                } elseif (in_array($gUpper, ['P', 'PEREMPUAN', 'FEMALE', 'WANITA'])) {
-                    $gender = 'P';
-                } else {
-                    $gender = 'L';
-                }
+            // Helper to get string value
+            $getVal = function ($key) use ($map, $row) {
+                if (!isset($map[$key])) return null;
+                $idx = $map[$key];
+                if (!isset($row[$idx]) || is_null($row[$idx])) return null;
+                $val = trim((string)$row[$idx]);
+                return $val !== '' ? $val : null;
+            };
+
+            // Helper to get integer value
+            $getInt = function ($key) use ($getVal) {
+                $val = $getVal($key);
+                return is_numeric($val) ? (int)$val : null;
+            };
+
+            // 1. Identitas & Legalitas
+            $nickname = $getVal('nickname');
+            $genderRaw = $getVal('gender');
+            $birthPlace = $getVal('birth_place');
+            $birthDateRaw = $getVal('birth_date');
+            $nisn = $getVal('nisn');
+            $nik = $getVal('nik');
+            $noKk = $getVal('no_kk');
+            $birthCertNo = $getVal('birth_certificate_no');
+            $religion = $getVal('religion') ?: 'Islam';
+            $citizenship = $getVal('citizenship') ?: 'WNI';
+
+            // 2. Inklusi / PDBK
+            $studentType = $getVal('student_type') ?: 'reguler';
+            if (str_contains(strtolower($studentType), 'pdbk') || str_contains(strtolower($studentType), 'inklusi')) {
+                $studentType = 'pdbk';
             } else {
-                $gender = 'L';
+                $studentType = 'reguler';
             }
+            $specialNeedsType = $getVal('special_needs_type');
+            $specialNeedsNotes = $getVal('special_needs_notes');
 
-            // Normalisasi Tanggal Lahir (Mendukung dd/mm/yyyy, dd-mm-yyyy, yyyy-mm-dd, Serial Excel, dsb.)
-            $birthDate = null;
-            if ($birthDateRaw) {
-                try {
-                    $raw = trim((string)$birthDateRaw);
-                    
-                    // 1. Cek jika serial numeric Excel (misal: 43637 / 44002)
-                    if (is_numeric($raw) && (int)$raw > 10000 && (int)$raw < 70000) {
-                        $birthDate = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float)$raw)->format('Y-m-d');
-                    }
-                    // 2. Format dd/mm/yyyy atau dd-mm-yyyy (Contoh gambar: 20/06/2020, 03/06/2020)
-                    elseif (preg_match('/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/', $raw, $m)) {
-                        $day = str_pad($m[1], 2, '0', STR_PAD_LEFT);
-                        $month = str_pad($m[2], 2, '0', STR_PAD_LEFT);
-                        $year = $m[3];
-                        if ((int)$day <= 31 && (int)$month <= 12) {
-                            $birthDate = "{$year}-{$month}-{$day}";
-                        } else {
-                            $birthDate = \Carbon\Carbon::parse($raw)->format('Y-m-d');
-                        }
-                    }
-                    // 3. Format yyyy-mm-dd atau yyyy/mm/dd (Contoh: 2020-06-20)
-                    elseif (preg_match('/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/', $raw, $m)) {
-                        $year = $m[1];
-                        $month = str_pad($m[2], 2, '0', STR_PAD_LEFT);
-                        $day = str_pad($m[3], 2, '0', STR_PAD_LEFT);
-                        $birthDate = "{$year}-{$month}-{$day}";
-                    }
-                    // 4. Fallback jika ada nama bulan teks Indonesia (misal: 20 Juni 2020)
-                    else {
-                        $indoMonths = [
-                            'januari' => 'january', 'februari' => 'february', 'maret' => 'march',
-                            'april' => 'april', 'mei' => 'may', 'juni' => 'june',
-                            'juli' => 'july', 'agustus' => 'august', 'september' => 'september',
-                            'oktober' => 'october', 'november' => 'november', 'desember' => 'december',
-                            'agu' => 'aug', 'okt' => 'oct', 'des' => 'dec'
-                        ];
-                        $cleanDate = strtolower($raw);
-                        foreach ($indoMonths as $idm => $enm) {
-                            $cleanDate = str_replace($idm, $enm, $cleanDate);
-                        }
-                        $birthDate = \Carbon\Carbon::parse($cleanDate)->format('Y-m-d');
-                    }
-                } catch (\Exception $e) {
-                    $birthDate = null;
+            // 3. Rombel & Tapel Resolusi
+            $gradeCode = $getVal('code');
+            $className = $getVal('class_name');
+            $combinedRombel = $getVal('rombel_combined');
+            $academicYearStr = $getVal('academic_year');
+            $enrolledDateRaw = $getVal('enrolled_date');
+            $statusRaw = $getVal('status');
+
+            // 4. Alamat & Domisili
+            $address = $getVal('address');
+            $rt = $getVal('rt');
+            $rw = $getVal('rw');
+            $village = $getVal('village');
+            $district = $getVal('district');
+            $districtCategory = $getVal('district_category');
+            $city = $getVal('city');
+            $province = $getVal('province');
+            $postalCode = $getVal('postal_code');
+            $residenceStatus = $getVal('residence_status');
+            $distanceToSchool = $getVal('distance_to_school');
+            $homePhone = $getVal('home_phone');
+
+            // 5. Kontak Utama
+            $parentPhone = $getVal('parent_phone');
+            $parentEmail = $getVal('parent_email');
+
+            // 6. Keluarga & Saudara
+            $childNumber = $getInt('child_number');
+            $siblingsCount = $getInt('siblings_count');
+            $stepSiblingsCount = $getInt('step_siblings_count');
+            $adoptiveSiblingsCount = $getInt('adoptive_siblings_count');
+            $homeLanguage = $getVal('home_language');
+
+            // 7. Kesehatan & UKS
+            $bloodType = $getVal('blood_type');
+            $height = $getVal('height');
+            $weight = $getVal('weight');
+            $severeDisease = $getVal('severe_disease_history');
+            $frequentDisease = $getVal('frequent_disease');
+
+            // 8. Data Ayah
+            $fatherName = $getVal('father_name');
+            $fatherNik = $getVal('father_nik');
+            $fatherBirthPlace = $getVal('father_birth_place');
+            $fatherBirthDateRaw = $getVal('father_birth_date');
+            $fatherReligion = $getVal('father_religion');
+            $fatherPhone = $getVal('father_phone');
+            $fatherEducation = $getVal('father_education');
+            $fatherJob = $getVal('father_job');
+            $fatherCompany = $getVal('father_company');
+            $fatherCompanyAddress = $getVal('father_company_address');
+            $fatherCompanyPhone = $getVal('father_company_phone');
+            $fatherIncome = $getVal('father_income');
+            $fatherEmail = $getVal('father_email');
+
+            // 9. Data Ibu
+            $motherName = $getVal('mother_name');
+            $motherNik = $getVal('mother_nik');
+            $motherBirthPlace = $getVal('mother_birth_place');
+            $motherBirthDateRaw = $getVal('mother_birth_date');
+            $motherReligion = $getVal('mother_religion');
+            $motherPhone = $getVal('mother_phone');
+            $motherEducation = $getVal('mother_education');
+            $motherJob = $getVal('mother_job');
+            $motherCompany = $getVal('mother_company');
+            $motherCompanyAddress = $getVal('mother_company_address');
+            $motherCompanyPhone = $getVal('mother_company_phone');
+            $motherIncome = $getVal('mother_income');
+            $motherEmail = $getVal('mother_email');
+
+            // 10. Data Wali
+            $guardianName = $getVal('guardian_name');
+            $guardianRelation = $getVal('guardian_relation');
+            $guardianBirthPlace = $getVal('guardian_birth_place');
+            $guardianBirthDateRaw = $getVal('guardian_birth_date');
+            $guardianReligion = $getVal('guardian_religion');
+            $guardianPhone = $getVal('guardian_phone');
+            $guardianEducation = $getVal('guardian_education');
+            $guardianJob = $getVal('guardian_job');
+            $guardianAddress = $getVal('guardian_address');
+
+            // 11. Riwayat Asal Sekolah & Catatan
+            $originCategory = $getVal('origin_category');
+            $previousSchool = $getVal('previous_school');
+            $previousSchoolAddress = $getVal('previous_school_address');
+            $sttbNumberDate = $getVal('sttb_number_date');
+            $notes = $getVal('notes');
+
+            // Normalisasi Gender
+            $gender = 'L';
+            if ($genderRaw) {
+                $gUpper = strtoupper($genderRaw);
+                if (in_array($gUpper, ['L', 'LAKI-LAKI', 'MALE', 'PRIA', 'LK', 'M'])) {
+                    $gender = 'L';
+                } elseif (in_array($gUpper, ['P', 'PEREMPUAN', 'FEMALE', 'WANITA', 'PR', 'F'])) {
+                    $gender = 'P';
                 }
             }
 
-            // Resolusi Tahun Ajaran (Mendukung Opsi A: Tahunan)
+            // Normalisasi Tanggal
+            $birthDate = $this->parseExcelDate($birthDateRaw);
+            $fatherBirthDate = $this->parseExcelDate($fatherBirthDateRaw);
+            $motherBirthDate = $this->parseExcelDate($motherBirthDateRaw);
+            $guardianBirthDate = $this->parseExcelDate($guardianBirthDateRaw);
+            $enrolledDate = $this->parseExcelDate($enrolledDateRaw);
+
+            // Status Siswa
+            $status = 'aktif';
+            if ($statusRaw) {
+                $sClean = strtolower(trim($statusRaw));
+                if (in_array($sClean, ['aktif', 'lulus', 'mutasi', 'keluar', 'nonaktif'])) {
+                    $status = $sClean;
+                }
+            }
+
+            // Normalisasi Kontak Utama Fallback
+            if (empty($parentPhone)) {
+                $parentPhone = $fatherPhone ?: ($motherPhone ?: ($guardianPhone ?: null));
+            }
+
+            // Resolusi Tahun Ajaran
             $academicYearId = null;
             if ($academicYearStr) {
                 $cleanAY = str_replace('-', '/', $academicYearStr);
@@ -879,7 +1152,7 @@ class StudentController extends Controller
             $targetAY = $academicYearId ? AcademicYear::find($academicYearId) : null;
             $targetYearIds = $targetAY ? AcademicYear::where('name', $targetAY->name)->pluck('id')->toArray() : ($academicYearId ? [$academicYearId] : []);
 
-            // Resolusi Rombel (Classroom) - Case-Insensitive (BERLIAN / Berlian / berlian)
+            // Resolusi Rombel (Classroom) - Case-Insensitive
             $classroomId = null;
 
             if ($gradeCode && $className) {
@@ -944,6 +1217,7 @@ class StudentController extends Controller
                 if ($cr) $classroomId = $cr->id;
             }
 
+            // Fallback ke Classroom Default jika dipilih di modal
             if (!$classroomId && $defaultClassroom) {
                 $classroomId = $defaultClassroom->id;
                 if (!$academicYearId && $defaultClassroom->academic_year_id) {
@@ -953,52 +1227,139 @@ class StudentController extends Controller
 
             if (!$classroomId) {
                 $identifier = $gradeCode ? ($gradeCode . ' ' . $className) : ($className ?: ($combinedRombel ?: 'tidak terdefinisi'));
-                $errors[] = "Baris {$rowNumber}: Rombel '{$identifier}' tidak ditemukan di sistem. Harap periksa nama rombel atau pilih Rombel default.";
+                $errors[] = "Baris {$rowNumber}: Rombel '{$identifier}' tidak ditemukan di sistem. Harap periksa nama rombel atau pilih Rombel default pada form import.";
                 continue;
             }
 
-            // Status Validation
-            if (!in_array($status, ['aktif', 'lulus', 'mutasi', 'keluar', 'nonaktif'])) {
-                $status = 'aktif';
-            }
-
-            // WhatsApp / Parent Phone fallback
-            if (!$parentPhone) {
-                $parentPhone = $fatherPhone ?: $motherPhone;
-            }
-
-            // Upsert student by NIS
-            $student = Student::where('nis', $nis)->first();
+            // Prepare Data Array for Upsert
             $dataToSave = [
+                // Identitas & Legalitas
                 'nis' => $nis,
                 'nisn' => $nisn,
                 'nik' => $nik,
+                'no_kk' => $noKk,
+                'birth_certificate_no' => $birthCertNo,
+                'citizenship' => $citizenship,
                 'full_name' => $fullName,
                 'nickname' => $nickname,
                 'gender' => $gender,
                 'birth_place' => $birthPlace,
                 'birth_date' => $birthDate,
                 'religion' => $religion,
+
+                // Inklusi
+                'student_type' => $studentType,
+                'special_needs_type' => $specialNeedsType,
+                'special_needs_notes' => $specialNeedsNotes,
+
+                // Rombel & Tapel
                 'classroom_id' => $classroomId,
                 'academic_year_id' => $academicYearId,
-                'address' => $address,
-                'father_name' => $fatherName,
-                'father_phone' => $fatherPhone,
-                'father_job' => $fatherJob,
-                'mother_name' => $motherName,
-                'mother_phone' => $motherPhone,
-                'mother_job' => $motherJob,
-                'parent_phone' => $parentPhone,
                 'status' => $status,
-                'enrolled_date' => now()->toDateString(),
+                'enrolled_date' => $enrolledDate,
+
+                // Alamat & Domisili
+                'address' => $address,
+                'rt' => $rt,
+                'rw' => $rw,
+                'village' => $village,
+                'district' => $district,
+                'district_category' => $districtCategory,
+                'city' => $city,
+                'province' => $province,
+                'postal_code' => $postalCode,
+                'residence_status' => $residenceStatus,
+                'distance_to_school' => $distanceToSchool,
+                'home_phone' => $homePhone,
+
+                // Kontak Utama
+                'parent_phone' => $parentPhone,
+                'parent_email' => $parentEmail,
+
+                // Keluarga & Saudara
+                'child_number' => $childNumber,
+                'siblings_count' => $siblingsCount,
+                'step_siblings_count' => $stepSiblingsCount,
+                'adoptive_siblings_count' => $adoptiveSiblingsCount,
+                'home_language' => $homeLanguage,
+
+                // Kesehatan & UKS
+                'blood_type' => $bloodType,
+                'height' => $height,
+                'weight' => $weight,
+                'severe_disease_history' => $severeDisease,
+                'frequent_disease' => $frequentDisease,
+
+                // Data Ayah
+                'father_name' => $fatherName,
+                'father_nik' => $fatherNik,
+                'father_birth_place' => $fatherBirthPlace,
+                'father_birth_date' => $fatherBirthDate,
+                'father_religion' => $fatherReligion,
+                'father_phone' => $fatherPhone,
+                'father_education' => $fatherEducation,
+                'father_job' => $fatherJob,
+                'father_company' => $fatherCompany,
+                'father_company_address' => $fatherCompanyAddress,
+                'father_company_phone' => $fatherCompanyPhone,
+                'father_income' => $fatherIncome,
+                'father_email' => $fatherEmail,
+
+                // Data Ibu
+                'mother_name' => $motherName,
+                'mother_nik' => $motherNik,
+                'mother_birth_place' => $motherBirthPlace,
+                'mother_birth_date' => $motherBirthDate,
+                'mother_religion' => $motherReligion,
+                'mother_phone' => $motherPhone,
+                'mother_education' => $motherEducation,
+                'mother_job' => $motherJob,
+                'mother_company' => $motherCompany,
+                'mother_company_address' => $motherCompanyAddress,
+                'mother_company_phone' => $motherCompanyPhone,
+                'mother_income' => $motherIncome,
+                'mother_email' => $motherEmail,
+
+                // Data Wali
+                'guardian_name' => $guardianName,
+                'guardian_relation' => $guardianRelation,
+                'guardian_birth_place' => $guardianBirthPlace,
+                'guardian_birth_date' => $guardianBirthDate,
+                'guardian_religion' => $guardianReligion,
+                'guardian_phone' => $guardianPhone,
+                'guardian_education' => $guardianEducation,
+                'guardian_job' => $guardianJob,
+                'guardian_address' => $guardianAddress,
+
+                // Asal Sekolah & Catatan
+                'origin_category' => $originCategory,
+                'previous_school' => $previousSchool,
+                'previous_school_address' => $previousSchoolAddress,
+                'sttb_number_date' => $sttbNumberDate,
+                'notes' => $notes,
             ];
 
+            // Filter null values if updating to avoid overwriting existing data with blanks
+            $student = Student::where('nis', $nis)->first();
+
             if ($student) {
-                $student->update($dataToSave);
+                $filteredData = array_filter($dataToSave, fn($v) => !is_null($v));
+                $student->update($filteredData);
                 $updatedCount++;
             } else {
-                Student::create($dataToSave);
+                $student = Student::create($dataToSave);
                 $importedCount++;
+            }
+
+            // Sync Classroom History
+            if ($student && $student->classroom_id && $student->academic_year_id) {
+                \App\Models\StudentClassroomHistory::updateOrCreate([
+                    'student_id' => $student->id,
+                    'academic_year_id' => $student->academic_year_id,
+                ], [
+                    'classroom_id' => $student->classroom_id,
+                    'status' => $student->status === 'lulus' ? 'lulus' : ($student->status === 'mutasi' ? 'mutasi' : 'naik_kelas'),
+                ]);
             }
         }
 
@@ -1016,4 +1377,283 @@ class StudentController extends Controller
 
         return redirect()->route('students.index')->with('success', $msg);
     }
+
+    /**
+     * Parse flexible Excel date formats (Numeric serial, DD/MM/YYYY, YYYY-MM-DD, Indonesian month names).
+     */
+    protected function parseExcelDate($raw): ?string
+    {
+        if (empty($raw)) return null;
+
+        try {
+            $raw = trim((string)$raw);
+
+            // 1. Excel numeric serial date (e.g. 43637 / 44002)
+            if (is_numeric($raw) && (int)$raw > 10000 && (int)$raw < 70000) {
+                return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((float)$raw)->format('Y-m-d');
+            }
+
+            // 2. Format dd/mm/yyyy or dd-mm-yyyy or dd.mm.yyyy (e.g. 20/06/2019)
+            if (preg_match('/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/', $raw, $m)) {
+                $day = str_pad($m[1], 2, '0', STR_PAD_LEFT);
+                $month = str_pad($m[2], 2, '0', STR_PAD_LEFT);
+                $year = $m[3];
+                if ((int)$day <= 31 && (int)$month <= 12) {
+                    return "{$year}-{$month}-{$day}";
+                }
+                return \Carbon\Carbon::parse($raw)->format('Y-m-d');
+            }
+
+            // 3. Format yyyy-mm-dd or yyyy/mm/dd (e.g. 2019-06-20)
+            if (preg_match('/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/', $raw, $m)) {
+                $year = $m[1];
+                $month = str_pad($m[2], 2, '0', STR_PAD_LEFT);
+                $day = str_pad($m[3], 2, '0', STR_PAD_LEFT);
+                return "{$year}-{$month}-{$day}";
+            }
+
+            // 4. Fallback Indonesian Month text (e.g. 20 Juni 2019)
+            $indoMonths = [
+                'januari' => 'january', 'februari' => 'february', 'maret' => 'march',
+                'april' => 'april', 'mei' => 'may', 'juni' => 'june',
+                'juli' => 'july', 'agustus' => 'august', 'september' => 'september',
+                'oktober' => 'october', 'november' => 'november', 'desember' => 'december',
+                'agu' => 'aug', 'okt' => 'oct', 'des' => 'dec'
+            ];
+            $cleanDate = strtolower($raw);
+            foreach ($indoMonths as $idm => $enm) {
+                $cleanDate = str_replace($idm, $enm, $cleanDate);
+            }
+            return \Carbon\Carbon::parse($cleanDate)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Map Excel column headers flexibly to database attributes.
+     */
+    protected function buildImportColumnMap(array $header): array
+    {
+        $map = [];
+        $hasSeparateRombel = false;
+
+        foreach ($header as $cIdx => $cVal) {
+            $rawText = trim((string)$cVal);
+            $clean = strtolower($rawText);
+            if ($clean === '') continue;
+
+            // --- 1. DATA AYAH ---
+            if (str_contains($clean, 'ayah')) {
+                if (str_contains($clean, 'nik') || str_contains($clean, 'ktp')) {
+                    $map['father_nik'] = $cIdx;
+                } elseif (str_contains($clean, 'tempat lahir') || (str_contains($clean, 'tempat') && !str_contains($clean, 'bekerja'))) {
+                    $map['father_birth_place'] = $cIdx;
+                } elseif (str_contains($clean, 'tanggal') || str_contains($clean, 'tgl')) {
+                    $map['father_birth_date'] = $cIdx;
+                } elseif (str_contains($clean, 'agama')) {
+                    $map['father_religion'] = $cIdx;
+                } elseif (str_contains($clean, 'alamat') && (str_contains($clean, 'instansi') || str_contains($clean, 'kantor'))) {
+                    $map['father_company_address'] = $cIdx;
+                } elseif ((str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'hp')) && (str_contains($clean, 'instansi') || str_contains($clean, 'kantor'))) {
+                    $map['father_company_phone'] = $cIdx;
+                } elseif (str_contains($clean, 'instansi') || str_contains($clean, 'tempat bekerja') || str_contains($clean, 'perusahaan')) {
+                    $map['father_company'] = $cIdx;
+                } elseif (str_contains($clean, 'handphone') || str_contains($clean, 'hp') || str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'wa') || str_contains($clean, 'ponsel')) {
+                    $map['father_phone'] = $cIdx;
+                } elseif (str_contains($clean, 'pendidikan') || str_contains($clean, 'lulusan')) {
+                    $map['father_education'] = $cIdx;
+                } elseif (str_contains($clean, 'penghasilan') || str_contains($clean, 'gaji') || str_contains($clean, 'pendapatan')) {
+                    $map['father_income'] = $cIdx;
+                } elseif (str_contains($clean, 'email')) {
+                    $map['father_email'] = $cIdx;
+                } elseif (str_contains($clean, 'pekerjaan') || str_contains($clean, 'profesi') || str_contains($clean, 'kerja')) {
+                    $map['father_job'] = $cIdx;
+                } elseif (str_contains($clean, 'nama')) {
+                    $map['father_name'] = $cIdx;
+                }
+                continue;
+            }
+
+            // --- 2. DATA IBU ---
+            if (str_contains($clean, 'ibu')) {
+                if (str_contains($clean, 'nik') || str_contains($clean, 'ktp')) {
+                    $map['mother_nik'] = $cIdx;
+                } elseif (str_contains($clean, 'tempat lahir') || (str_contains($clean, 'tempat') && !str_contains($clean, 'bekerja'))) {
+                    $map['mother_birth_place'] = $cIdx;
+                } elseif (str_contains($clean, 'tanggal') || str_contains($clean, 'tgl')) {
+                    $map['mother_birth_date'] = $cIdx;
+                } elseif (str_contains($clean, 'agama')) {
+                    $map['mother_religion'] = $cIdx;
+                } elseif (str_contains($clean, 'alamat') && (str_contains($clean, 'instansi') || str_contains($clean, 'kantor'))) {
+                    $map['mother_company_address'] = $cIdx;
+                } elseif ((str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'hp')) && (str_contains($clean, 'instansi') || str_contains($clean, 'kantor'))) {
+                    $map['mother_company_phone'] = $cIdx;
+                } elseif (str_contains($clean, 'instansi') || str_contains($clean, 'tempat bekerja') || str_contains($clean, 'perusahaan')) {
+                    $map['mother_company'] = $cIdx;
+                } elseif (str_contains($clean, 'handphone') || str_contains($clean, 'hp') || str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'wa') || str_contains($clean, 'ponsel')) {
+                    $map['mother_phone'] = $cIdx;
+                } elseif (str_contains($clean, 'pendidikan') || str_contains($clean, 'lulusan')) {
+                    $map['mother_education'] = $cIdx;
+                } elseif (str_contains($clean, 'penghasilan') || str_contains($clean, 'gaji') || str_contains($clean, 'pendapatan')) {
+                    $map['mother_income'] = $cIdx;
+                } elseif (str_contains($clean, 'email')) {
+                    $map['mother_email'] = $cIdx;
+                } elseif (str_contains($clean, 'pekerjaan') || str_contains($clean, 'profesi') || str_contains($clean, 'kerja')) {
+                    $map['mother_job'] = $cIdx;
+                } elseif (str_contains($clean, 'nama')) {
+                    $map['mother_name'] = $cIdx;
+                }
+                continue;
+            }
+
+            // --- 3. DATA WALI ---
+            if (str_contains($clean, 'wali')) {
+                if (str_contains($clean, 'hubungan')) {
+                    $map['guardian_relation'] = $cIdx;
+                } elseif (str_contains($clean, 'tempat lahir') || (str_contains($clean, 'tempat') && !str_contains($clean, 'tinggal'))) {
+                    $map['guardian_birth_place'] = $cIdx;
+                } elseif (str_contains($clean, 'tanggal') || str_contains($clean, 'tgl')) {
+                    $map['guardian_birth_date'] = $cIdx;
+                } elseif (str_contains($clean, 'agama')) {
+                    $map['guardian_religion'] = $cIdx;
+                } elseif (str_contains($clean, 'alamat')) {
+                    $map['guardian_address'] = $cIdx;
+                } elseif (str_contains($clean, 'handphone') || str_contains($clean, 'hp') || str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'wa') || str_contains($clean, 'ponsel')) {
+                    $map['guardian_phone'] = $cIdx;
+                } elseif (str_contains($clean, 'pendidikan') || str_contains($clean, 'lulusan')) {
+                    $map['guardian_education'] = $cIdx;
+                } elseif (str_contains($clean, 'pekerjaan') || str_contains($clean, 'profesi') || str_contains($clean, 'kerja')) {
+                    $map['guardian_job'] = $cIdx;
+                } elseif (str_contains($clean, 'nama')) {
+                    $map['guardian_name'] = $cIdx;
+                }
+                continue;
+            }
+
+            // --- 4. IDENTITAS & LEGALITAS SISWA ---
+            if (str_contains($clean, 'nisn')) {
+                $map['nisn'] = $cIdx;
+            } elseif ((preg_match('/\bnis\b/', $clean) || str_starts_with($clean, 'nis')) && !str_contains($clean, 'jenis') && !str_contains($clean, 'teknis')) {
+                $map['nis'] = $cIdx;
+            } elseif (str_contains($clean, 'nama siswa') || str_contains($clean, 'nama lengkap') || (str_contains($clean, 'nama') && (str_contains($clean, 'peserta didik') || str_contains($clean, 'murid'))) || $clean === 'nama') {
+                $map['full_name'] = $cIdx;
+            } elseif (str_contains($clean, 'panggilan') || str_contains($clean, 'nickname')) {
+                $map['nickname'] = $cIdx;
+            } elseif ($clean === 'sex' || $clean === 'jk' || $clean === 'l/p' || $clean === 'gender' || str_contains($clean, 'jenis kelamin') || str_contains($clean, 'kelamin')) {
+                $map['gender'] = $cIdx;
+            } elseif (str_contains($clean, 'tempat lahir')) {
+                $map['birth_place'] = $cIdx;
+            } elseif (str_contains($clean, 'tanggal lahir') || str_contains($clean, 'tgl lahir')) {
+                $map['birth_date'] = $cIdx;
+            } elseif (str_contains($clean, 'no kk') || str_contains($clean, 'kartu keluarga') || $clean === 'kk') {
+                $map['no_kk'] = $cIdx;
+            } elseif (str_contains($clean, 'akta') || str_contains($clean, 'akte')) {
+                $map['birth_certificate_no'] = $cIdx;
+            } elseif (preg_match('/\bnik\b/', $clean) || str_starts_with($clean, 'nik') || str_contains($clean, 'nik anak') || str_contains($clean, 'nik siswa')) {
+                $map['nik'] = $cIdx;
+            } elseif (str_contains($clean, 'kewarganegaraan') || str_contains($clean, 'warga negara') || str_contains($clean, 'citizenship')) {
+                $map['citizenship'] = $cIdx;
+            } elseif (str_contains($clean, 'agama') || str_contains($clean, 'kepercayaan')) {
+                $map['religion'] = $cIdx;
+            }
+
+            // --- 5. INKLUSI & PDBK ---
+            elseif (str_contains($clean, 'ketunaan') || (str_contains($clean, 'kebutuhan khusus') && !str_contains($clean, 'catatan'))) {
+                $map['special_needs_type'] = $cIdx;
+            } elseif (str_contains($clean, 'catatan kebutuhan') || (str_contains($clean, 'kebutuhan') && str_contains($clean, 'catatan'))) {
+                $map['special_needs_notes'] = $cIdx;
+            } elseif (str_contains($clean, 'jenis peserta didik') || str_contains($clean, 'tipe siswa') || str_contains($clean, 'pdbk') || str_contains($clean, 'inklusi') || str_contains($clean, 'reguler')) {
+                $map['student_type'] = $cIdx;
+            }
+
+            // --- 6. ROMBEL & TAPEL ---
+            elseif (str_contains($clean, 'grade') || str_contains($clean, 'kode rombel') || str_contains($clean, 'kode kelas') || $clean === 'kelas') {
+                $map['code'] = $cIdx;
+                $hasSeparateRombel = true;
+            } elseif (str_contains($clean, 'class name') || str_contains($clean, 'nama kelas') || str_contains($clean, 'julukan') || str_contains($clean, 'classname')) {
+                $map['class_name'] = $cIdx;
+                $hasSeparateRombel = true;
+            } elseif (str_contains($clean, 'rombel') && !$hasSeparateRombel) {
+                $map['rombel_combined'] = $cIdx;
+            } elseif (str_contains($clean, 'tahun') || str_contains($clean, 'tapel') || str_contains($clean, 'ajaran')) {
+                $map['academic_year'] = $cIdx;
+            } elseif (str_contains($clean, 'tanggal diterima') || str_contains($clean, 'tanggal masuk') || str_contains($clean, 'tgl masuk') || str_contains($clean, 'tgl diterima')) {
+                $map['enrolled_date'] = $cIdx;
+            }
+
+            // --- 7. ALAMAT & DOMISILI SISWA ---
+            elseif ((str_contains($clean, 'alamat rumah') || str_contains($clean, 'alamat tempat tinggal') || str_contains($clean, 'alamat') || str_contains($clean, 'domisili') || str_contains($clean, 'jalan')) && !str_contains($clean, 'tk') && !str_contains($clean, 'sekolah') && !str_contains($clean, 'kantor')) {
+                $map['address'] = $cIdx;
+            } elseif (!isset($map['rt']) && ($clean === 'rt' || str_starts_with($clean, 'rt ') || str_ends_with($clean, ' rt'))) {
+                $map['rt'] = $cIdx;
+            } elseif (!isset($map['rw']) && ($clean === 'rw' || str_starts_with($clean, 'rw ') || str_ends_with($clean, ' rw'))) {
+                $map['rw'] = $cIdx;
+            } elseif (!isset($map['village']) && (str_contains($clean, 'kelurahan') || str_contains($clean, 'desa'))) {
+                $map['village'] = $cIdx;
+            } elseif (str_contains($clean, 'sebaran kecamatan') || str_contains($clean, 'kategori wilayah') || str_contains($clean, 'dalam kota') || str_contains($clean, 'luar kota')) {
+                $map['district_category'] = $cIdx;
+            } elseif (!isset($map['district']) && str_contains($clean, 'kecamatan')) {
+                $map['district'] = $cIdx;
+            } elseif (!isset($map['city']) && (str_contains($clean, 'kabupaten') || str_contains($clean, 'kota') || str_contains($clean, 'kab'))) {
+                $map['city'] = $cIdx;
+            } elseif (str_contains($clean, 'provinsi') || str_contains($clean, 'propinsi')) {
+                $map['province'] = $cIdx;
+            } elseif (str_contains($clean, 'kode pos') || str_contains($clean, 'kodepos') || str_contains($clean, 'pos')) {
+                $map['postal_code'] = $cIdx;
+            } elseif (str_contains($clean, 'status tempat tinggal') || str_contains($clean, 'tinggal bersama') || str_contains($clean, 'status tinggal')) {
+                $map['residence_status'] = $cIdx;
+            } elseif (str_contains($clean, 'jarak')) {
+                $map['distance_to_school'] = $cIdx;
+            } elseif (str_contains($clean, 'telepon rumah') || str_contains($clean, 'telp rumah') || str_contains($clean, 'tlp rumah')) {
+                $map['home_phone'] = $cIdx;
+            } elseif (str_contains($clean, 'handphone') || str_contains($clean, 'whatsapp') || str_contains($clean, 'hp ortu') || str_contains($clean, 'no wa')) {
+                $map['parent_phone'] = $cIdx;
+            }
+
+            // --- 8. KELUARGA & SAUDARA ---
+            elseif (str_contains($clean, 'anak ke')) {
+                $map['child_number'] = $cIdx;
+            } elseif (str_contains($clean, 'saudara tiri') || str_contains($clean, 'tiri')) {
+                $map['step_siblings_count'] = $cIdx;
+            } elseif (str_contains($clean, 'saudara angkat') || str_contains($clean, 'angkat')) {
+                $map['adoptive_siblings_count'] = $cIdx;
+            } elseif (str_contains($clean, 'saudara kandung') || str_contains($clean, 'kandung') || str_contains($clean, 'saudara')) {
+                $map['siblings_count'] = $cIdx;
+            } elseif (str_contains($clean, 'bahasa')) {
+                $map['home_language'] = $cIdx;
+            }
+
+            // --- 9. KESEHATAN & UKS ---
+            elseif (str_contains($clean, 'gol darah') || str_contains($clean, 'golongan darah') || str_contains($clean, 'darah')) {
+                $map['blood_type'] = $cIdx;
+            } elseif ($clean === 'bb' || str_contains($clean, 'berat badan') || str_starts_with($clean, 'berat')) {
+                $map['weight'] = $cIdx;
+            } elseif ($clean === 'tb' || str_contains($clean, 'tinggi badan') || str_starts_with($clean, 'tinggi')) {
+                $map['height'] = $cIdx;
+            } elseif (str_contains($clean, 'penyakit berat') || str_contains($clean, 'riwayat penyakit') || str_contains($clean, 'berat/kronis')) {
+                $map['severe_disease_history'] = $cIdx;
+            } elseif (str_contains($clean, 'sering diderita') || str_contains($clean, 'penyakit sering') || str_contains($clean, 'keluhan')) {
+                $map['frequent_disease'] = $cIdx;
+            }
+
+            // --- 10. ASAL SEKOLAH & LAINNYA ---
+            elseif (str_contains($clean, 'asal peserta didik') || str_contains($clean, 'kategori asal') || str_contains($clean, 'jalur masuk')) {
+                $map['origin_category'] = $cIdx;
+            } elseif (str_contains($clean, 'alamat tk') || (str_contains($clean, 'asal') && str_contains($clean, 'alamat')) || (str_contains($clean, 'sekolah') && str_contains($clean, 'alamat'))) {
+                $map['previous_school_address'] = $cIdx;
+            } elseif (str_contains($clean, 'nama tk') || str_contains($clean, 'asal sekolah') || str_contains($clean, 'sekolah asal') || str_contains($clean, 'sekolah sebelumnya')) {
+                $map['previous_school'] = $cIdx;
+            } elseif (str_contains($clean, 'sttb') || str_contains($clean, 'ijazah')) {
+                $map['sttb_number_date'] = $cIdx;
+            } elseif (str_contains($clean, 'catatan') && !str_contains($clean, 'kebutuhan')) {
+                $map['notes'] = $cIdx;
+            } elseif (str_contains($clean, 'status') && !str_contains($clean, 'hubungan') && !str_contains($clean, 'tinggal') && !str_contains($clean, 'wali')) {
+                $map['status'] = $cIdx;
+            }
+        }
+
+        return $map;
+    }
 }
+

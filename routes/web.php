@@ -43,6 +43,11 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
     Route::resource('students', StudentController::class);
     Route::get('/siswa', fn() => redirect()->route('students.index'))->name('siswa');
 
+    // Student & Classroom Distribution Report (Rekapitulasi Rombel & Kesiswaan - Sheet 2 TU)
+    Route::get('student-reports', [\App\Http\Controllers\StudentReportController::class, 'index'])->name('student-reports.index');
+    Route::get('student-reports/print', [\App\Http\Controllers\StudentReportController::class, 'print'])->name('student-reports.print');
+    Route::get('student-reports/export', [\App\Http\Controllers\StudentReportController::class, 'export'])->name('student-reports.export');
+
     // Class Promotions & Graduation (Kenaikan Kelas & Kelulusan)
     Route::get('class-promotions', [\App\Http\Controllers\ClassPromotionController::class, 'index'])->name('promotions.index');
     Route::get('class-promotions/students', [\App\Http\Controllers\ClassPromotionController::class, 'getStudents'])->name('promotions.students');
@@ -73,7 +78,7 @@ Route::middleware(['auth', 'verified', 'role:super_admin'])->group(function () {
     Route::resource('users', \App\Http\Controllers\UserController::class);
 });
 
-Route::middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->group(function () {
 
     // SPMB New Candidate Management
     Route::prefix('spmb')->name('spmb.')->group(function () {

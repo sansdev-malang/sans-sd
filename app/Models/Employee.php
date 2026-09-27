@@ -58,6 +58,11 @@ class Employee extends Model
         return $this->attributes['name'] ?? '';
     }
 
+    public function getFullNameAttribute(): string
+    {
+        return $this->name;
+    }
+
     public function getPhotoUrlAttribute(): ?string
     {
         if (empty($this->photo)) {
@@ -207,6 +212,14 @@ class Employee extends Model
         $name = preg_replace('/\s+/', ' ', $name);
         $frontTitle = trim($frontTitle);
         $backTitle = trim($backTitle);
+    }
+
+    /**
+     * Siswa PDBK yang didampingi oleh Guru ini sebagai GPK.
+     */
+    public function assistedStudents(): HasMany
+    {
+        return $this->hasMany(Student::class, 'gpk_employee_id');
     }
 }
 

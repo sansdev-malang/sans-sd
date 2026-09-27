@@ -135,12 +135,13 @@ class ClassPromotionController extends Controller
 
                     $destClassroom = Classroom::with(['classLevel', 'homeroomTeacher'])->findOrFail($targetClassroomId);
 
-                    // 1. Close out existing history in source academic year
+                    // 1. Close out existing history in source academic year with GPK snapshot
                     StudentClassroomHistory::where('student_id', $student->id)
                         ->where('academic_year_id', $sourceClassroom->academic_year_id)
                         ->update([
                             'status' => 'naik_kelas',
                             'end_date' => now()->toDateString(),
+                            'gpk_teacher_name' => $student->gpkTeacher?->name,
                         ]);
 
                     // 2. Update Student model
@@ -159,6 +160,7 @@ class ClassPromotionController extends Controller
                         'grade_level' => $destClassroom->classLevel?->name ?? ($destClassroom->classLevel?->order ? 'Kelas ' . $destClassroom->classLevel->order : substr($destClassroom->name, 0, 1)),
                         'classroom_name' => $destClassroom->name,
                         'homeroom_teacher_name' => $destClassroom->homeroomTeacher?->name,
+                        'gpk_teacher_name' => $student->gpkTeacher?->name,
                         'status' => 'aktif',
                         'start_date' => now()->toDateString(),
                         'notes' => "Naik kelas dari {$sourceClassroom->name}",
@@ -176,6 +178,7 @@ class ClassPromotionController extends Controller
                         ->update([
                             'status' => 'tinggal_kelas',
                             'end_date' => now()->toDateString(),
+                            'gpk_teacher_name' => $student->gpkTeacher?->name,
                         ]);
 
                     // 2. Update Student model
@@ -194,6 +197,7 @@ class ClassPromotionController extends Controller
                         'grade_level' => $destClassroom->classLevel?->name ?? ($destClassroom->classLevel?->order ? 'Kelas ' . $destClassroom->classLevel->order : substr($destClassroom->name, 0, 1)),
                         'classroom_name' => $destClassroom->name,
                         'homeroom_teacher_name' => $destClassroom->homeroomTeacher?->name,
+                        'gpk_teacher_name' => $student->gpkTeacher?->name,
                         'status' => 'aktif',
                         'start_date' => now()->toDateString(),
                         'notes' => "Tinggal kelas / mengulang di {$destClassroom->name}",
