@@ -12,13 +12,18 @@ use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 class StudentController extends Controller
 {
     /**
-     * Display a listing of students with filters & pagination.
+     * Build the filtered query and resolve academic years for student listings and exports.
      */
-    public function index(Request $request)
+    private function getFilteredStudentsQuery(Request $request): array
     {
         $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
         $activeAcademicYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
@@ -40,7 +45,13 @@ class StudentController extends Controller
         $selectedYearName = $selectedYear?->name;
         $matchingYearIds = $academicYears->where('name', $selectedYearName)->pluck('id');
 
-        $query = Student::with(['classroom.classLevel', 'academicYear', 'spmbCandidate', 'gpkTeacher']);
+        $query = Student::with([
+            'classroom.classLevel', 
+            'classroom.homeroomTeacher', 
+            'academicYear', 
+            'spmbCandidate', 
+            'gpkTeacher'
+        ]);
 
         // Academic Year Filter (covers all semester records of the selected annual year)
         if ($matchingYearIds->isNotEmpty()) {
@@ -112,6 +123,32 @@ class StudentController extends Controller
                 $query->where('gender', $gender);
             }
         }
+
+        return [
+            'query' => $query,
+            'academicYears' => $academicYears,
+            'uniqueAcademicYears' => $uniqueAcademicYears,
+            'selectedYear' => $selectedYear,
+            'selectedYearId' => $selectedYearId,
+            'selectedYearName' => $selectedYearName,
+            'matchingYearIds' => $matchingYearIds,
+            'activeAcademicYear' => $activeAcademicYear,
+        ];
+    }
+
+    /**
+     * Display a listing of students with filters & pagination.
+     */
+    public function index(Request $request)
+    {
+        $filterData = $this->getFilteredStudentsQuery($request);
+        $query = $filterData['query'];
+        $matchingYearIds = $filterData['matchingYearIds'];
+        $uniqueAcademicYears = $filterData['uniqueAcademicYears'];
+        $activeAcademicYear = $filterData['activeAcademicYear'];
+        $selectedYearId = $filterData['selectedYearId'];
+        $selectedYear = $filterData['selectedYear'];
+        $selectedYearName = $filterData['selectedYearName'];
 
         // Stats calculation based on selected academic year
         $statsQuery = Student::query();
@@ -185,6 +222,296 @@ class StudentController extends Controller
             'selectedYear' => $selectedYear,
             'selectedYearName' => $selectedYearName,
         ]);
+    }
+
+    /**
+     * Export filtered students to Excel (.xlsx) with professional Dapodik formatting.
+     */
+    public function exportExcel(Request $request)
+    {
+        $filterData = $this->getFilteredStudentsQuery($request);
+        $students = $filterData['query']->orderBy('classroom_id', 'asc')->orderBy('full_name', 'asc')->get();
+        $selectedYearName = $filterData['selectedYearName'] ?: 'Semua Tapel';
+        $appName = function_exists('setting') ? setting('app_name', 'SD Anak Saleh') : 'SD Anak Saleh';
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data Siswa');
+
+        // Document Titles
+        $sheet->setCellValue('A1', "DATA PESERTA DIDIK " . strtoupper($appName));
+        $sheet->setCellValue('A2', "Tahun Pelajaran: " . $selectedYearName . " | Dicetak: " . date('d/m/Y H:i') . " WIB");
+        
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14)->getColor()->setRGB('1E1B4B');
+        $sheet->getStyle('A2')->getFont()->setItalic(true)->setSize(10)->getColor()->setRGB('475569');
+
+        // Table Headers
+        $headers = [
+            'No',
+            'NIS',
+            'NISN',
+            'NIK',
+            'No. Kartu Keluarga',
+            'Nama Lengkap Siswa',
+            'Nama Panggilan',
+            'L/P',
+            'Tempat Lahir',
+            'Tanggal Lahir',
+            'Usia',
+            'Agama',
+            'Tingkat',
+            'Rombel',
+            'Tahun Pelajaran',
+            'Kategori Siswa',
+            'Jenis Kebutuhan Khusus',
+            'Guru Pendamping Khusus (GPK)',
+            'Wali Kelas',
+            'Nama Ayah',
+            'Pekerjaan Ayah',
+            'No. HP/WA Ayah',
+            'Nama Ibu',
+            'Pekerjaan Ibu',
+            'No. HP/WA Ibu',
+            'No. WhatsApp Utama',
+            'Email Orang Tua',
+            'Alamat Domisili',
+            'RT',
+            'RW',
+            'Kelurahan / Desa',
+            'Kecamatan',
+            'Kota / Kabupaten',
+            'Provinsi',
+            'Status Siswa',
+            'Tanggal Masuk / Diterima'
+        ];
+
+        $headerRow = 4;
+        foreach ($headers as $colIdx => $title) {
+            $colLetter = Coordinate::stringFromColumnIndex($colIdx + 1);
+            $sheet->setCellValue($colLetter . $headerRow, $title);
+        }
+
+        $lastColLetter = Coordinate::stringFromColumnIndex(count($headers));
+        
+        // Header Styling
+        $sheet->getStyle("A{$headerRow}:{$lastColLetter}{$headerRow}")->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+                'size' => 10,
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '312E81'], // Deep Indigo
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+                'wrapText' => true,
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '6366F1'],
+                ],
+            ],
+        ]);
+        $sheet->getRowDimension($headerRow)->setRowHeight(28);
+
+        $row = 5;
+        $no = 1;
+        $countMale = 0;
+        $countFemale = 0;
+        $countPdbk = 0;
+
+        foreach ($students as $student) {
+            $isFemale = in_array(strtoupper((string)$student->gender), ['P', 'PEREMPUAN', 'FEMALE']);
+            $genderCode = $isFemale ? 'P' : 'L';
+            if ($genderCode === 'L') $countMale++; else $countFemale++;
+
+            $isPdbk = ($student->student_type && (str_contains(strtoupper($student->student_type), 'PDBK') || str_contains(strtoupper($student->student_type), 'KHUSUS') || str_contains(strtoupper($student->student_type), 'INKLUSI'))) || !empty($student->special_needs_type) || !empty($student->gpk_employee_id);
+            if ($isPdbk) $countPdbk++;
+
+            $kategoriText = $isPdbk ? 'PDBK' : 'REGULER';
+            $statusText = strtoupper($student->status ?: 'AKTIF');
+
+            $birthDateFormatted = $student->birth_date ? \Carbon\Carbon::parse($student->birth_date)->format('d/m/Y') : '-';
+            $enrolledDateFormatted = $student->enrolled_date ? \Carbon\Carbon::parse($student->enrolled_date)->format('d/m/Y') : '-';
+
+            // Explicit String values for numeric codes (preserves leading zeroes)
+            $sheet->setCellValue('A' . $row, $no++);
+            $sheet->setCellValueExplicit('B' . $row, (string)($student->nis ?? '-'), DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('C' . $row, (string)($student->nisn ?? '-'), DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('D' . $row, (string)($student->nik ?? '-'), DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('E' . $row, (string)($student->no_kk ?? '-'), DataType::TYPE_STRING);
+            $sheet->setCellValue('F' . $row, strtoupper($student->full_name ?? '-'));
+            $sheet->setCellValue('G' . $row, $student->nickname ?? '-');
+            $sheet->setCellValue('H' . $row, $genderCode);
+            $sheet->setCellValue('I' . $row, $student->birth_place ?? '-');
+            $sheet->setCellValue('J' . $row, $birthDateFormatted);
+            $sheet->setCellValue('K' . $row, $student->age ?? '-');
+            $sheet->setCellValue('L' . $row, $student->religion ?? 'Islam');
+            $sheet->setCellValue('M' . $row, $student->classroom?->classLevel?->name ?? '-');
+            $sheet->setCellValue('N' . $row, $student->classroom?->full_name ?? ($student->classroom?->name ?? '-'));
+            $sheet->setCellValue('O' . $row, $student->academicYear?->name ?? '-');
+            $sheet->setCellValue('P' . $row, $kategoriText);
+            $sheet->setCellValue('Q' . $row, $student->special_needs_type ?? '-');
+            $sheet->setCellValue('R' . $row, $student->gpkTeacher?->name ?? '-');
+            $sheet->setCellValue('S' . $row, $student->classroom?->homeroomTeacher?->name ?? '-');
+            $sheet->setCellValue('T' . $row, $student->father_name ?? '-');
+            $sheet->setCellValue('U' . $row, $student->father_job ?? '-');
+            $sheet->setCellValueExplicit('V' . $row, (string)($student->father_phone ?? '-'), DataType::TYPE_STRING);
+            $sheet->setCellValue('W' . $row, $student->mother_name ?? '-');
+            $sheet->setCellValue('X' . $row, $student->mother_job ?? '-');
+            $sheet->setCellValueExplicit('Y' . $row, (string)($student->mother_phone ?? '-'), DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('Z' . $row, (string)($student->parent_phone ?? '-'), DataType::TYPE_STRING);
+            $sheet->setCellValue('AA' . $row, $student->parent_email ?? '-');
+            $sheet->setCellValue('AB' . $row, $student->address ?? '-');
+            $sheet->setCellValue('AC' . $row, $student->rt ?? '-');
+            $sheet->setCellValue('AD' . $row, $student->rw ?? '-');
+            $sheet->setCellValue('AE' . $row, $student->village ?? '-');
+            $sheet->setCellValue('AF' . $row, $student->district ?? '-');
+            $sheet->setCellValue('AG' . $row, $student->city ?? '-');
+            $sheet->setCellValue('AH' . $row, $student->province ?? '-');
+            $sheet->setCellValue('AI' . $row, $statusText);
+            $sheet->setCellValue('AJ' . $row, $enrolledDateFormatted);
+
+            // Row Border & Zebra Striping
+            $sheet->getStyle("A{$row}:{$lastColLetter}{$row}")->applyFromArray([
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                        'color' => ['rgb' => 'E2E8F0'],
+                    ],
+                ],
+                'alignment' => [
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+            ]);
+
+            if ($row % 2 === 0) {
+                $sheet->getStyle("A{$row}:{$lastColLetter}{$row}")->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB('F8FAFC');
+            }
+
+            // Alignments for specific columns
+            $sheet->getStyle("A{$row}:E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("H{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("J{$row}:M{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("P{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("AI{$row}:AJ{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+            $row++;
+        }
+
+        // Summary Statistics Footer Row
+        $summaryRow = $row;
+        $sheet->setCellValue("A{$summaryRow}", "TOTAL PESERTA DIDIK TERDATA: " . count($students) . " Siswa (Putra: {$countMale}, Putri: {$countFemale}, PDBK/Inklusi: {$countPdbk})");
+        $sheet->mergeCells("A{$summaryRow}:{$lastColLetter}{$summaryRow}");
+        $sheet->getStyle("A{$summaryRow}:{$lastColLetter}{$summaryRow}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 10],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1E293B']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '0F172A']]],
+        ]);
+        $sheet->getRowDimension($summaryRow)->setRowHeight(24);
+
+        // Auto-fit column widths
+        foreach (range(1, count($headers)) as $colIdx) {
+            $colLetter = Coordinate::stringFromColumnIndex($colIdx);
+            $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+        }
+
+        $cleanYear = str_replace(['/', ' '], '_', $selectedYearName);
+        $fileName = 'Data_Siswa_' . str_replace([' ', '.'], '_', $appName) . '_' . $cleanYear . '_' . date('Ymd_His') . '.xlsx';
+
+        if ($request->filled('download_token')) {
+            setcookie('download_token', $request->query('download_token'), time() + 60, '/', '', false, false);
+        }
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition: attachment; filename=\"{$fileName}\"");
+        header('Cache-Control: max-age=0');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
+    }
+
+    /**
+     * Print-friendly view of filtered student data (with letterhead and print CSS).
+     */
+    public function print(Request $request)
+    {
+        $filterData = $this->getFilteredStudentsQuery($request);
+        $students = $filterData['query']->orderBy('classroom_id', 'asc')->orderBy('full_name', 'asc')->get();
+
+        $selectedClassLevel = null;
+        if ($request->filled('class_level_id') && $request->get('class_level_id') !== 'all') {
+            $selectedClassLevel = ClassLevel::find($request->get('class_level_id'));
+        }
+
+        $selectedClassroom = null;
+        if ($request->filled('classroom_id') && $request->get('classroom_id') !== 'all') {
+            $selectedClassroom = Classroom::with('classLevel')->find($request->get('classroom_id'));
+        }
+
+        return view('admin.students.print', [
+            'students' => $students,
+            'selectedYear' => $filterData['selectedYear'],
+            'selectedYearName' => $filterData['selectedYearName'],
+            'activeAcademicYear' => $filterData['activeAcademicYear'],
+            'selectedClassLevel' => $selectedClassLevel,
+            'selectedClassroom' => $selectedClassroom,
+            'selectedStudentType' => $request->get('student_type'),
+            'selectedStatus' => $request->get('status'),
+            'searchQuery' => $request->get('search'),
+        ]);
+    }
+
+    /**
+     * Export students to PDF download.
+     */
+    public function exportPdf(Request $request)
+    {
+        ini_set('memory_limit', '512M');
+        $filterData = $this->getFilteredStudentsQuery($request);
+        $students = $filterData['query']->orderBy('classroom_id', 'asc')->orderBy('full_name', 'asc')->get();
+        $selectedYearName = $filterData['selectedYearName'] ?: 'Semua_Tapel';
+        $appName = function_exists('setting') ? setting('app_name', 'SD Anak Saleh') : 'SD Anak Saleh';
+
+        $selectedClassLevel = null;
+        if ($request->filled('class_level_id') && $request->get('class_level_id') !== 'all') {
+            $selectedClassLevel = ClassLevel::find($request->get('class_level_id'));
+        }
+
+        $selectedClassroom = null;
+        if ($request->filled('classroom_id') && $request->get('classroom_id') !== 'all') {
+            $selectedClassroom = Classroom::with('classLevel')->find($request->get('classroom_id'));
+        }
+
+        $data = [
+            'students' => $students,
+            'selectedYear' => $filterData['selectedYear'],
+            'selectedYearName' => $selectedYearName,
+            'activeAcademicYear' => $filterData['activeAcademicYear'],
+            'selectedClassLevel' => $selectedClassLevel,
+            'selectedClassroom' => $selectedClassroom,
+            'selectedStudentType' => $request->get('student_type'),
+            'selectedStatus' => $request->get('status'),
+            'searchQuery' => $request->get('search'),
+            'appName' => $appName,
+        ];
+
+        $cleanYear = str_replace(['/', ' '], '_', $selectedYearName);
+        $fileName = 'Data_Siswa_' . str_replace([' ', '.'], '_', $appName) . '_' . $cleanYear . '.pdf';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.students.pdf', $data)
+            ->setPaper('a4', 'landscape')
+            ->setOption('isRemoteEnabled', true);
+
+        return $pdf->download($fileName);
     }
 
     /**

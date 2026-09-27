@@ -33,18 +33,20 @@ class ImportStudentsDatabase extends Command
         $reader->setReadDataOnly(true);
         $spreadsheet = $reader->load($filePath);
 
-        // 1. Setup Tahun Ajaran 2026/2027
-        $academicYear = AcademicYear::firstOrCreate(
-            ['name' => '2026/2027'],
-            [
-                'code' => '2627',
-                'semester' => 'ganjil',
-                'is_active' => true,
-                'start_date' => '2026-07-15',
-                'end_date' => '2027-06-25',
-                'description' => 'Tahun Pelajaran 2026/2027 (Berjalan)',
-            ]
-        );
+        // 1. Setup / Dapatkan Tahun Ajaran 2026/2027 (Berjalan)
+        $academicYear = AcademicYear::where('name', '2026/2027')->where('is_active', true)->first()
+            ?: (AcademicYear::where('name', '2026/2027')->first()
+            ?: AcademicYear::firstOrCreate(
+                ['name' => '2026/2027'],
+                [
+                    'code' => '2627',
+                    'semester' => 'ganjil',
+                    'is_active' => true,
+                    'start_date' => '2026-07-15',
+                    'end_date' => '2027-06-25',
+                    'description' => 'Tahun Pelajaran 2026/2027 (Berjalan)',
+                ]
+            ));
 
         // 2. Setup 6 Tingkat Kelas (1 - 6)
         $levels = [];
@@ -93,15 +95,23 @@ class ImportStudentsDatabase extends Command
         ];
 
         $classroomMap = [];
+        $classroomGpkMap = [];
         foreach ($classroomDefinitions as $code => $def) {
             $pureClassName = ucwords(strtolower($def['gem']));
             
-            // Cek jika guru wali kelas ada di database employees
+            // Cek jika guru wali kelas & GPK ada di database employees
             $homeroomEmployee = null;
             if (!empty($def['wali'])) {
                 $cleanWali = preg_replace('/\s+/', ' ', trim($def['wali']));
                 $firstWord = explode(' ', $cleanWali)[0] ?? '';
                 $homeroomEmployee = Employee::where('name', 'like', "%{$firstWord}%")->first();
+            }
+
+            $gpkEmployee = null;
+            if (!empty($def['gpk'])) {
+                $cleanGpk = preg_replace('/\s+/', ' ', trim($def['gpk']));
+                $firstWordGpk = explode(' ', $cleanGpk)[0] ?? '';
+                $gpkEmployee = Employee::where('name', 'like', "%{$firstWordGpk}%")->first();
             }
 
             $classroom = Classroom::updateOrCreate(
@@ -123,6 +133,11 @@ class ImportStudentsDatabase extends Command
             $classroomMap[strtoupper($def['gem'])] = $classroom;
             $classroomMap[strtoupper("{$code} ({$def['gem']})")] = $classroom;
             $classroomMap[strtoupper("{$code} {$def['gem']}")] = $classroom;
+
+            $classroomGpkMap[$code] = $gpkEmployee;
+            $classroomGpkMap[strtoupper($def['gem'])] = $gpkEmployee;
+            $classroomGpkMap[strtoupper("{$code} ({$def['gem']})")] = $gpkEmployee;
+            $classroomGpkMap[strtoupper("{$code} {$def['gem']}")] = $gpkEmployee;
         }
 
         $this->info("24 Rombel resmi SD Anak Saleh berhasil disiapkan!");
@@ -172,7 +187,10 @@ class ImportStudentsDatabase extends Command
             $gender = str_contains($genderRaw, 'PEREMPUAN') || $genderRaw === 'P' || $genderRaw === 'FEMALE' ? 'P' : 'L';
 
             $studentTypeRaw = strtoupper(trim((string)$sheet->getCell('Y' . $r)->getValue()));
-            $studentType = str_contains($studentTypeRaw, 'PDBK') || str_contains($studentTypeRaw, 'KHUSUS') || str_contains($studentTypeRaw, 'INKLUSI') ? 'PDBK (BERKEBUTUHAN KHUSUS)' : 'REGULER';
+            $specialNeedsType = trim((string)$sheet->getCell('Z' . $r)->getValue()) ?: null;
+            $isPdbk = str_contains($studentTypeRaw, 'PDBK') || str_contains($studentTypeRaw, 'KHUSUS') || str_contains($studentTypeRaw, 'INKLUSI') || str_contains($studentTypeRaw, 'MBK') || !empty($specialNeedsType);
+            $studentType = $isPdbk ? 'PDBK (BERKEBUTUHAN KHUSUS)' : 'REGULER';
+            $gpkEmployee = $isPdbk && isset($classroomGpkMap[$rawGrade]) ? $classroomGpkMap[$rawGrade] : null;
 
             $cleanPhone = function ($raw) {
                 if (empty($raw) || trim((string)$raw) === '-' || trim((string)$raw) === '0') return null;
@@ -195,7 +213,8 @@ class ImportStudentsDatabase extends Command
                 'nickname' => trim((string)$sheet->getCell('T' . $r)->getValue()) ?: null,
                 'gender' => $gender,
                 'student_type' => $studentType,
-                'special_needs_type' => trim((string)$sheet->getCell('Z' . $r)->getValue()) ?: null,
+                'special_needs_type' => $specialNeedsType,
+                'gpk_employee_id' => $gpkEmployee?->id,
                 'birth_place' => trim((string)$sheet->getCell('V' . $r)->getValue()) ?: null,
                 'birth_date' => $parseDate($sheet->getCell('W' . $r)->getValue()),
                 'religion' => trim((string)$sheet->getCell('AA' . $r)->getValue()) ?: 'ISLAM',

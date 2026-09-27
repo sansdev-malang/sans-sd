@@ -40,6 +40,9 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
     // Students (Data Siswa & Bulk Excel Import)
     Route::get('students/download-template', [StudentController::class, 'downloadTemplate'])->name('students.download-template');
     Route::post('students/import', [StudentController::class, 'import'])->name('students.import');
+    Route::get('students/export/excel', [StudentController::class, 'exportExcel'])->name('students.export.excel');
+    Route::get('students/export/pdf', [StudentController::class, 'exportPdf'])->name('students.export.pdf');
+    Route::get('students/print', [StudentController::class, 'print'])->name('students.print');
     Route::resource('students', StudentController::class);
     Route::get('/siswa', fn() => redirect()->route('students.index'))->name('siswa');
 
