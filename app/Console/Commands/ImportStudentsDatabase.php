@@ -36,6 +36,9 @@ class ImportStudentsDatabase extends Command
         // 1. Setup / Dapatkan Tahun Ajaran 2026/2027 (Berjalan)
         $academicYear = AcademicYear::where('name', '2026/2027')->where('is_active', true)->first()
             ?: (AcademicYear::where('name', '2026/2027')->first()
+            ?: (AcademicYear::where('name', '2026-2027')->first()
+            ?: (AcademicYear::where('code', '2627')->first()
+            ?: (AcademicYear::where('is_active', true)->first()
             ?: AcademicYear::firstOrCreate(
                 ['name' => '2026/2027'],
                 [
@@ -46,7 +49,7 @@ class ImportStudentsDatabase extends Command
                     'end_date' => '2027-06-25',
                     'description' => 'Tahun Pelajaran 2026/2027 (Berjalan)',
                 ]
-            ));
+            )))));
 
         // 2. Setup 6 Tingkat Kelas (1 - 6)
         $levels = [];
@@ -63,7 +66,7 @@ class ImportStudentsDatabase extends Command
 
         // 3. Setup 24 Rombongan Belajar Resmi SD Anak Saleh (Batu Mulia)
         $classroomDefinitions = [
-            '1A' => ['level' => 1, 'gem' => 'BERLIAN', 'wali' => 'Nadia Fatma Yanti, S.Pd', 'gpk' => 'Mu Ida Nur Fahilah, S.Pd'],
+            '1A' => ['level' => 1, 'gem' => 'BERLIAN', 'wali' => 'Nadia Fatma Yanti, S.Pd', 'gpk' => 'Mu Ida Nur Fadhilah, S.Pd'],
             '1B' => ['level' => 1, 'gem' => 'MUTIARA', 'wali' => 'Dini Eko Wulandari, S.Psi', 'gpk' => 'Arik Wijayanto, S.Psi'],
             '1C' => ['level' => 1, 'gem' => 'SAFIR', 'wali' => 'Gita Noviria, S.Pd', 'gpk' => 'Ika Puspitasari, S.Psi'],
             '1D' => ['level' => 1, 'gem' => 'RUBY', 'wali' => 'Irma Wahyu Putri Yoditya, S.Pd', 'gpk' => 'Raga Cahya Taufikurrahman, S.Pd'],
@@ -79,7 +82,7 @@ class ImportStudentsDatabase extends Command
             '3D' => ['level' => 3, 'gem' => 'ZAMRUD', 'wali' => 'Desty Ariani Mutiara, S.Pd.', 'gpk' => "M. Baha'ul Alamsyah Al Faini, S.Pd"],
 
             '4A' => ['level' => 4, 'gem' => 'JASPER', 'wali' => 'Miftakul Jannah, S.Pd', 'gpk' => null],
-            '4B' => ['level' => 4, 'gem' => 'MALASIT', 'wali' => 'Ucik Sriwahyuni, S.Pd', 'gpk' => 'Kofifah Indar Khoiroh, S.Psi'],
+            '4B' => ['level' => 4, 'gem' => 'MALASIT', 'wali' => 'Ucik Sriwahyuni, S.Pd', 'gpk' => 'Khofifah Indar Khoiroh, S.Psi'],
             '4C' => ['level' => 4, 'gem' => 'GARNET', 'wali' => 'Sri Subakti, S.Pd.SD.Gr', 'gpk' => 'Nila Fadilah, S.Pd'],
             '4D' => ['level' => 4, 'gem' => 'CITRINE', 'wali' => 'Lailatul Munawaroh, S.Pd., M.Pd', 'gpk' => null],
 
@@ -88,18 +91,28 @@ class ImportStudentsDatabase extends Command
             '5C' => ['level' => 5, 'gem' => 'PERMATA', 'wali' => 'Moch. Yusroni, S.Pd.Gr', 'gpk' => null],
             '5D' => ['level' => 5, 'gem' => 'AGATE', 'wali' => 'Desi Ratnasari, S.Pd', 'gpk' => 'Venorica Afdela, S.Psi'],
 
-            '6A' => ['level' => 6, 'gem' => 'EMERALD', 'wali' => 'Dara Eges Nuryana, S.Pd', 'gpk' => 'Yahya Firmansyah, S.Pd'],
+            '6A' => ['level' => 6, 'gem' => 'EMERALD', 'wali' => 'Dara Eges Nuryana, S.Pd', 'gpk' => 'Yahya Firmansah, S.Pd'],
             '6B' => ['level' => 6, 'gem' => 'ALEXANDRITE', 'wali' => 'Ainur Rifqi, M.Pd', 'gpk' => 'Ahmad Shobirin, S.Pd'],
             '6C' => ['level' => 6, 'gem' => 'ONIKS', 'wali' => 'Puri Wiranti, S.Pd', 'gpk' => 'Syaifud Dina Fitriana'],
             '6D' => ['level' => 6, 'gem' => 'KUARSA', 'wali' => 'Hj. Sri Yudianti, S.Pd', 'gpk' => null],
         ];
+
+        // Load all active GPK employees for accurate matching
+        $gpkEmployees = Employee::whereIn('status', ['Active', 'aktif', 'active', 'Aktif'])
+            ->where(function($q) {
+                $q->where('position', 'like', '%GPK%')
+                  ->orWhere('position', 'like', '%Pendamping%')
+                  ->orWhere('position', 'like', '%Shadow%')
+                  ->orWhere('position', 'like', '%Inklusi%');
+            })
+            ->get();
 
         $classroomMap = [];
         $classroomGpkMap = [];
         foreach ($classroomDefinitions as $code => $def) {
             $pureClassName = ucwords(strtolower($def['gem']));
             
-            // Cek jika guru wali kelas & GPK ada di database employees
+            // Cek guru wali kelas di database employees
             $homeroomEmployee = null;
             if (!empty($def['wali'])) {
                 $cleanWali = preg_replace('/\s+/', ' ', trim($def['wali']));
@@ -107,11 +120,24 @@ class ImportStudentsDatabase extends Command
                 $homeroomEmployee = Employee::where('name', 'like', "%{$firstWord}%")->first();
             }
 
+            // Cek guru GPK di database employees (khusus employee GPK)
             $gpkEmployee = null;
             if (!empty($def['gpk'])) {
                 $cleanGpk = preg_replace('/\s+/', ' ', trim($def['gpk']));
-                $firstWordGpk = explode(' ', $cleanGpk)[0] ?? '';
-                $gpkEmployee = Employee::where('name', 'like', "%{$firstWordGpk}%")->first();
+                $cleanGpkNoTitles = preg_replace('/,\s*(S\.Pd|S\.Psi|S\.Si|S\.Sos|S\.A|S\.Ak|M\.Pd|Gr|S\.Pd\.I|S\.Pd\.SD|S\.Pd\.Gr).*/i', '', $cleanGpk);
+                $wordsGpk = preg_split('/\s+/', trim(str_replace(["'", '`'], '', $cleanGpkNoTitles)));
+                
+                foreach ($wordsGpk as $w) {
+                    if (mb_strlen($w) > 3) {
+                        $found = $gpkEmployees->first(function($e) use ($w) {
+                            return stripos($e->name, $w) !== false;
+                        });
+                        if ($found) {
+                            $gpkEmployee = $found;
+                            break;
+                        }
+                    }
+                }
             }
 
             $classroom = Classroom::updateOrCreate(
@@ -142,7 +168,74 @@ class ImportStudentsDatabase extends Command
 
         $this->info("24 Rombel resmi SD Anak Saleh berhasil disiapkan!");
 
-        // 4. Baca Sheet MASTER & Import Data Siswa
+        // 4. Helper Normalisasi
+        $formatTitleCase = function (?string $string): ?string {
+            if ($string === null) return null;
+            $string = trim(preg_replace('/\s+/', ' ', $string));
+            if ($string === '') return null;
+
+            $words = explode(' ', $string);
+            $result = [];
+
+            $specialTerms = [
+                'dr.' => 'Dr.', 'drh.' => 'Drh.', 'dr' => 'Dr.', 'drh' => 'Drh.',
+                'ir.' => 'Ir.', 'ir' => 'Ir.', 'prof.' => 'Prof.', 'prof' => 'Prof.',
+                'h.' => 'H.', 'hj.' => 'Hj.', 's.t.' => 'S.T.', 's.t' => 'S.T.',
+                's.pd.' => 'S.Pd.', 's.pd' => 'S.Pd.', 'm.pd.' => 'M.Pd.', 'm.pd' => 'M.Pd.',
+                's.kom.' => 'S.Kom.', 's.kom' => 'S.Kom.', 's.si.' => 'S.Si.', 's.si' => 'S.Si.',
+                's.ap.' => 'S.Ap.', 's.ap' => 'S.Ap.', 's.e.' => 'S.E.', 's.e' => 'S.E.',
+                'se.' => 'S.E.', 'se' => 'S.E.', 's.sos.' => 'S.Sos.', 's.sos' => 'S.Sos.',
+                's.h.' => 'S.H.', 's.h' => 'S.H.', 's.psi.' => 'S.Psi.', 's.psi' => 'S.Psi.',
+                's.ked.' => 'S.Ked.', 's.ked' => 'S.Ked.', 's.ag.' => 'S.Ag.', 's.ag' => 'S.Ag.',
+                's.hum.' => 'S.Hum.', 's.hum' => 'S.Hum.', 's.sn.' => 'S.Sn.', 's.sn' => 'S.Sn.',
+                's.farm.' => 'S.Farm.', 's.farm' => 'S.Farm.', 's.ik.' => 'S.IK.', 's.ik' => 'S.IK.',
+                's.kel.' => 'S.Kel.', 's.kel' => 'S.Kel.', 's.mat.' => 'S.Mat.', 's.mat' => 'S.Mat.',
+                's.stat.' => 'S.Stat.', 's.stat' => 'S.Stat.', 's.tr.kom' => 'S.Tr.Kom', 's.tr.kom.' => 'S.Tr.Kom.',
+                's.pd.sd' => 'S.Pd.SD', 's.pd.sd.' => 'S.Pd.SD.', 's.pd.i' => 'S.Pd.I', 's.pd.i.' => 'S.Pd.I.',
+                'm.si.' => 'M.Si.', 'm.si' => 'M.Si.', 'm.m.' => 'M.M.', 'm.m' => 'M.M.',
+                'm.ag.' => 'M.Ag.', 'm.ag' => 'M.Ag.', 'm.hum.' => 'M.Hum.', 'm.hum' => 'M.Hum.',
+                'm.kom.' => 'M.Kom.', 'm.kom' => 'M.Kom.', 'm.psi.' => 'M.Psi.', 'm.psi' => 'M.Psi.',
+                'gr.' => 'Gr.', 'gr' => 'Gr.',
+                'sd' => 'SD', 'smp' => 'SMP', 'sma' => 'SMA', 'smk' => 'SMK',
+                'tk' => 'TK', 'ra' => 'RA', 'ba' => 'BA', 'mi' => 'MI', 'mts' => 'MTs', 'ma' => 'MA',
+                'wni' => 'WNI', 'wna' => 'WNA', 'pdbk' => 'PDBK', 'adhd' => 'ADHD',
+                'rt' => 'RT', 'rw' => 'RW', 'kk' => 'KK', 'nik' => 'NIK', 'nis' => 'NIS', 'nisn' => 'NISN',
+                'ii' => 'II', 'iii' => 'III', 'iv' => 'IV', 'vi' => 'VI', 'vii' => 'VII', 'viii' => 'VIII', 'ix' => 'IX', 'xi' => 'XI', 'xii' => 'XII',
+            ];
+
+            foreach ($words as $w) {
+                $cleanLower = mb_strtolower($w, 'UTF-8');
+                if (isset($specialTerms[$cleanLower])) {
+                    $result[] = $specialTerms[$cleanLower];
+                } else {
+                    $result[] = mb_convert_case($w, MB_CASE_TITLE, 'UTF-8');
+                }
+            }
+
+            return implode(' ', $result);
+        };
+
+        $normalizeReligion = function (?string $rel) use ($formatTitleCase): string {
+            if (empty($rel)) return 'Islam';
+            $r = strtoupper(trim($rel));
+            if (str_contains($r, 'ISLAM') || str_contains($r, 'IS;AM')) return 'Islam';
+            if (str_contains($r, 'KRISTEN') || str_contains($r, 'PROTESTAN')) return 'Kristen';
+            if (str_contains($r, 'KATOLIK') || str_contains($r, 'CATHOLIC')) return 'Katolik';
+            if (str_contains($r, 'HINDU')) return 'Hindu';
+            if (str_contains($r, 'BUDHA') || str_contains($r, 'BUDDHA')) return 'Buddha';
+            if (str_contains($r, 'KONGHUCU') || str_contains($r, 'KHONGHUCU')) return 'Konghucu';
+            return $formatTitleCase($rel) ?: 'Islam';
+        };
+
+        $normalizeCitizenship = function (?string $cit): string {
+            if (empty($cit)) return 'WNI';
+            $c = strtoupper(trim($cit));
+            if (str_contains($c, 'INDONESIA') || $c === 'WNI') return 'WNI';
+            if (str_contains($c, 'ASING') || $c === 'WNA') return 'WNA';
+            return 'WNI';
+        };
+
+        // 5. Baca Sheet MASTER & Import Data Siswa
         $sheet = $spreadsheet->getSheetByName('MASTER');
         $highestRow = $sheet->getHighestRow();
 
@@ -152,11 +245,12 @@ class ImportStudentsDatabase extends Command
         $updated = 0;
 
         for ($r = 3; $r <= $highestRow; $r++) {
-            $fullName = trim((string)$sheet->getCell('Q' . $r)->getValue());
-            if (empty($fullName)) {
+            $rawFullName = trim((string)$sheet->getCell('Q' . $r)->getValue());
+            if (empty($rawFullName)) {
                 continue;
             }
 
+            $fullName = $formatTitleCase($rawFullName);
             $rawNis = trim((string)$sheet->getCell('M' . $r)->getValue());
             $nis = !empty($rawNis) ? str_pad($rawNis, 4, '0', STR_PAD_LEFT) : 'SD.' . $r;
 
@@ -189,7 +283,7 @@ class ImportStudentsDatabase extends Command
             $studentTypeRaw = strtoupper(trim((string)$sheet->getCell('Y' . $r)->getValue()));
             $specialNeedsType = trim((string)$sheet->getCell('Z' . $r)->getValue()) ?: null;
             $isPdbk = str_contains($studentTypeRaw, 'PDBK') || str_contains($studentTypeRaw, 'KHUSUS') || str_contains($studentTypeRaw, 'INKLUSI') || str_contains($studentTypeRaw, 'MBK') || !empty($specialNeedsType);
-            $studentType = $isPdbk ? 'PDBK (BERKEBUTUHAN KHUSUS)' : 'REGULER';
+            $studentType = $isPdbk ? 'PDBK' : 'REGULER';
             $gpkEmployee = $isPdbk && isset($classroomGpkMap[$rawGrade]) ? $classroomGpkMap[$rawGrade] : null;
 
             $cleanPhone = function ($raw) {
@@ -210,26 +304,27 @@ class ImportStudentsDatabase extends Command
                 'classroom_id' => $classroom?->id,
                 'academic_year_id' => $academicYear->id,
                 'full_name' => $fullName,
-                'nickname' => trim((string)$sheet->getCell('T' . $r)->getValue()) ?: null,
+                'nickname' => $formatTitleCase(trim((string)$sheet->getCell('T' . $r)->getValue())) ?: null,
                 'gender' => $gender,
                 'student_type' => $studentType,
                 'special_needs_type' => $specialNeedsType,
                 'gpk_employee_id' => $gpkEmployee?->id,
-                'birth_place' => trim((string)$sheet->getCell('V' . $r)->getValue()) ?: null,
+                'birth_place' => $formatTitleCase(trim((string)$sheet->getCell('V' . $r)->getValue())) ?: null,
                 'birth_date' => $parseDate($sheet->getCell('W' . $r)->getValue()),
-                'religion' => trim((string)$sheet->getCell('AA' . $r)->getValue()) ?: 'ISLAM',
-                'citizenship' => trim((string)$sheet->getCell('AB' . $r)->getValue()) ?: 'WARGA NEGARA INDONESIA',
+                'religion' => $normalizeReligion($sheet->getCell('AA' . $r)->getValue()),
+                'citizenship' => $normalizeCitizenship($sheet->getCell('AB' . $r)->getValue()),
 
                 // Alamat
-                'address' => trim((string)$sheet->getCell('AC' . $r)->getValue()) ?: null,
+                'address' => $formatTitleCase(trim((string)$sheet->getCell('AC' . $r)->getValue())) ?: null,
                 'rt' => trim((string)$sheet->getCell('AD' . $r)->getValue()) ?: null,
                 'rw' => trim((string)$sheet->getCell('AE' . $r)->getValue()) ?: null,
-                'village' => trim((string)$sheet->getCell('AF' . $r)->getValue()) ?: null,
-                'district' => trim((string)$sheet->getCell('AG' . $r)->getValue()) ?: null,
+                'village' => $formatTitleCase(trim((string)$sheet->getCell('AF' . $r)->getValue())) ?: null,
+                'district' => $formatTitleCase(trim((string)$sheet->getCell('AG' . $r)->getValue())) ?: null,
                 'district_category' => trim((string)$sheet->getCell('AH' . $r)->getValue()) ?: null,
                 'postal_code' => trim((string)$sheet->getCell('AI' . $r)->getValue()) ?: null,
-                'city' => trim((string)$sheet->getCell('AJ' . $r)->getValue()) ?: 'MALANG',
-                'residence_status' => trim((string)$sheet->getCell('AK' . $r)->getValue()) ?: null,
+                'city' => $formatTitleCase(trim((string)$sheet->getCell('AJ' . $r)->getValue())) ?: 'Malang',
+                'province' => 'Jawa Timur',
+                'residence_status' => $formatTitleCase(trim((string)$sheet->getCell('AK' . $r)->getValue())) ?: null,
                 'distance_to_school' => trim((string)$sheet->getCell('AL' . $r)->getValue()) ?: null,
                 'home_phone' => trim((string)$sheet->getCell('AM' . $r)->getValue()) ?: null,
 
@@ -241,61 +336,61 @@ class ImportStudentsDatabase extends Command
                 'siblings_count' => is_numeric($sheet->getCell('AP' . $r)->getValue()) ? (int)$sheet->getCell('AP' . $r)->getValue() : null,
                 'step_siblings_count' => is_numeric($sheet->getCell('AQ' . $r)->getValue()) ? (int)$sheet->getCell('AQ' . $r)->getValue() : null,
                 'adoptive_siblings_count' => is_numeric($sheet->getCell('AR' . $r)->getValue()) ? (int)$sheet->getCell('AR' . $r)->getValue() : null,
-                'home_language' => trim((string)$sheet->getCell('AX' . $r)->getValue()) ?: null,
+                'home_language' => $formatTitleCase(trim((string)$sheet->getCell('AX' . $r)->getValue())) ?: 'Bahasa Indonesia',
 
                 // Kesehatan
                 'weight' => trim((string)$sheet->getCell('AS' . $r)->getValue()) ?: null,
                 'height' => trim((string)$sheet->getCell('AT' . $r)->getValue()) ?: null,
-                'blood_type' => trim((string)$sheet->getCell('AU' . $r)->getValue()) ?: null,
+                'blood_type' => strtoupper(trim((string)$sheet->getCell('AU' . $r)->getValue())) ?: null,
                 'severe_disease_history' => trim((string)$sheet->getCell('AV' . $r)->getValue()) ?: null,
                 'frequent_disease' => trim((string)$sheet->getCell('AW' . $r)->getValue()) ?: null,
 
                 // Asal Sekolah
                 'origin_category' => trim((string)$sheet->getCell('I' . $r)->getValue()) ?: 'TK',
-                'previous_school' => trim((string)$sheet->getCell('J' . $r)->getValue()) ?: null,
+                'previous_school' => $formatTitleCase(trim((string)$sheet->getCell('J' . $r)->getValue())) ?: null,
                 'previous_school_address' => trim((string)$sheet->getCell('K' . $r)->getValue()) ?: null,
                 'sttb_number_date' => trim((string)$sheet->getCell('L' . $r)->getValue()) ?: null,
 
                 // Data Ayah
-                'father_name' => trim((string)$sheet->getCell('AY' . $r)->getValue()) ?: null,
+                'father_name' => $formatTitleCase(trim((string)$sheet->getCell('AY' . $r)->getValue())) ?: null,
                 'father_nik' => trim((string)$sheet->getCell('AZ' . $r)->getValue()) ?: null,
-                'father_birth_place' => trim((string)$sheet->getCell('BA' . $r)->getValue()) ?: null,
+                'father_birth_place' => $formatTitleCase(trim((string)$sheet->getCell('BA' . $r)->getValue())) ?: null,
                 'father_birth_date' => $parseDate($sheet->getCell('BB' . $r)->getValue()),
-                'father_religion' => trim((string)$sheet->getCell('BC' . $r)->getValue()) ?: null,
+                'father_religion' => $normalizeReligion($sheet->getCell('BC' . $r)->getValue()),
                 'father_phone' => $cleanPhone($sheet->getCell('BD' . $r)->getValue()),
-                'father_education' => trim((string)$sheet->getCell('BE' . $r)->getValue()) ?: null,
-                'father_job' => trim((string)$sheet->getCell('BF' . $r)->getValue()) ?: null,
-                'father_company' => trim((string)$sheet->getCell('BG' . $r)->getValue()) ?: null,
+                'father_education' => $formatTitleCase(trim((string)$sheet->getCell('BE' . $r)->getValue())) ?: null,
+                'father_job' => $formatTitleCase(trim((string)$sheet->getCell('BF' . $r)->getValue())) ?: null,
+                'father_company' => $formatTitleCase(trim((string)$sheet->getCell('BG' . $r)->getValue())) ?: null,
                 'father_company_address' => trim((string)$sheet->getCell('BH' . $r)->getValue()) ?: null,
                 'father_company_phone' => trim((string)$sheet->getCell('BI' . $r)->getValue()) ?: null,
                 'father_income' => trim((string)$sheet->getCell('BJ' . $r)->getValue()) ?: null,
                 'father_email' => trim((string)$sheet->getCell('BK' . $r)->getValue()) ?: null,
 
                 // Data Ibu
-                'mother_name' => trim((string)$sheet->getCell('BL' . $r)->getValue()) ?: null,
+                'mother_name' => $formatTitleCase(trim((string)$sheet->getCell('BL' . $r)->getValue())) ?: null,
                 'mother_nik' => trim((string)$sheet->getCell('BM' . $r)->getValue()) ?: null,
-                'mother_birth_place' => trim((string)$sheet->getCell('BN' . $r)->getValue()) ?: null,
+                'mother_birth_place' => $formatTitleCase(trim((string)$sheet->getCell('BN' . $r)->getValue())) ?: null,
                 'mother_birth_date' => $parseDate($sheet->getCell('BO' . $r)->getValue()),
-                'mother_religion' => trim((string)$sheet->getCell('BP' . $r)->getValue()) ?: null,
+                'mother_religion' => $normalizeReligion($sheet->getCell('BP' . $r)->getValue()),
                 'mother_phone' => $cleanPhone($sheet->getCell('BQ' . $r)->getValue()),
-                'mother_education' => trim((string)$sheet->getCell('BR' . $r)->getValue()) ?: null,
-                'mother_job' => trim((string)$sheet->getCell('BS' . $r)->getValue()) ?: null,
-                'mother_company' => trim((string)$sheet->getCell('BT' . $r)->getValue()) ?: null,
+                'mother_education' => $formatTitleCase(trim((string)$sheet->getCell('BR' . $r)->getValue())) ?: null,
+                'mother_job' => $formatTitleCase(trim((string)$sheet->getCell('BS' . $r)->getValue())) ?: null,
+                'mother_company' => $formatTitleCase(trim((string)$sheet->getCell('BT' . $r)->getValue())) ?: null,
                 'mother_company_address' => trim((string)$sheet->getCell('BU' . $r)->getValue()) ?: null,
                 'mother_company_phone' => trim((string)$sheet->getCell('BV' . $r)->getValue()) ?: null,
                 'mother_income' => trim((string)$sheet->getCell('BW' . $r)->getValue()) ?: null,
                 'mother_email' => trim((string)$sheet->getCell('BX' . $r)->getValue()) ?: null,
 
                 // Data Wali
-                'guardian_name' => trim((string)$sheet->getCell('BY' . $r)->getValue()) ?: null,
-                'guardian_birth_place' => trim((string)$sheet->getCell('BZ' . $r)->getValue()) ?: null,
+                'guardian_name' => $formatTitleCase(trim((string)$sheet->getCell('BY' . $r)->getValue())) ?: null,
+                'guardian_birth_place' => $formatTitleCase(trim((string)$sheet->getCell('BZ' . $r)->getValue())) ?: null,
                 'guardian_birth_date' => $parseDate($sheet->getCell('CA' . $r)->getValue()),
-                'guardian_relation' => trim((string)$sheet->getCell('CB' . $r)->getValue()) ?: null,
+                'guardian_relation' => $formatTitleCase(trim((string)$sheet->getCell('CB' . $r)->getValue())) ?: null,
                 'guardian_phone' => $cleanPhone($sheet->getCell('CC' . $r)->getValue()),
-                'guardian_education' => trim((string)$sheet->getCell('CD' . $r)->getValue()) ?: null,
-                'guardian_job' => trim((string)$sheet->getCell('CE' . $r)->getValue()) ?: null,
-                'guardian_religion' => trim((string)$sheet->getCell('CF' . $r)->getValue()) ?: null,
-                'guardian_address' => trim((string)$sheet->getCell('CG' . $r)->getValue()) ?: null,
+                'guardian_education' => $formatTitleCase(trim((string)$sheet->getCell('CD' . $r)->getValue())) ?: null,
+                'guardian_job' => $formatTitleCase(trim((string)$sheet->getCell('CE' . $r)->getValue())) ?: null,
+                'guardian_religion' => $normalizeReligion($sheet->getCell('CF' . $r)->getValue()),
+                'guardian_address' => $formatTitleCase(trim((string)$sheet->getCell('CG' . $r)->getValue())) ?: null,
 
                 // Checklist Berkas
                 'checklist_documents' => [
@@ -313,8 +408,9 @@ class ImportStudentsDatabase extends Command
 
             // Primary Match: NIS or (Full Name & Birth Date)
             $existing = Student::where('nis', $nis)
-                ->orWhere(function ($q) use ($fullName, $studentData) {
-                    $q->where('full_name', $fullName);
+                ->orWhere(function ($q) use ($fullName, $rawFullName, $studentData) {
+                    $q->where('full_name', $fullName)
+                      ->orWhere('full_name', $rawFullName);
                     if (!empty($studentData['birth_date'])) {
                         $q->where('birth_date', $studentData['birth_date']);
                     }
