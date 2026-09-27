@@ -77,10 +77,20 @@ class AlumniController extends Controller
             'with_continued_school' => (clone $alumniQuery)->whereNotNull('continued_school')->where('continued_school', '!=', '')->count(),
         ];
 
-        $students = $query->orderBy('academic_year_id', 'desc')
-            ->orderBy('full_name', 'asc')
-            ->paginate(20)
-            ->withQueryString();
+        $perPage = $request->get('per_page', 20);
+        if ($perPage === 'all' || (int)$perPage >= 999999) {
+            $totalCount = (clone $query)->count();
+            $students = $query->orderBy('academic_year_id', 'desc')
+                ->orderBy('full_name', 'asc')
+                ->paginate(max($totalCount, 1))
+                ->withQueryString();
+        } else {
+            $perPageVal = in_array((int)$perPage, [10, 20, 25, 50, 100, 200]) ? (int)$perPage : 20;
+            $students = $query->orderBy('academic_year_id', 'desc')
+                ->orderBy('full_name', 'asc')
+                ->paginate($perPageVal)
+                ->withQueryString();
+        }
 
         return view('admin.alumni.index', [
             'students' => $students,

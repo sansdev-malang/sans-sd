@@ -169,7 +169,18 @@
                         </select>
                     @endif
 
-                    @if(request()->hasAny(['search', 'status', 'payment_status', 'student_type', 'wave']))
+                    <!-- Filter Jumlah Baris (Per Page) -->
+                    <select name="per_page" onchange="this.form.submit()"
+                        class="h-9 px-3 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-xs"
+                        title="Tampilkan jumlah baris per halaman">
+                        <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15 baris</option>
+                        <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 baris</option>
+                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 baris</option>
+                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 baris</option>
+                        <option value="all" {{ request('per_page') === 'all' ? 'selected' : '' }}>Semua Baris</option>
+                    </select>
+
+                    @if(request()->hasAny(['search', 'status', 'payment_status', 'student_type', 'wave']) || (request('per_page') && request('per_page') != 15))
                         <a href="{{ route('spmb.candidates.index', ['period' => $selectedYear]) }}" 
                             class="h-9 px-3 inline-flex items-center justify-center text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors"
                             title="Reset Filter">
@@ -361,11 +372,19 @@
                 </table>
             </div>
 
-            @if($candidates->hasPages())
-                <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
-                    {{ $candidates->links() }}
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+                <div>
+                    Menampilkan <span class="font-semibold text-slate-700 dark:text-slate-200">{{ $candidates->firstItem() ?? 0 }}</span> - <span class="font-semibold text-slate-700 dark:text-slate-200">{{ $candidates->lastItem() ?? 0 }}</span> dari <span class="font-semibold text-slate-700 dark:text-slate-200">{{ $candidates->total() }}</span> pendaftar
+                    @if(request('per_page') === 'all')
+                        <span class="ml-1 text-emerald-600 dark:text-emerald-400 font-medium">(Semua ditampilkan)</span>
+                    @endif
                 </div>
-            @endif
+                @if($candidates->hasPages())
+                    <div>
+                        {{ $candidates->links() }}
+                    </div>
+                @endif
+            </div>
         </section>
 
         <!-- MODAL DETAIL PENDAFTAR -->

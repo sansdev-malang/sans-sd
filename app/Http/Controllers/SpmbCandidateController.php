@@ -161,7 +161,14 @@ class SpmbCandidateController extends Controller
         // 4. Get available waves for filter dropdown
         $availableWaves = (clone $statsQuery)->whereNotNull('wave')->distinct()->pluck('wave')->toArray();
 
-        $candidates = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+        $perPage = $request->get('per_page', 15);
+        if ($perPage === 'all' || (int)$perPage >= 999999) {
+            $totalCount = (clone $query)->count();
+            $candidates = $query->orderBy('created_at', 'desc')->paginate(max($totalCount, 1))->withQueryString();
+        } else {
+            $perPageVal = in_array((int)$perPage, [10, 15, 25, 50, 100, 200]) ? (int)$perPage : 15;
+            $candidates = $query->orderBy('created_at', 'desc')->paginate($perPageVal)->withQueryString();
+        }
 
         $academicYears = $academicYearOptions->pluck('value')->toArray();
 

@@ -207,7 +207,14 @@ class StudentController extends Controller
             $teachers = Employee::whereIn('status', ['Active', 'aktif', 'active', 'Aktif'])->orderBy('name')->get();
         }
 
-        $students = $query->orderBy('status', 'asc')->orderBy('full_name', 'asc')->paginate(15)->withQueryString();
+        $perPage = $request->get('per_page', 15);
+        if ($perPage === 'all' || (int)$perPage >= 999999) {
+            $totalCount = (clone $query)->count();
+            $students = $query->orderBy('status', 'asc')->orderBy('full_name', 'asc')->paginate(max($totalCount, 1))->withQueryString();
+        } else {
+            $perPageVal = in_array((int)$perPage, [10, 15, 25, 50, 100, 200]) ? (int)$perPage : 15;
+            $students = $query->orderBy('status', 'asc')->orderBy('full_name', 'asc')->paginate($perPageVal)->withQueryString();
+        }
 
         return view('admin.students.index', [
             'students' => $students,

@@ -131,7 +131,17 @@
                         <option value="P" {{ request('gender') == 'P' ? 'selected' : '' }}>Perempuan</option>
                     </select>
 
-                    @if(request()->hasAny(['search', 'academic_year_id', 'graduation_year', 'gender']))
+                    <!-- Filter Jumlah Baris (Per Page) -->
+                    <select name="per_page" onchange="this.form.submit()"
+                        class="h-8.5 px-3 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer shadow-xs"
+                        title="Tampilkan jumlah baris per halaman">
+                        <option value="20" {{ request('per_page', 20) == 20 ? 'selected' : '' }}>20 baris</option>
+                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 baris</option>
+                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 baris</option>
+                        <option value="all" {{ request('per_page') === 'all' ? 'selected' : '' }}>Semua Baris</option>
+                    </select>
+
+                    @if(request()->hasAny(['search', 'academic_year_id', 'graduation_year', 'gender']) || (request('per_page') && request('per_page') != 20))
                         <a href="{{ route('alumni.index') }}" 
                             class="h-8.5 px-2.5 inline-flex items-center justify-center text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors"
                             title="Reset Filter">
@@ -251,11 +261,19 @@
                 </table>
             </div>
 
-            @if($students->hasPages())
-                <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
-                    {{ $students->links() }}
+            <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+                <div>
+                    Menampilkan <span class="font-semibold text-slate-700 dark:text-slate-200">{{ $students->firstItem() ?? 0 }}</span> - <span class="font-semibold text-slate-700 dark:text-slate-200">{{ $students->lastItem() ?? 0 }}</span> dari <span class="font-semibold text-slate-700 dark:text-slate-200">{{ $students->total() }}</span> alumni
+                    @if(request('per_page') === 'all')
+                        <span class="ml-1 text-blue-600 dark:text-blue-400 font-medium">(Semua ditampilkan)</span>
+                    @endif
                 </div>
-            @endif
+                @if($students->hasPages())
+                    <div>
+                        {{ $students->links() }}
+                    </div>
+                @endif
+            </div>
         </section>
 
         <!-- MODAL EDIT INFO ALUMNI & IJAZAH -->
