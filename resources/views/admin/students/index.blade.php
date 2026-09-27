@@ -429,7 +429,7 @@
         <!-- MODAL DETAIL SISWA (7-TAB SYSTEM) -->
         <!-- ========================================================= -->
         <div x-show="detailModalOpen" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="display: none; margin-top: 0px !important; z-index: 9999; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
-            <div @click.outside="detailModalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] overflow-hidden shadow-2xl flex flex-col">
+            <div @click.outside="detailModalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden shadow-2xl flex flex-col">
                 
                 <!-- Modal Top Header -->
                 <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-900/80">
@@ -495,7 +495,7 @@
                 </div>
 
                 <!-- Tab Body Content -->
-                <div class="p-6 overflow-y-auto max-h-[60vh] space-y-4 text-xs">
+                <div class="p-6 overflow-y-auto min-h-[440px] max-h-[72vh] space-y-4 text-xs">
                     
                     <!-- TAB 1: IDENTITAS & LEGALITAS -->
                     <div x-show="activeDetailTab === 1" class="space-y-4">
@@ -803,7 +803,7 @@
         <!-- MODAL FORM TAMBAH / EDIT SISWA (7-TAB WIZARD) -->
         <!-- ========================================================= -->
         <div x-show="formModalOpen" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="display: none; margin-top: 0px !important; z-index: 9999; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
-            <div @click.outside="formModalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] overflow-hidden shadow-2xl flex flex-col">
+            <div @click.outside="formModalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden shadow-2xl flex flex-col">
                 
                 <form @submit.prevent="submitForm">
                     <!-- Form Top Header -->
@@ -819,31 +819,31 @@
 
                     <!-- 7-Tab Form Navigation -->
                     <div class="flex items-center gap-1 px-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-x-auto text-xs font-semibold scrollbar-thin">
-                        <button type="button" @click="activeFormTab = 1" :class="activeFormTab === 1 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3 py-2.5 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+                        <button type="button" @click="activeFormTab = 1" :class="activeFormTab === 1 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                             <i data-lucide="id-card" class="w-3.5 h-3.5"></i> 1. Identitas
                         </button>
-                        <button type="button" @click="activeFormTab = 2" :class="activeFormTab === 2 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3 py-2.5 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+                        <button type="button" @click="activeFormTab = 2" :class="activeFormTab === 2 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                             <i data-lucide="heart-handshake" class="w-3.5 h-3.5"></i> 2. Inklusi (PDBK)
                         </button>
-                        <button type="button" @click="activeFormTab = 3" :class="activeFormTab === 3 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3 py-2.5 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+                        <button type="button" @click="activeFormTab = 3" :class="activeFormTab === 3 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                             <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> 3. Alamat
                         </button>
-                        <button type="button" @click="activeFormTab = 4" :class="activeFormTab === 4 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3 py-2.5 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+                        <button type="button" @click="activeFormTab = 4" :class="activeFormTab === 4 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                             <i data-lucide="users-round" class="w-3.5 h-3.5"></i> 4. Orang Tua & Wali
                         </button>
-                        <button type="button" @click="activeFormTab = 5" :class="activeFormTab === 5 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3 py-2.5 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+                        <button type="button" @click="activeFormTab = 5" :class="activeFormTab === 5 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                             <i data-lucide="git-fork" class="w-3.5 h-3.5"></i> 5. Keluarga
                         </button>
-                        <button type="button" @click="activeFormTab = 6" :class="activeFormTab === 6 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3 py-2.5 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+                        <button type="button" @click="activeFormTab = 6" :class="activeFormTab === 6 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                             <i data-lucide="activity" class="w-3.5 h-3.5"></i> 6. Kesehatan
                         </button>
-                        <button type="button" @click="activeFormTab = 7" :class="activeFormTab === 7 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3 py-2.5 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
+                        <button type="button" @click="activeFormTab = 7" :class="activeFormTab === 7 ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'text-slate-500 border-transparent hover:text-slate-700'" class="px-3.5 py-3 border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors">
                             <i data-lucide="history" class="w-3.5 h-3.5"></i> 7. Asal & Status
                         </button>
                     </div>
 
                     <!-- Form Body Fields -->
-                    <div class="p-6 overflow-y-auto max-h-[60vh] space-y-4 text-xs">
+                    <div class="p-6 overflow-y-auto min-h-[440px] max-h-[72vh] space-y-4 text-xs">
 
                         <!-- TAB 1: IDENTITAS & LEGALITAS -->
                         <div x-show="activeFormTab === 1" class="space-y-4">
@@ -928,24 +928,34 @@
                         </div>
 
                         <!-- TAB 2: INKLUSI (PDBK) -->
-                        <div x-show="activeFormTab === 2" class="space-y-4">
-                            <div class="p-4 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/40 dark:bg-purple-950/20 space-y-3">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div x-show="activeFormTab === 2" class="space-y-4 min-h-[380px] pb-16">
+                            <div class="p-5 rounded-2xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/40 dark:bg-purple-950/20 space-y-4">
+                                <div class="flex items-center gap-2.5 pb-2 border-b border-purple-200/60 dark:border-purple-800/40">
+                                    <div class="p-2 bg-purple-600 text-white rounded-xl shadow-xs">
+                                        <i data-lucide="heart-handshake" class="w-4 h-4"></i>
+                                    </div>
                                     <div>
-                                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tipe Peserta Didik</label>
+                                        <h4 class="font-bold text-purple-900 dark:text-purple-200 text-xs">Informasi Program Inklusi & Kebutuhan Khusus (PDBK)</h4>
+                                        <p class="text-[11px] text-purple-700 dark:text-purple-300">Tentukan status siswa, jenis kekhususan, dan penugasan Guru Pendamping Khusus (GPK).</p>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tipe Peserta Didik</label>
                                         <select x-model="formData.student_type"
-                                            class="w-full h-8.5 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 cursor-pointer">
+                                            class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 cursor-pointer font-medium">
                                             <option value="REGULER">REGULER</option>
-                                            <option value="PDBK (BERKEBUTUHAN KHUSUS)">PDBK (BERKEBUTUHAN KHUSUS)</option>
+                                            <option value="PDBK">PDBK (Peserta Didik Berkebutuhan Khusus)</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Jenis Kekhususan / Ketunaan</label>
+                                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Jenis Kekhususan / Ketunaan</label>
                                         <input type="text" x-model="formData.special_needs_type" placeholder="Contoh: ADHD, Spektrum Autis, Slow Learner, Speech Delay..."
-                                            class="w-full h-8.5 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500">
+                                            class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-50">
                                     </div>
                                     <div class="sm:col-span-2">
-                                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                                             Guru Pendamping Khusus (GPK / Shadow Teacher)
                                             <span class="text-[10px] font-normal text-slate-400 ml-1">(Pilih guru pendamping untuk siswa PDBK)</span>
                                         </label>
@@ -954,16 +964,16 @@
                                         <div class="relative" @click.outside="gpkDropdownOpen = false">
                                             <!-- Input Box / Trigger Button -->
                                             <button type="button" @click="gpkDropdownOpen = !gpkDropdownOpen; if (gpkDropdownOpen) $nextTick(() => $refs.gpkSearchInput?.focus())"
-                                                class="w-full h-8.5 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg flex items-center justify-between gap-2 text-left focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 shadow-xs cursor-pointer transition-all">
+                                                class="w-full h-9.5 px-3.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg flex items-center justify-between gap-2 text-left focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 shadow-xs cursor-pointer transition-all">
                                                 
                                                 <div class="flex items-center gap-2 truncate">
                                                     <template x-if="formData.gpk_employee_id && getSelectedGpkName()">
-                                                        <div class="flex items-center gap-1.5 truncate">
-                                                            <span class="w-4.5 h-4.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 flex items-center justify-center font-bold text-[10px] shrink-0">
+                                                        <div class="flex items-center gap-2 truncate">
+                                                            <span class="w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 flex items-center justify-center font-bold text-[10px] shrink-0">
                                                                 <i data-lucide="user-check" class="w-3 h-3"></i>
                                                             </span>
                                                             <span class="font-bold text-slate-800 dark:text-slate-100 truncate text-xs" x-text="getSelectedGpkName()"></span>
-                                                            <span class="text-[10px] text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 px-1.5 py-0.5 rounded font-semibold border border-purple-200 dark:border-purple-800 shrink-0">GPK</span>
+                                                            <span class="text-[10px] text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 px-2 py-0.5 rounded font-semibold border border-purple-200 dark:border-purple-800 shrink-0">Guru GPK</span>
                                                         </div>
                                                     </template>
                                                     <template x-if="!formData.gpk_employee_id || !getSelectedGpkName()">
@@ -973,7 +983,7 @@
 
                                                 <div class="flex items-center gap-1.5 shrink-0 text-slate-400">
                                                     <template x-if="formData.gpk_employee_id">
-                                                        <span @click.stop="clearGpk()" class="p-0.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-400 hover:text-rose-500 transition-colors cursor-pointer" title="Kosongkan Pilihan">
+                                                        <span @click.stop="clearGpk()" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-400 hover:text-rose-500 transition-colors cursor-pointer" title="Kosongkan Pilihan">
                                                             <i data-lucide="x" class="w-3.5 h-3.5"></i>
                                                         </span>
                                                     </template>
@@ -989,22 +999,22 @@
                                                 x-transition:leave="transition ease-in duration-75"
                                                 x-transition:leave-start="opacity-100 scale-100"
                                                 x-transition:leave-end="opacity-0 scale-95"
-                                                class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden flex flex-col max-h-64">
+                                                class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-60">
                                                 
                                                 <!-- Search Input Sticky Header -->
-                                                <div class="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 sticky top-0 z-10">
+                                                <div class="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-xs sticky top-0 z-10">
                                                     <div class="relative">
                                                         <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none">
                                                             <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i>
                                                         </span>
                                                         <input type="text" x-ref="gpkSearchInput" x-model="gpkSearch" placeholder="Cari nama guru GPK / NIP..."
                                                             style="padding-left: 2rem;"
-                                                            class="w-full h-8 pr-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-100 placeholder-slate-400">
+                                                            class="w-full h-8.5 pr-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-100 placeholder-slate-400">
                                                     </div>
                                                 </div>
 
                                                 <!-- Scrollable Options List -->
-                                                <div class="overflow-y-auto p-1 divide-y divide-slate-100 dark:divide-slate-800/40 text-xs">
+                                                <div class="overflow-y-auto p-1.5 divide-y divide-slate-100 dark:divide-slate-800/40 text-xs max-h-48 scrollbar-thin">
                                                     <!-- Option: Kosongkan -->
                                                     <button type="button" @click="clearGpk()"
                                                         class="w-full px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800/80 rounded-lg flex items-center justify-between transition-colors cursor-pointer"
@@ -1047,7 +1057,7 @@
                                         </div>
                                     </div>
                                     <div class="sm:col-span-2">
-                                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan Pendampingan Guru / Penanganan Khusus</label>
+                                        <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Catatan Pendampingan Guru / Penanganan Khusus</label>
                                         <textarea x-model="formData.special_needs_notes" rows="3" placeholder="Deskripsi kebutuhan pendampingan / terapi yang sedang dijalani..."
                                             class="w-full p-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"></textarea>
                                     </div>
@@ -1786,7 +1796,7 @@
                                 religion: s.religion || 'Islam',
                                 enrolled_date: s.enrolled_date ? s.enrolled_date.substring(0, 10) : '',
 
-                                student_type: s.student_type || 'REGULER',
+                                student_type: (s.student_type && s.student_type.includes('PDBK')) ? 'PDBK' : (s.student_type || 'REGULER'),
                                 special_needs_type: s.special_needs_type || '',
                                 special_needs_notes: s.special_needs_notes || '',
                                 gpk_employee_id: s.gpk_employee_id || '',
