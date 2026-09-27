@@ -949,13 +949,102 @@
                                             Guru Pendamping Khusus (GPK / Shadow Teacher)
                                             <span class="text-[10px] font-normal text-slate-400 ml-1">(Pilih guru pendamping untuk siswa PDBK)</span>
                                         </label>
-                                        <select x-model="formData.gpk_employee_id"
-                                            class="w-full h-8.5 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 cursor-pointer">
-                                            <option value="">-- Belum Ditentukan / Tidak Ada GPK --</option>
-                                            @foreach($teachers as $teacher)
-                                                <option value="{{ $teacher->id }}">{{ $teacher->full_name }} ({{ $teacher->position ?: 'Guru' }})</option>
-                                            @endforeach
-                                        </select>
+                                        
+                                        <!-- Searchable + Scrollable GPK Dropdown Container -->
+                                        <div class="relative" @click.outside="gpkDropdownOpen = false">
+                                            <!-- Input Box / Trigger Button -->
+                                            <button type="button" @click="gpkDropdownOpen = !gpkDropdownOpen; if (gpkDropdownOpen) $nextTick(() => $refs.gpkSearchInput?.focus())"
+                                                class="w-full h-8.5 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg flex items-center justify-between gap-2 text-left focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 shadow-xs cursor-pointer transition-all">
+                                                
+                                                <div class="flex items-center gap-2 truncate">
+                                                    <template x-if="formData.gpk_employee_id && getSelectedGpkName()">
+                                                        <div class="flex items-center gap-1.5 truncate">
+                                                            <span class="w-4.5 h-4.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 flex items-center justify-center font-bold text-[10px] shrink-0">
+                                                                <i data-lucide="user-check" class="w-3 h-3"></i>
+                                                            </span>
+                                                            <span class="font-bold text-slate-800 dark:text-slate-100 truncate text-xs" x-text="getSelectedGpkName()"></span>
+                                                            <span class="text-[10px] text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 px-1.5 py-0.5 rounded font-semibold border border-purple-200 dark:border-purple-800 shrink-0">GPK</span>
+                                                        </div>
+                                                    </template>
+                                                    <template x-if="!formData.gpk_employee_id || !getSelectedGpkName()">
+                                                        <span class="text-slate-400 dark:text-slate-500">-- Pilih Guru Pendamping Khusus (GPK) --</span>
+                                                    </template>
+                                                </div>
+
+                                                <div class="flex items-center gap-1.5 shrink-0 text-slate-400">
+                                                    <template x-if="formData.gpk_employee_id">
+                                                        <span @click.stop="clearGpk()" class="p-0.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-400 hover:text-rose-500 transition-colors cursor-pointer" title="Kosongkan Pilihan">
+                                                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                                        </span>
+                                                    </template>
+                                                    <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-150" :class="{ 'rotate-180': gpkDropdownOpen }"></i>
+                                                </div>
+                                            </button>
+
+                                            <!-- Dropdown Menu (Search + Scroll List) -->
+                                            <div x-show="gpkDropdownOpen" x-cloak
+                                                x-transition:enter="transition ease-out duration-100"
+                                                x-transition:enter-start="opacity-0 scale-95"
+                                                x-transition:enter-end="opacity-100 scale-100"
+                                                x-transition:leave="transition ease-in duration-75"
+                                                x-transition:leave-start="opacity-100 scale-100"
+                                                x-transition:leave-end="opacity-0 scale-95"
+                                                class="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden flex flex-col max-h-64">
+                                                
+                                                <!-- Search Input Sticky Header -->
+                                                <div class="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 sticky top-0 z-10">
+                                                    <div class="relative">
+                                                        <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none">
+                                                            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400"></i>
+                                                        </span>
+                                                        <input type="text" x-ref="gpkSearchInput" x-model="gpkSearch" placeholder="Cari nama guru GPK / NIP..."
+                                                            style="padding-left: 2rem;"
+                                                            class="w-full h-8 pr-2.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-100 placeholder-slate-400">
+                                                    </div>
+                                                </div>
+
+                                                <!-- Scrollable Options List -->
+                                                <div class="overflow-y-auto p-1 divide-y divide-slate-100 dark:divide-slate-800/40 text-xs">
+                                                    <!-- Option: Kosongkan -->
+                                                    <button type="button" @click="clearGpk()"
+                                                        class="w-full px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800/80 rounded-lg flex items-center justify-between transition-colors cursor-pointer"
+                                                        :class="{ 'bg-purple-50/60 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 font-semibold': !formData.gpk_employee_id }">
+                                                        <span class="text-slate-500 dark:text-slate-400 italic">-- Belum Ditentukan / Tidak Ada GPK --</span>
+                                                        <template x-if="!formData.gpk_employee_id">
+                                                            <i data-lucide="check" class="w-4 h-4 text-purple-600 shrink-0"></i>
+                                                        </template>
+                                                    </button>
+
+                                                    <!-- GPK Teachers Options -->
+                                                    <template x-for="t in filteredGpkTeachers" :key="t.id">
+                                                        <button type="button" @click="selectGpk(t.id)"
+                                                            class="w-full px-3 py-2 text-left hover:bg-purple-50 dark:hover:bg-purple-950/40 rounded-lg flex items-center justify-between gap-2 transition-colors cursor-pointer"
+                                                            :class="{ 'bg-purple-50 dark:bg-purple-950/60 text-purple-900 dark:text-purple-100 font-bold': formData.gpk_employee_id == t.id }">
+                                                            <div class="flex items-center gap-2.5 min-w-0">
+                                                                <div class="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 flex items-center justify-center font-bold text-[10px] shrink-0">
+                                                                    <span x-text="(t.name || 'G').charAt(0)"></span>
+                                                                </div>
+                                                                <div class="flex flex-col min-w-0">
+                                                                    <span class="truncate text-slate-800 dark:text-slate-100 font-medium" :class="{ 'font-bold text-purple-700 dark:text-purple-300': formData.gpk_employee_id == t.id }" x-text="t.full_name || t.name"></span>
+                                                                    <span class="text-[10px] text-slate-400 truncate" x-text="'Posisi: ' + (t.position || 'GPK') + (t.nip ? ' • NIP: ' + t.nip : '')"></span>
+                                                                </div>
+                                                            </div>
+                                                            <template x-if="formData.gpk_employee_id == t.id">
+                                                                <i data-lucide="check" class="w-4 h-4 text-purple-600 shrink-0"></i>
+                                                            </template>
+                                                        </button>
+                                                    </template>
+
+                                                    <!-- Empty Search State -->
+                                                    <template x-if="filteredGpkTeachers.length === 0">
+                                                        <div class="px-4 py-6 text-center text-slate-400 text-xs">
+                                                            <p class="font-semibold">Guru GPK tidak ditemukan</p>
+                                                            <p class="text-[10px] text-slate-400 mt-0.5">Coba kata kunci pencarian nama atau NIP yang lain.</p>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="sm:col-span-2">
                                         <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan Pendampingan Guru / Penanganan Khusus</label>
@@ -1391,6 +1480,45 @@
                 saving: false,
                 selectedStudent: null,
                 classroomHistories: [],
+                teachers: @json($teachers),
+                gpkDropdownOpen: false,
+                gpkSearch: '',
+
+                get filteredGpkTeachers() {
+                    const q = (this.gpkSearch || '').toLowerCase().trim();
+                    if (!q) return this.teachers || [];
+                    return (this.teachers || []).filter(t => {
+                        const name = (t.full_name || t.name || '').toLowerCase();
+                        const nip = (t.nip || '').toLowerCase();
+                        const pos = (t.position || '').toLowerCase();
+                        return name.includes(q) || nip.includes(q) || pos.includes(q);
+                    });
+                },
+
+                getSelectedGpkName() {
+                    if (!this.formData.gpk_employee_id || !this.teachers) return '';
+                    const found = this.teachers.find(t => t.id == this.formData.gpk_employee_id);
+                    return found ? (found.full_name || found.name) : '';
+                },
+
+                selectGpk(id) {
+                    this.formData.gpk_employee_id = id;
+                    this.gpkDropdownOpen = false;
+                    this.gpkSearch = '';
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
+                },
+
+                clearGpk() {
+                    this.formData.gpk_employee_id = '';
+                    this.gpkDropdownOpen = false;
+                    this.gpkSearch = '';
+                    this.$nextTick(() => {
+                        if (window.lucide) lucide.createIcons();
+                    });
+                },
+
                 formData: {
                     id: null,
                     academic_year_id: '{{ $selectedYearId && $selectedYearId !== "all" ? $selectedYearId : ($academicYears->firstWhere("is_active", true)?->id ?? "") }}',
@@ -1541,6 +1669,8 @@
                 openCreateModal() {
                     this.isEdit = false;
                     this.activeFormTab = 1;
+                    this.gpkDropdownOpen = false;
+                    this.gpkSearch = '';
                     this.formData = {
                         id: null,
                         academic_year_id: '{{ $selectedYearId && $selectedYearId !== "all" ? $selectedYearId : ($academicYears->firstWhere("is_active", true)?->id ?? "") }}',
@@ -1636,6 +1766,8 @@
                         if (res.success) {
                             const s = res.student;
                             this.isEdit = true;
+                            this.gpkDropdownOpen = false;
+                            this.gpkSearch = '';
                             this.formData = {
                                 id: s.id,
                                 academic_year_id: s.academic_year_id || '',

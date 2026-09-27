@@ -193,18 +193,27 @@ class StudentController extends Controller
         $classrooms = $classroomListQuery->orderBy('class_level_id')->orderBy('code')->orderBy('name')->get();
         $allClassrooms = Classroom::with(['classLevel', 'academicYear'])->where('is_active', true)->orderBy('academic_year_id', 'desc')->orderBy('name')->get();
 
-        // Master daftar guru untuk pilihan Guru Pendamping Khusus (GPK)
+        // Master daftar guru untuk pilihan Guru Pendamping Khusus (GPK / Shadow Teacher)
         $teachers = Employee::whereIn('status', ['Active', 'aktif', 'active', 'Aktif'])
             ->where(function($q) {
-                $q->whereHas('employeeType', fn($et) => $et->where('name', 'like', '%Guru%'))
-                  ->orWhere('position', 'like', '%Guru%')
-                  ->orWhere('position', 'like', '%GPK%')
-                  ->orWhere('position', 'like', '%GPQ%');
+                $q->where('position', 'like', '%GPK%')
+                  ->orWhere('position', 'like', '%Pendamping%')
+                  ->orWhere('position', 'like', '%Shadow%')
+                  ->orWhere('position', 'like', '%Inklusi%')
+                  ->orWhereHas('employeeType', function($et) {
+                      $et->where('name', 'like', '%GPK%')
+                         ->orWhere('name', 'like', '%Pendamping%')
+                         ->orWhere('name', 'like', '%Shadow%')
+                         ->orWhere('name', 'like', '%Inklusi%');
+                  });
             })
             ->orderBy('name')
             ->get();
         if ($teachers->isEmpty()) {
-            $teachers = Employee::whereIn('status', ['Active', 'aktif', 'active', 'Aktif'])->orderBy('name')->get();
+            $teachers = Employee::whereIn('status', ['Active', 'aktif', 'active', 'Aktif'])
+                ->whereHas('employeeType', fn($et) => $et->where('name', 'like', '%Guru%'))
+                ->orderBy('name')
+                ->get();
         }
 
         $perPage = $request->get('per_page', 15);
