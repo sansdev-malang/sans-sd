@@ -184,30 +184,25 @@
         <style>
             /* Responsive Root Typography & UI Density System */
             html {
-                font-size: 14px;
+                font-size: 15px;
                 -webkit-text-size-adjust: 100%;
             }
             @media (min-width: 1024px) and (max-width: 1366px) {
                 html {
-                    font-size: 12.5px;
+                    font-size: 14.5px;
                 }
             }
             @media (min-width: 1367px) and (max-width: 1599px) {
                 html {
-                    font-size: 13.5px;
+                    font-size: 15px;
                 }
             }
-            @media (min-width: 1600px) and (max-width: 1799px) {
+            @media (min-width: 1600px) and (max-width: 1920px) {
                 html {
-                    font-size: 14.5px;
+                    font-size: 16px;
                 }
             }
-            @media (min-width: 1800px) and (max-width: 2559px) {
-                html {
-                    font-size: 15.5px;
-                }
-            }
-            @media (min-width: 2560px) {
+            @media (min-width: 1921px) {
                 html {
                     font-size: 16.5px;
                 }
