@@ -263,9 +263,12 @@ class SpmbCandidateController extends Controller
             ->withCount(['students as active_students_count' => function ($q) {
                 $q->where('status', 'aktif');
             }])
-            ->where('is_active', true)
-            ->orderBy('class_level_id')
-            ->orderBy('name')
+            ->where('classrooms.is_active', true)
+            ->join('class_levels', 'classrooms.class_level_id', '=', 'class_levels.id')
+            ->orderBy('class_levels.order', 'asc')
+            ->orderBy('classrooms.code', 'asc')
+            ->orderBy('classrooms.name', 'asc')
+            ->select('classrooms.*')
             ->get();
 
         // Filter classrooms for the matched academic year if available

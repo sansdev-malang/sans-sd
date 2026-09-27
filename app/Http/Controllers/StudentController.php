@@ -187,12 +187,28 @@ class StudentController extends Controller
         // Master lists for filter dropdowns & modal selects
         $classLevels = ClassLevel::orderBy('order')->get();
         
-        $classroomListQuery = Classroom::with(['classLevel', 'academicYear'])->where('is_active', true);
+        $classroomListQuery = Classroom::with(['classLevel', 'academicYear'])
+            ->where('is_active', true)
+            ->join('class_levels', 'classrooms.class_level_id', '=', 'class_levels.id')
+            ->orderBy('class_levels.order', 'asc')
+            ->orderBy('classrooms.code', 'asc')
+            ->orderBy('classrooms.name', 'asc')
+            ->select('classrooms.*');
+
         if ($matchingYearIds->isNotEmpty()) {
-            $classroomListQuery->whereIn('academic_year_id', $matchingYearIds);
+            $classroomListQuery->whereIn('classrooms.academic_year_id', $matchingYearIds);
         }
-        $classrooms = $classroomListQuery->orderBy('class_level_id')->orderBy('code')->orderBy('name')->get();
-        $allClassrooms = Classroom::with(['classLevel', 'academicYear'])->where('is_active', true)->orderBy('academic_year_id', 'desc')->orderBy('name')->get();
+        $classrooms = $classroomListQuery->get();
+
+        $allClassrooms = Classroom::with(['classLevel', 'academicYear'])
+            ->where('is_active', true)
+            ->join('class_levels', 'classrooms.class_level_id', '=', 'class_levels.id')
+            ->orderBy('classrooms.academic_year_id', 'desc')
+            ->orderBy('class_levels.order', 'asc')
+            ->orderBy('classrooms.code', 'asc')
+            ->orderBy('classrooms.name', 'asc')
+            ->select('classrooms.*')
+            ->get();
 
         // Master daftar guru untuk pilihan Guru Pendamping Khusus (GPK / Shadow Teacher)
         $teachers = Employee::whereIn('status', ['Active', 'aktif', 'active', 'Aktif'])

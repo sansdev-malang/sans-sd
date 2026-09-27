@@ -58,7 +58,12 @@ class ClassroomController extends Controller
             });
         }
 
-        $classrooms = $query->orderBy('class_level_id')->orderBy('code')->orderBy('name')->get();
+        $classrooms = $query->join('class_levels', 'classrooms.class_level_id', '=', 'class_levels.id')
+            ->orderBy('class_levels.order', 'asc')
+            ->orderBy('classrooms.code', 'asc')
+            ->orderBy('classrooms.name', 'asc')
+            ->select('classrooms.*')
+            ->get();
 
         // Calculate statistics
         $totalClassrooms = $classrooms->count();
