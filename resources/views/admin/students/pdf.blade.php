@@ -138,10 +138,43 @@
 </head>
 <body>
 
+    @php
+        $logoBase64 = null;
+        $logoSetting = setting('app_logo');
+        $candidatePaths = [];
+        if ($logoSetting) {
+            $candidatePaths[] = storage_path('app/public/' . $logoSetting);
+            $candidatePaths[] = public_path('storage/' . $logoSetting);
+        }
+        $candidatePaths[] = public_path('icons/icon-192x192.png');
+        $candidatePaths[] = public_path('icons/icon-512x512.png');
+
+        foreach ($candidatePaths as $p) {
+            if (file_exists($p) && is_file($p)) {
+                $ext = strtolower(pathinfo($p, PATHINFO_EXTENSION));
+                $mime = match($ext) {
+                    'png' => 'image/png',
+                    'jpg', 'jpeg' => 'image/jpeg',
+                    'svg' => 'image/svg+xml',
+                    'ico' => 'image/x-icon',
+                    'webp' => 'image/webp',
+                    default => 'image/png',
+                };
+                $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($p));
+                break;
+            }
+        }
+    @endphp
+
     <!-- KOP SURAT -->
     <table class="header-table">
         <tr>
-            <td class="header-text">
+            @if($logoBase64)
+                <td style="width: 65px; vertical-align: middle; text-align: center; padding-right: 12px;">
+                    <img src="{{ $logoBase64 }}" style="max-height: 52px; max-width: 60px;">
+                </td>
+            @endif
+            <td class="header-text" style="{{ $logoBase64 ? 'text-align: left;' : 'text-align: center;' }}">
                 <h3>YAYASAN PENDIDIKAN ANAK SALEH MALANG</h3>
                 <h1>{{ strtoupper(setting('unit_name', 'SD Anak Saleh')) }}</h1>
                 <p>NPSN: 20539745 &bull; Terakreditasi "A" &bull; Jl. Candi Panggung No. 54, Mojolangu, Lowokwaru, Kota Malang</p>

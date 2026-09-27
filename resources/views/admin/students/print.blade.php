@@ -380,12 +380,46 @@
         </div>
     </div>
 
+    @php
+        $logoBase64 = null;
+        $logoSetting = setting('app_logo');
+        $candidatePaths = [];
+        if ($logoSetting) {
+            $candidatePaths[] = storage_path('app/public/' . $logoSetting);
+            $candidatePaths[] = public_path('storage/' . $logoSetting);
+        }
+        $candidatePaths[] = public_path('icons/icon-192x192.png');
+        $candidatePaths[] = public_path('icons/icon-512x512.png');
+
+        foreach ($candidatePaths as $p) {
+            if (file_exists($p) && is_file($p)) {
+                $ext = strtolower(pathinfo($p, PATHINFO_EXTENSION));
+                $mime = match($ext) {
+                    'png' => 'image/png',
+                    'jpg', 'jpeg' => 'image/jpeg',
+                    'svg' => 'image/svg+xml',
+                    'ico' => 'image/x-icon',
+                    'webp' => 'image/webp',
+                    default => 'image/png',
+                };
+                $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($p));
+                break;
+            }
+        }
+    @endphp
+
     <!-- PRINTABLE PAGE WRAPPER -->
     <div class="print-page">
         
         <!-- KOP SURAT RESMI -->
         <div class="header">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo Sekolah" class="header-logo" onerror="this.src='{{ asset('logo.png') }}'; this.onerror=null;">
+            @if($logoBase64)
+                <img src="{{ $logoBase64 }}" alt="Logo Sekolah" class="header-logo">
+            @else
+                <div class="header-logo" style="display: flex; align-items: center; justify-content: center; background: #4338ca; color: white; border-radius: 8px; font-weight: 800; font-size: 24px;">
+                    {{ substr(setting('unit_name', 'SD'), 0, 1) }}
+                </div>
+            @endif
             <div class="header-text">
                 <h3>YAYASAN PENDIDIKAN ANAK SALEH MALANG</h3>
                 <h1>{{ strtoupper(setting('unit_name', 'SD Anak Saleh')) }}</h1>
