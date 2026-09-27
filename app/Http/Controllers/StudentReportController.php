@@ -196,6 +196,39 @@ class StudentReportController extends Controller
             $rowNum++;
         }
 
+        // 4. Unassigned Students (Siswa Aktif Belum Masuk Rombel)
+        if (!empty($reportData['unassignedStudents']) && $reportData['unassignedTotal'] > 0) {
+            $sheet->setCellValue("A{$rowNum}", "SISWA AKTIF BELUM MASUK ROMBEL (PERLU ALOKASI KELAS)");
+            $sheet->mergeCells("A{$rowNum}:I{$rowNum}");
+            $sheet->getStyle("A{$rowNum}:I{$rowNum}")->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => '92400E']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FEF3C7']],
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'FCD34D']]],
+            ]);
+            $rowNum++;
+
+            foreach ($reportData['unassignedStudents'] as $us) {
+                $sheet->setCellValue("A{$rowNum}", $no++);
+                $sheet->setCellValue("B{$rowNum}", $us->full_name . ' (NIS: ' . $us->nis . ')');
+                $sheet->setCellValue("C{$rowNum}", 'Tanpa Rombel');
+                $sheet->setCellValue("D{$rowNum}", in_array($us->gender, ['L', 'Laki-laki', 'Male', 'LAKI-LAKI']) ? 1 : 0);
+                $sheet->setCellValue("E{$rowNum}", in_array($us->gender, ['P', 'Perempuan', 'Female', 'PEREMPUAN']) ? 1 : 0);
+                $sheet->setCellValue("F{$rowNum}", 1);
+                $isPdbk = ($us->student_type && (str_contains(strtoupper($us->student_type), 'PDBK') || str_contains(strtoupper($us->student_type), 'KHUSUS') || str_contains(strtoupper($us->student_type), 'INKLUSI'))) || !empty($us->special_needs_type) || !empty($us->gpk_employee_id);
+                $sheet->setCellValue("G{$rowNum}", $isPdbk ? 1 : 0);
+                $sheet->setCellValue("H{$rowNum}", '-');
+                $sheet->setCellValue("I{$rowNum}", '-');
+
+                $sheet->getStyle("A{$rowNum}:I{$rowNum}")->applyFromArray([
+                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'E2E8F0']]],
+                ]);
+                $sheet->getStyle("A{$rowNum}:C{$rowNum}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("D{$rowNum}:G{$rowNum}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                $rowNum++;
+            }
+        }
+
         // Grand Total Row
         $sheet->setCellValue("A{$rowNum}", "JUMLAH PESERTA DIDIK KESELURUHAN:");
         $sheet->mergeCells("A{$rowNum}:C{$rowNum}");
@@ -309,12 +342,35 @@ class StudentReportController extends Controller
             $grandTotalPdbk += $subPdbk;
         }
 
+        // Siswa Aktif yang Belum Masuk Rombel / Tanpa Kelas
+        $unassignedQuery = Student::where('status', 'aktif')->whereNull('classroom_id');
+        if (!empty($matchingYearIds)) {
+            $unassignedQuery->whereIn('academic_year_id', $matchingYearIds);
+        }
+        $unassignedStudents = $unassignedQuery->get();
+        $unassignedMale = $unassignedStudents->whereIn('gender', ['L', 'Laki-laki', 'Male', 'LAKI-LAKI'])->count();
+        $unassignedFemale = $unassignedStudents->whereIn('gender', ['P', 'Perempuan', 'Female', 'PEREMPUAN'])->count();
+        $unassignedTotal = $unassignedStudents->count();
+        $unassignedPdbk = $unassignedStudents->filter(function($s) {
+            return ($s->student_type && (str_contains(strtoupper($s->student_type), 'PDBK') || str_contains(strtoupper($s->student_type), 'KHUSUS') || str_contains(strtoupper($s->student_type), 'INKLUSI'))) || !empty($s->special_needs_type) || !empty($s->gpk_employee_id);
+        })->count();
+
+        $grandTotalMale += $unassignedMale;
+        $grandTotalFemale += $unassignedFemale;
+        $grandTotalStudents += $unassignedTotal;
+        $grandTotalPdbk += $unassignedPdbk;
+
         $malePercent = $grandTotalStudents > 0 ? round(($grandTotalMale / $grandTotalStudents) * 100, 1) : 0;
         $femalePercent = $grandTotalStudents > 0 ? round(($grandTotalFemale / $grandTotalStudents) * 100, 1) : 0;
         $pdbkPercent = $grandTotalStudents > 0 ? round(($grandTotalPdbk / $grandTotalStudents) * 100, 1) : 0;
 
         return [
             'levelReports' => $levelReports,
+            'unassignedStudents' => $unassignedStudents,
+            'unassignedMale' => $unassignedMale,
+            'unassignedFemale' => $unassignedFemale,
+            'unassignedTotal' => $unassignedTotal,
+            'unassignedPdbk' => $unassignedPdbk,
             'grandTotalMale' => $grandTotalMale,
             'grandTotalFemale' => $grandTotalFemale,
             'grandTotalStudents' => $grandTotalStudents,

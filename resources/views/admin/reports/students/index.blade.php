@@ -169,6 +169,26 @@
             </div>
         </div>
 
+        <!-- UNASSIGNED STUDENTS ALERT (IF ANY) -->
+        @if(!empty($unassignedStudents) && $unassignedTotal > 0)
+            <div class="p-3.5 sm:p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-start gap-3 shadow-xs">
+                <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                </div>
+                <div class="flex-1 text-xs text-amber-900 dark:text-amber-200">
+                    <div class="font-bold text-sm text-amber-800 dark:text-amber-100 mb-0.5 flex flex-wrap items-center gap-2">
+                        <span>Perhatian: Terdapat {{ $unassignedTotal }} Siswa Aktif Belum Memiliki Rombel</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100">
+                            Perlu Penempatan Rombel
+                        </span>
+                    </div>
+                    <p class="text-amber-700 dark:text-amber-300">
+                        Siswa di bawah ini berstatus aktif namun belum dialokasikan ke dalam kelas/rombel. Siswa tetap dihitung dalam total rekapitulasi ({{ $grandTotalStudents }} Siswa) dan ditampilkan di baris tabel paling bawah agar Admin dapat segera menentukan rombelnya.
+                    </p>
+                </div>
+            </div>
+        @endif
+
         <!-- MAIN REPORT TABLE -->
         <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden w-full">
             <!-- Table Header Info Bar -->
@@ -327,6 +347,103 @@
                                 </td>
                             </tr>
                         @endforelse
+
+                        <!-- SISWA AKTIF BELUM MEMILIKI ROMBEL (JIKA ADA) -->
+                        @if(!empty($unassignedStudents) && $unassignedTotal > 0)
+                            <tr class="bg-amber-50/80 dark:bg-amber-950/40 border-t-2 border-b border-amber-200 dark:border-amber-800/80">
+                                <td colspan="9" class="px-3 py-2">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                            <span class="font-bold text-xs uppercase tracking-wide text-amber-900 dark:text-amber-200">
+                                                SISWA BELUM MEMILIKI ROMBEL (PERLU PENEMPATAN KELAS)
+                                            </span>
+                                            <span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-200 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 font-semibold font-mono">
+                                                {{ $unassignedTotal }} Siswa
+                                            </span>
+                                        </div>
+                                        <span class="text-[11px] font-semibold text-amber-700 dark:text-amber-300 font-mono">
+                                            Total: {{ $unassignedTotal }} Siswa
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            @foreach($unassignedStudents as $us)
+                                @php
+                                    $isUsMale = in_array($us->gender, ['L', 'Laki-laki', 'Male', 'LAKI-LAKI']);
+                                    $isUsFemale = in_array($us->gender, ['P', 'Perempuan', 'Female', 'PEREMPUAN']);
+                                    $isUsPdbk = ($us->student_type && (str_contains(strtoupper($us->student_type), 'PDBK') || str_contains(strtoupper($us->student_type), 'KHUSUS') || str_contains(strtoupper($us->student_type), 'INKLUSI'))) || !empty($us->special_needs_type) || !empty($us->gpk_employee_id);
+                                @endphp
+                                <tr class="bg-amber-50/30 dark:bg-amber-950/10 hover:bg-amber-50/60 dark:hover:bg-amber-950/30 transition-colors group">
+                                    <td class="px-3 py-2.5 text-center text-slate-400 font-mono text-[11px]">
+                                        {{ $rowCounter++ }}
+                                    </td>
+                                    <td class="px-3 py-2.5 font-bold text-slate-900 dark:text-slate-100 text-xs">
+                                        <div class="flex items-center gap-2">
+                                            <span>{{ $us->full_name }}</span>
+                                            <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400">(NIS: {{ $us->nis ?: '-' }})</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-2.5 text-center font-mono font-semibold text-xs">
+                                        <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200 border border-amber-200 dark:border-amber-800">
+                                            Tanpa Rombel
+                                        </span>
+                                    </td>
+                                    <td class="px-3 py-2.5 text-center font-mono font-bold text-blue-600 dark:text-blue-400">
+                                        {{ $isUsMale ? 1 : 0 }}
+                                    </td>
+                                    <td class="px-3 py-2.5 text-center font-mono font-bold text-pink-600 dark:text-pink-400">
+                                        {{ $isUsFemale ? 1 : 0 }}
+                                    </td>
+                                    <td class="px-3 py-2.5 text-center font-mono font-bold text-slate-900 dark:text-slate-100 bg-amber-50/50 dark:bg-amber-950/20">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 font-bold">
+                                            1
+                                        </span>
+                                    </td>
+                                    <td class="px-3 py-2.5 text-center font-mono font-bold">
+                                        @if($isUsPdbk)
+                                            <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                                                1
+                                            </span>
+                                        @else
+                                            <span class="text-slate-300 dark:text-slate-600 font-normal">0</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2.5">
+                                        <a href="{{ route('students.edit', $us->id) }}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white shadow-xs transition-colors" title="Klik untuk menentukan rombel siswa ini">
+                                            <i data-lucide="edit-3" class="w-3 h-3"></i>
+                                            <span>Tentukan Rombel</span>
+                                        </a>
+                                    </td>
+                                    <td class="px-3 py-2.5">
+                                        <span class="text-slate-400 italic text-[11px]">-</span>
+                                    </td>
+                                </tr>
+                            @endforeach
+
+                            <!-- SUBTOTAL UNASSIGNED -->
+                            <tr class="bg-amber-100/50 dark:bg-amber-950/40 font-bold border-t border-amber-200 dark:border-amber-800 text-slate-800 dark:text-slate-200">
+                                <td colspan="3" class="px-3 py-2 text-right uppercase tracking-wider text-[11px] text-amber-900 dark:text-amber-200">
+                                    Subtotal Belum Ada Rombel:
+                                </td>
+                                <td class="px-3 py-2 text-center font-mono text-blue-600 dark:text-blue-400">
+                                    {{ $unassignedMale }}
+                                </td>
+                                <td class="px-3 py-2 text-center font-mono text-pink-600 dark:text-pink-400">
+                                    {{ $unassignedFemale }}
+                                </td>
+                                <td class="px-3 py-2 text-center font-mono text-amber-800 dark:text-amber-200 bg-amber-200/50 dark:bg-amber-900/40">
+                                    {{ $unassignedTotal }}
+                                </td>
+                                <td class="px-3 py-2 text-center font-mono text-purple-700 dark:text-purple-300">
+                                    {{ $unassignedPdbk }}
+                                </td>
+                                <td colspan="2" class="px-3 py-2 text-amber-700 dark:text-amber-400 font-normal italic text-[10px]">
+                                    Siswa aktif menunggu penempatan kelas oleh Admin
+                                </td>
+                            </tr>
+                        @endif
 
                         <!-- GRAND TOTAL FOOTER ROW -->
                         <tr class="bg-slate-900 text-white font-bold border-t-2 border-indigo-500 shadow-inner">

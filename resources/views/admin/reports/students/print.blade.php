@@ -400,6 +400,50 @@
                     @endif
                 @endforeach
 
+                <!-- SISWA AKTIF BELUM MEMILIKI ROMBEL (JIKA ADA) -->
+                @if(!empty($unassignedStudents) && $unassignedTotal > 0)
+                    <tr class="level-header" style="background-color: #fef3c7; color: #92400e;">
+                        <td colspan="9" style="padding-left: 8px;">
+                            SISWA BELUM MEMILIKI ROMBEL (PERLU PENEMPATAN KELAS)
+                        </td>
+                    </tr>
+
+                    @foreach($unassignedStudents as $us)
+                        @php
+                            $isUsMale = in_array($us->gender, ['L', 'Laki-laki', 'Male', 'LAKI-LAKI']);
+                            $isUsFemale = in_array($us->gender, ['P', 'Perempuan', 'Female', 'PEREMPUAN']);
+                            $isUsPdbk = ($us->student_type && (str_contains(strtoupper($us->student_type), 'PDBK') || str_contains(strtoupper($us->student_type), 'KHUSUS') || str_contains(strtoupper($us->student_type), 'INKLUSI'))) || !empty($us->special_needs_type) || !empty($us->gpk_employee_id);
+                        @endphp
+                        <tr style="background-color: #fffbeb;">
+                            <td class="text-center font-mono">{{ $no++ }}</td>
+                            <td class="font-bold">{{ $us->full_name }} (NIS: {{ $us->nis ?: '-' }})</td>
+                            <td class="text-center font-mono font-bold" style="color: #b45309;">Tanpa Rombel</td>
+                            <td class="text-center font-mono">{{ $isUsMale ? 1 : 0 }}</td>
+                            <td class="text-center font-mono">{{ $isUsFemale ? 1 : 0 }}</td>
+                            <td class="text-center font-mono font-bold">1</td>
+                            <td class="text-center font-mono {{ $isUsPdbk ? 'font-bold' : '' }}">
+                                {{ $isUsPdbk ? 1 : 0 }}
+                            </td>
+                            <td style="color: #64748b; font-style: italic;">Belum dialokasikan</td>
+                            <td>-</td>
+                        </tr>
+                    @endforeach
+
+                    <!-- SUBTOTAL UNASSIGNED -->
+                    <tr class="subtotal-row" style="background-color: #fde68a;">
+                        <td colspan="3" class="text-right" style="font-size: 9.5px; color: #78350f;">
+                            Subtotal Belum Ada Rombel:
+                        </td>
+                        <td class="text-center font-mono">{{ $unassignedMale }}</td>
+                        <td class="text-center font-mono">{{ $unassignedFemale }}</td>
+                        <td class="text-center font-mono font-bold">{{ $unassignedTotal }}</td>
+                        <td class="text-center font-mono">{{ $unassignedPdbk }}</td>
+                        <td colspan="2" style="font-size: 9px; font-weight: normal; font-style: italic; color: #78350f;">
+                            Siswa aktif menunggu alokasi kelas
+                        </td>
+                    </tr>
+                @endif
+
                 <!-- GRAND TOTAL -->
                 <tr class="grand-total-row">
                     <td colspan="3" class="text-right" style="padding: 7px 10px;">
