@@ -68,10 +68,16 @@ class StudentReportController extends Controller
 
         $reportData = $this->calculateReportData($matchingYearIds);
 
+        $headmasterEmployee = \App\Models\Employee::where('position', 'like', '%Kepala Sekolah%')->first();
+        $headmasterName = $headmasterEmployee?->name ?? 'Andreas Setiyono, S.Pd.Gr., M.Kom.';
+        $headmasterNiy = $headmasterEmployee?->niy ?? $headmasterEmployee?->nuptk ?? null;
+
         return view('admin.reports.students.print', array_merge($reportData, [
             'selectedYear' => $selectedYear,
             'selectedYearId' => $selectedYear?->id,
             'selectedYearName' => $selectedYearName,
+            'headmasterName' => $headmasterName,
+            'headmasterNiy' => $headmasterNiy,
         ]));
     }
 
@@ -98,10 +104,10 @@ class StudentReportController extends Controller
         $sheet->setTitle('REPORT');
 
         // Document Title
-        $appName = function_exists('setting') ? setting('app_name', 'SD ANAK SALEH') : 'SD ANAK SALEH';
+        $unitName = function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh';
         $yearName = $selectedYear ? $selectedYear->name : 'Semua Tahun';
 
-        $sheet->setCellValue('A1', "Data Peserta Didik {$appName}");
+        $sheet->setCellValue('A1', "Data Peserta Didik " . $unitName);
         $sheet->setCellValue('A2', "Tapel {$yearName}");
         $sheet->getStyle('A1:A2')->getFont()->setBold(true)->setSize(13);
 

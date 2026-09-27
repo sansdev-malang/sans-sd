@@ -399,11 +399,11 @@ class SpmbCandidateController extends Controller
             ]
         );
 
-        $appName = function_exists('setting') ? setting('app_name', 'SD Anak Saleh') : 'SD Anak Saleh';
+        $unitName = function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh';
 
         return response()->json([
             'success' => true,
-            'message' => "Ananda {$candidate->full_name} berhasil resmi terdaftar sebagai Siswa Aktif {$appName} (NIS: {$student->nis}).",
+            'message' => "Ananda {$candidate->full_name} berhasil resmi terdaftar sebagai Siswa Aktif {$unitName} (NIS: {$student->nis}).",
             'student' => $student,
         ]);
     }

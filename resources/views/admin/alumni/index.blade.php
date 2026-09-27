@@ -15,7 +15,7 @@
                                 Lulusan SD
                             </span>
                         </h2>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Database resmi seluruh peserta didik yang telah lulus dari {{ setting('app_name', 'SD Anak Saleh') }}, arsip nomor ijazah, dan sekolah lanjutan.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Database resmi seluruh peserta didik yang telah lulus dari {{ setting('unit_name', 'SD Anak Saleh') }}, arsip nomor ijazah, dan sekolah lanjutan.</p>
                     </div>
                 </div>
             </div>

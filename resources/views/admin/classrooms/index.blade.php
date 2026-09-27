@@ -12,7 +12,7 @@
                         <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
                             Rombongan Belajar
                             <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 font-semibold border border-emerald-200 dark:border-emerald-800">
-                                {{ setting('app_name', 'SD Anak Saleh') }}
+                                {{ setting('unit_name', 'SD Anak Saleh') }}
                             </span>
                         </h2>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Kelola rombongan belajar, alokasi wali kelas, dan kuota kapasitas kelas SD.</p>

@@ -387,8 +387,8 @@
         <div class="header">
             <img src="{{ asset('images/logo.png') }}" alt="Logo Sekolah" class="header-logo" onerror="this.src='{{ asset('logo.png') }}'; this.onerror=null;">
             <div class="header-text">
-                <h3>YAYASAN PENDIDIKAN ISLAM ANAK SALEH MALANG</h3>
-                <h1>SD ANAK SALEH</h1>
+                <h3>YAYASAN PENDIDIKAN ANAK SALEH MALANG</h3>
+                <h1>{{ strtoupper(setting('unit_name', 'SD Anak Saleh')) }}</h1>
                 <p>NPSN: 20539745 &bull; Terakreditasi "A" &bull; Jl. Candi Panggung No. 54, Mojolangu, Lowokwaru, Kota Malang</p>
                 <p>Telp: (0341) 480170 &bull; Website: www.sdanaksaleh.sch.id &bull; Email: info@sdanaksaleh.sch.id</p>
             </div>
@@ -557,17 +557,29 @@
         <!-- SIGNATURES SECTION -->
         <div class="signatures">
             <div class="signature-box">
-                <p class="signature-title">Petugas Kesiswaan / Tata Usaha,</p>
+                <p class="signature-title">{{ $tuSigner['title'] ?? 'Tata Usaha,' }}</p>
                 <div class="signature-space"></div>
-                <p class="signature-name">Tri Wulandari, S.Pd</p>
-                <p class="signature-title">NIY. 201208 2 045</p>
+                <p class="signature-name">{{ $tuSigner['name'] ?? 'Admin SD Anak Saleh' }}</p>
+                @if(!empty($tuSigner['niy']))
+                    <p class="signature-title">NIY. {{ $tuSigner['niy'] }}</p>
+                @elseif(!empty($tuSigner['nip']))
+                    <p class="signature-title">NIP. {{ $tuSigner['nip'] }}</p>
+                @else
+                    <p class="signature-title">&nbsp;</p>
+                @endif
             </div>
             <div class="signature-box">
                 <p class="signature-title">Malang, {{ \Carbon\Carbon::now()->isoFormat('D MMMM Y') }}</p>
-                <p class="signature-title">Kepala SD Anak Saleh,</p>
+                <p class="signature-title">{{ $headmasterSigner['title'] ?? ('Kepala ' . setting('unit_name', 'SD Anak Saleh') . ',') }}</p>
                 <div class="signature-space"></div>
-                <p class="signature-name">Drs. H. M. Naim, M.Pd</p>
-                <p class="signature-title">NIY. 200507 1 001</p>
+                <p class="signature-name">{{ $headmasterSigner['name'] ?? 'Andreas Setiyono, S.Pd.Gr., M.Kom.' }}</p>
+                @if(!empty($headmasterSigner['niy']))
+                    <p class="signature-title">NIY. {{ $headmasterSigner['niy'] }}</p>
+                @elseif(!empty($headmasterSigner['nip']))
+                    <p class="signature-title">NIP. {{ $headmasterSigner['nip'] }}</p>
+                @else
+                    <p class="signature-title">&nbsp;</p>
+                @endif
             </div>
         </div>
 

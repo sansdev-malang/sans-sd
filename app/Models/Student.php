@@ -228,8 +228,8 @@ class Student extends Model
     {
         $phone = $this->clean_parent_phone;
         if (!$phone || strlen($phone) < 8) return null;
-        $appName = function_exists('setting') ? setting('app_name', 'SD Anak Saleh') : 'SD Anak Saleh';
-        $text = urlencode("Halo Ayah/Bunda {$this->full_name}, kami dari {$appName}.");
+        $unitName = function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh';
+        $text = urlencode("Halo Ayah/Bunda {$this->full_name}, kami dari {$unitName}.");
         return "https://wa.me/{$phone}?text={$text}";
     }
 

@@ -294,7 +294,7 @@
                 </div>
             @endif
             <div class="header-text">
-                <h1>{{ setting('app_name', 'SD ANAK SALEH') }}</h1>
+                <h1>{{ strtoupper(setting('unit_name', 'SD Anak Saleh')) }}</h1>
                 <h2>YAYASAN PENDIDIKAN ANAK SALEH MALANG</h2>
                 <p>{{ setting('school_address', 'Jl. Arumba No. 31, Tunggulwulung, Kec. Lowokwaru, Kota Malang, Jawa Timur 65143') }}</p>
                 <p>Telp: {{ setting('school_phone', '(0341) 480280') }} | Email: {{ setting('school_email', 'info@sdanaksaleh.sch.id') }}</p>
@@ -392,8 +392,8 @@
         <div class="signatures">
             <div class="signature-box">
                 <div class="role">Mengetahui,<br>Kepala Sekolah</div>
-                <div class="name">{{ setting('headmaster_name', 'Nadhira Ummu Kulsum, M.Pd') }}</div>
-                <div class="nip">NIP. {{ setting('headmaster_nip', '-') }}</div>
+                <div class="name">{{ $headmasterName ?? setting('headmaster_name', 'Andreas Setiyono, S.Pd.Gr., M.Kom.') }}</div>
+                <div class="nip">{{ !empty($headmasterNiy) ? 'NIY. ' . $headmasterNiy : (!empty(setting('headmaster_nip')) ? 'NIP. ' . setting('headmaster_nip') : '') }}</div>
             </div>
 
             <div class="signature-box">

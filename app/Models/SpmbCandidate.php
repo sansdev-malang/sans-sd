@@ -140,8 +140,8 @@ class SpmbCandidate extends Model
             $cleanPhone = '62' . substr($cleanPhone, 1);
         }
 
-        $appName = function_exists('setting') ? setting('app_name', 'SD Anak Saleh') : 'SD Anak Saleh';
-        $message = urlencode("Assalamu'alaikum wr. wb. Ayah/Bunda dari ananda *{$this->full_name}*, kami dari *{$appName}* ingin menginformasikan terkait data pendaftaran SPMB.");
+        $unitName = function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh';
+        $message = urlencode("Assalamu'alaikum wr. wb. Ayah/Bunda dari ananda *{$this->full_name}*, kami dari *{$unitName}* ingin menginformasikan terkait data pendaftaran SPMB.");
         return "https://wa.me/{$cleanPhone}?text={$message}";
     }
 

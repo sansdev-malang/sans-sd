@@ -154,7 +154,7 @@
 
     <!-- Kop Sekolah -->
     <div class="header">
-        <h2>{{ setting('app_name', 'SD ANAK SALEH') }} MALANG</h2>
+        <h2>{{ strtoupper(setting('unit_name', 'SD Anak Saleh Malang')) }}</h2>
         <h3>YAYASAN PENDIDIKAN ANAK SALEH</h3>
         <p>Jl. Arumba No. 31, Tunggulwulung, Lowokwaru, Kota Malang, Jawa Timur | Telp: (0341) 480111</p>
     </div>

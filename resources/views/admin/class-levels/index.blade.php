@@ -15,7 +15,7 @@
                                 Master Akademik
                             </span>
                         </h2>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Kelola master jenjang dan tingkatan kelas di {{ setting('app_name', 'SD Anak Saleh') }} (Kelas 1 s/d Kelas 6).</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Kelola master jenjang dan tingkatan kelas di {{ setting('unit_name', 'SD Anak Saleh') }} (Kelas 1 s/d Kelas 6).</p>
                     </div>
                 </div>
             </div>

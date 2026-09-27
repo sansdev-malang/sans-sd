@@ -7,6 +7,7 @@ use App\Models\ClassLevel;
 use App\Models\Classroom;
 use App\Models\Employee;
 use App\Models\Student;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -248,14 +249,14 @@ class StudentController extends Controller
         $filterData = $this->getFilteredStudentsQuery($request);
         $students = $filterData['query']->orderBy('classroom_id', 'asc')->orderBy('full_name', 'asc')->get();
         $selectedYearName = $filterData['selectedYearName'] ?: 'Semua Tapel';
-        $appName = function_exists('setting') ? setting('app_name', 'SD Anak Saleh') : 'SD Anak Saleh';
+        $unitName = function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh';
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Data Siswa');
 
         // Document Titles
-        $sheet->setCellValue('A1', "DATA PESERTA DIDIK " . strtoupper($appName));
+        $sheet->setCellValue('A1', "DATA PESERTA DIDIK " . strtoupper($unitName));
         $sheet->setCellValue('A2', "Tahun Pelajaran: " . $selectedYearName . " | Dicetak: " . date('d/m/Y H:i') . " WIB");
         
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14)->getColor()->setRGB('1E1B4B');
@@ -440,7 +441,7 @@ class StudentController extends Controller
         }
 
         $cleanYear = str_replace(['/', ' '], '_', $selectedYearName);
-        $fileName = 'Data_Siswa_' . str_replace([' ', '.'], '_', $appName) . '_' . $cleanYear . '_' . date('Ymd_His') . '.xlsx';
+        $fileName = 'Data_Siswa_' . str_replace([' ', '.'], '_', $unitName) . '_' . $cleanYear . '_' . date('Ymd_His') . '.xlsx';
 
         if ($request->filled('download_token')) {
             setcookie('download_token', $request->query('download_token'), time() + 60, '/', '', false, false);
@@ -453,6 +454,49 @@ class StudentController extends Controller
         $writer = new Xlsx($spreadsheet);
         $writer->save('php://output');
         exit;
+    }
+
+    /**
+     * Get dynamic official signers (Tata Usaha from admin_sd role & Kepala Sekolah) for documents.
+     */
+    protected function getDocumentSigners(): array
+    {
+        $unitName = function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh';
+
+        // 1. Tata Usaha (Admin Unit)
+        $tuName = 'Admin SD Anak Saleh';
+        $tuNiy = null;
+        $tuNip = null;
+
+        // 2. Kepala Sekolah (User with role kepala_sekolah or Employee with position Kepala Sekolah)
+        $headmasterUser = User::where('role', 'kepala_sekolah')
+            ->whereNotNull('employee_id')
+            ->with('employee')
+            ->first();
+
+        $headmasterEmployee = $headmasterUser?->employee
+            ?: Employee::where('position', 'like', '%Kepala Sekolah%')->first();
+
+        $headmasterName = $headmasterEmployee ? $headmasterEmployee->name : ($headmasterUser?->name ?? 'Kepala Sekolah');
+        $headmasterNiy = $headmasterEmployee?->niy ?? $headmasterEmployee?->nuptk ?? null;
+        $headmasterNip = $headmasterEmployee?->nik ?? null;
+
+        $unitName = function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh';
+
+        return [
+            'tu' => [
+                'title' => 'Tata Usaha,',
+                'name' => $tuName,
+                'niy' => $tuNiy,
+                'nip' => $tuNip,
+            ],
+            'headmaster' => [
+                'title' => 'Kepala ' . $unitName . ',',
+                'name' => $headmasterName,
+                'niy' => $headmasterNiy,
+                'nip' => $headmasterNip,
+            ],
+        ];
     }
 
     /**
@@ -473,6 +517,8 @@ class StudentController extends Controller
             $selectedClassroom = Classroom::with('classLevel')->find($request->get('classroom_id'));
         }
 
+        $signers = $this->getDocumentSigners();
+
         return view('admin.students.print', [
             'students' => $students,
             'selectedYear' => $filterData['selectedYear'],
@@ -483,6 +529,8 @@ class StudentController extends Controller
             'selectedStudentType' => $request->get('student_type'),
             'selectedStatus' => $request->get('status'),
             'searchQuery' => $request->get('search'),
+            'tuSigner' => $signers['tu'],
+            'headmasterSigner' => $signers['headmaster'],
         ]);
     }
 
@@ -495,7 +543,7 @@ class StudentController extends Controller
         $filterData = $this->getFilteredStudentsQuery($request);
         $students = $filterData['query']->orderBy('classroom_id', 'asc')->orderBy('full_name', 'asc')->get();
         $selectedYearName = $filterData['selectedYearName'] ?: 'Semua_Tapel';
-        $appName = function_exists('setting') ? setting('app_name', 'SD Anak Saleh') : 'SD Anak Saleh';
+        $unitName = function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh';
 
         $selectedClassLevel = null;
         if ($request->filled('class_level_id') && $request->get('class_level_id') !== 'all') {
@@ -507,6 +555,8 @@ class StudentController extends Controller
             $selectedClassroom = Classroom::with('classLevel')->find($request->get('classroom_id'));
         }
 
+        $signers = $this->getDocumentSigners();
+
         $data = [
             'students' => $students,
             'selectedYear' => $filterData['selectedYear'],
@@ -517,11 +567,14 @@ class StudentController extends Controller
             'selectedStudentType' => $request->get('student_type'),
             'selectedStatus' => $request->get('status'),
             'searchQuery' => $request->get('search'),
-            'appName' => $appName,
+            'unitName' => $unitName,
+            'appName' => $unitName,
+            'tuSigner' => $signers['tu'],
+            'headmasterSigner' => $signers['headmaster'],
         ];
 
         $cleanYear = str_replace(['/', ' '], '_', $selectedYearName);
-        $fileName = 'Data_Siswa_' . str_replace([' ', '.'], '_', $appName) . '_' . $cleanYear . '.pdf';
+        $fileName = 'Data_Siswa_' . str_replace([' ', '.'], '_', $unitName) . '_' . $cleanYear . '.pdf';
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.students.pdf', $data)
             ->setPaper('a4', 'landscape')

@@ -142,8 +142,8 @@
     <table class="header-table">
         <tr>
             <td class="header-text">
-                <h3>YAYASAN PENDIDIKAN ISLAM ANAK SALEH MALANG</h3>
-                <h1>SD ANAK SALEH</h1>
+                <h3>YAYASAN PENDIDIKAN ANAK SALEH MALANG</h3>
+                <h1>{{ strtoupper(setting('unit_name', 'SD Anak Saleh')) }}</h1>
                 <p>NPSN: 20539745 &bull; Terakreditasi "A" &bull; Jl. Candi Panggung No. 54, Mojolangu, Lowokwaru, Kota Malang</p>
                 <p>Telp: (0341) 480170 &bull; Website: www.sdanaksaleh.sch.id &bull; Email: info@sdanaksaleh.sch.id</p>
             </td>
@@ -277,17 +277,17 @@
     <table class="signatures-table">
         <tr>
             <td width="50%">
-                Petugas Kesiswaan / Tata Usaha,
+                {{ $tuSigner['title'] ?? 'Tata Usaha,' }}
                 <div class="sig-space"></div>
-                <div class="sig-name">Tri Wulandari, S.Pd</div>
-                <div>NIY. 201208 2 045</div>
+                <div class="sig-name">{{ $tuSigner['name'] ?? 'Admin SD Anak Saleh' }}</div>
+                <div>{{ !empty($tuSigner['niy']) ? 'NIY. ' . $tuSigner['niy'] : (!empty($tuSigner['nip']) ? 'NIP. ' . $tuSigner['nip'] : '') }}</div>
             </td>
             <td width="50%">
                 Malang, {{ \Carbon\Carbon::now()->isoFormat('D MMMM Y') }}<br>
-                Kepala SD Anak Saleh,
+                {{ $headmasterSigner['title'] ?? ('Kepala ' . setting('unit_name', 'SD Anak Saleh') . ',') }}
                 <div class="sig-space"></div>
-                <div class="sig-name">Drs. H. M. Naim, M.Pd</div>
-                <div>NIY. 200507 1 001</div>
+                <div class="sig-name">{{ $headmasterSigner['name'] ?? 'Andreas Setiyono, S.Pd.Gr., M.Kom.' }}</div>
+                <div>{{ !empty($headmasterSigner['niy']) ? 'NIY. ' . $headmasterSigner['niy'] : (!empty($headmasterSigner['nip']) ? 'NIP. ' . $headmasterSigner['nip'] : '') }}</div>
             </td>
         </tr>
     </table>
