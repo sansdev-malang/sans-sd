@@ -1347,10 +1347,10 @@
                         <div x-show="activeFormTab === 7" class="space-y-4">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Rombongan Belajar (Kelas) <span class="text-rose-500">*</span></label>
-                                    <select x-model="formData.classroom_id" required
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Rombongan Belajar (Kelas) <span class="text-slate-400 text-[10px] font-normal">(Opsional)</span></label>
+                                    <select x-model="formData.classroom_id"
                                         class="w-full h-8.5 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer">
-                                        <option value="">Pilih Rombel...</option>
+                                        <option value="">Belum Ada Rombel / Tanpa Kelas</option>
                                         @foreach($allClassrooms as $r)
                                             <option value="{{ $r->id }}">
                                                 {{ $r->full_name }} (Tapel {{ $r->academicYear->name ?? '-' }})

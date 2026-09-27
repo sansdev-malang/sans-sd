@@ -760,16 +760,20 @@ class StudentController extends Controller
             'checklist_documents' => 'nullable|array',
 
             // Penempatan Kelas & Status
-            'classroom_id' => 'required|exists:classrooms,id',
+            'classroom_id' => 'nullable|exists:classrooms,id',
             'academic_year_id' => 'nullable|exists:academic_years,id',
             'status' => 'required|string|in:aktif,lulus,mutasi,keluar,nonaktif',
             'enrolled_date' => 'nullable|date',
             'notes' => 'nullable|string',
         ]);
 
+        $validated['classroom_id'] = !empty($validated['classroom_id']) ? $validated['classroom_id'] : null;
+
         if (empty($validated['academic_year_id'])) {
-            $classroom = Classroom::find($validated['classroom_id']);
-            $validated['academic_year_id'] = $classroom?->academic_year_id;
+            if (!empty($validated['classroom_id'])) {
+                $classroom = Classroom::find($validated['classroom_id']);
+                $validated['academic_year_id'] = $classroom?->academic_year_id;
+            }
             
             if (empty($validated['academic_year_id'])) {
                 $activeAY = AcademicYear::where('is_active', true)->first();
@@ -918,12 +922,14 @@ class StudentController extends Controller
             'checklist_documents' => 'nullable|array',
 
             // Penempatan Kelas & Status
-            'classroom_id' => 'required|exists:classrooms,id',
+            'classroom_id' => 'nullable|exists:classrooms,id',
             'academic_year_id' => 'nullable|exists:academic_years,id',
             'status' => 'required|string|in:aktif,lulus,mutasi,keluar,nonaktif',
             'enrolled_date' => 'nullable|date',
             'notes' => 'nullable|string',
         ]);
+
+        $validated['classroom_id'] = !empty($validated['classroom_id']) ? $validated['classroom_id'] : null;
 
         if (array_key_exists('enrolled_date', $validated) && empty($validated['enrolled_date'])) {
             $validated['enrolled_date'] = null;
