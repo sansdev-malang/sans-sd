@@ -1548,10 +1548,20 @@
                 init() {
                     const urlParams = new URLSearchParams(window.location.search);
                     const editStudentId = urlParams.get('edit_student_id');
+                    const openCreate = urlParams.get('open_create');
+
                     if (editStudentId) {
                         this.openEditModal(editStudentId);
-                    } else if (urlParams.get('open_create')) {
+                        // Bersihkan parameter dari URL browser agar refresh tidak memicu buka modal berulang
+                        urlParams.delete('edit_student_id');
+                        const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+                        window.history.replaceState({}, '', newUrl);
+                    } else if (openCreate) {
                         this.openCreateModal();
+                        // Bersihkan parameter dari URL browser agar refresh tidak memicu buka modal berulang
+                        urlParams.delete('open_create');
+                        const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+                        window.history.replaceState({}, '', newUrl);
                     }
                 },
                 detailModalOpen: false,
@@ -1981,7 +1991,10 @@
                             if (window.setPendingToast) {
                                 window.setPendingToast(res.message || 'Data siswa berhasil disimpan!', 'success');
                             }
-                            window.location.reload();
+                            const cleanUrl = new URL(window.location.href);
+                            cleanUrl.searchParams.delete('edit_student_id');
+                            cleanUrl.searchParams.delete('open_create');
+                            window.location.href = cleanUrl.toString();
                         } else {
                             if (window.showToastNotification) {
                                 window.showToastNotification(res.message || 'Terjadi kesalahan saat menyimpan.', 'error');
