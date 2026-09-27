@@ -1544,6 +1544,15 @@
 
         function studentApp() {
             return {
+                init() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const editStudentId = urlParams.get('edit_student_id');
+                    if (editStudentId) {
+                        this.openEditModal(editStudentId);
+                    } else if (urlParams.get('open_create')) {
+                        this.openCreateModal();
+                    }
+                },
                 detailModalOpen: false,
                 formModalOpen: false,
                 importModalOpen: false,

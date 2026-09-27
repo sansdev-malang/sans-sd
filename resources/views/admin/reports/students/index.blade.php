@@ -411,7 +411,7 @@
                                         @endif
                                     </td>
                                     <td class="px-3 py-2.5">
-                                        <a href="{{ route('students.edit', $us->id) }}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white shadow-xs transition-colors" title="Klik untuk menentukan rombel siswa ini">
+                                        <a href="{{ route('students.index', ['edit_student_id' => $us->id, 'search' => $us->nis ?: $us->full_name]) }}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white shadow-xs transition-colors" title="Klik untuk menentukan rombel siswa ini">
                                             <i data-lucide="edit-3" class="w-3 h-3"></i>
                                             <span>Tentukan Rombel</span>
                                         </a>

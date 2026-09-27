@@ -626,6 +626,29 @@ class StudentController extends Controller
     }
 
     /**
+     * Show the form for creating a new student.
+     */
+    public function create()
+    {
+        return redirect()->route('students.index', ['open_create' => 1]);
+    }
+
+    /**
+     * Show the form for editing the specified student.
+     * Redirects to the students index with the student's edit modal triggered.
+     */
+    public function edit($id)
+    {
+        $student = Student::findOrFail($id);
+
+        return redirect()->route('students.index', [
+            'search' => $student->nis ?: $student->full_name,
+            'edit_student_id' => $student->id,
+            'academic_year_id' => $student->academic_year_id,
+        ]);
+    }
+
+    /**
      * Store a newly created student in storage (All 7 categories).
      */
     public function store(Request $request): JsonResponse
