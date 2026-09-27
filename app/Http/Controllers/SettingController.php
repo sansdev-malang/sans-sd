@@ -96,6 +96,10 @@ class SettingController extends Controller
                 @mkdir($iconDir, 0775, true);
             }
 
+            if (is_dir($iconDir) && !is_writable($iconDir)) {
+                @chmod($iconDir, 0775);
+            }
+
             if ($logoRelativePath && Storage::disk('public')->exists($logoRelativePath)) {
                 $fullPath = Storage::disk('public')->path($logoRelativePath);
                 $imgData = @file_get_contents($fullPath);
