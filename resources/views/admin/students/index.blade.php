@@ -9,11 +9,8 @@
                         <i data-lucide="users" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
+                        <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
                             Daftar Siswa
-                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 font-semibold border border-indigo-200 dark:border-indigo-800">
-                                {{ setting('app_name', 'SD Anak Saleh') }}
-                            </span>
                         </h2>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Database komprehensif peserta didik, riwayat kelas, inklusi, dan orang tua {{ setting('app_name', 'SD Anak Saleh') }}.</p>
                     </div>
@@ -32,12 +29,6 @@
                         {{ $activeAcademicYear ? $activeAcademicYear->name : '2026/2027' }}
                     </span>
                 </div>
-
-                <a href="{{ route('student-reports.index') }}"
-                    class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-800 shadow-xs transition-all cursor-pointer">
-                    <i data-lucide="file-bar-chart-2" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
-                    Rekapitulasi Rombel
-                </a>
 
                 <button type="button" @click="importModalOpen = true"
                     class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-800 shadow-xs transition-all cursor-pointer">
@@ -59,11 +50,6 @@
                     Cetak / PDF
                 </a>
 
-                <a href="{{ route('spmb.candidates.index') }}"
-                    class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-800 shadow-xs transition-all cursor-pointer">
-                    <i data-lucide="user-check" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
-                    Siswa SPMB
-                </a>
                 <button type="button" @click="openCreateModal()"
                     class="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer">
                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -264,22 +250,6 @@
                             <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
                         </a>
                     @endif
-
-                    <!-- Quick Export Filtered Data -->
-                    <div class="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs overflow-hidden h-8.5">
-                        <a href="{{ route('students.export.excel', request()->all()) }}" 
-                            class="px-2.5 h-full inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors border-r border-slate-200 dark:border-slate-800"
-                            title="Ekspor Data Siswa Terfilter ke Excel (.xlsx)">
-                            <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
-                            <span>Excel</span>
-                        </a>
-                        <a href="{{ route('students.print', request()->all()) }}" target="_blank"
-                            class="px-2.5 h-full inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
-                            title="Cetak atau PDF Data Siswa Terfilter">
-                            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                            <span>Cetak</span>
-                        </a>
-                    </div>
                 </div>
             </form>
         </section>
