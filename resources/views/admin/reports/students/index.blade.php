@@ -214,7 +214,7 @@
                             <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider w-24 text-blue-600 dark:text-blue-400">Laki-Laki</th>
                             <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider w-24 text-pink-600 dark:text-pink-400">Perempuan</th>
                             <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider w-28 text-slate-900 dark:text-slate-100">Jml Siswa</th>
-                            <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider w-28 text-purple-600 dark:text-purple-400">Inklusi (PDBK)</th>
+                            <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider w-28 text-purple-600 dark:text-purple-400">PDBK</th>
                             <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider min-w-[180px]">Wali Kelas</th>
                             <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider min-w-[200px]">Guru Pendamping (GPK)</th>
                         </tr>
