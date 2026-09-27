@@ -268,7 +268,10 @@ class SpmbIntegrationService
                 // Academic
                 'target_unit' => $unit['code'] ?? ($unit['name'] ?? ($payload['target_unit'] ?? 'SD')),
                 'target_class' => $payload['class_program'] ?? ($payload['target_class'] ?? 'Kelas 1'),
-                'academic_year' => $payload['period'] ?? ($payload['academic_year'] ?? null),
+                'academic_year' => (function() use ($payload) {
+                    $raw = $payload['period'] ?? ($payload['academic_year'] ?? null);
+                    return $raw ? str_replace('-', '/', trim((string)$raw)) : null;
+                })(),
                 'wave' => $payload['wave'] ?? null,
 
                 // Contact & Parents
