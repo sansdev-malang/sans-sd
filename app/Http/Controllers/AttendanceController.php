@@ -33,6 +33,7 @@ class AttendanceController extends Controller
         $monthCarbon = \Carbon\Carbon::parse($month . '-01');
         $isPastMonth = $monthCarbon->copy()->endOfMonth()->isPast();
         $previousMonth = $monthCarbon->copy()->subMonthNoOverflow()->format('Y-m');
+        $isPrevPastMonth = \Carbon\Carbon::parse($previousMonth . '-01')->endOfMonth()->isPast();
         $nextMonth = $monthCarbon->copy()->addMonthNoOverflow()->format('Y-m');
 
         // Past months: 86400s (1 day). Current active month: always fetched live for real-time synchronization.
@@ -60,9 +61,9 @@ class AttendanceController extends Controller
         try {
             // Only use cache for past months; current active month is always fetched live
             $matrixData = $isPastMonth ? \Illuminate\Support\Facades\Cache::get($matrixCacheKey) : null;
-            $prevMatrixData = \Illuminate\Support\Facades\Cache::get($prevMatrixCacheKey);
+            $prevMatrixData = $isPrevPastMonth ? \Illuminate\Support\Facades\Cache::get($prevMatrixCacheKey) : null;
             $bonusData = $isPastMonth ? \Illuminate\Support\Facades\Cache::get($bonusCacheKey) : null;
-            $prevBonusData = \Illuminate\Support\Facades\Cache::get($prevBonusCacheKey);
+            $prevBonusData = $isPrevPastMonth ? \Illuminate\Support\Facades\Cache::get($prevBonusCacheKey) : null;
             $nextBonusData = null; // Next month is dynamic
 
             $needsEmployeeData = $user && $user->role === 'employee' && $user->employee_id;
@@ -139,7 +140,9 @@ class AttendanceController extends Controller
                 }
                 if (isset($responses['prev_matrix']) && $responses['prev_matrix'] instanceof \Illuminate\Http\Client\Response && $responses['prev_matrix']->successful()) {
                     $prevMatrixData = $responses['prev_matrix']->json();
-                    \Illuminate\Support\Facades\Cache::put($prevMatrixCacheKey, $prevMatrixData, $cacheTtlPast);
+                    if ($isPrevPastMonth) {
+                        \Illuminate\Support\Facades\Cache::put($prevMatrixCacheKey, $prevMatrixData, $cacheTtlPast);
+                    }
                     \Illuminate\Support\Facades\Cache::put($prevMatrixCacheKey . '_stale', $prevMatrixData, 604800);
                 }
                 if (isset($responses['curr_bonus']) && $responses['curr_bonus'] instanceof \Illuminate\Http\Client\Response && $responses['curr_bonus']->successful()) {
@@ -151,7 +154,9 @@ class AttendanceController extends Controller
                 }
                 if (isset($responses['prev_bonus']) && $responses['prev_bonus'] instanceof \Illuminate\Http\Client\Response && $responses['prev_bonus']->successful()) {
                     $prevBonusData = $responses['prev_bonus']->json();
-                    \Illuminate\Support\Facades\Cache::put($prevBonusCacheKey, $prevBonusData, $cacheTtlPast);
+                    if ($isPrevPastMonth) {
+                        \Illuminate\Support\Facades\Cache::put($prevBonusCacheKey, $prevBonusData, $cacheTtlPast);
+                    }
                     \Illuminate\Support\Facades\Cache::put($prevBonusCacheKey . '_stale', $prevBonusData, 604800);
                 }
                 if (isset($responses['next_bonus']) && $responses['next_bonus'] instanceof \Illuminate\Http\Client\Response && $responses['next_bonus']->successful()) {
@@ -187,7 +192,7 @@ class AttendanceController extends Controller
                 if ($currentReport && $previousReport) {
                     $currentDetails = $currentReport['daily_details'] ?? [];
                     $previousDetails = $previousReport['daily_details'] ?? [];
-                    $currentReport['daily_details'] = $previousDetails + $currentDetails;
+                    $currentReport['daily_details'] = array_replace($previousDetails, $currentDetails);
                     $reports = collect([$currentReport]);
                 } elseif ($currentReport) {
                     $reports = collect([$currentReport]);
@@ -225,10 +230,10 @@ class AttendanceController extends Controller
                         $bonusDetails = $prevBonus['daily_details'];
                     }
                     if ($currentBonus && isset($currentBonus['daily_details'])) {
-                        $bonusDetails = $bonusDetails + $currentBonus['daily_details'];
+                        $bonusDetails = array_replace($bonusDetails, $currentBonus['daily_details']);
                     }
                     if ($nextBonus && isset($nextBonus['daily_details'])) {
-                        $bonusDetails = $bonusDetails + $nextBonus['daily_details'];
+                        $bonusDetails = array_replace($bonusDetails, $nextBonus['daily_details']);
                     }
 
                     if (isset($report['daily_details'])) {

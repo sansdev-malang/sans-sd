@@ -558,7 +558,7 @@
             </div>
 
             <!-- Details (Check In & Check Out) -->
-            <template x-if="tooltip.status === 'Hadir'">
+            <template x-if="tooltip.status === 'Hadir' || (tooltip.checkIn && tooltip.checkIn !== '--:--')">
                 <div class="space-y-2">
                     <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                         <div class="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-lg p-1.5 border border-slate-100/50 dark:border-slate-800 text-center">
@@ -580,7 +580,7 @@
                     </div>
                 </div>
             </template>
-            <template x-if="tooltip.status !== 'Hadir' && tooltip.bonus > 0">
+            <template x-if="tooltip.status !== 'Hadir' && !(tooltip.checkIn && tooltip.checkIn !== '--:--') && tooltip.bonus > 0">
                 <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
                     <div class="flex items-center justify-between bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/30 dark:border-emerald-900/30 rounded-lg px-2 py-1.5 text-[10px]">
                         <span class="text-slate-500 dark:text-slate-400 font-medium">Bonus Ketepatan Waktu</span>
