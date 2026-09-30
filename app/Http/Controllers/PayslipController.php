@@ -11,8 +11,10 @@ class PayslipController extends Controller
 {
     public function index(Request $request)
     {
-        $lastMonth = Carbon::now()->subMonth()->format('Y-m');
-        $month = $request->input('month', $lastMonth);
+        $cutoffDate = (int) \App\Models\Setting::get('payroll_cutoff_date', 25);
+        $today = Carbon::now();
+        $defaultPeriod = $today->day > $cutoffDate ? $today->format('Y-m') : $today->copy()->subMonth()->format('Y-m');
+        $month = $request->input('month', $defaultPeriod);
         $schoolUnit = config('app.school_unit', 'sd');
 
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
