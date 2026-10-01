@@ -225,7 +225,9 @@ class SettingController extends Controller
         $dbError = null;
 
         try {
-            config(['database.connections.sans_rapor.database' => $raporDb]);
+            $baseConfig = config('database.connections.sans_rapor') ?: config('database.connections.mysql');
+            $baseConfig['database'] = $raporDb;
+            config(['database.connections.sans_rapor' => $baseConfig]);
             \Illuminate\Support\Facades\DB::purge('sans_rapor');
             \Illuminate\Support\Facades\DB::connection('sans_rapor')->getPdo();
             $dbStatus = true;
