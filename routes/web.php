@@ -71,6 +71,30 @@ Route::post('/leaves/{id}/approve', [\App\Http\Controllers\LeaveRequestControlle
 Route::post('/leaves/{id}/reject', [\App\Http\Controllers\LeaveRequestController::class, 'reject'])->middleware(['auth', 'verified', 'role:admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->name('leaves.reject');
 
 
+// Rekap & Hasil Rapor (1-Click SSO to SANS Rapor)
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/rapor', function () {
+        $ssoSecret = \App\Models\Setting::get('rapor_sso_secret', env('SSO_SECRET_KEY', 'sans_rapor_secret_sso_key_2026'));
+        $raporUrl = \App\Models\Setting::get('rapor_url', env('SANS_RAPOR_URL', 'http://sans-rapor.test'));
+        $curUser = auth()->user();
+        $isAdmin = in_array($curUser?->role, ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp']);
+        $ssoPayload = base64_encode(json_encode([
+            'id' => $curUser?->id,
+            'name' => $curUser?->name,
+            'email' => $curUser?->email,
+            'employee_id' => $curUser?->employee_id,
+            'role' => $isAdmin ? 'super_admin' : 'guru',
+            'unit' => 'sd',
+            'timestamp' => time(),
+        ]));
+        $ssoSig = hash_hmac('sha256', $ssoPayload, $ssoSecret);
+        return redirect("{$raporUrl}/sso/login?data=" . urlencode($ssoPayload) . "&signature=" . urlencode($ssoSig));
+    })->name('report-cards.index');
+
+    Route::get('report-cards', fn() => redirect()->route('report-cards.index'));
+    Route::get('report-cards/{any}', fn() => redirect()->route('report-cards.index'))->where('any', '.*');
+});
+
 // SPMB Webhook Receiver (Real-time Push)
 Route::post('/api/spmb-webhook', [\App\Http\Controllers\Api\SpmbWebhookController::class, 'handleWebhook'])->name('api.spmb-webhook');
 
@@ -78,6 +102,7 @@ Route::middleware(['auth', 'verified', 'role:super_admin'])->group(function () {
     Route::get('/settings', [SettingController::class, 'index'])->name('settings');
     Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     Route::post('/settings/test-spmb-connection', [SettingController::class, 'testSpmbConnection'])->name('spmb.test-connection');
+    Route::post('/settings/test-rapor-connection', [SettingController::class, 'testRaporConnection'])->name('settings.test-rapor');
     Route::resource('users', \App\Http\Controllers\UserController::class);
 });
 

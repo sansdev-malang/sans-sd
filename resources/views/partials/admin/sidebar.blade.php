@@ -123,6 +123,41 @@
             </nav>
         </div>
 
+        <!-- Group: Rapor & Penilaian (Kurikulum Merdeka) SSO Launcher -->
+        @php
+            $ssoSecret = \App\Models\Setting::get('rapor_sso_secret', env('SSO_SECRET_KEY', 'sans_rapor_secret_sso_key_2026'));
+            $raporUrl = \App\Models\Setting::get('rapor_url', env('SANS_RAPOR_URL', 'http://sans-rapor.test'));
+            $curUser = auth()->user();
+            $ssoPayload = base64_encode(json_encode([
+                'id' => $curUser?->id,
+                'name' => $curUser?->name,
+                'email' => $curUser?->email,
+                'employee_id' => $curUser?->employee_id,
+                'role' => $isAdmin ? 'super_admin' : 'guru',
+                'unit' => 'sd',
+                'timestamp' => time(),
+            ]));
+            $ssoSig = hash_hmac('sha256', $ssoPayload, $ssoSecret);
+            $raporLink = "{$raporUrl}/sso/login?data=" . urlencode($ssoPayload) . "&signature=" . urlencode($ssoSig);
+        @endphp
+        <div>
+            <h3 class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
+                Rapor & Penilaian
+            </h3>
+            <nav class="space-y-1">
+                <a href="{{ $raporLink }}" target="_blank" class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50 text-xs font-medium relative group transition-colors">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="award" class="menu-icon w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
+                        <span class="menu-text">Aplikasi E-Rapor</span>
+                    </div>
+                    <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-400 opacity-50 group-hover:opacity-100"></i>
+                    <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
+                        Aplikasi E-Rapor
+                    </span>
+                </a>
+            </nav>
+        </div>
+
         @if($isAdmin)
         <!-- Group 2: Akademik & Kesiswaan -->
         <div>

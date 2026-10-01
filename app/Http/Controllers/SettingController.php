@@ -35,6 +35,9 @@ class SettingController extends Controller
             'spmb_api_url' => 'nullable|url|max:255',
             'spmb_api_token' => 'nullable|string|max:255',
             'spmb_webhook_secret' => 'nullable|string|max:255',
+            'rapor_url' => 'nullable|url|max:255',
+            'rapor_sso_secret' => 'nullable|string|max:255',
+            'rapor_db_name' => 'nullable|string|max:255',
         ]);
 
         // Save text fields
@@ -50,6 +53,9 @@ class SettingController extends Controller
             'spmb_api_url',
             'spmb_api_token',
             'spmb_webhook_secret',
+            'rapor_url',
+            'rapor_sso_secret',
+            'rapor_db_name',
         ];
 
         foreach ($fields as $field) {
@@ -204,5 +210,38 @@ class SettingController extends Controller
     {
         $result = $service->testConnection();
         return response()->json($result, $result['success'] ? 200 : 422);
+    }
+
+    /**
+     * Test connection to SANS Rapor database & system.
+     */
+    public function testRaporConnection(Request $request)
+    {
+        $raporUrl = $request->input('rapor_url') ?: Setting::get('rapor_url', env('SANS_RAPOR_URL', 'http://sans-rapor.test'));
+        $raporDb = $request->input('rapor_db_name') ?: Setting::get('rapor_db_name', env('DB_RAPOR_DATABASE', 'sans-rapor'));
+        $ssoSecret = $request->input('rapor_sso_secret') ?: Setting::get('rapor_sso_secret', env('SSO_SECRET_KEY', 'sans_rapor_secret_sso_key_2026'));
+
+        $dbStatus = false;
+        $dbError = null;
+
+        try {
+            config(['database.connections.sans_rapor.database' => $raporDb]);
+            \Illuminate\Support\Facades\DB::purge('sans_rapor');
+            \Illuminate\Support\Facades\DB::connection('sans_rapor')->getPdo();
+            $dbStatus = true;
+        } catch (\Throwable $e) {
+            $dbError = $e->getMessage();
+        }
+
+        return response()->json([
+            'success' => $dbStatus,
+            'db_status' => $dbStatus,
+            'db_name' => $raporDb,
+            'db_error' => $dbError,
+            'rapor_url' => $raporUrl,
+            'message' => $dbStatus 
+                ? "Koneksi ke Database SANS Rapor ('{$raporDb}') berhasil terhubung!" 
+                : "Gagal terhubung ke Database SANS Rapor: {$dbError}",
+        ]);
     }
 }

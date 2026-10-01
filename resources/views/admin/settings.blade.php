@@ -22,9 +22,9 @@
                 :class="activeTab === 'integrations' ? 'border-slate-900 text-slate-900 dark:border-slate-100 dark:text-slate-100 font-bold' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:border-slate-300 font-semibold'"
                 class="pb-3 px-4 text-xs border-b-2 flex items-center gap-2 transition-all cursor-pointer">
                 <i data-lucide="cpu" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
-                <span>Integrasi API (HRD & SPMB)</span>
+                <span>Integrasi API & E-Rapor</span>
                 <span class="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                    2 Aktif
+                    3 Aktif
                 </span>
             </button>
         </div>
@@ -172,10 +172,59 @@
 
             </div>
 
-            <!-- TAB 2: INTEGRASI API (HRD & SPMB) -->
+            <!-- TAB 2: INTEGRASI API (HRD, SPMB & E-RAPOR) -->
             <div x-show="activeTab === 'integrations'" x-cloak class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                <!-- Card 1: Integrasi API HRD Pusat -->
+                <!-- Card 1: Integrasi E-Rapor Terpusat (SANS Rapor) -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden flex flex-col justify-between">
+                    <div>
+                        <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    Integrasi E-Rapor Terpusat
+                                </h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Koneksi modul rapor terpusat, autentikasi 1-Click SSO, dan database SANS Rapor.</p>
+                            </div>
+                            <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-md border border-emerald-200 dark:border-emerald-800">
+                                SANS Rapor
+                            </span>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <!-- Rapor URL -->
+                            <div>
+                                <label for="rapor_url" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">URL Aplikasi E-Rapor</label>
+                                <input type="url" name="rapor_url" id="rapor_url" value="{{ old('rapor_url', setting('rapor_url', env('SANS_RAPOR_URL', 'http://sans-rapor.test'))) }}" placeholder="contoh: https://rapor.sekolahanaksaleh.sch.id"
+                                    class="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700 transition-colors font-mono">
+                            </div>
+
+                            <!-- SSO Secret Key -->
+                            <div>
+                                <label for="rapor_sso_secret" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">SSO Secret Key (Handshake Sign-On)</label>
+                                <input type="text" name="rapor_sso_secret" id="rapor_sso_secret" value="{{ old('rapor_sso_secret', setting('rapor_sso_secret', env('SSO_SECRET_KEY', 'sans_rapor_secret_sso_key_2026'))) }}" placeholder="sans_rapor_secret_sso_key_2026"
+                                    class="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700 transition-colors font-mono">
+                            </div>
+
+                            <!-- Database Name -->
+                            <div>
+                                <label for="rapor_db_name" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Nama Database SANS Rapor (MySQL)</label>
+                                <input type="text" name="rapor_db_name" id="rapor_db_name" value="{{ old('rapor_db_name', setting('rapor_db_name', env('DB_RAPOR_DATABASE', 'sans-rapor'))) }}" placeholder="sans-rapor"
+                                    class="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700 transition-colors font-mono">
+                            </div>
+
+                            <!-- Test Connection Button -->
+                            <div class="pt-2 flex items-center justify-between">
+                                <button type="button" id="btn-test-rapor" onclick="testRaporConnection()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-xs">
+                                    <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+                                    <span>Tes Koneksi SANS Rapor</span>
+                                </button>
+                                <div id="rapor-test-result" class="text-xs font-semibold"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Integrasi API HRD Pusat -->
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
@@ -335,9 +384,55 @@
                 if (window.lucide) lucide.createIcons();
 
                 if (res.ok && res.data.success) {
-                    resultBox.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">✓ ${res.data.message}</span>`;
+                    resultBox.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-semibold">✓ ${res.data.message}</span>`;
                 } else {
-                    resultBox.innerHTML = `<span class="text-red-500 dark:text-red-400 flex items-center gap-1">✕ ${res.data.message || 'Gagal terhubung ke SPMB'}</span>`;
+                    resultBox.innerHTML = `<span class="text-red-500 dark:text-red-400 flex items-center gap-1 font-semibold">✕ ${res.data.message || 'Gagal terhubung ke SPMB'}</span>`;
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                if (window.lucide) lucide.createIcons();
+                resultBox.innerHTML = `<span class="text-red-500 dark:text-red-400">✕ Terjadi kesalahan jaringan (${err.message})</span>`;
+            });
+        }
+
+        function testRaporConnection() {
+            const btn = document.getElementById('btn-test-rapor');
+            const resultBox = document.getElementById('rapor-test-result');
+            const originalHtml = btn.innerHTML;
+
+            const raporUrl = document.getElementById('rapor_url')?.value || '';
+            const raporSsoSecret = document.getElementById('rapor_sso_secret')?.value || '';
+            const raporDbName = document.getElementById('rapor_db_name')?.value || '';
+
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-3.5 w-3.5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Memeriksa...`;
+            resultBox.innerHTML = `<span class="text-slate-400 font-normal">Menghubungi database SANS Rapor...</span>`;
+
+            fetch("{{ route('settings.test-rapor') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    rapor_url: raporUrl,
+                    rapor_sso_secret: raporSsoSecret,
+                    rapor_db_name: raporDbName
+                })
+            })
+            .then(res => res.json().then(data => ({ status: res.status, ok: res.ok, data })))
+            .then(res => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                if (window.lucide) lucide.createIcons();
+
+                if (res.ok && res.data.success) {
+                    resultBox.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-semibold">✓ ${res.data.message}</span>`;
+                } else {
+                    resultBox.innerHTML = `<span class="text-red-500 dark:text-red-400 flex items-center gap-1 font-semibold">✕ ${res.data.message || 'Gagal terhubung ke Database SANS Rapor'}</span>`;
                 }
             })
             .catch(err => {
