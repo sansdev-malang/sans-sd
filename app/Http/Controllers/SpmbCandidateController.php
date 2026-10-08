@@ -306,6 +306,26 @@ class SpmbCandidateController extends Controller
 
         $classLevels = \App\Models\ClassLevel::orderBy('order')->get();
 
+        // Match suggested class level from candidate target_class / admission_level
+        $candidateTargetClass = strtolower(trim((string)($candidate->target_class ?: ($candidate->admission_level ?: ''))));
+        $matchedLevel = null;
+        if ($candidate->student && $candidate->student->classroom) {
+            $matchedLevel = $candidate->student->classroom->classLevel;
+        } elseif ($candidateTargetClass) {
+            $matchedLevel = $classLevels->first(function($lvl) use ($candidateTargetClass) {
+                $lvlName = strtolower($lvl->name);
+                $lvlCode = strtolower((string)$lvl->code);
+                return str_contains($candidateTargetClass, $lvlName) 
+                    || $candidateTargetClass === $lvlCode 
+                    || str_contains($candidateTargetClass, "kelas {$lvlCode}")
+                    || str_contains($candidateTargetClass, "kelas {$lvl->order}")
+                    || preg_match('/\b' . $lvl->order . '\b/', $candidateTargetClass);
+            });
+        }
+        if (!$matchedLevel) {
+            $matchedLevel = $classLevels->first();
+        }
+
         // Generate suggested NIS for SD (e.g. 26.SD.001 or 27.SD.001)
         $yearDigits = $matchedYear ? substr(explode('/', $matchedYear->name)[0] ?? '2026', -2) : date('y');
         $prefix = "{$yearDigits}.SD.";
@@ -328,6 +348,7 @@ class SpmbCandidateController extends Controller
             'academic_years' => $academicYears,
             'selected_year_id' => $matchedYear?->id,
             'class_levels' => $classLevels,
+            'selected_class_level_id' => $matchedLevel?->id,
             'classrooms' => $classrooms,
         ]);
     }

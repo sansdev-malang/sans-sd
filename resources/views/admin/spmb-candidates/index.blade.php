@@ -820,14 +820,18 @@
                         <!-- Info Card Calon Siswa -->
                         <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 flex items-center gap-3">
                             <template x-if="enrollData.candidate?.student_photo_url && !enrollData.candidate.student_photo_url.toLowerCase().endsWith('.pdf')">
-                                <img :src="enrollData.candidate.student_photo_url" class="w-10 h-10 rounded-full object-cover ring-1 ring-purple-500/30 shrink-0">
+                                <img :src="enrollData.candidate.student_photo_url" x-on:error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'" class="w-11 h-11 rounded-xl object-cover ring-2 ring-purple-500/20 shadow-xs shrink-0">
                             </template>
-                            <template x-if="!enrollData.candidate?.student_photo_url || enrollData.candidate.student_photo_url.toLowerCase().endsWith('.pdf')">
-                                <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-xs shrink-0" x-text="enrollData.candidate?.full_name ? enrollData.candidate.full_name.substring(0, 2).toUpperCase() : 'PS'"></div>
-                            </template>
-                            <div class="overflow-hidden">
-                                <h4 class="font-bold text-slate-900 dark:text-slate-50 truncate" x-text="enrollData.candidate?.full_name"></h4>
-                                <p class="text-[11px] text-slate-400 font-mono" x-text="enrollData.candidate?.registration_number + ' • ' + (enrollData.candidate?.wave || 'Gelombang 1')"></p>
+                            <div class="w-11 h-11 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-bold flex items-center justify-center text-xs shrink-0 shadow-xs border border-purple-200 dark:border-purple-800" 
+                                x-text="enrollData.candidate?.full_name ? enrollData.candidate.full_name.substring(0, 2).toUpperCase() : 'PS'"
+                                :style="enrollData.candidate?.student_photo_url && !enrollData.candidate.student_photo_url.toLowerCase().endsWith('.pdf') ? 'display: none;' : ''">
+                            </div>
+                            <div class="overflow-hidden min-w-0 flex-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <h4 class="font-bold text-slate-900 dark:text-slate-50 truncate text-xs" x-text="enrollData.candidate?.full_name"></h4>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-200 dark:border-purple-800" x-text="enrollData.candidate?.target_class || enrollData.candidate?.admission_level || 'Kelas 1'"></span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 font-mono mt-0.5" x-text="enrollData.candidate?.registration_number + ' • ' + (enrollData.candidate?.wave || 'Gelombang 1') + ' • ' + (enrollData.candidate?.class_program || 'Reguler')"></p>
                             </div>
                         </div>
 
@@ -836,13 +840,14 @@
                             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                                 Nomor Induk Siswa (NIS) <span class="text-rose-500">*</span>
                             </label>
-                            <input type="text" x-model="enrollForm.nis" required placeholder="Contoh: 27.SD.001"
+                            <input type="text" x-model="enrollForm.nis" required placeholder="Contoh: 26.SD.001"
                                 class="w-full h-9 px-3 text-xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-purple-700 dark:text-purple-300">
                             <p class="text-[10px] text-slate-400 mt-1">Saran format otomatis berdasarkan tahun masuk dan nomor urut SD.</p>
                         </div>
 
-                        <!-- Tahun Pelajaran & Rombel Grid -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Tahun Pelajaran, Tingkat Kelas & Rombel Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                            <!-- 1. Tahun Pelajaran (Tapel) -->
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                                     Tahun Pelajaran (Tapel) <span class="text-rose-500">*</span>
@@ -855,14 +860,28 @@
                                 </select>
                             </div>
 
+                            <!-- 2. Tingkat Kelas (Auto-matched dari pilihan SPMB) -->
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                    Pilih Rombongan Belajar <span class="text-rose-500">*</span>
+                                    Tingkat Kelas <span class="text-rose-500">*</span>
+                                </label>
+                                <select x-model="enrollForm.class_level_id" @change="onClassLevelChange()" required
+                                    class="w-full h-9 px-3 text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-purple-700 dark:text-purple-300 cursor-pointer">
+                                    <template x-for="lvl in (enrollData.class_levels || [])" :key="lvl.id">
+                                        <option :value="lvl.id" x-text="lvl.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <!-- 3. Rombongan Belajar (Cascade sesuai Tingkat Kelas) -->
+                            <div>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Pilih Rombel <span class="text-rose-500">*</span>
                                 </label>
                                 <select x-model="enrollForm.classroom_id" required
                                     class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-50 cursor-pointer">
                                     <option value="">Pilih Rombel...</option>
-                                    <template x-for="r in (enrollData.classrooms || [])" :key="r.id">
+                                    <template x-for="r in filteredClassrooms" :key="r.id">
                                         <option :value="r.id" x-text="(r.code ? r.code + ' - ' : '') + r.name + ' • ' + (r.active_students_count ?? 0) + '/' + (r.capacity ?? 28) + ' siswa'"></option>
                                     </template>
                                 </select>
@@ -1269,14 +1288,39 @@
                 enrollData: {
                     candidate: null,
                     academic_years: [],
+                    class_levels: [],
                     classrooms: [],
                 },
                 enrollForm: {
                     nis: '',
+                    class_level_id: '',
                     classroom_id: '',
                     academic_year_id: '',
                     enrolled_date: '{{ date("Y-m-d") }}',
                     notes: '',
+                },
+
+                get filteredClassrooms() {
+                    if (!this.enrollData || !this.enrollData.classrooms) return [];
+                    const levelId = parseInt(this.enrollForm.class_level_id);
+                    const ayId = parseInt(this.enrollForm.academic_year_id);
+                    return this.enrollData.classrooms.filter(r => {
+                        const matchLevel = !levelId || parseInt(r.class_level_id) === levelId;
+                        const matchAy = !ayId || !r.academic_year_id || parseInt(r.academic_year_id) === ayId;
+                        return matchLevel && matchAy;
+                    });
+                },
+
+                onClassLevelChange() {
+                    const available = this.filteredClassrooms;
+                    if (available.length > 0) {
+                        const currentStillValid = available.some(r => r.id === parseInt(this.enrollForm.classroom_id));
+                        if (!currentStillValid) {
+                            this.enrollForm.classroom_id = available[0].id;
+                        }
+                    } else {
+                        this.enrollForm.classroom_id = '';
+                    }
                 },
                 editForm: {
                     id: null,
@@ -1432,8 +1476,27 @@
                         if (res.success) {
                             this.enrollData = res;
                             this.enrollForm.nis = res.student ? res.student.nis : res.suggested_nis;
-                            this.enrollForm.classroom_id = res.student ? res.student.classroom_id : (res.classrooms[0] ? res.classrooms[0].id : '');
                             this.enrollForm.academic_year_id = res.student ? res.student.academic_year_id : res.selected_year_id;
+                            
+                            // Auto select tingkat kelas matching candidate target_class / student
+                            let levelId = '';
+                            if (res.student && res.student.classroom && res.student.classroom.class_level_id) {
+                                levelId = res.student.classroom.class_level_id;
+                            } else if (res.selected_class_level_id) {
+                                levelId = res.selected_class_level_id;
+                            } else if (res.class_levels && res.class_levels.length > 0) {
+                                levelId = res.class_levels[0].id;
+                            }
+                            this.enrollForm.class_level_id = levelId;
+
+                            // Auto select rombel belonging to the chosen class level
+                            if (res.student && res.student.classroom_id) {
+                                this.enrollForm.classroom_id = res.student.classroom_id;
+                            } else {
+                                const matchingRooms = (res.classrooms || []).filter(r => !levelId || parseInt(r.class_level_id) === parseInt(levelId));
+                                this.enrollForm.classroom_id = matchingRooms.length > 0 ? matchingRooms[0].id : (res.classrooms[0] ? res.classrooms[0].id : '');
+                            }
+
                             this.enrollForm.enrolled_date = res.student && res.student.enrolled_date ? res.student.enrolled_date.substring(0, 10) : '{{ date("Y-m-d") }}';
                             this.enrollModalOpen = true;
 
@@ -1466,6 +1529,7 @@
                             this.enrollForm.nis = prefix + seq;
                         }
                     }
+                    this.onClassLevelChange();
                 },
 
                 submitEnroll() {
