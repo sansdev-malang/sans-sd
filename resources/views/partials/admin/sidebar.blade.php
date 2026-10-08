@@ -9,11 +9,11 @@
     );
 @endphp
 <aside id="sidebar"
-    class="fixed inset-y-0 left-0 z-[60] md:z-20 flex flex-col w-64 bg-white dark:bg-[#09090b] border-r border-slate-200 dark:border-slate-800 p-3 shrink-0 transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative shadow-sm md:shadow-none">
+    class="fixed inset-y-0 left-0 z-[60] md:z-20 flex flex-col w-64 h-full md:h-screen max-h-screen bg-white dark:bg-[#09090b] border-r border-slate-200 dark:border-slate-800 p-3 shrink-0 transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative shadow-sm md:shadow-none overflow-hidden">
 
     <!-- App Brand / Dashboard Link -->
     <a href="{{ route('dashboard') }}"
-        class="workspace-selector flex items-center justify-between p-2 mb-4 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg cursor-pointer transition-colors relative group">
+        class="workspace-selector flex items-center justify-between p-2 mb-4 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg cursor-pointer transition-colors relative group shrink-0">
         <div class="flex items-center gap-2.5">
             @if (setting('app_logo'))
                 <img src="{{ asset('storage/' . setting('app_logo')) }}" alt="Logo" class="w-8 h-8 rounded-lg object-cover shrink-0 shadow-sm">
@@ -39,7 +39,7 @@
     </a>
 
     <!-- Grouped Navigation Links (sidebar-07 style) -->
-    <div id="sidebar-nav-container" class="flex-1 space-y-4 overflow-y-auto px-1 py-2 no-scrollbar">
+    <div id="sidebar-nav-container" class="flex-1 min-h-0 space-y-4 overflow-y-auto px-1 py-2 custom-sidebar-scroll">
         <!-- Dashboard Link (At the very top, outside groups) -->
         <div class="space-y-1">
             <a href="{{ route('dashboard') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg
@@ -133,7 +133,7 @@
                 'name' => $curUser?->name,
                 'email' => $curUser?->email,
                 'employee_id' => $curUser?->employee_id,
-                'role' => $isAdmin ? 'super_admin' : 'guru',
+                'role' => $curUser?->role ?? ($isAdmin ? 'super_admin' : 'guru'),
                 'unit' => 'sd',
                 'timestamp' => time(),
             ]));
@@ -385,7 +385,7 @@
     </div>
 
     <!-- Bottom User Account Profile Menu (dropdown lookalike at bottom of sidebar-07) -->
-    <div class="pt-2 border-t border-slate-200 dark:border-slate-800 relative" x-data="{ open: false }">
+    <div class="pt-2 border-t border-slate-200 dark:border-slate-800 relative shrink-0" x-data="{ open: false }">
         <!-- Dropdown menu -->
         <div x-show="open" @click.outside="open = false"
             class="absolute bottom-full left-0 w-60 mb-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1.5 z-50 transition-all origin-bottom-left"

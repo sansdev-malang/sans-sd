@@ -422,6 +422,7 @@ class AttendanceController extends Controller
         $schoolUnitId = config('app.school_unit_id', 2);
 
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
+        $matrixCacheKey = "hrd_att_matrix_{$schoolUnitId}_{$month}";
         $monthCarbon = \Carbon\Carbon::parse($month . '-01');
         $isPastMonth = $monthCarbon->copy()->endOfMonth()->isPast();
         $json = $isPastMonth ? \Illuminate\Support\Facades\Cache::get($matrixCacheKey) : null;

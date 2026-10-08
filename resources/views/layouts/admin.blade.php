@@ -226,6 +226,35 @@
             ::-webkit-scrollbar-thumb:hover {
                 background: rgba(100, 116, 139, 0.45);
             }
+            /* Ultra-subtle, auto-hiding sidebar scrollbar (minimalist & clean) */
+            .custom-sidebar-scroll {
+                overflow-y: auto;
+                scrollbar-width: thin;
+                scrollbar-color: transparent transparent;
+                overscroll-behavior: contain;
+                transition: scrollbar-color 0.2s ease;
+            }
+            .custom-sidebar-scroll::-webkit-scrollbar {
+                width: 3.5px;
+            }
+            .custom-sidebar-scroll::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .custom-sidebar-scroll::-webkit-scrollbar-thumb {
+                background-color: transparent;
+                border-radius: 9999px;
+                transition: background-color 0.2s ease;
+            }
+            #sidebar:hover .custom-sidebar-scroll {
+                scrollbar-color: rgba(148, 163, 184, 0.2) transparent;
+            }
+            #sidebar:hover .custom-sidebar-scroll::-webkit-scrollbar-thumb {
+                background-color: rgba(148, 163, 184, 0.18);
+            }
+            .custom-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+                background-color: rgba(148, 163, 184, 0.35) !important;
+            }
+
             /* Smooth Desktop Sidebar Transitions (Mini-Sidebar / Collapsed view) */
             @media (min-width: 768px) {
                 #sidebar {
@@ -258,7 +287,14 @@
                     padding-right: 0 !important;
                 }
                 .sidebar-collapsed #sidebar .flex-1 {
-                    overflow: visible !important;
+                    overflow-y: auto !important;
+                }
+                .sidebar-collapsed .custom-sidebar-scroll::-webkit-scrollbar {
+                    display: none;
+                }
+                .sidebar-collapsed .custom-sidebar-scroll {
+                    scrollbar-width: none;
+                    -ms-overflow-style: none;
                 }
                 .sidebar-collapsed .sidebar-tooltip {
                     display: block;
