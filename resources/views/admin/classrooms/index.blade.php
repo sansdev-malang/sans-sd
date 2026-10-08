@@ -34,76 +34,68 @@
         </section>
 
         <!-- STATS CARDS GRID -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <!-- Stat 1: Total Rombel -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Rombel</p>
-                        <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40">
+                    <i data-lucide="layers" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Rombel</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-mono">
                             {{ number_format($stats['total_classrooms']) }}
                         </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Kelas Aktif</span>
                     </div>
-                    <div class="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
-                        <i data-lucide="layout-grid" class="w-5 h-5"></i>
-                    </div>
-                </div>
-                <div class="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
-                    Kelas aktif terdaftar di SD
                 </div>
             </div>
 
             <!-- Stat 2: Total Kapasitas Kuota -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Kapasitas</p>
-                        <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/40">
+                    <i data-lucide="door-open" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Kapasitas</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono">
                             {{ number_format($stats['total_capacity']) }}
                         </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Daya Tampung</span>
                     </div>
-                    <div class="p-2.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl border border-blue-100 dark:border-blue-900/50">
-                        <i data-lucide="layers" class="w-5 h-5"></i>
-                    </div>
-                </div>
-                <div class="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
-                    Maksimal daya tampung seluruh rombel
                 </div>
             </div>
 
             <!-- Stat 3: Siswa Terisi -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Siswa Terisi</p>
-                        <h3 class="text-2xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400 mt-1">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Siswa Terisi</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400 font-mono">
                             {{ number_format($stats['total_enrolled']) }}
                         </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Terdaftar</span>
                     </div>
-                    <div class="p-2.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl border border-indigo-100 dark:border-indigo-900/50">
-                        <i data-lucide="users" class="w-5 h-5"></i>
-                    </div>
-                </div>
-                <div class="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
-                    Siswa aktif yang sudah masuk rombel
                 </div>
             </div>
 
             <!-- Stat 4: Persentase Keterisian -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tingkat Keterisian</p>
-                        <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/40">
+                    <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Keterisian</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-amber-600 dark:text-amber-400 font-mono">
                             {{ $stats['occupancy_rate'] }}%
                         </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Rasio Kuota</span>
                     </div>
-                    <div class="p-2.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-xl border border-amber-100 dark:border-amber-900/50">
-                        <i data-lucide="pie-chart" class="w-5 h-5"></i>
-                    </div>
-                </div>
-                <div class="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
-                    Rasio pemenuhan kuota rombel
                 </div>
             </div>
         </section>
@@ -126,9 +118,9 @@
                     <!-- Filter Tahun Pelajaran -->
                     <select name="academic_year_id" onchange="this.form.submit()"
                         class="h-9 px-3 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-xs">
-                        @foreach($uniqueAcademicYears as $ay)
-                            <option value="{{ $ay->id }}" {{ ($selectedYear && $selectedYear->name === $ay->name) || $selectedYearId == $ay->id ? 'selected' : '' }}>
-                                {{ $ay->name }} {{ $ay->has_active ? '(Aktif)' : '' }}
+                        @foreach($academicYears as $ay)
+                            <option value="{{ $ay->id }}" {{ ($selectedYear && $selectedYear->id === $ay->id) || $selectedYearId == $ay->id ? 'selected' : '' }}>
+                                {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}
                             </option>
                         @endforeach
                     </select>
@@ -144,7 +136,7 @@
                         @endforeach
                     </select>
 
-                    @if(request()->hasAny(['search', 'class_level_id']) || (request()->filled('academic_year_id') && request('academic_year_id') != ($uniqueAcademicYears->firstWhere('has_active', true)?->id ?? '')))
+                    @if(request()->hasAny(['search', 'class_level_id']) || (request()->filled('academic_year_id') && request('academic_year_id') != ($academicYears->firstWhere('is_active', true)?->id ?? '')))
                         <a href="{{ route('classrooms.index') }}" 
                             class="h-9 px-3 inline-flex items-center justify-center text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors"
                             title="Reset Filter">
@@ -164,12 +156,9 @@
                         Daftar Rombongan Belajar (Rombel)
                     </h3>
                     @if($selectedYear)
-                        @php
-                            $isCurrentYearActive = $academicYears->where('name', $selectedYear->name)->contains('is_active', true);
-                        @endphp
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $isCurrentYearActive ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700' }}">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $selectedYear->is_active ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700' }}">
                             <i data-lucide="calendar" class="w-3 h-3"></i>
-                            {{ $selectedYear->name }} {{ $isCurrentYearActive ? '(Aktif)' : '' }}
+                            {{ $selectedYear->name }} {{ $selectedYear->is_active ? '(Aktif)' : '' }}
                         </span>
                     @endif
                 </div>
@@ -268,7 +257,7 @@
                                 </td>
                                 <td class="px-4 py-3 text-right">
                                     <div class="flex items-center justify-end gap-1">
-                                        <button type="button" @click="openEditModal({{ $c->id }}, '{{ addslashes($c->name) }}', '{{ $c->code }}', {{ $c->class_level_id }}, {{ $uniqueAcademicYears->firstWhere('name', $c->academicYear?->name)?->id ?? ($c->academic_year_id ?? 'null') }}, {{ $c->homeroom_teacher_id ?? 'null' }}, {{ $c->capacity }})"
+                                        <button type="button" @click="openEditModal({{ $c->id }}, '{{ addslashes($c->name) }}', '{{ $c->code }}', {{ $c->class_level_id }}, {{ $c->academic_year_id ?? 'null' }}, {{ $c->homeroom_teacher_id ?? 'null' }}, {{ $c->capacity }})"
                                             class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg transition-colors cursor-pointer"
                                             title="Edit Rombel">
                                             <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
@@ -436,8 +425,8 @@
                                 <select x-model="formData.academic_year_id" required
                                     class="w-full h-10 px-3.5 text-xs bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-100 cursor-pointer transition-all">
                                     <option value="">Pilih Tahun Pelajaran...</option>
-                                    @foreach($uniqueAcademicYears as $ay)
-                                        <option value="{{ $ay->id }}">{{ $ay->name }} {{ $ay->has_active ? '(Aktif)' : '' }}</option>
+                                    @foreach($academicYears as $ay)
+                                        <option value="{{ $ay->id }}">{{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -710,7 +699,7 @@
                     name: '',
                     code: '',
                     class_level_id: '',
-                    academic_year_id: '{{ $uniqueAcademicYears->firstWhere('has_active', true)?->id ?? ($uniqueAcademicYears->first()?->id ?? '') }}',
+                    academic_year_id: '{{ $academicYears->firstWhere('is_active', true)?->id ?? ($academicYears->first()?->id ?? '') }}',
                     homeroom_teacher_id: '',
                     capacity: 32,
                 },
@@ -758,7 +747,7 @@
                         name: '',
                         code: '',
                         class_level_id: '',
-                        academic_year_id: '{{ $uniqueAcademicYears->firstWhere('has_active', true)?->id ?? ($uniqueAcademicYears->first()?->id ?? '') }}',
+                        academic_year_id: '{{ $academicYears->firstWhere('is_active', true)?->id ?? ($academicYears->first()?->id ?? '') }}',
                         homeroom_teacher_id: '',
                         capacity: 32,
                     };

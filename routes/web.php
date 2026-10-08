@@ -27,7 +27,15 @@ Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'ind
 Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->group(function () {
     // Academic Years (Tahun Ajaran)
     Route::post('academic-years/{id}/set-active', [AcademicYearController::class, 'setActive'])->name('academic-years.set-active');
+    Route::match(['post', 'put', 'patch'], 'academic-years/{id}', [AcademicYearController::class, 'update'])->name('academic-years.update-custom');
+    Route::match(['post', 'delete'], 'academic-years/{id}/delete', [AcademicYearController::class, 'destroy'])->name('academic-years.destroy-custom');
     Route::resource('academic-years', AcademicYearController::class);
+
+    // Semesters (Semester)
+    Route::post('semesters/{id}/set-active', [\App\Http\Controllers\SemesterController::class, 'setActive'])->name('semesters.set-active');
+    Route::match(['post', 'put', 'patch'], 'semesters/{id}', [\App\Http\Controllers\SemesterController::class, 'update'])->name('semesters.update-custom');
+    Route::match(['post', 'delete'], 'semesters/{id}/delete', [\App\Http\Controllers\SemesterController::class, 'destroy'])->name('semesters.destroy-custom');
+    Route::resource('semesters', \App\Http\Controllers\SemesterController::class);
 
     // Class Levels (Tingkat Kelas)
     Route::resource('class-levels', ClassLevelController::class);

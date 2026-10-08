@@ -4,16 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\Classroom;
+use App\Models\Semester;
 use App\Models\Student;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-use Illuminate\Validation\Rule;
-
 class AcademicYearController extends Controller
 {
     /**
-     * Display a listing of academic years with stats & active toggle.
+     * Display a listing of academic years and semesters with stats.
      */
     public function index()
     {
@@ -27,30 +26,25 @@ class AcademicYearController extends Controller
         ->orderBy('name', 'desc')
         ->get();
 
-        // Ensure all records have start_date and end_date populated
-        foreach ($academicYears as $ay) {
-            if (!$ay->start_date || !$ay->end_date) {
-                $dates = $this->calculatePeriodDates($ay->name, $ay->semester);
-                $ay->update($dates);
-                $ay->start_date = $dates['start_date'];
-                $ay->end_date = $dates['end_date'];
-            }
-        }
+        $semesters = Semester::orderBy('order', 'asc')->get();
 
         $activeYear = $academicYears->firstWhere('is_active', true);
+        $activeSemester = $semesters->firstWhere('is_active', true);
         $totalYears = $academicYears->count();
+        $totalSemesters = $semesters->count();
         $totalClassrooms = Classroom::where('is_active', true)->count();
         $totalStudents = Student::where('status', 'aktif')->count();
 
         $stats = [
             'total_years' => $totalYears,
             'active_year' => $activeYear?->name ?? 'Belum Diatur',
-            'active_semester' => $activeYear?->semester ?? '-',
+            'active_semester' => $activeSemester?->name ?? ($activeYear?->semester ?? 'Belum Diatur'),
+            'total_semesters' => $totalSemesters,
             'total_classrooms' => $totalClassrooms,
             'total_students' => $totalStudents,
         ];
 
-        return view('admin.academic-years.index', compact('academicYears', 'activeYear', 'stats'));
+        return view('admin.academic-years.index', compact('academicYears', 'semesters', 'activeYear', 'activeSemester', 'stats'));
     }
 
     /**
@@ -71,33 +65,19 @@ class AcademicYearController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $semester = strtolower($request->input('semester', 'ganjil'));
-
         $validated = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('academic_years', 'name')->where(function ($query) use ($semester) {
-                    return $query->where('semester', $semester);
-                }),
-            ],
+            'name' => 'required|string|max:50|unique:academic_years,name',
             'code' => 'nullable|string|max:20',
-            'semester' => 'required|string|in:Ganjil,Genap,ganjil,genap',
+            'semester' => 'nullable|string|max:50',
             'is_active' => 'nullable|boolean',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
             'description' => 'nullable|string',
-        ], [
-            'name.unique' => "Tahun Pelajaran {$request->input('name')} untuk semester {$request->input('semester')} sudah ada.",
         ]);
 
-        $validated['semester'] = $semester;
+        $validated['semester'] = strtolower($validated['semester'] ?? 'ganjil');
         $isActive = $request->boolean('is_active');
         $validated['is_active'] = $isActive;
-
-        // Auto-calculate start_date and end_date (July-Dec for Ganjil, Jan-June for Genap)
-        $dates = $this->calculatePeriodDates($validated['name'], $validated['semester']);
-        $validated['start_date'] = $dates['start_date'];
-        $validated['end_date'] = $dates['end_date'];
 
         // If newly created is active, deactivate others
         if ($isActive) {
@@ -108,7 +88,7 @@ class AcademicYearController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Tahun Ajaran {$academicYear->name} ({$academicYear->semester}) berhasil ditambahkan.",
+            'message' => "Tahun Ajaran {$academicYear->name} berhasil ditambahkan.",
             'academic_year' => $academicYear,
         ]);
     }
@@ -119,33 +99,22 @@ class AcademicYearController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         $academicYear = AcademicYear::findOrFail($id);
-        $semester = strtolower($request->input('semester', $academicYear->semester));
 
         $validated = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('academic_years', 'name')->ignore($academicYear->id)->where(function ($query) use ($semester) {
-                    return $query->where('semester', $semester);
-                }),
-            ],
+            'name' => 'required|string|max:50|unique:academic_years,name,' . $academicYear->id,
             'code' => 'nullable|string|max:20',
-            'semester' => 'required|string|in:Ganjil,Genap,ganjil,genap',
+            'semester' => 'nullable|string|max:50',
             'is_active' => 'nullable|boolean',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
             'description' => 'nullable|string',
-        ], [
-            'name.unique' => "Tahun Pelajaran {$request->input('name')} untuk semester {$request->input('semester')} sudah ada.",
         ]);
 
-        $validated['semester'] = $semester;
+        if (isset($validated['semester'])) {
+            $validated['semester'] = strtolower($validated['semester']);
+        }
         $isActive = $request->boolean('is_active');
         $validated['is_active'] = $isActive;
-
-        // Auto-calculate start_date and end_date
-        $dates = $this->calculatePeriodDates($validated['name'], $validated['semester']);
-        $validated['start_date'] = $dates['start_date'];
-        $validated['end_date'] = $dates['end_date'];
 
         if ($isActive && !$academicYear->is_active) {
             AcademicYear::where('is_active', true)->update(['is_active' => false]);
@@ -161,37 +130,6 @@ class AcademicYearController extends Controller
     }
 
     /**
-     * Calculate default start and end dates based on Tapel name and semester.
-     * Ganjil: 1 July - 31 December (Year 1)
-     * Genap: 1 January - 30 June (Year 2)
-     */
-    private function calculatePeriodDates(string $name, string $semester): array
-    {
-        if (preg_match('/(\d{4})[\/\-](\d{4})/', $name, $matches)) {
-            $y1 = (int) $matches[1];
-            $y2 = (int) $matches[2];
-        } elseif (preg_match('/(\d{4})/', $name, $matches)) {
-            $y1 = (int) $matches[1];
-            $y2 = $y1 + 1;
-        } else {
-            $y1 = (int) date('Y');
-            $y2 = $y1 + 1;
-        }
-
-        if (strtolower($semester) === 'genap') {
-            return [
-                'start_date' => "{$y2}-01-01",
-                'end_date' => "{$y2}-06-30",
-            ];
-        }
-
-        return [
-            'start_date' => "{$y1}-07-01",
-            'end_date' => "{$y1}-12-31",
-        ];
-    }
-
-    /**
      * Set specific academic year as active.
      */
     public function setActive($id): JsonResponse
@@ -204,7 +142,8 @@ class AcademicYearController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Tahun Ajaran {$academicYear->name} ({$academicYear->semester}) sekarang aktif sebagai acuan sistem.",
+            'message' => "Tahun Ajaran {$academicYear->name} sekarang aktif sebagai acuan sistem.",
+            'academic_year' => $academicYear,
         ]);
     }
 
@@ -223,12 +162,18 @@ class AcademicYearController extends Controller
         }
 
         $classroomsCount = $academicYear->classrooms()->count();
-        $studentsCount = $academicYear->students()->count();
-
-        if ($classroomsCount > 0 || $studentsCount > 0) {
+        if ($classroomsCount > 0) {
             return response()->json([
                 'success' => false,
-                'message' => "Tahun Ajaran tidak dapat dihapus karena masih terhubung dengan {$classroomsCount} rombel dan {$studentsCount} siswa.",
+                'message' => "Tahun Ajaran ini masih memiliki {$classroomsCount} rombel terdaftar.",
+            ], 422);
+        }
+
+        $studentsCount = $academicYear->students()->count();
+        if ($studentsCount > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => "Tahun Ajaran ini masih memiliki {$studentsCount} siswa terdaftar.",
             ], 422);
         }
 

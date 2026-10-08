@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AcademicYear;
 use App\Models\ClassLevel;
 use App\Models\Classroom;
 use App\Models\Student;
@@ -15,29 +16,19 @@ class ClassLevelController extends Controller
      */
     public function index(Request $request)
     {
-        $academicYears = \App\Models\AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
         $activeYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
 
-        // Unique yearly academic years for annual entities (Tahunan - Opsi A)
-        $uniqueAcademicYears = $academicYears->groupBy('name')->map(function ($group) {
-            $activeInGroup = $group->firstWhere('is_active', true);
-            $chosen = $activeInGroup ?: $group->first();
-            $chosen->has_active = (bool) $activeInGroup;
-            return $chosen;
-        })->values();
-
-        // Filter per Tapel, defaulting to active Tapel
+        // Filter per Tahun Ajaran, defaulting to active Tapel
         $selectedYearId = $request->filled('academic_year_id')
             ? (int) $request->get('academic_year_id')
             : ($activeYear?->id ?? null);
 
         $selectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? $activeYear;
-        $selectedYearName = $selectedYear?->name;
-        $matchingYearIds = $academicYears->where('name', $selectedYearName)->pluck('id');
 
-        $classLevels = ClassLevel::with(['classrooms' => function ($q) use ($matchingYearIds) {
-                if ($matchingYearIds->isNotEmpty()) {
-                    $q->whereIn('academic_year_id', $matchingYearIds);
+        $classLevels = ClassLevel::with(['classrooms' => function ($q) use ($selectedYearId) {
+                if ($selectedYearId) {
+                    $q->where('academic_year_id', $selectedYearId);
                 }
                 $q->orderBy('name');
             }])
@@ -48,8 +39,8 @@ class ClassLevelController extends Controller
         $studentCounts = Student::query()
             ->join('classrooms', 'students.classroom_id', '=', 'classrooms.id')
             ->where('students.status', 'aktif')
-            ->when($matchingYearIds->isNotEmpty(), function ($q) use ($matchingYearIds) {
-                $q->whereIn('classrooms.academic_year_id', $matchingYearIds);
+            ->when($selectedYearId, function ($q) use ($selectedYearId) {
+                $q->where('classrooms.academic_year_id', $selectedYearId);
             })
             ->groupBy('classrooms.class_level_id')
             ->selectRaw('classrooms.class_level_id, count(students.id) as count')
@@ -62,8 +53,8 @@ class ClassLevelController extends Controller
         $totalLevels = $classLevels->count();
         
         $rombelQuery = Classroom::query();
-        if ($matchingYearIds->isNotEmpty()) {
-            $rombelQuery->whereIn('academic_year_id', $matchingYearIds);
+        if ($selectedYearId) {
+            $rombelQuery->where('academic_year_id', $selectedYearId);
         }
         $rombelStats = (clone $rombelQuery)
             ->selectRaw('COUNT(*) as total_classrooms, COALESCE(SUM(capacity), 0) as total_capacity')
@@ -81,10 +72,9 @@ class ClassLevelController extends Controller
         return view('admin.class-levels.index', [
             'classLevels' => $classLevels,
             'stats' => $stats,
-            'academicYears' => $uniqueAcademicYears,
+            'academicYears' => $academicYears,
             'selectedYearId' => $selectedYearId,
             'selectedYear' => $selectedYear,
-            'selectedYearName' => $selectedYearName,
         ]);
     }
 
@@ -156,7 +146,7 @@ class ClassLevelController extends Controller
         if ($classroomsCount > 0) {
             return response()->json([
                 'success' => false,
-                'message' => "Tingkat Kelas tidak dapat dihapus karena masih digunakan oleh {$classroomsCount} rombel.",
+                'message' => "Tingkat Kelas ini masih memiliki {$classroomsCount} rombel aktif terkait.",
             ], 422);
         }
 

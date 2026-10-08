@@ -29,6 +29,25 @@
             </div>
         </section>
 
+        <!-- BANNER INFORMASI TAHAP PENGEMBANGAN -->
+        <div class="bg-amber-500/10 dark:bg-amber-500/15 border border-amber-300 dark:border-amber-700/60 rounded-xl p-3.5 sm:p-4 flex items-start sm:items-center gap-3.5 text-amber-900 dark:text-amber-200 shadow-xs">
+            <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-300/60 dark:border-amber-600/40">
+                <i data-lucide="construction" class="w-5 h-5"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <h4 class="text-xs sm:text-sm font-bold tracking-tight text-amber-950 dark:text-amber-200">Fitur Dalam Tahap Pengembangan</h4>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200/70 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 uppercase tracking-wide">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        Under Development
+                    </span>
+                </div>
+                <p class="text-[11px] sm:text-xs text-amber-800/90 dark:text-amber-300/80 mt-0.5 leading-relaxed">
+                    Halaman Kenaikan Kelas & Kelulusan saat ini masih dalam proses pengembangan dan penyempurnaan alur sistem data. Beberapa fungsi mungkin belum beroperasi secara penuh.
+                </p>
+            </div>
+        </div>
+
         <!-- MAIN TABS: 1. Kenaikan Kelas (Kelas 1-5), 2. Kelulusan (Kelas 6) -->
         <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800">
             <button type="button" @click="activeTab = 'promotion'"

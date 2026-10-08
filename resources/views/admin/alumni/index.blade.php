@@ -34,66 +34,89 @@
             </div>
         </section>
 
-        <!-- STATS CARDS KHUSUS ALUMNI -->
-        <section class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Alumni</p>
-                        <h3 class="text-xl font-black tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+        <!-- BANNER INFORMASI TAHAP PENGEMBANGAN -->
+        <div class="bg-amber-500/10 dark:bg-amber-500/15 border border-amber-300 dark:border-amber-700/60 rounded-xl p-3.5 sm:p-4 flex items-start sm:items-center gap-3.5 text-amber-900 dark:text-amber-200 shadow-xs">
+            <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-300/60 dark:border-amber-600/40">
+                <i data-lucide="construction" class="w-5 h-5"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <h4 class="text-xs sm:text-sm font-bold tracking-tight text-amber-950 dark:text-amber-200">Fitur Dalam Tahap Pengembangan</h4>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200/70 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 uppercase tracking-wide">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        Under Development
+                    </span>
+                </div>
+                <p class="text-[11px] sm:text-xs text-amber-800/90 dark:text-amber-300/80 mt-0.5 leading-relaxed">
+                    Halaman Buku Induk Alumni saat ini masih dalam proses pengembangan dan penyempurnaan integrasi data kelulusan multi-tahun. Beberapa fungsi mungkin belum beroperasi secara penuh.
+                </p>
+            </div>
+        </div>
+
+        <!-- STATS CARDS KHUSUS ALUMNI (Compact) -->
+        <section class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-3.5">
+            <!-- Stat 1: Total Alumni -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/40">
+                    <i data-lucide="award" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Alumni</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-mono">
                             {{ number_format($stats['total_alumni']) }}
                         </h3>
-                    </div>
-                    <div class="p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-100 dark:border-blue-900/50">
-                        <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Lulusan</span>
                     </div>
                 </div>
-                <div class="mt-2 text-[10px] text-slate-400">Siswa yang telah dinyatakan lulus</div>
             </div>
 
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Putra (L)</p>
-                        <h3 class="text-xl font-black tracking-tight text-blue-700 dark:text-blue-300 mt-1">
+            <!-- Stat 2: Putra -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/40">
+                    <i data-lucide="user" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider truncate">Putra (L)</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-blue-700 dark:text-blue-300 font-mono">
                             {{ number_format($stats['male']) }}
                         </h3>
-                    </div>
-                    <div class="p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-100 dark:border-blue-900/50">
-                        <i data-lucide="user" class="w-4 h-4"></i>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Siswa</span>
                     </div>
                 </div>
-                <div class="mt-2 text-[10px] text-slate-400">Alumni putra</div>
             </div>
 
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Putri (P)</p>
-                        <h3 class="text-xl font-black tracking-tight text-rose-700 dark:text-rose-300 mt-1">
+            <!-- Stat 3: Putri -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/40">
+                    <i data-lucide="user-check" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider truncate">Putri (P)</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-rose-700 dark:text-rose-300 font-mono">
                             {{ number_format($stats['female']) }}
                         </h3>
-                    </div>
-                    <div class="p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-lg border border-rose-100 dark:border-rose-900/50">
-                        <i data-lucide="user-check" class="w-4 h-4"></i>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Siswi</span>
                     </div>
                 </div>
-                <div class="mt-2 text-[10px] text-slate-400">Alumni putri</div>
             </div>
 
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Tercatat No. Ijazah</p>
-                        <h3 class="text-xl font-black tracking-tight text-emerald-700 dark:text-emerald-300 mt-1">
+            <!-- Stat 4: No Ijazah -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40">
+                    <i data-lucide="file-check" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider truncate">No. Ijazah</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300 font-mono">
                             {{ number_format($stats['with_diploma']) }}
                         </h3>
-                    </div>
-                    <div class="p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-lg border border-emerald-100 dark:border-emerald-900/50">
-                        <i data-lucide="file-check" class="w-4 h-4"></i>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Tercatat</span>
                     </div>
                 </div>
-                <div class="mt-2 text-[10px] text-slate-400">Telah memiliki nomor seri ijazah</div>
             </div>
         </section>
 

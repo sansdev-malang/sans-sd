@@ -16,33 +16,23 @@ class ClassroomController extends Controller
      */
     public function index(Request $request)
     {
-        $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
         $activeYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
 
-        // Unique yearly academic years for annual entities (Rombel)
-        $uniqueAcademicYears = $academicYears->groupBy('name')->map(function ($group) {
-            $activeInGroup = $group->firstWhere('is_active', true);
-            $chosen = $activeInGroup ?: $group->first();
-            $chosen->has_active = (bool) $activeInGroup;
-            return $chosen;
-        })->values();
-
-        // Always filter per Tapel, defaulting to currently active Tapel
+        // Always filter per Tahun Ajaran, defaulting to currently active Tapel
         $selectedYearId = $request->filled('academic_year_id')
             ? (int) $request->get('academic_year_id')
             : ($activeYear?->id ?? null);
 
         $selectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? $activeYear;
-        $selectedYearName = $selectedYear?->name;
-        $matchingYearIds = $academicYears->where('name', $selectedYearName)->pluck('id');
 
         $query = Classroom::with(['classLevel', 'academicYear', 'homeroomTeacher'])
             ->withCount(['students as active_students_count' => function ($q) {
                 $q->where('status', 'aktif');
             }]);
 
-        if ($matchingYearIds->isNotEmpty()) {
-            $query->whereIn('academic_year_id', $matchingYearIds);
+        if ($selectedYearId) {
+            $query->where('academic_year_id', $selectedYearId);
         }
 
         if ($classLevelId = $request->get('class_level_id')) {
@@ -105,7 +95,6 @@ class ClassroomController extends Controller
             'stats',
             'classLevels',
             'academicYears',
-            'uniqueAcademicYears',
             'teachers',
             'selectedYearId',
             'selectedYear'
@@ -140,14 +129,30 @@ class ClassroomController extends Controller
             'academic_year_id' => 'required|exists:academic_years,id',
             'homeroom_teacher_id' => 'nullable|exists:employees,id',
             'capacity' => 'required|integer|min:1|max:100',
+            'is_active' => 'nullable|boolean',
             'description' => 'nullable|string',
         ]);
+
+        $validated['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : true;
 
         $classroom = Classroom::create($validated);
 
         return response()->json([
             'success' => true,
-            'message' => "Rombel {$classroom->full_name} berhasil dibuat.",
+            'message' => "Rombongan Belajar {$classroom->full_name} berhasil ditambahkan.",
+            'classroom' => $classroom->load(['classLevel', 'academicYear', 'homeroomTeacher']),
+        ]);
+    }
+
+    /**
+     * Show single classroom (JSON).
+     */
+    public function show($id): JsonResponse
+    {
+        $classroom = Classroom::with(['classLevel', 'academicYear', 'homeroomTeacher'])->findOrFail($id);
+
+        return response()->json([
+            'success' => true,
             'classroom' => $classroom,
         ]);
     }
@@ -166,16 +171,18 @@ class ClassroomController extends Controller
             'academic_year_id' => 'required|exists:academic_years,id',
             'homeroom_teacher_id' => 'nullable|exists:employees,id',
             'capacity' => 'required|integer|min:1|max:100',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
             'description' => 'nullable|string',
         ]);
+
+        $validated['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : $classroom->is_active;
 
         $classroom->update($validated);
 
         return response()->json([
             'success' => true,
-            'message' => "Rombel {$classroom->full_name} berhasil diperbarui.",
-            'classroom' => $classroom,
+            'message' => "Rombongan Belajar {$classroom->full_name} berhasil diperbarui.",
+            'classroom' => $classroom->load(['classLevel', 'academicYear', 'homeroomTeacher']),
         ]);
     }
 
@@ -185,21 +192,21 @@ class ClassroomController extends Controller
     public function destroy($id): JsonResponse
     {
         $classroom = Classroom::findOrFail($id);
-        
-        $activeCount = $classroom->students()->where('status', 'aktif')->count();
-        if ($activeCount > 0) {
+
+        $studentsCount = $classroom->students()->count();
+        if ($studentsCount > 0) {
             return response()->json([
                 'success' => false,
-                'message' => "Rombel tidak dapat dihapus karena masih memiliki {$activeCount} siswa aktif. Pindahkan siswa terlebih dahulu.",
+                'message' => "Rombongan Belajar ini masih memiliki {$studentsCount} siswa terdaftar. Pindahkan siswa terlebih dahulu sebelum menghapus rombel.",
             ], 422);
         }
 
-        $name = $classroom->name;
+        $name = $classroom->full_name;
         $classroom->delete();
 
         return response()->json([
             'success' => true,
-            'message' => "Rombel {$name} berhasil dihapus.",
+            'message' => "Rombongan Belajar {$name} berhasil dihapus.",
         ]);
     }
 }

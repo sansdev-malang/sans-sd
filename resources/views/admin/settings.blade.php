@@ -187,7 +187,7 @@
                                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Koneksi modul rapor terpusat, autentikasi 1-Click SSO, dan database SANS Rapor.</p>
                             </div>
                             <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-md border border-emerald-200 dark:border-emerald-800">
-                                SANS Rapor
+                                E-Rapor
                             </span>
                         </div>
                         <div class="p-6 space-y-4">
@@ -231,12 +231,12 @@
                             <div>
                                 <h3 class="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                                    Integrasi API HRD Pusat
+                                    Integrasi API HRD
                                 </h3>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Koneksi data absensi, cuti, dan kepegawaian ke aplikasi HRD pusat.</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Koneksi data absensi, cuti, dan kepegawaian ke aplikasi HRD.</p>
                             </div>
                             <span class="px-2 py-0.5 text-[10px] font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-md border border-blue-200 dark:border-blue-800">
-                                Layanan HRD
+                                HRD
                             </span>
                         </div>
                         <div class="p-6 space-y-4">
@@ -270,12 +270,12 @@
                             <div>
                                 <h3 class="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                    Integrasi API SPMB Pusat
+                                    Integrasi API SPMB
                                 </h3>
                                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Koneksi data pendaftar & calon murid baru dari aplikasi SPMB.</p>
                             </div>
                             <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-md border border-emerald-200 dark:border-emerald-800">
-                                Unit SD
+                                SPMB
                             </span>
                         </div>
                         <div class="p-6 space-y-4">

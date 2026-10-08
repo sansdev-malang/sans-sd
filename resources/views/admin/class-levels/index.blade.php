@@ -2,22 +2,10 @@
     <div class="p-6 space-y-6" x-data="classLevelApp()">
 
         <!-- GREETING / PAGE TITLE -->
-        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left">
+        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 sm:gap-3 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <div class="flex items-center gap-2.5">
-                    <div class="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl border border-indigo-500/20">
-                        <i data-lucide="layers" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
-                            Tingkat Kelas
-                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 font-semibold border border-indigo-200 dark:border-indigo-800">
-                                Master Akademik
-                            </span>
-                        </h2>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Kelola master jenjang dan tingkatan kelas di {{ setting('unit_name', 'SD Anak Saleh') }} (Kelas 1 s/d Kelas 6).</p>
-                    </div>
-                </div>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Tingkat Kelas</h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Kelola master tingkatan kelas di {{ setting('unit_name', 'SD Anak Saleh') }} (Kelas 1 s/d Kelas 6).</p>
             </div>
             <div class="flex flex-wrap items-center gap-3 shrink-0">
                 <a href="{{ route('classrooms.index') }}"
@@ -34,68 +22,68 @@
         </section>
 
         <!-- STATS CARDS GRID -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Stat 1: Total Tingkat -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Tingkat Kelas</p>
-                        <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">{{ number_format($stats['total_levels']) }}</h3>
-                    </div>
-                    <div class="p-2.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl border border-indigo-100 dark:border-indigo-900/50">
-                        <i data-lucide="layers" class="w-5 h-5"></i>
-                    </div>
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5">
+            <!-- Stat 1: Total Tingkat Kelas -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40">
+                    <i data-lucide="layers" class="w-5 h-5"></i>
                 </div>
-                <div class="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
-                    Jenjang terdaftar di SD
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Tingkat Kelas</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-mono">
+                            {{ number_format($stats['total_levels']) }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Jenjang SD</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Stat 2: Total Rombel -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Rombel</p>
-                        <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">{{ number_format($stats['total_classrooms']) }}</h3>
-                    </div>
-                    <div class="p-2.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl border border-blue-100 dark:border-blue-900/50">
-                        <i data-lucide="university" class="w-5 h-5"></i>
-                    </div>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/40">
+                    <i data-lucide="university" class="w-5 h-5"></i>
                 </div>
-                <div class="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
-                    Rombel aktif di semua jenjang
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Rombel</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono">
+                            {{ number_format($stats['total_classrooms']) }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Rombel Aktif</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Stat 3: Total Kapasitas -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Kapasitas Kursi</p>
-                        <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">{{ number_format($stats['total_capacity']) }}</h3>
-                    </div>
-                    <div class="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
-                        <i data-lucide="door-open" class="w-5 h-5"></i>
-                    </div>
+            <!-- Stat 3: Total Kapasitas Kursi -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40">
+                    <i data-lucide="door-open" class="w-5 h-5"></i>
                 </div>
-                <div class="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
-                    Kapasitas daya tampung siswa
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Kapasitas Kursi</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
+                            {{ number_format($stats['total_capacity']) }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Daya Tampung</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Stat 4: Total Siswa Aktif -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Siswa Aktif</p>
-                        <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">{{ number_format($stats['total_students']) }}</h3>
-                    </div>
-                    <div class="p-2.5 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl border border-rose-100 dark:border-rose-900/50">
-                        <i data-lucide="users" class="w-5 h-5"></i>
-                    </div>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/40">
+                    <i data-lucide="users" class="w-5 h-5"></i>
                 </div>
-                <div class="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
-                    Siswa terdaftar saat ini
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Siswa Aktif</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-rose-600 dark:text-rose-400 font-mono">
+                            {{ number_format($stats['total_students']) }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Terdaftar</span>
+                    </div>
                 </div>
             </div>
         </section>
@@ -108,13 +96,10 @@
                         <i data-lucide="list-ordered" class="w-4 h-4 text-indigo-600"></i>
                         Daftar Tingkat & Jenjang Kelas
                     </h3>
-                    @php
-                        $currentSelectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? ($academicYears->firstWhere('has_active', true) ?? $academicYears->first());
-                    @endphp
-                    @if($currentSelectedYear)
-                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $currentSelectedYear->has_active || $currentSelectedYear->is_active ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700' }}">
+                    @if($selectedYear)
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $selectedYear->is_active ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700' }}">
                             <i data-lucide="calendar" class="w-3 h-3"></i>
-                            Tapel {{ $currentSelectedYear->name }} {{ ($currentSelectedYear->has_active || $currentSelectedYear->is_active) ? '(Aktif)' : '' }}
+                            Tapel {{ $selectedYear->name }} {{ $selectedYear->is_active ? '(Aktif)' : '' }}
                         </span>
                     @endif
                 </div>
@@ -123,10 +108,10 @@
                 <form method="GET" action="{{ route('class-levels.index') }}" class="flex items-center gap-2">
                     <label class="text-xs text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">Filter Tapel:</label>
                     <select name="academic_year_id" onchange="this.form.submit()"
-                        class="h-9 px-3 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer shadow-xs">
+                        class="h-9 px-3 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer shadow-xs">
                         @foreach($academicYears as $ay)
-                            <option value="{{ $ay->id }}" {{ ($selectedYearName ?? '') == $ay->name || $selectedYearId == $ay->id ? 'selected' : '' }}>
-                                Tapel {{ $ay->name }} {{ ($ay->has_active || $ay->is_active) ? '(Aktif)' : '' }}
+                            <option value="{{ $ay->id }}" {{ $selectedYearId == $ay->id ? 'selected' : '' }}>
+                                Tapel {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}
                             </option>
                         @endforeach
                     </select>
@@ -196,6 +181,11 @@
                                             title="Edit Tingkat Kelas">
                                             <i data-lucide="edit-2" class="w-4 h-4"></i>
                                         </button>
+                                        <button type="button" @click="deleteLevel({{ $lvl->id }}, '{{ $lvl->name }}')"
+                                            class="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg transition-colors cursor-pointer"
+                                            title="Hapus Tingkat Kelas">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -215,16 +205,16 @@
         <div x-show="modalOpen" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto" style="display: none; margin-top: 0px !important; z-index: 9999;"
             @click.self="modalOpen = false"
             @keydown.escape.window="modalOpen = false">
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col relative my-auto"
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col relative my-auto text-left"
                 @click.stop>
                 
                 <form @submit.prevent="submitForm">
                     <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm z-10">
                         <div>
                             <h3 class="text-base font-bold text-slate-900 dark:text-slate-50" x-text="isEdit ? 'Edit Tingkat Kelas' : 'Tambah Tingkat Kelas Baru'"></h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Atur nama jenjang, kode, dan nomor urutan tampil.</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Konfigurasi nama tingkatan kelas dan nomor urutan.</p>
                         </div>
-                        <button type="button" @click="modalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                        <button type="button" @click="modalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                             <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
                     </div>
@@ -232,71 +222,40 @@
                     <div class="p-6 space-y-4 text-xs">
                         <div>
                             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Tingkat Kelas <span class="text-rose-500">*</span></label>
-                            <input type="text" x-model="formData.name" required placeholder="Contoh: Kelas 1"
+                            <input type="text" x-model="formData.name" required placeholder="Contoh: Kelas 1 / Kelas 2 / Kelas 6"
                                 class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900 dark:text-slate-50">
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Singkatan <span class="text-rose-500">*</span></label>
-                                <input type="text" x-model="formData.code" required placeholder="Contoh: 1"
-                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900 dark:text-slate-50 font-mono uppercase">
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Tingkat <span class="text-rose-500">*</span></label>
+                                <input type="text" x-model="formData.code" required placeholder="Contoh: 1 / 2 / 3"
+                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900 dark:text-slate-50 font-mono">
                             </div>
                             <div>
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">No. Urut Tampil <span class="text-rose-500">*</span></label>
-                                <input type="number" x-model.number="formData.order" required min="1" max="99" placeholder="1, 2, 3..."
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Nomor Urutan <span class="text-rose-500">*</span></label>
+                                <input type="number" x-model="formData.order" required min="1" max="99" placeholder="1"
                                     class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900 dark:text-slate-50">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Keterangan / Sasaran Usia</label>
-                            <textarea x-model="formData.description" rows="3" placeholder="Contoh: Jenjang Sekolah Dasar Kelas 1..."
+                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Keterangan / Fase Kurikulum</label>
+                            <textarea x-model="formData.description" rows="3" placeholder="Contoh: Fase A (Kelas 1 - 2 SD), Fase B (Kelas 3 - 4 SD)..."
                                 class="w-full p-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900 dark:text-slate-50"></textarea>
                         </div>
                     </div>
 
                     <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex justify-end gap-2">
-                        <button type="button" @click="modalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold transition-colors cursor-pointer">
+                        <button type="button" @click="modalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold transition-colors">
                             Batal
                         </button>
-                        <button type="submit" :disabled="saving" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
-                            <span x-show="saving" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <button type="submit" :disabled="saving" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5">
                             <span x-text="saving ? 'Menyimpan...' : (isEdit ? 'Simpan Perubahan' : 'Tambah Tingkat Kelas')"></span>
                         </button>
                     </div>
                 </form>
 
-            </div>
-        </div>
-
-        <!-- MODAL KONFIRMASI IN-APP (Aman dari native alert/confirm loop) -->
-        <div x-show="confirmModal.open" x-cloak style="display: none; margin-top: 0px !important; z-index: 9999;"
-            class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-            @click.self="confirmModal.open = false"
-            @keydown.escape.window="confirmModal.open = false">
-            
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col p-6 text-center animate-in fade-in zoom-in-95 duration-150"
-                @click.stop>
-                
-                <div class="w-12 h-12 rounded-full mx-auto flex items-center justify-center mb-4 bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
-                    <i data-lucide="trash-2" class="w-6 h-6"></i>
-                </div>
-
-                <h3 class="text-base font-bold text-slate-900 dark:text-slate-50" x-text="confirmModal.title"></h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed" x-html="confirmModal.message"></p>
-
-                <div class="mt-6 flex items-center justify-center gap-3">
-                    <button type="button" @click="confirmModal.open = false" :disabled="confirmModal.loading"
-                        class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold transition-colors cursor-pointer">
-                        Batal
-                    </button>
-                    <button type="button" @click="executeConfirmDelete()" :disabled="confirmModal.loading"
-                        class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
-                        <span x-show="confirmModal.loading" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                        <span>Hapus Permanen</span>
-                    </button>
-                </div>
             </div>
         </div>
 
@@ -316,13 +275,6 @@
                     order: 1,
                     description: '',
                 },
-                confirmModal: {
-                    open: false,
-                    id: null,
-                    title: '',
-                    message: '',
-                    loading: false
-                },
 
                 openCreateModal() {
                     this.isEdit = false;
@@ -334,9 +286,6 @@
                         description: '',
                     };
                     this.modalOpen = true;
-                    this.$nextTick(() => {
-                        if (window.lucide) lucide.createIcons();
-                    });
                 },
 
                 openEditModal(id) {
@@ -349,26 +298,21 @@
                     .then(res => res.json())
                     .then(res => {
                         if (res.success) {
-                            const l = res.class_level;
+                            const lvl = res.class_level;
                             this.isEdit = true;
                             this.formData = {
-                                id: l.id,
-                                name: l.name,
-                                code: l.code,
-                                order: l.order || 1,
-                                description: l.description || '',
+                                id: lvl.id,
+                                name: lvl.name,
+                                code: lvl.code,
+                                order: lvl.order,
+                                description: lvl.description || '',
                             };
                             this.modalOpen = true;
-                            this.$nextTick(() => {
-                                if (window.lucide) lucide.createIcons();
-                            });
                         }
                     })
                     .catch(err => {
-                        if (window.showToastNotification) {
-                            window.showToastNotification("Gagal mengambil data: " + err.message, "error");
-                        } else {
-                            alert("Gagal mengambil data: " + err.message);
+                        if (typeof window.showToast === 'function') {
+                            window.showToast('Perhatian!', 'Gagal mengambil data tingkat kelas: ' + err.message, 'error');
                         }
                     });
                 },
@@ -389,86 +333,65 @@
                         },
                         body: JSON.stringify(this.formData)
                     })
-                    .then(async res => {
+                    .then(res => res.json())
+                    .then(res => {
                         this.saving = false;
-                        const data = await res.json();
-                        if (res.ok && data.success) {
+                        if (res.success) {
                             this.modalOpen = false;
-                            if (window.setPendingToast) {
-                                window.setPendingToast(data.message || 'Tingkat kelas berhasil disimpan!', 'success');
+                            if (typeof window.setPendingToast === 'function') {
+                                window.setPendingToast(res.message || 'Tingkat kelas berhasil disimpan!', 'success');
                             }
                             window.location.reload();
                         } else {
-                            const errMsg = data.message || (data.errors ? Object.values(data.errors).flat().join(', ') : 'Terjadi kesalahan saat menyimpan.');
-                            if (window.showToastNotification) {
-                                window.showToastNotification(errMsg, 'error');
-                            } else {
-                                alert(errMsg);
+                            if (typeof window.showToast === 'function') {
+                                window.showToast('Perhatian!', res.message || 'Gagal menyimpan tingkat kelas.', 'error');
                             }
                         }
                     })
                     .catch(err => {
                         this.saving = false;
-                        if (window.showToastNotification) {
-                            window.showToastNotification('Error: ' + err.message, 'error');
-                        } else {
-                            alert('Error: ' + err.message);
+                        if (typeof window.showToast === 'function') {
+                            window.showToast('Perhatian!', 'Error: ' + err.message, 'error');
                         }
                     });
                 },
 
-                confirmDeleteLevel(id, name) {
-                    this.confirmModal = {
-                        open: true,
-                        id: id,
-                        title: 'Hapus Tingkat Kelas?',
-                        message: `Apakah Anda yakin ingin menghapus Tingkat Kelas <strong>${name}</strong>? Data yang telah dihapus tidak dapat dipulihkan.`,
-                        loading: false
-                    };
-                    this.$nextTick(() => {
-                        if (window.lucide) lucide.createIcons();
-                    });
-                },
-
-                executeConfirmDelete() {
-                    if (this.confirmModal.loading) return;
-                    this.confirmModal.loading = true;
-
-                    fetch(`/class-levels/${this.confirmModal.id}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        }
-                    })
-                    .then(async res => {
-                        this.confirmModal.loading = false;
-                        const data = await res.json();
-                        if (res.ok && data.success) {
-                            this.confirmModal.open = false;
-                            if (window.setPendingToast) {
-                                window.setPendingToast(data.message || 'Tingkat kelas berhasil dihapus!', 'success');
+                deleteLevel(id, name) {
+                    const action = () => {
+                        fetch(`/class-levels/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             }
-                            window.location.reload();
-                        } else {
-                            const errMsg = data.message || 'Gagal menghapus tingkat kelas.';
-                            if (window.showToastNotification) {
-                                window.showToastNotification(errMsg, 'error');
+                        })
+                        .then(res => res.json())
+                        .then(res => {
+                            if (res.success) {
+                                if (typeof window.setPendingToast === 'function') {
+                                    window.setPendingToast(res.message || 'Tingkat kelas berhasil dihapus!', 'success');
+                                }
+                                window.location.reload();
                             } else {
-                                alert(errMsg);
+                                if (typeof window.showToast === 'function') {
+                                    window.showToast('Perhatian!', res.message || 'Gagal menghapus tingkat kelas.', 'error');
+                                }
                             }
-                        }
-                    })
-                    .catch(err => {
-                        this.confirmModal.loading = false;
-                        if (window.showToastNotification) {
-                            window.showToastNotification('Error: ' + err.message, 'error');
-                        } else {
-                            alert('Error: ' + err.message);
-                        }
-                    });
+                        })
+                        .catch(err => {
+                            if (typeof window.showToast === 'function') {
+                                window.showToast('Perhatian!', 'Error: ' + err.message, 'error');
+                            }
+                        });
+                    };
+
+                    if (typeof showGlobalConfirmModal === 'function') {
+                        showGlobalConfirmModal(`Apakah Anda yakin ingin menghapus Tingkat Kelas "${name}"?`, action, true);
+                    } else if (confirm(`Apakah Anda yakin ingin menghapus Tingkat Kelas "${name}"?`)) {
+                        action();
+                    }
                 }
-            }
+            };
         }
     </script>
 </x-admin-layout>
