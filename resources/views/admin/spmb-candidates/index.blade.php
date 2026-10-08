@@ -2,54 +2,39 @@
     <div class="p-6 space-y-6" x-data="spmbCandidateApp()">
 
         <!-- HEADER / ACTION BAR -->
-        <section class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 w-full text-left">
+        <section class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <div class="flex items-center gap-2.5">
-                    <div class="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/20">
-                        <i data-lucide="user-plus" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
-                            SPMB
-                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 font-semibold border border-emerald-200 dark:border-emerald-800">
-                                Unit SD
-                            </span>
-                        </h2>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Data pendaftar dan calon murid yang masuk dari sistem pendaftaran SPMB Pusat.</p>
-                    </div>
+                <div class="flex items-center gap-2">
+                    <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
+                        SPMB
+                        <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 font-bold border border-emerald-200 dark:border-emerald-800">
+                            Unit SD
+                        </span>
+                    </h2>
                 </div>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Data pendaftar dan calon murid yang masuk dari sistem pendaftaran SPMB Pusat.</p>
             </div>
 
-            <!-- ACTION CONTROLS: TAHUN AJARAN & SYNC BUTTON -->
-            <div class="flex flex-wrap items-center gap-3 shrink-0">
-                <!-- Dropdown Tahun Ajaran -->
-                <form id="filter-period-form" method="GET" action="{{ route('spmb.candidates.index') }}" class="flex items-center">
-                    <div class="relative">
-                        <select name="period" onchange="this.form.submit()" 
-                            class="appearance-none pl-8 pr-8 py-2 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer">
-                            <option value="all" {{ $selectedYear === 'all' ? 'selected' : '' }}>Semua Tahun Pelajaran (Tapel)</option>
-                            @foreach($academicYearOptions as $opt)
-                                <option value="{{ $opt['value'] }}" {{ ($selectedYear === $opt['value'] || str_replace('-', '/', $selectedYear) === str_replace('-', '/', $opt['value'])) ? 'selected' : '' }}>
-                                    Tapel {{ $opt['label'] }} {{ $opt['is_active'] ? '(Aktif)' : '' }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                    </div>
-                </form>
+            <!-- ACTION CONTROLS: TEST CONNECTION & SYNC BUTTON -->
+            <div class="flex items-center gap-2.5 shrink-0 flex-wrap">
+                <!-- Tombol Tes Koneksi API -->
+                <button type="button" @click="testConnection()" :disabled="testingConnection"
+                    class="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 disabled:opacity-50 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer">
+                    <i data-lucide="radio" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" :class="{ 'animate-pulse': testingConnection }"></i>
+                    <span x-text="testingConnection ? 'Memeriksa...' : 'Tes Koneksi'">Tes Koneksi</span>
+                </button>
 
                 <!-- Tombol Tarik Data dari SPMB -->
                 <button type="button" @click="syncData()" :disabled="syncing"
-                    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow-sm transition-all duration-150 cursor-pointer">
+                    class="inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-all duration-150 cursor-pointer">
                     <i data-lucide="refresh-cw" class="w-3.5 h-3.5" :class="{ 'animate-spin': syncing }"></i>
                     <span x-text="syncing ? 'Menyinkronkan...' : 'Tarik Data dari SPMB'">Tarik Data dari SPMB</span>
                 </button>
             </div>
         </section>
 
-        <!-- STATS CARDS GRID (Compact) -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <!-- COMPACT STAT CARDS GRID -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 {{ !empty($stats['has_payment_data']) ? 'lg:grid-cols-4' : 'lg:grid-cols-3' }} gap-3 sm:gap-3.5">
             <!-- Stat 1: Total Pendaftar -->
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
                 <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/40">
@@ -58,127 +43,168 @@
                 <div class="min-w-0">
                     <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Pendaftar</p>
                     <div class="flex items-baseline gap-1.5 mt-0.5">
-                        <h3 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-mono">{{ number_format($stats['total']) }}</h3>
-                        <span class="text-[10px] text-slate-400 font-medium truncate">Calon</span>
+                        <h3 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-mono">
+                            {{ number_format($stats['total']) }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">({{ $selectedYear === 'all' ? 'Semua TA' : 'TA ' . $selectedYear }})</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Stat 2: Terverifikasi / Diterima -->
+            <!-- Stat 2: Terverifikasi / Lolos Berkas -->
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
                 <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40">
-                    <i data-lucide="badge-check" class="w-5 h-5"></i>
+                    <i data-lucide="user-check" class="w-5 h-5"></i>
                 </div>
                 <div class="min-w-0">
                     <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Terverifikasi</p>
                     <div class="flex items-baseline gap-1.5 mt-0.5">
-                        <h3 class="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">{{ number_format($stats['verified']) }}</h3>
-                        <span class="text-[10px] text-slate-400 font-medium truncate">Diterima</span>
+                        <h3 class="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
+                            {{ number_format($stats['verified']) }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Lolos Seleksi</span>
                     </div>
                 </div>
             </div>
 
             <!-- Stat 3: Pembayaran Lunas -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
-                <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40">
-                    <i data-lucide="wallet" class="w-5 h-5"></i>
-                </div>
-                <div class="min-w-0">
-                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Biaya Lunas</p>
-                    <div class="flex items-baseline gap-1.5 mt-0.5">
-                        <h3 class="text-xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400 font-mono">{{ number_format($stats['paid']) }}</h3>
-                        <span class="text-[10px] text-slate-400 font-medium truncate">Siswa</span>
+            @if(!empty($stats['has_payment_data']))
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40">
+                        <i data-lucide="wallet" class="w-5 h-5"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Lunas Biaya</p>
+                        <div class="flex items-baseline gap-1.5 mt-0.5">
+                            <h3 class="text-xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400 font-mono">
+                                {{ number_format($stats['paid']) }}
+                            </h3>
+                            <span class="text-[10px] text-slate-400 font-medium truncate">Administrasi</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endif
 
-            <!-- Stat 4: Masuk Siswa Aktif -->
+            <!-- Stat 4: Sudah Masuk Siswa Aktif -->
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
                 <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-100 dark:border-purple-900/40">
                     <i data-lucide="graduation-cap" class="w-5 h-5"></i>
                 </div>
                 <div class="min-w-0">
-                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Masuk Rombel</p>
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Siswa Aktif</p>
                     <div class="flex items-baseline gap-1.5 mt-0.5">
-                        <h3 class="text-xl font-bold tracking-tight text-purple-600 dark:text-purple-400 font-mono">{{ number_format($stats['enrolled']) }}</h3>
-                        <span class="text-[10px] text-slate-400 font-medium truncate">Siswa SD</span>
+                        <h3 class="text-xl font-bold tracking-tight text-purple-600 dark:text-purple-400 font-mono">
+                            {{ number_format($stats['enrolled']) }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Masuk Rombel</span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- FILTERS & SEARCH BAR -->
-        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs w-full">
-            <form method="GET" action="{{ route('spmb.candidates.index') }}" class="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
-                <!-- Keep Period in Query -->
-                <input type="hidden" name="period" value="{{ $selectedYear }}">
+        <!-- SEARCH & FILTER TOOLBAR -->
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 sm:p-4 shadow-xs">
+            <form method="GET" action="{{ route('spmb.candidates.index') }}" class="flex flex-col gap-3">
+                <div class="flex flex-wrap items-center gap-2.5 w-full">
+                    
+                    <!-- Search input -->
+                    <div class="relative flex-1 min-w-[220px] max-w-sm">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari siswa, no. reg, NIK, orang tua..."
+                            class="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    </div>
 
-                <!-- Search Input -->
-                <div class="relative w-full md:max-w-md">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <i data-lucide="search" class="w-4 h-4 text-slate-400 dark:text-slate-500"></i>
-                    </span>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama calon siswa, no. pendaftaran, NIK, ortu..."
-                        style="padding-left: 2.25rem;"
-                        class="w-full h-9 pr-4 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-50 placeholder-slate-400 dark:placeholder-slate-500 transition-all shadow-inner">
-                </div>
-
-                <!-- Filter Select Toolbar -->
-                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                    <!-- Status Pendaftaran -->
-                    <select name="status" onchange="this.form.submit()"
-                        class="h-9 px-3 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-xs">
-                        <option value="all">Semua Status Pendaftaran</option>
-                        <option value="verified" {{ request('status') === 'verified' ? 'selected' : '' }}>Terverifikasi</option>
-                        <option value="accepted" {{ request('status') === 'accepted' ? 'selected' : '' }}>Diterima</option>
-                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Menunggu Verifikasi</option>
-                    </select>
-
-                    <!-- Status Pembayaran -->
-                    <select name="payment_status" onchange="this.form.submit()"
-                        class="h-9 px-3 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-xs">
-                        <option value="all">Semua Status Bayar</option>
-                        <option value="paid" {{ request('payment_status') === 'paid' ? 'selected' : '' }}>Lunas</option>
-                        <option value="unpaid" {{ request('payment_status') === 'unpaid' ? 'selected' : '' }}>Belum Lunas</option>
-                    </select>
-
-                    <!-- Kategori Murid (Reguler / PDBK MBK) -->
-                    <select name="student_type" onchange="this.form.submit()"
-                        class="h-9 px-3 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-xs">
-                        <option value="">Semua Kategori (Jalur)</option>
-                        <option value="REGULER" {{ request('student_type') === 'REGULER' ? 'selected' : '' }}>Reguler</option>
-                        <option value="PDBK" {{ request('student_type') === 'PDBK' ? 'selected' : '' }}>PDBK / MBK (Inklusi)</option>
-                    </select>
-
-                    <!-- Gelombang -->
-                    @if(count($availableWaves) > 1)
-                        <select name="wave" onchange="this.form.submit()"
-                            class="h-9 px-3 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-xs">
-                            <option value="all">Semua Gelombang</option>
-                            @foreach($availableWaves as $w)
-                                <option value="{{ $w }}" {{ request('wave') === $w ? 'selected' : '' }}>{{ $w }}</option>
+                    <!-- Dropdowns Filter Sejajar -->
+                    <div class="flex flex-wrap items-center gap-2 flex-1 justify-start xl:justify-end">
+                        <!-- 1. Tahun Pelajaran -->
+                        <select name="period" onchange="this.form.submit()" 
+                            class="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer">
+                            <option value="all" {{ $selectedYear === 'all' ? 'selected' : '' }}>Semua Tahun</option>
+                            @foreach($academicYears as $year)
+                                <option value="{{ $year }}" {{ $selectedYear === $year ? 'selected' : '' }}>
+                                    {{ $year }}
+                                </option>
                             @endforeach
                         </select>
-                    @endif
 
-                    <!-- Filter Jumlah Baris (Per Page) -->
-                    <select name="per_page" onchange="this.form.submit()"
-                        class="h-9 px-3 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-xs"
-                        title="Tampilkan jumlah baris per halaman">
-                        <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15 baris</option>
-                        <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 baris</option>
-                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 baris</option>
-                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 baris</option>
-                        <option value="all" {{ request('per_page') === 'all' ? 'selected' : '' }}>Semua Baris</option>
-                    </select>
+                        <!-- 2. Jalur Masuk -->
+                        <select name="registration_type" onchange="this.form.submit()" 
+                            class="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer">
+                            <option value="all">Semua Jalur</option>
+                            @foreach($registrationTypes as $rType)
+                                <option value="{{ $rType }}" {{ request('registration_type') === $rType ? 'selected' : '' }}>
+                                    {{ $rType }}
+                                </option>
+                            @endforeach
+                        </select>
 
-                    @if(request()->hasAny(['search', 'status', 'payment_status', 'student_type', 'wave']) || (request('per_page') && request('per_page') != 15))
-                        <a href="{{ route('spmb.candidates.index', ['period' => $selectedYear]) }}" 
-                            class="h-9 px-3 inline-flex items-center justify-center text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors"
-                            title="Reset Filter">
-                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-                        </a>
-                    @endif
+                        <!-- 3. Gelombang -->
+                        @if(count($availableWaves) > 1)
+                            <select name="wave" onchange="this.form.submit()" 
+                                class="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer">
+                                <option value="all">Semua Gelombang</option>
+                                @foreach($availableWaves as $w)
+                                    <option value="{{ $w }}" {{ request('wave') === $w ? 'selected' : '' }}>{{ $w }}</option>
+                                @endforeach
+                            </select>
+                        @endif
+
+                        <!-- 4. Pilihan Kelas -->
+                        <select name="admission_level" onchange="this.form.submit()" 
+                            class="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer">
+                            <option value="all">Semua Kelas</option>
+                            @foreach($availableAdmissionLevels as $lvl)
+                                <option value="{{ $lvl }}" {{ request('admission_level') === $lvl ? 'selected' : '' }}>{{ $lvl }}</option>
+                            @endforeach
+                        </select>
+
+                        <!-- 5. Kategori Murid (Reguler / PDBK) -->
+                        <select name="student_type" onchange="this.form.submit()" 
+                            class="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer">
+                            <option value="all">Semua Kategori</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat }}" {{ (request('student_type') === $cat || request('category') === $cat) ? 'selected' : '' }}>{{ $cat }}</option>
+                            @endforeach
+                        </select>
+
+                        <!-- 6. Status Pendaftaran -->
+                        <select name="status" onchange="this.form.submit()" 
+                            class="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer">
+                            <option value="all">Semua Status Verifikasi</option>
+                            <option value="verified" {{ request('status') === 'verified' ? 'selected' : '' }}>Terverifikasi</option>
+                            <option value="accepted" {{ request('status') === 'accepted' ? 'selected' : '' }}>Diterima</option>
+                            <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Selesai (Completed)</option>
+                            <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Menunggu Verifikasi</option>
+                        </select>
+
+                        <!-- 7. Status Pembayaran -->
+                        <select name="payment_status" onchange="this.form.submit()" 
+                            class="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer">
+                            <option value="all">Semua Status Bayar</option>
+                            <option value="paid" {{ request('payment_status') === 'paid' ? 'selected' : '' }}>Lunas</option>
+                            <option value="unpaid" {{ request('payment_status') === 'unpaid' ? 'selected' : '' }}>Belum Lunas</option>
+                        </select>
+
+                        <!-- Filter Jumlah Baris (Per Page) -->
+                        <select name="per_page" onchange="this.form.submit()"
+                            class="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer"
+                            title="Tampilkan jumlah baris per halaman">
+                            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15 baris</option>
+                            <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25 baris</option>
+                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 baris</option>
+                            <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 baris</option>
+                            <option value="all" {{ request('per_page') === 'all' ? 'selected' : '' }}>Semua Baris</option>
+                        </select>
+
+                        @if(request()->hasAny(['search', 'registration_type', 'wave', 'admission_level', 'student_type', 'category', 'status', 'payment_status']) || (request('per_page') && request('per_page') != 15))
+                            <a href="{{ route('spmb.candidates.index', ['period' => $selectedYear]) }}" 
+                                class="p-2 inline-flex items-center justify-center text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors"
+                                title="Reset Filter Pencarian">
+                                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                            </a>
+                        @endif
+                    </div>
+
                 </div>
             </form>
         </section>
@@ -192,7 +218,7 @@
                             <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-12">No</th>
                             <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">No. Reg & Gelombang</th>
                             <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Calon Siswa</th>
-                            <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kategori Murid</th>
+                            <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kategori & Kelas</th>
                             <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Orang Tua / Kontak</th>
                             <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status SPMB</th>
                             <th class="px-5 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status Siswa</th>
@@ -217,10 +243,10 @@
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <div class="flex items-center gap-3">
-                                        @if($c->student_photo_url)
+                                        @if($c->student_photo_url && !str_ends_with(strtolower($c->student_photo_url), '.pdf'))
                                             <img src="{{ $c->student_photo_url }}" alt="{{ $c->full_name }}" class="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700 shrink-0">
                                         @else
-                                            <div class="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
+                                            <div class="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
                                                 {{ $c->initials }}
                                             </div>
                                         @endif
@@ -238,7 +264,7 @@
                                             <span class="text-[11px] text-slate-400">
                                                 {{ $c->gender === 'male' || $c->gender === 'L' ? 'Laki-laki' : ($c->gender === 'female' || $c->gender === 'P' ? 'Perempuan' : '-') }}
                                                 @if($c->birth_date)
-                                                    &bull; {{ $c->birth_date->age }} th
+                                                    &bull; {{ $c->age_string ?: ($c->birth_date->age . ' th') }}
                                                 @endif
                                             </span>
                                         </div>
@@ -254,7 +280,7 @@
                                         @if($isMbk)
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                                                 <i data-lucide="heart-handshake" class="w-3 h-3 text-purple-600 dark:text-purple-400"></i>
-                                                <span>PDBK (MBK)</span>
+                                                <span>PDBK (Inklusi)</span>
                                             </span>
                                             @if($c->special_needs_type)
                                                 <span class="text-[10px] text-purple-600 dark:text-purple-400 font-medium truncate max-w-[120px]" title="{{ $c->special_needs_type }}">
@@ -263,7 +289,7 @@
                                             @endif
                                         @else
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                                                {{ $c->target_class ?: 'Reguler' }}
+                                                {{ $c->target_class ?: 'Kelas 1' }}
                                             </span>
                                         @endif
                                     </div>
@@ -283,7 +309,7 @@
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <div class="flex flex-col gap-1">
-                                        @if(in_array($c->registration_status, ['verified', 'accepted', 'diterima', 'terverifikasi']))
+                                        @if(in_array($c->registration_status, ['verified', 'accepted', 'diterima', 'terverifikasi', 'completed', 'agreement_signed']))
                                             <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
                                                 <i data-lucide="check-circle" class="w-3 h-3"></i>
                                                 {{ ucfirst($c->registration_status) }}
@@ -310,22 +336,22 @@
                                 </td>
                                 <td class="px-5 py-3.5 text-center">
                                     @if($c->is_enrolled)
-                                        <div class="inline-flex flex-col items-center cursor-pointer group" @click="openEnrollModal({{ $c->id }})" title="Klik untuk ubah kelas / batalkan status">
+                                        <div class="inline-flex flex-col items-center cursor-pointer group" @click="openEnrollModal({{ $c->id }})" title="Klik untuk ubah rombel / batalkan status">
                                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900 transition-colors">
                                                 <i data-lucide="check" class="w-3 h-3"></i>
                                                 Siswa Aktif
                                             </span>
                                             @if($c->student)
                                                 <span class="text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                                                    NIS: {{ $c->student->nis }}
+                                                    NIS: {{ $c->student->nis }} &bull; {{ $c->student->classroom?->name ?? 'SD' }}
                                                 </span>
                                             @endif
                                         </div>
                                     @else
                                         <button type="button" @click="openEnrollModal({{ $c->id }})"
                                             class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-50 hover:bg-purple-600 text-purple-700 hover:text-white border border-purple-200 dark:border-purple-800/60 dark:bg-purple-950/30 dark:text-purple-300 dark:hover:bg-purple-600 transition-all cursor-pointer shadow-xs">
-                                            <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
-                                            Tandai Siswa Aktif
+                                            <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                                            Terima Siswa
                                         </button>
                                     @endif
                                 </td>
@@ -379,168 +405,482 @@
             </div>
         </section>
 
-        <!-- MODAL DETAIL PENDAFTAR -->
-        <div x-show="modalOpen" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="display: none; margin-top: 0px !important; z-index: 9999; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">
-            <div @click.outside="modalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+        <!-- ========================================================================= -->
+        <!-- MODAL DETAIL PENDAFTAR LENGKAP (4 TABS) -->
+        <!-- ========================================================================= -->
+        <div x-show="modalOpen" x-cloak class="fixed inset-0 z-[99999] flex items-center justify-center p-4" 
+            style="display: none; margin: 0px !important; margin-top: 0px !important; top: 0px !important; left: 0px !important; right: 0px !important; bottom: 0px !important; z-index: 99999 !important; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
+            
+            <div @click.outside="modalOpen = false" 
+                class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col text-left"
+                style="height: 85vh; max-height: 680px; min-height: 500px;">
                 
-                <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm z-10">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 font-bold text-sm flex items-center justify-center">
-                            <i data-lucide="user" class="w-5 h-5"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-base font-bold text-slate-900 dark:text-slate-50" x-text="selectedCandidate?.full_name || 'Detail Calon Siswa'"></h3>
-                            <p class="text-xs text-slate-400 mt-0.5">No. Reg: <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400" x-text="selectedCandidate?.registration_number"></span></p>
+                <!-- Modal Header -->
+                <div class="p-5 sm:p-6 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between bg-white dark:bg-slate-900 z-10 shrink-0">
+                    <div class="flex items-center gap-3.5 sm:gap-4 overflow-hidden">
+                        <template x-if="selectedCandidate?.student_photo_url && !selectedCandidate.student_photo_url.toLowerCase().endsWith('.pdf')">
+                            <img :src="selectedCandidate.student_photo_url" x-on:error="$event.target.style.display='none'" class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl object-cover ring-2 ring-emerald-500/20 shadow-xs shrink-0">
+                        </template>
+                        <template x-if="!selectedCandidate?.student_photo_url || selectedCandidate.student_photo_url.toLowerCase().endsWith('.pdf')">
+                            <div class="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold text-base sm:text-lg flex items-center justify-center shrink-0" 
+                                x-text="selectedCandidate?.full_name ? selectedCandidate.full_name.substring(0,2).toUpperCase() : 'PS'">
+                            </div>
+                        </template>
+                        <div class="min-w-0">
+                            <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-50 truncate" x-text="selectedCandidate?.full_name"></h3>
+                            
+                            <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono flex items-center gap-1.5 flex-wrap">
+                                <span>No. Reg: <strong class="text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.registration_number"></strong></span>
+                                <span>&bull;</span>
+                                <span>Kelas: <strong x-text="selectedCandidate?.target_class || 'Kelas 1'"></strong></span>
+                                <span>&bull;</span>
+                                <span><strong x-text="selectedCandidate?.wave || 'Gelombang 1'"></strong></span>
+                                <span>&bull;</span>
+                                <span>TA <strong x-text="selectedCandidate?.academic_year"></strong></span>
+                            </p>
                         </div>
                     </div>
-                    <button type="button" @click="modalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <button @click="modalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
 
-                <div class="p-6 space-y-6 text-xs">
-                    <!-- Section 1: Data Pribadi -->
-                    <div>
-                        <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-                            <i data-lucide="user-check" class="w-4 h-4 text-emerald-600"></i>
-                            1. Biodata Calon Siswa
-                        </h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                            <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                                <span class="text-slate-400 text-[10px] block">Nama Lengkap</span>
-                                <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.full_name || '-'"></span>
-                            </div>
-                            <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                                <span class="text-slate-400 text-[10px] block">Nama Panggilan</span>
-                                <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.nickname || '-'"></span>
-                            </div>
-                            <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                                <span class="text-slate-400 text-[10px] block">Jenis Kelamin</span>
-                                <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.gender === 'male' || selectedCandidate?.gender === 'L' ? 'Laki-laki' : 'Perempuan'"></span>
-                            </div>
-                            <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                                <span class="text-slate-400 text-[10px] block">Tempat, Tanggal Lahir</span>
-                                <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="(selectedCandidate?.birth_place ? selectedCandidate.birth_place + ', ' : '') + (selectedCandidate?.formatted_birth_date || '-')"></span>
-                            </div>
-                            <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                                <span class="text-slate-400 text-[10px] block">NIK / No. KK</span>
-                                <span class="font-mono font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.nik || '-'"></span>
-                            </div>
-                            <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                                <span class="text-slate-400 text-[10px] block">Asal Sekolah Sebelumnya</span>
-                                <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.previous_school || '-'"></span>
-                            </div>
-                            <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                                <span class="text-slate-400 text-[10px] block">Kategori Murid</span>
-                                <div class="mt-0.5 flex items-center gap-1.5 flex-wrap">
-                                    <template x-if="selectedCandidate?.student_type === 'PDBK' || selectedCandidate?.student_type === 'MBK' || selectedCandidate?.special_needs_type">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                                            PDBK / Inklusi (MBK)
-                                        </span>
-                                    </template>
-                                    <template x-if="!selectedCandidate?.student_type || (selectedCandidate?.student_type !== 'PDBK' && selectedCandidate?.student_type !== 'MBK' && !selectedCandidate?.special_needs_type)">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                                            Reguler
-                                        </span>
-                                    </template>
+                <!-- Detail Navigation Tabs -->
+                <div class="flex items-center border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-950/50 text-xs px-5 py-2 gap-2 overflow-x-auto no-scrollbar shrink-0">
+                    <button type="button" @click="detailTab = 'bio'"
+                        :class="detailTab === 'bio' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold'"
+                        class="px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shrink-0">
+                        <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                        <span>Biodata & Pendaftaran</span>
+                    </button>
+                    <button type="button" @click="detailTab = 'parents'"
+                        :class="detailTab === 'parents' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold'"
+                        class="px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shrink-0">
+                        <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                        <span>Orang Tua & Kontak</span>
+                    </button>
+                    <button type="button" @click="detailTab = 'payment'"
+                        x-show="selectedCandidate?.has_payment_access || selectedCandidate?.payment_status || (selectedCandidate?.fee_categories && selectedCandidate.fee_categories.length > 0) || (selectedCandidate?.formatted_payments && selectedCandidate.formatted_payments.length > 0)"
+                        :class="detailTab === 'payment' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold'"
+                        class="px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shrink-0">
+                        <i data-lucide="wallet" class="w-3.5 h-3.5"></i>
+                        <span>Pembayaran & Biaya</span>
+                    </button>
+                    <button type="button" @click="detailTab = 'docs'"
+                        :class="detailTab === 'docs' ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold'"
+                        class="px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shrink-0">
+                        <i data-lucide="paperclip" class="w-3.5 h-3.5"></i>
+                        <span>Berkas Dokumen (<span x-text="formattedDocuments.length"></span>)</span>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6 overflow-y-auto flex-1 space-y-6 text-xs" style="flex: 1 1 0%; min-height: 0;" x-show="selectedCandidate">
+
+                    <!-- TAB 1: BIODATA CALON SISWA & SPMB -->
+                    <div x-show="detailTab === 'bio'" class="space-y-4">
+                        <div class="p-4 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 rounded-xl space-y-3">
+                            <h4 class="text-xs font-bold text-emerald-900 dark:text-emerald-300 uppercase tracking-wider flex items-center gap-2 border-b border-emerald-200 dark:border-emerald-800/50 pb-2">
+                                <i data-lucide="clipboard-list" class="w-4 h-4 text-emerald-600"></i>
+                                Informasi Pendaftaran SPMB
+                            </h4>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Tahun Ajaran</span>
+                                    <span class="font-bold text-slate-800 dark:text-slate-200" x-text="'TA ' + (selectedCandidate?.academic_year || '-')"></span>
                                 </div>
-                                <template x-if="selectedCandidate?.special_needs_type">
-                                    <span class="text-[10px] font-medium text-purple-600 dark:text-purple-400 block mt-0.5" x-text="'Diagnosa: ' + selectedCandidate.special_needs_type"></span>
-                                </template>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Pilihan Kelas</span>
+                                    <span class="font-bold text-purple-700 dark:text-purple-300" x-text="selectedCandidate?.target_class || 'Kelas 1'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Kategori Murid</span>
+                                    <span class="font-bold" :class="selectedCandidate?.category === 'PDBK' ? 'text-purple-700 dark:text-purple-300' : 'text-slate-800 dark:text-slate-200'" x-text="selectedCandidate?.category === 'PDBK' ? '🌟 PDBK (Inklusi)' : 'Reguler'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Jalur Masuk</span>
+                                    <span class="font-bold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.registration_type || 'Murid Baru'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Gelombang</span>
+                                    <span class="font-bold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.wave || 'Gelombang 1'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Status Seleksi</span>
+                                    <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="selectedCandidate?.registration_status || 'Verified'"></span>
+                                </div>
                             </div>
-                            <div class="sm:col-span-2 lg:col-span-3 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                                <span class="text-slate-400 text-[10px] block">Alamat Domisili</span>
-                                <span class="font-medium text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.address || '-'"></span>
+                        </div>
+
+                        <!-- IDENTITAS LENGKAP -->
+                        <div class="p-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl space-y-4">
+                            <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 dark:border-slate-700/60 pb-2.5 text-emerald-700 dark:text-emerald-400">
+                                <i data-lucide="user-check" class="w-4 h-4"></i>
+                                Identitas Lengkap Calon Siswa
+                            </h4>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Nama Lengkap</span>
+                                    <span class="font-bold text-slate-900 dark:text-slate-100 text-xs" x-text="selectedCandidate?.full_name"></span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Nama Panggilan</span>
+                                    <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.nickname || '-'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Jenis Kelamin</span>
+                                    <span class="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1 mt-0.5">
+                                        <span x-text="selectedCandidate?.gender === 'L' || selectedCandidate?.gender === 'male' ? '👦 Laki-laki' : (selectedCandidate?.gender === 'P' || selectedCandidate?.gender === 'female' ? '👧 Perempuan' : selectedCandidate?.gender || '-')"></span>
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Tempat, Tanggal Lahir</span>
+                                    <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="(selectedCandidate?.birth_place ? selectedCandidate.birth_place + ', ' : '') + (selectedCandidate?.formatted_birth_date || '-')"></span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">NIK</span>
+                                    <span class="font-mono font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.nik || '-'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">No. Kartu Keluarga (KK)</span>
+                                    <span class="font-mono font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.no_kk || '-'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">NISN</span>
+                                    <span class="font-mono font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.nisn || '-'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Asal TK / Sekolah Asal</span>
+                                    <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.previous_school || '-'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Kebutuhan Khusus (PDBK)</span>
+                                    <span class="font-semibold text-purple-700 dark:text-purple-300" x-text="selectedCandidate?.special_needs_type || (selectedCandidate?.student_type === 'PDBK' ? 'Inklusi (MBK)' : 'Tidak Ada')"></span>
+                                </div>
+                                <div class="sm:col-span-2 lg:col-span-3">
+                                    <span class="text-slate-400 block text-[11px]">Alamat Lengkap</span>
+                                    <span class="font-medium text-slate-800 dark:text-slate-200 leading-relaxed" x-text="selectedCandidate?.formatted_address || selectedCandidate?.address || '-'"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Section 2: Data Orang Tua -->
-                    <div>
-                        <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-                            <i data-lucide="users" class="w-4 h-4 text-emerald-600"></i>
-                            2. Data Orang Tua / Wali
-                        </h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                                <span class="text-slate-400 text-[10px] block">Nama Ayah</span>
-                                <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.father_name || '-'"></span>
-                                <span class="text-[10px] text-slate-400 block mt-0.5" x-text="selectedCandidate?.father_phone ? 'Telp: ' + selectedCandidate.father_phone : ''"></span>
+                    <!-- TAB 2: ORANG TUA & KONTAK -->
+                    <div x-show="detailTab === 'parents'" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Data Ayah -->
+                            <div class="p-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
+                                <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 dark:border-slate-700/60 pb-2 text-blue-600 dark:text-blue-400">
+                                    <i data-lucide="user" class="w-4 h-4"></i>
+                                    Data Ayah Kandung
+                                </h4>
+                                <div class="space-y-2 text-[11px]">
+                                    <div>
+                                        <span class="text-slate-400 block">Nama Lengkap Ayah</span>
+                                        <span class="font-bold text-slate-800 dark:text-slate-200 text-xs" x-text="selectedCandidate?.father_name || '-'"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 block">NIK Ayah</span>
+                                        <span class="font-mono font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.father_nik || '-'"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 block">Pekerjaan</span>
+                                        <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.father_job || '-'"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 block">Pendidikan Terakhir</span>
+                                        <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.father_education || '-'"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 block">Nomor Telepon / WhatsApp</span>
+                                        <span class="font-mono font-semibold text-emerald-600 dark:text-emerald-400" x-text="selectedCandidate?.father_phone || '-'"></span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40">
-                                <span class="text-slate-400 text-[10px] block">Nama Ibu</span>
-                                <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.mother_name || '-'"></span>
-                                <span class="text-[10px] text-slate-400 block mt-0.5" x-text="selectedCandidate?.mother_phone ? 'Telp: ' + selectedCandidate.mother_phone : ''"></span>
-                            </div>
-                            <div class="sm:col-span-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40 flex items-center justify-between">
-                                <div>
-                                    <span class="text-slate-400 text-[10px] block">Kontak WhatsApp Utama Ortu</span>
-                                    <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-xs" x-text="selectedCandidate?.parent_phone || '-'"></span>
+
+                            <!-- Data Ibu -->
+                            <div class="p-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
+                                <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 dark:border-slate-700/60 pb-2 text-rose-600 dark:text-rose-400">
+                                    <i data-lucide="user" class="w-4 h-4"></i>
+                                    Data Ibu Kandung
+                                </h4>
+                                <div class="space-y-2 text-[11px]">
+                                    <div>
+                                        <span class="text-slate-400 block">Nama Lengkap Ibu</span>
+                                        <span class="font-bold text-slate-800 dark:text-slate-200 text-xs" x-text="selectedCandidate?.mother_name || '-'"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 block">NIK Ibu</span>
+                                        <span class="font-mono font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.mother_nik || '-'"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 block">Pekerjaan</span>
+                                        <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.mother_job || '-'"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 block">Pendidikan Terakhir</span>
+                                        <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="selectedCandidate?.mother_education || '-'"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 block">Nomor Telepon / WhatsApp</span>
+                                        <span class="font-mono font-semibold text-emerald-600 dark:text-emerald-400" x-text="selectedCandidate?.mother_phone || '-'"></span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Tombol Hubungi WA -->
-                        <template x-if="modalWaUrl">
-                            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-start">
-                                <a :href="modalWaUrl" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors shadow-xs">
+                        <!-- Kontak Utama & WhatsApp Button -->
+                        <div class="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                            <div>
+                                <span class="text-slate-400 block text-[11px]">Nomor WhatsApp Utama Wali Murid</span>
+                                <span class="font-mono font-bold text-emerald-700 dark:text-emerald-400 text-sm" x-text="selectedCandidate?.parent_phone || '-'"></span>
+                            </div>
+                            <template x-if="modalWaUrl">
+                                <a :href="modalWaUrl" target="_blank" 
+                                    class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer">
                                     <i data-lucide="message-circle" class="w-4 h-4"></i>
-                                    Hubungi Orang Tua via WhatsApp
+                                    <span>Chat WhatsApp Orang Tua</span>
                                 </a>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: PEMBAYARAN & BIAYA SPMB -->
+                    <div x-show="detailTab === 'payment'" class="space-y-4">
+                        <div class="p-4 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/60 rounded-xl space-y-3">
+                            <h4 class="text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider flex items-center gap-2 border-b border-indigo-200 dark:border-indigo-800/50 pb-2">
+                                <i data-lucide="credit-card" class="w-4 h-4 text-indigo-600"></i>
+                                Status Pembayaran Administrasi SPMB
+                            </h4>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Status Bayar</span>
+                                    <span class="font-bold text-indigo-700 dark:text-indigo-400" x-text="selectedCandidate?.payment_status === 'paid' ? '✅ Lunas' : '⏳ Belum Lunas'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[11px]">Jumlah Riwayat Invoice</span>
+                                    <span class="font-bold text-slate-800 dark:text-slate-200" x-text="(selectedCandidate?.formatted_payments?.length || 0) + ' Transaksi'"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabel Riwayat Pembayaran -->
+                        <template x-if="selectedCandidate?.formatted_payments && selectedCandidate.formatted_payments.length > 0">
+                            <div class="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                                <table class="w-full text-xs">
+                                    <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-semibold">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left">No. Invoice</th>
+                                            <th class="px-3 py-2 text-left">Item Biaya</th>
+                                            <th class="px-3 py-2 text-right">Nominal</th>
+                                            <th class="px-3 py-2 text-left">Metode</th>
+                                            <th class="px-3 py-2 text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                        <template x-for="(p, pIdx) in selectedCandidate.formatted_payments" :key="pIdx">
+                                            <tr>
+                                                <td class="px-3 py-2.5 font-mono text-slate-700 dark:text-slate-300 font-medium" x-text="p.invoice_number"></td>
+                                                <td class="px-3 py-2.5 text-slate-800 dark:text-slate-200 font-semibold" x-text="p.payment_type"></td>
+                                                <td class="px-3 py-2.5 text-right font-mono font-bold text-slate-900 dark:text-slate-100" x-text="p.formatted_amount"></td>
+                                                <td class="px-3 py-2.5 text-slate-500" x-text="p.payment_method"></td>
+                                                <td class="px-3 py-2.5 text-center">
+                                                    <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold"
+                                                        :class="p.is_paid ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'"
+                                                        x-text="p.is_paid ? 'Lunas' : 'Pending'">
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
                             </div>
                         </template>
                     </div>
 
-                    <!-- Section 3: Berkas Dokumen -->
-                    <template x-if="formattedDocuments.length > 0">
-                        <div>
-                            <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-                                <i data-lucide="paperclip" class="w-4 h-4 text-emerald-600"></i>
-                                Berkas & Lampiran Pendaftaran (<span x-text="formattedDocuments.length"></span>)
-                            </h4>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <!-- TAB 4: BERKAS DOKUMEN -->
+                    <div x-show="detailTab === 'docs'" class="space-y-4">
+                        <template x-if="formattedDocuments.length > 0">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <template x-for="(doc, idx) in formattedDocuments" :key="idx">
                                     <a :href="doc.url" target="_blank" 
-                                        class="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40 hover:border-emerald-500 hover:bg-emerald-50/20 transition-all group">
-                                        <div class="flex items-center gap-2.5 overflow-hidden">
-                                            <div class="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 text-emerald-600 shrink-0">
+                                        class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40 hover:border-emerald-500 hover:bg-emerald-50/20 transition-all group cursor-pointer shadow-2xs">
+                                        <div class="flex items-center gap-3 overflow-hidden">
+                                            <div class="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-emerald-600 shrink-0">
                                                 <i data-lucide="file-text" class="w-4 h-4"></i>
                                             </div>
-                                            <span class="font-semibold text-slate-700 dark:text-slate-300 truncate" x-text="doc.name"></span>
+                                            <div class="min-w-0">
+                                                <span class="font-bold text-slate-800 dark:text-slate-200 truncate block text-xs" x-text="doc.name"></span>
+                                                <span class="text-[10.5px] text-slate-400">Klik untuk buka berkas</span>
+                                            </div>
                                         </div>
-                                        <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 shrink-0 ml-2"></i>
+                                        <i data-lucide="external-link" class="w-4 h-4 text-slate-400 group-hover:text-emerald-600 shrink-0 ml-2"></i>
                                     </a>
                                 </template>
                             </div>
-                        </div>
-                    </template>
+                        </template>
+                        <template x-if="formattedDocuments.length === 0">
+                            <div class="p-8 text-center text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                                <i data-lucide="file-x" class="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2"></i>
+                                <p class="font-semibold text-slate-600 dark:text-slate-400">Belum ada lampiran berkas yang diunggah</p>
+                            </div>
+                        </template>
+                    </div>
+
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-950/50">
+                <div class="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-950/50 shrink-0">
                     <div class="text-[11px] text-slate-400 font-mono">
-                        Sinkron: <span x-text="selectedCandidate?.synced_at || '-'"></span>
+                        ID: <span x-text="selectedCandidate?.spmb_registration_id || selectedCandidate?.id || '-'"></span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button @click="modalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-lg font-bold transition-colors cursor-pointer">
+                        <button type="button" @click="modalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-colors cursor-pointer">
                             Tutup
                         </button>
-                        <button type="button" @click="modalOpen = false; openEditModal(selectedCandidate.id)" class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/60 rounded-lg font-bold transition-colors border border-amber-200 dark:border-amber-800 flex items-center gap-1.5 cursor-pointer">
+                        <button type="button" @click="modalOpen = false; openEditModal(selectedCandidate.id)" class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/60 rounded-xl text-xs font-bold transition-colors border border-amber-200 dark:border-amber-800 flex items-center gap-1.5 cursor-pointer">
                             <i data-lucide="edit-3" class="w-4 h-4"></i>
-                            Edit Data
+                            <span>Edit Data</span>
                         </button>
-                        <button type="button" @click="modalOpen = false; openEnrollModal(selectedCandidate.id)" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold transition-colors shadow-xs flex items-center gap-1.5">
+                        <button type="button" @click="modalOpen = false; openEnrollModal(selectedCandidate.id)" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
                             <i data-lucide="graduation-cap" class="w-4 h-4"></i>
-                            Kelola Siswa Aktif
+                            <span x-text="selectedCandidate?.is_enrolled ? 'Kelola Siswa Aktif' : 'Terima Siswa Baru'"></span>
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- ========================================================================= -->
+        <!-- MODAL ENROLLMENT WIZARD (TERIMA / RESMIKAN SISWA AKTIF) -->
+        <!-- ========================================================================= -->
+        <div x-show="enrollModalOpen" x-cloak class="fixed inset-0 z-[99999] flex items-center justify-center p-4" 
+            style="display: none; margin: 0px !important; margin-top: 0px !important; top: 0px !important; left: 0px !important; right: 0px !important; bottom: 0px !important; z-index: 99999 !important; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
+            <div @click.outside="enrollModalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col text-left">
+                
+                <form @submit.prevent="submitEnroll">
+                    <!-- Modal Header -->
+                    <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-purple-50/50 dark:bg-purple-950/20">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold shadow-xs">
+                                <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-slate-900 dark:text-slate-50">
+                                    Penerimaan Siswa Baru SD
+                                </h3>
+                                <p class="text-xs text-slate-400 mt-0.5">Penetapan NIS dan penempatan rombongan belajar.</p>
+                            </div>
+                        </div>
+                        <button type="button" @click="enrollModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="p-6 space-y-4 text-xs" x-show="enrollData.candidate">
+                        
+                        <!-- Info Card Calon Siswa -->
+                        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 flex items-center gap-3">
+                            <template x-if="enrollData.candidate?.student_photo_url && !enrollData.candidate.student_photo_url.toLowerCase().endsWith('.pdf')">
+                                <img :src="enrollData.candidate.student_photo_url" class="w-10 h-10 rounded-full object-cover ring-1 ring-purple-500/30 shrink-0">
+                            </template>
+                            <template x-if="!enrollData.candidate?.student_photo_url || enrollData.candidate.student_photo_url.toLowerCase().endsWith('.pdf')">
+                                <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-xs shrink-0" x-text="enrollData.candidate?.full_name ? enrollData.candidate.full_name.substring(0, 2).toUpperCase() : 'PS'"></div>
+                            </template>
+                            <div class="overflow-hidden">
+                                <h4 class="font-bold text-slate-900 dark:text-slate-50 truncate" x-text="enrollData.candidate?.full_name"></h4>
+                                <p class="text-[11px] text-slate-400 font-mono" x-text="enrollData.candidate?.registration_number + ' • ' + (enrollData.candidate?.wave || 'Gelombang 1')"></p>
+                            </div>
+                        </div>
+
+                        <!-- NIS Input (Auto-suggested) -->
+                        <div>
+                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                Nomor Induk Siswa (NIS) <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="text" x-model="enrollForm.nis" required placeholder="Contoh: 27.SD.001"
+                                class="w-full h-9 px-3 text-xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-purple-700 dark:text-purple-300">
+                            <p class="text-[10px] text-slate-400 mt-1">Saran format otomatis berdasarkan tahun masuk dan nomor urut SD.</p>
+                        </div>
+
+                        <!-- Tahun Pelajaran & Rombel Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Tahun Pelajaran (Tapel) <span class="text-rose-500">*</span>
+                                </label>
+                                <select x-model="enrollForm.academic_year_id" @change="onEnrollYearChange()" required
+                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-50 cursor-pointer">
+                                    <template x-for="ay in enrollData.academic_years" :key="ay.id">
+                                        <option :value="ay.id" x-text="'Tapel ' + ay.name + (ay.is_active ? ' (Aktif)' : '')"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Pilih Rombongan Belajar <span class="text-rose-500">*</span>
+                                </label>
+                                <select x-model="enrollForm.classroom_id" required
+                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-50 cursor-pointer">
+                                    <option value="">Pilih Rombel...</option>
+                                    <template x-for="r in (enrollData.classrooms || [])" :key="r.id">
+                                        <option :value="r.id" x-text="(r.code ? r.code + ' - ' : '') + r.name + ' • ' + (r.active_students_count ?? 0) + '/' + (r.capacity ?? 28) + ' siswa'"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Tanggal Terdaftar -->
+                        <div>
+                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tanggal Masuk / Terdaftar</label>
+                            <input type="date" x-model="enrollForm.enrolled_date"
+                                class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-50">
+                        </div>
+
+                        <!-- Status Terdaftar Info jika sudah enrolled -->
+                        <template x-if="enrollData.candidate?.is_enrolled">
+                            <div class="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl flex items-start gap-2.5">
+                                <i data-lucide="info" class="w-4 h-4 text-amber-600 mt-0.5 shrink-0"></i>
+                                <div class="text-[11px] text-amber-800 dark:text-amber-200 leading-relaxed">
+                                    Calon murid ini telah berstatus <b>Siswa Aktif</b>. Anda dapat mengubah rombel atau membatalkan status siswa aktif melalui tombol di bawah.
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 flex items-center justify-between">
+                        <div>
+                            <template x-if="enrollData.candidate?.is_enrolled">
+                                <button type="button" @click="promptUnenroll(enrollData.candidate.id, enrollData.candidate.full_name)" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 dark:hover:bg-rose-900/60 rounded-xl text-xs font-bold transition-colors border border-rose-200 dark:border-rose-800 cursor-pointer">
+                                    Batalkan Status Siswa Aktif
+                                </button>
+                            </template>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" @click="enrollModalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-colors cursor-pointer">
+                                Batal
+                            </button>
+                            <button type="submit" :disabled="enrolling" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+                                <i data-lucide="check" class="w-4 h-4"></i>
+                                <span x-text="enrolling ? 'Memproses...' : (enrollData.candidate?.is_enrolled ? 'Simpan Perubahan' : 'Resmikan Siswa Aktif')"></span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <!-- ========================================================================= -->
         <!-- MODAL EDIT DATA PENDAFTAR -->
-        <div x-show="editModalOpen" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="display: none; margin-top: 0px !important; z-index: 9999; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">
-            <div @click.outside="editModalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+        <!-- ========================================================================= -->
+        <div x-show="editModalOpen" x-cloak class="fixed inset-0 z-[99999] flex items-center justify-center p-4" 
+            style="display: none; margin: 0px !important; margin-top: 0px !important; top: 0px !important; left: 0px !important; right: 0px !important; bottom: 0px !important; z-index: 99999 !important; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
+            <div @click.outside="editModalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col text-left">
                 
                 <form @submit.prevent="submitEdit" class="flex flex-col h-full overflow-hidden">
                     <!-- Modal Header -->
@@ -556,7 +896,7 @@
                                 <p class="text-xs text-slate-400 mt-0.5">Perbarui biodata calon murid, data orang tua, dan status pendaftaran.</p>
                             </div>
                         </div>
-                        <button type="button" @click="editModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <button type="button" @click="editModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
                             <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
                     </div>
@@ -609,8 +949,14 @@
                                 </div>
 
                                 <div>
-                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">NIK / No. KK</label>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">NIK</label>
                                     <input type="text" x-model="editForm.nik" placeholder="16 digit NIK"
+                                        class="w-full h-9 px-3 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                </div>
+
+                                <div>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">No. Kartu Keluarga (KK)</label>
+                                    <input type="text" x-model="editForm.no_kk" placeholder="16 digit No. KK"
                                         class="w-full h-9 px-3 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
                                 </div>
 
@@ -621,7 +967,7 @@
                                 </div>
 
                                 <div>
-                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Asal Sekolah TK/Sebelumnya</label>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Asal TK / Sekolah Sebelumnya</label>
                                     <input type="text" x-model="editForm.previous_school" placeholder="Nama TK asal"
                                         class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
                                 </div>
@@ -660,15 +1006,15 @@
                                 </div>
 
                                 <div>
-                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">No. HP / WA Ayah</label>
-                                    <input type="text" x-model="editForm.father_phone" placeholder="08..."
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">NIK Ayah</label>
+                                    <input type="text" x-model="editForm.father_nik" placeholder="16 digit NIK"
                                         class="w-full h-9 px-3 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
                                 </div>
 
                                 <div>
-                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Pekerjaan Ayah</label>
-                                    <input type="text" x-model="editForm.father_job" placeholder="Pekerjaan ayah"
-                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">No. HP / WA Ayah</label>
+                                    <input type="text" x-model="editForm.father_phone" placeholder="08..."
+                                        class="w-full h-9 px-3 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
                                 </div>
 
                                 <div>
@@ -678,15 +1024,15 @@
                                 </div>
 
                                 <div>
-                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">No. HP / WA Ibu</label>
-                                    <input type="text" x-model="editForm.mother_phone" placeholder="08..."
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">NIK Ibu</label>
+                                    <input type="text" x-model="editForm.mother_nik" placeholder="16 digit NIK"
                                         class="w-full h-9 px-3 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
                                 </div>
 
                                 <div>
-                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Pekerjaan Ibu</label>
-                                    <input type="text" x-model="editForm.mother_job" placeholder="Pekerjaan ibu"
-                                        class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">No. HP / WA Ibu</label>
+                                    <input type="text" x-model="editForm.mother_phone" placeholder="08..."
+                                        class="w-full h-9 px-3 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50">
                                 </div>
 
                                 <div class="sm:col-span-2 lg:col-span-3">
@@ -711,8 +1057,8 @@
                                     <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tahun Pelajaran (Tapel)</label>
                                     <select x-model="editForm.academic_year"
                                         class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50 cursor-pointer">
-                                        @foreach($academicYearOptions as $opt)
-                                            <option value="{{ $opt['value'] }}">Tapel {{ $opt['label'] }} {{ $opt['is_active'] ? '(Aktif)' : '' }}</option>
+                                        @foreach($academicYears as $year)
+                                            <option value="{{ $year }}">Tapel {{ $year }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -728,7 +1074,7 @@
                                     <select x-model="editForm.student_type"
                                         class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50 cursor-pointer">
                                         <option value="REGULER">Reguler</option>
-                                        <option value="PDBK">PDBK / MBK (Inklusi)</option>
+                                        <option value="PDBK">PDBK (Inklusi)</option>
                                     </select>
                                 </div>
 
@@ -744,6 +1090,7 @@
                                         class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50 cursor-pointer">
                                         <option value="verified">Terverifikasi (Verified)</option>
                                         <option value="accepted">Diterima (Accepted)</option>
+                                        <option value="completed">Selesai (Completed)</option>
                                         <option value="pending">Menunggu Verifikasi (Pending)</option>
                                     </select>
                                 </div>
@@ -767,10 +1114,10 @@
                             * Perubahan otomatis menyinkronkan data siswa aktif jika calon siswa sudah resmi terdaftar.
                         </span>
                         <div class="flex items-center gap-2">
-                            <button type="button" @click="editModalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer">
+                            <button type="button" @click="editModalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-colors cursor-pointer">
                                 Batal
                             </button>
-                            <button type="submit" :disabled="editing" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+                            <button type="submit" :disabled="editing" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
                                 <i data-lucide="check" class="w-4 h-4"></i>
                                 <span x-text="editing ? 'Menyimpan...' : 'Simpan Perubahan'"></span>
                             </button>
@@ -781,133 +1128,15 @@
             </div>
         </div>
 
-        <!-- MODAL ENROLLMENT WIZARD (TANDAI / ALOKASI SISWA AKTIF) -->
-        <div x-show="enrollModalOpen" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="display: none; margin-top: 0px !important; z-index: 9999; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);">
-            <div @click.outside="enrollModalOpen = false" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col">
-                
-                <form @submit.prevent="submitEnroll">
-                    <!-- Modal Header -->
-                    <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-purple-50/50 dark:bg-purple-950/20">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold shadow-xs">
-                                <i data-lucide="graduation-cap" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-base font-bold text-slate-900 dark:text-slate-50">
-                                    Penerimaan Siswa Baru SD
-                                </h3>
-                                <p class="text-xs text-slate-400 mt-0.5">Penetapan NIS dan penempatan rombongan belajar.</p>
-                            </div>
-                        </div>
-                        <button type="button" @click="enrollModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                            <i data-lucide="x" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-
-                    <!-- Modal Body -->
-                    <div class="p-6 space-y-4 text-xs" x-show="enrollData.candidate">
-                        
-                        <!-- Info Card Calon Siswa -->
-                        <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 flex items-center gap-3">
-                            <template x-if="enrollData.candidate?.student_photo_url">
-                                <img :src="enrollData.candidate.student_photo_url" class="w-10 h-10 rounded-full object-cover ring-1 ring-purple-500/30">
-                            </template>
-                            <template x-if="!enrollData.candidate?.student_photo_url">
-                                <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-xs" x-text="enrollData.candidate?.full_name ? enrollData.candidate.full_name.substring(0, 2).toUpperCase() : 'PS'"></div>
-                            </template>
-                            <div class="overflow-hidden">
-                                <h4 class="font-bold text-slate-900 dark:text-slate-50 truncate" x-text="enrollData.candidate?.full_name"></h4>
-                                <p class="text-[11px] text-slate-400 font-mono" x-text="enrollData.candidate?.registration_number + ' • ' + (enrollData.candidate?.wave || 'Gelombang 1')"></p>
-                            </div>
-                        </div>
-
-                        <!-- NIS Input (Auto-suggested) -->
-                        <div>
-                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                Nomor Induk Siswa (NIS) <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text" x-model="enrollForm.nis" required placeholder="Contoh: 27.SD.001"
-                                class="w-full h-9 px-3 text-xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-purple-700 dark:text-purple-300">
-                            <p class="text-[10px] text-slate-400 mt-1">Saran format otomatis berdasarkan tahun masuk dan nomor urut SD.</p>
-                        </div>
-
-                        <!-- Tahun Pelajaran & Rombel Grid -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                    Tahun Pelajaran (Tapel) <span class="text-rose-500">*</span>
-                                </label>
-                                <select x-model="enrollForm.academic_year_id" @change="onEnrollYearChange()" required
-                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-50 cursor-pointer">
-                                    <template x-for="ay in enrollData.academic_years" :key="ay.id">
-                                        <option :value="ay.id" x-text="'Tapel ' + ay.name"></option>
-                                    </template>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                    Pilih Rombongan Belajar <span class="text-rose-500">*</span>
-                                </label>
-                                <select x-model="enrollForm.classroom_id" required
-                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-50 cursor-pointer">
-                                    <option value="">Pilih Rombel...</option>
-                                    <template x-for="r in getAvailableClassrooms()" :key="r.id">
-                                        <option :value="r.id" x-text="(r.full_name || (r.code ? r.code + ' ' + r.name : r.name)) + ' (' + (r.class_level ? r.class_level.name : '') + ') • ' + (r.active_students_count ?? 0) + '/' + (r.capacity ?? 30) + ' siswa'"></option>
-                                    </template>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Tanggal Terdaftar -->
-                        <div>
-                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tanggal Masuk / Terdaftar</label>
-                            <input type="date" x-model="enrollForm.enrolled_date"
-                                class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-50">
-                        </div>
-
-                        <!-- Status Terdaftar Info jika sudah enrolled -->
-                        <template x-if="enrollData.candidate?.is_enrolled">
-                            <div class="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl flex items-start gap-2.5">
-                                <i data-lucide="info" class="w-4 h-4 text-amber-600 mt-0.5 shrink-0"></i>
-                                <div class="text-[11px] text-amber-800 dark:text-amber-200 leading-relaxed">
-                                    Calon murid ini telah berstatus <b>Siswa Aktif</b>. Anda dapat mengubah rombel atau membatalkan status siswa aktif melalui tombol di bawah.
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-
-                    <!-- Modal Footer -->
-                    <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 flex items-center justify-between">
-                        <div>
-                            <template x-if="enrollData.candidate?.is_enrolled">
-                                <button type="button" @click="promptUnenroll(enrollData.candidate.id, enrollData.candidate.full_name)" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 dark:hover:bg-rose-900/60 rounded-lg text-xs font-bold transition-colors border border-rose-200 dark:border-rose-800 cursor-pointer">
-                                    Batalkan Status Siswa Aktif
-                                </button>
-                            </template>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" @click="enrollModalOpen = false" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer">
-                                Batal
-                            </button>
-                            <button type="submit" :disabled="enrolling" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
-                                <i data-lucide="check" class="w-4 h-4"></i>
-                                <span x-text="enrolling ? 'Memproses...' : (enrollData.candidate?.is_enrolled ? 'Simpan Perubahan' : 'Resmikan Siswa Aktif')"></span>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-            </div>
-        </div>
-
+        <!-- ========================================================================= -->
         <!-- DELETE CONFIRMATION MODAL -->
+        <!-- ========================================================================= -->
         <div x-show="deleteModalOpen" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity"
             x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             <div @click.away="if(!deleting) deleteModalOpen = false"
-                class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4"
+                class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 text-left"
                 x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
                 <div class="flex items-start gap-3.5">
                     <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/50">
@@ -927,11 +1156,11 @@
 
                 <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <button type="button" @click="deleteModalOpen = false" :disabled="deleting"
-                        class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer">
+                        class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer">
                         Batal
                     </button>
                     <button type="button" @click="confirmDelete()" :disabled="deleting"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer">
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer">
                         <i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin" x-show="deleting"></i>
                         <span x-text="deleting ? 'Menghapus...' : 'Ya, Hapus Data'">Ya, Hapus Data</span>
                     </button>
@@ -939,13 +1168,15 @@
             </div>
         </div>
 
+        <!-- ========================================================================= -->
         <!-- UNENROLL CONFIRMATION MODAL -->
+        <!-- ========================================================================= -->
         <div x-show="unenrollModalOpen" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs transition-opacity"
             x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             <div @click.away="if(!unenrolling) unenrollModalOpen = false"
-                class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4"
+                class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 text-left"
                 x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
                 <div class="flex items-start gap-3.5">
                     <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-100 dark:border-amber-900/50">
@@ -964,11 +1195,11 @@
 
                 <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <button type="button" @click="unenrollModalOpen = false" :disabled="unenrolling"
-                        class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer">
+                        class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer">
                         Batal
                     </button>
                     <button type="button" @click="confirmUnenroll()" :disabled="unenrolling"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer">
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer">
                         <i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin" x-show="unenrolling"></i>
                         <span x-text="unenrolling ? 'Membatalkan...' : 'Ya, Batalkan Status'">Ya, Batalkan Status</span>
                     </button>
@@ -983,7 +1214,9 @@
         function spmbCandidateApp() {
             return {
                 syncing: false,
+                testingConnection: false,
                 modalOpen: false,
+                detailTab: 'bio',
                 enrollModalOpen: false,
                 editModalOpen: false,
                 deleteModalOpen: false,
@@ -1017,16 +1250,19 @@
                     birth_place: '',
                     birth_date: '',
                     nik: '',
+                    no_kk: '',
                     nisn: '',
                     student_type: 'REGULER',
                     special_needs_type: '',
-                    target_class: 'Reguler',
+                    target_class: 'Kelas 1',
                     academic_year: '{{ $selectedYear !== "all" ? $selectedYear : date("Y") . "/" . (date("Y") + 1) }}',
                     wave: 'Gelombang 1',
                     father_name: '',
+                    father_nik: '',
                     father_phone: '',
                     father_job: '',
                     mother_name: '',
+                    mother_nik: '',
                     mother_phone: '',
                     mother_job: '',
                     guardian_name: '',
@@ -1038,6 +1274,38 @@
                     previous_school: '',
                     registration_status: 'verified',
                     payment_status: 'unpaid',
+                },
+
+                testConnection() {
+                    if (this.testingConnection) return;
+                    this.testingConnection = true;
+
+                    fetch('{{ route("spmb.candidates.test-connection") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        this.testingConnection = false;
+                        if (data.success) {
+                            if (typeof window.showToast === 'function') {
+                                window.showToast('Koneksi Berhasil', data.message, 'success');
+                            }
+                        } else {
+                            if (typeof window.showToast === 'function') {
+                                window.showToast('Koneksi Gagal', data.message, 'error');
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        this.testingConnection = false;
+                        if (typeof window.showToast === 'function') {
+                            window.showToast('Kesalahan Jaringan', err.message, 'error');
+                        }
+                    });
                 },
 
                 syncData() {
@@ -1093,6 +1361,7 @@
                             this.selectedCandidate = res.candidate;
                             this.modalWaUrl = res.wa_url;
                             this.formattedDocuments = res.candidate.formatted_documents || [];
+                            this.detailTab = 'bio';
                             this.modalOpen = true;
 
                             this.$nextTick(() => {
@@ -1144,44 +1413,17 @@
                     });
                 },
 
-                getAvailableClassrooms() {
-                    if (!this.enrollData) return [];
-                    if (!this.enrollData.all_classrooms || this.enrollData.all_classrooms.length === 0) {
-                        return this.enrollData.classrooms || [];
-                    }
-                    const selectedAyId = parseInt(this.enrollForm.academic_year_id);
-                    if (!selectedAyId) return this.enrollData.all_classrooms;
-
-                    const selectedAy = (this.enrollData.academic_years || []).find(ay => ay.id === selectedAyId);
-                    const ayRawName = selectedAy ? (selectedAy.raw_name || selectedAy.name) : null;
-
-                    const matched = this.enrollData.all_classrooms.filter(r => {
-                        if (r.academic_year_id === selectedAyId) return true;
-                        if (ayRawName && r.academic_year && r.academic_year.name === ayRawName) return true;
-                        return false;
-                    });
-
-                    return matched.length > 0 ? matched : this.enrollData.all_classrooms;
-                },
-
                 onEnrollYearChange() {
                     const selectedAyId = parseInt(this.enrollForm.academic_year_id);
                     const selectedAy = (this.enrollData.academic_years || []).find(ay => ay.id === selectedAyId);
                     if (selectedAy) {
-                        const rawName = selectedAy.raw_name || selectedAy.name || '2026';
+                        const rawName = selectedAy.name || '2026';
                         const yearDigits = rawName.split('/')[0].slice(-2);
                         const prefix = `${yearDigits}.SD.`;
                         if (this.enrollForm.nis && (!this.enrollData.student || !this.enrollData.student.id)) {
                             const seqMatch = this.enrollForm.nis.match(/(\d+)$/);
                             const seq = seqMatch ? seqMatch[1] : '001';
                             this.enrollForm.nis = prefix + seq;
-                        }
-                    }
-                    const available = this.getAvailableClassrooms();
-                    if (available.length > 0) {
-                        const stillValid = available.some(r => r.id === parseInt(this.enrollForm.classroom_id));
-                        if (!stillValid) {
-                            this.enrollForm.classroom_id = available[0].id;
                         }
                     }
                 },
@@ -1286,16 +1528,19 @@
                                 birth_place: c.birth_place || '',
                                 birth_date: c.birth_date ? c.birth_date.substring(0, 10) : '',
                                 nik: c.nik || '',
+                                no_kk: c.no_kk || '',
                                 nisn: c.nisn || '',
                                 student_type: (c.student_type === 'PDBK' || c.student_type === 'MBK' || c.student_type === 'ABK' || c.target_class === 'MBK' || c.target_class === 'Inklusi' || c.special_needs_type) ? 'PDBK' : 'REGULER',
                                 special_needs_type: c.special_needs_type || '',
-                                target_class: c.target_class || 'Reguler',
+                                target_class: c.target_class || 'Kelas 1',
                                 academic_year: c.academic_year || '{{ $selectedYear !== "all" ? $selectedYear : date("Y") . "/" . (date("Y") + 1) }}',
                                 wave: c.wave || 'Gelombang 1',
                                 father_name: c.father_name || '',
+                                father_nik: c.father_nik || '',
                                 father_phone: c.father_phone || '',
                                 father_job: c.father_job || '',
                                 mother_name: c.mother_name || '',
+                                mother_nik: c.mother_nik || '',
                                 mother_phone: c.mother_phone || '',
                                 mother_job: c.mother_job || '',
                                 guardian_name: c.guardian_name || '',

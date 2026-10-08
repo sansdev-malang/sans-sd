@@ -124,10 +124,13 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
     // SPMB New Candidate Management
     Route::prefix('spmb')->name('spmb.')->group(function () {
         Route::get('/pendaftar', [SpmbCandidateController::class, 'index'])->name('candidates.index');
+        Route::get('/candidates', [SpmbCandidateController::class, 'index']);
         Route::get('/pendaftar/{id}', [SpmbCandidateController::class, 'show'])->name('candidates.show');
+        Route::get('/candidates/{id}', [SpmbCandidateController::class, 'show']);
         Route::put('/pendaftar/{id}', [SpmbCandidateController::class, 'update'])->name('candidates.update');
         Route::delete('/pendaftar/{id}', [SpmbCandidateController::class, 'destroy'])->name('candidates.destroy');
         Route::post('/pendaftar/sync', [SpmbCandidateController::class, 'sync'])->name('candidates.sync');
+        Route::post('/test-connection', [SpmbCandidateController::class, 'testConnection'])->name('candidates.test-connection');
         Route::get('/pendaftar/{id}/enroll-data', [SpmbCandidateController::class, 'getEnrollData'])->name('candidates.enroll-data');
         Route::post('/pendaftar/{id}/enroll', [SpmbCandidateController::class, 'enroll'])->name('candidates.enroll');
         Route::post('/pendaftar/{id}/unenroll', [SpmbCandidateController::class, 'unenroll'])->name('candidates.unenroll');

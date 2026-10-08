@@ -9,6 +9,8 @@ use App\Models\Student;
 use App\Services\SpmbIntegrationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class SpmbCandidateController extends Controller
 {
@@ -24,64 +26,58 @@ class SpmbCandidateController extends Controller
      */
     public function index(Request $request)
     {
-        // 1. Get available academic years from SANS Unit master
-        $unitAcademicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
-        $activeAcademicYear = $unitAcademicYears->firstWhere('is_active', true) ?? $unitAcademicYears->first();
+        // 1. Get dynamic master filter options from SPMB API / master data
+        $masterOptions = $this->service->getFilterOptions();
+        $defaultPeriodFromSpmb = $masterOptions['default_period'] ?? null;
 
-        // Unique yearly academic years for annual entities
-        $uniqueAcademicYears = $unitAcademicYears->groupBy('name')->map(function ($group) {
-            $activeInGroup = $group->firstWhere('is_active', true);
-            $chosen = $activeInGroup ?: $group->first();
-            $chosen->has_active = (bool) $activeInGroup;
-            return $chosen;
-        })->values();
-
-        // Also gather any academic years present in spmb_candidates table
-        $spmbDistinctYears = SpmbCandidate::select('academic_year')
-            ->whereNotNull('academic_year')
+        $rawCandidateYears = SpmbCandidate::whereNotNull('academic_year')
             ->distinct()
             ->pluck('academic_year')
-            ->map(function($y) { return str_replace('-', '/', trim($y)); })
+            ->toArray();
+        $rawMasterYears = AcademicYear::pluck('name')->toArray();
+        $apiPeriods = $masterOptions['periods'] ?? [];
+
+        $academicYears = collect(array_merge($rawCandidateYears, $rawMasterYears, $apiPeriods))
+            ->map(fn($y) => str_replace('-', '/', trim($y)))
             ->filter()
-            ->unique();
+            ->unique()
+            ->sortDesc()
+            ->values()
+            ->toArray();
 
-        // Build unified list of academic year options for SANS Unit
-        $academicYearOptions = collect();
-        foreach ($uniqueAcademicYears as $ay) {
-            $academicYearOptions->push([
-                'value' => $ay->name,
-                'label' => $ay->name,
-                'is_active' => (bool) $ay->has_active,
-            ]);
-        }
-        foreach ($spmbDistinctYears as $sy) {
-            if (!$academicYearOptions->contains('value', $sy)) {
-                $academicYearOptions->push([
-                    'value' => $sy,
-                    'label' => $sy,
-                    'is_active' => false,
-                ]);
-            }
-        }
-        $academicYearOptions = $academicYearOptions->sortByDesc('value')->values();
+        // Default year selection priority:
+        // 1. User query parameter 'period'
+        // 2. Default active registration period in SPMB (e.g. 2027/2028)
+        // 3. Most populated candidate year in database
+        // 4. Active academic year in SD
+        $defaultYear = $defaultPeriodFromSpmb;
+        if (!$defaultYear || !in_array($defaultYear, $academicYears)) {
+            $mostPopulatedYear = SpmbCandidate::whereNotNull('academic_year')
+                ->select('academic_year', DB::raw('count(*) as total'))
+                ->groupBy('academic_year')
+                ->orderByDesc('total')
+                ->value('academic_year');
+            
+            $activeMasterYear = AcademicYear::where('is_active', true)->value('name');
 
-        // Default period: if request has 'period', use it; otherwise default to active year or 'all'
-        $defaultPeriod = $activeAcademicYear ? $activeAcademicYear->name : ($academicYearOptions->first()['value'] ?? 'all');
-        $selectedYear = $request->get('period', $defaultPeriod);
+            $defaultYear = $mostPopulatedYear ?: ($activeMasterYear ?: ($academicYears[0] ?? 'all'));
+        }
+
+        $selectedYear = $request->get('period', $defaultYear);
+        if ($selectedYear && $selectedYear !== 'all') {
+            $selectedYear = str_replace('-', '/', trim($selectedYear));
+        }
 
         // 2. Base Query
-        $query = SpmbCandidate::with('student.classroom');
+        $query = SpmbCandidate::with('student.classroom.classLevel');
 
         if ($selectedYear && $selectedYear !== 'all') {
             $slashYear = str_replace('-', '/', $selectedYear);
             $hyphenYear = str_replace('/', '-', $selectedYear);
-            $query->where(function ($q) use ($slashYear, $hyphenYear) {
-                $q->where('academic_year', $slashYear)
-                  ->orWhere('academic_year', $hyphenYear);
-            });
+            $query->whereIn('academic_year', [$slashYear, $hyphenYear]);
         }
 
-        // Search Filter
+        // Search Filter (Keyword search for name, reg no, NIK, NISN, parent, phone)
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('full_name', 'like', "%{$search}%")
@@ -90,53 +86,74 @@ class SpmbCandidateController extends Controller
                   ->orWhere('nisn', 'like', "%{$search}%")
                   ->orWhere('father_name', 'like', "%{$search}%")
                   ->orWhere('mother_name', 'like', "%{$search}%")
-                  ->orWhere('parent_phone', 'like', "%{$search}%");
+                  ->orWhere('parent_phone', 'like', "%{$search}%")
+                  ->orWhere('previous_school', 'like', "%{$search}%");
             });
         }
 
-        $statusCol = \Illuminate\Support\Facades\Schema::hasColumn('spmb_candidates', 'registration_status') ? 'registration_status' : 'spmb_status';
-        $paymentCol = \Illuminate\Support\Facades\Schema::hasColumn('spmb_candidates', 'payment_status') ? 'payment_status' : 'spmb_payment_status';
-
-        // Status Filter
-        if ($status = $request->get('status')) {
-            if ($status !== 'all') {
-                $query->where($statusCol, $status);
+        // 1. Filter Jalur Masuk (registration_type)
+        if ($regType = $request->get('registration_type')) {
+            if ($regType !== 'all') {
+                $query->where(function($q) use ($regType) {
+                    $q->where('raw_payload', 'like', "%\"registration_type\":\"{$regType}\"%")
+                      ->orWhere('raw_payload', 'like', "%\"entry_type\":\"{$regType}\"%");
+                });
             }
         }
 
-        // Payment Filter
-        if ($payment = $request->get('payment_status')) {
-            if ($payment !== 'all') {
-                $query->where($paymentCol, $payment);
-            }
-        }
-
-        // Wave Filter
+        // 2. Filter Gelombang (wave)
         if ($wave = $request->get('wave')) {
             if ($wave !== 'all') {
                 $query->where('wave', $wave);
             }
         }
 
-        // Student Type (Kategori Murid: Reguler / PDBK) Filter
-        if ($studentType = $request->get('student_type')) {
-            if ($studentType === 'PDBK' || $studentType === 'MBK') {
-                $query->where(function ($q) {
-                    $q->where('student_type', 'like', '%PDBK%')
-                      ->orWhere('student_type', 'like', '%MBK%')
-                      ->orWhere('student_type', 'like', '%ABK%')
-                      ->orWhere('student_type', 'like', '%INKLUSI%')
-                      ->orWhere('target_class', 'like', '%MBK%')
-                      ->orWhere('target_class', 'like', '%INKLUSI%')
-                      ->orWhereNotNull('special_needs_type');
+        // 3. Filter Target Kelas (target_class / admission_level)
+        if ($admissionLevel = $request->get('admission_level')) {
+            if ($admissionLevel !== 'all') {
+                $query->where(function ($q) use ($admissionLevel) {
+                    $q->where('target_class', $admissionLevel)
+                      ->orWhere('target_class', 'like', "%{$admissionLevel}%")
+                      ->orWhere('raw_payload', 'like', "%\"target_class\":\"{$admissionLevel}\"%")
+                      ->orWhere('raw_payload', 'like', "%\"admission_level\":\"{$admissionLevel}\"%");
                 });
-            } elseif ($studentType === 'REGULER') {
-                $query->where(function ($q) {
-                    $q->where('student_type', 'like', '%REGULER%')
-                      ->orWhereNull('student_type');
-                })->where('target_class', 'not like', '%MBK%')
-                  ->where('target_class', 'not like', '%INKLUSI%')
-                  ->whereNull('special_needs_type');
+            }
+        }
+
+        // 4. Filter Kategori Siswa (student_type: REGULER / PDBK MBK Inklusi)
+        if ($category = $request->get('student_type', $request->get('category'))) {
+            if ($category !== 'all' && !empty($category)) {
+                if (in_array(strtoupper($category), ['PDBK', 'MBK', 'ABK', 'INKLUSI'])) {
+                    $query->where(function ($q) {
+                        $q->where('student_type', 'like', '%PDBK%')
+                          ->orWhere('student_type', 'like', '%MBK%')
+                          ->orWhere('student_type', 'like', '%ABK%')
+                          ->orWhere('target_class', 'like', '%MBK%')
+                          ->orWhere('target_class', 'like', '%INKLUSI%')
+                          ->orWhereNotNull('special_needs_type');
+                    });
+                } else {
+                    $query->where(function ($q) {
+                        $q->where('student_type', 'like', '%REGULER%')
+                          ->orWhereNull('student_type');
+                    })->where('target_class', 'not like', '%MBK%')
+                      ->where('target_class', 'not like', '%INKLUSI%')
+                      ->whereNull('special_needs_type');
+                }
+            }
+        }
+
+        // 5. Filter Status Pendaftaran (verified, accepted, agreement_signed, completed, pending)
+        if ($status = $request->get('status')) {
+            if ($status !== 'all') {
+                $query->where('spmb_status', $status);
+            }
+        }
+
+        // 6. Filter Status Pembayaran (paid, unpaid, pending)
+        if ($payment = $request->get('payment_status')) {
+            if ($payment !== 'all') {
+                $query->where('spmb_payment_status', $payment);
             }
         }
 
@@ -145,21 +162,42 @@ class SpmbCandidateController extends Controller
         if ($selectedYear && $selectedYear !== 'all') {
             $slashYear = str_replace('-', '/', $selectedYear);
             $hyphenYear = str_replace('/', '-', $selectedYear);
-            $statsQuery->where(function ($q) use ($slashYear, $hyphenYear) {
-                $q->where('academic_year', $slashYear)
-                  ->orWhere('academic_year', $hyphenYear);
-            });
+            $statsQuery->whereIn('academic_year', [$slashYear, $hyphenYear]);
         }
 
         $stats = [
             'total' => (clone $statsQuery)->count(),
-            'verified' => (clone $statsQuery)->whereIn($statusCol, ['verified', 'accepted', 'diterima', 'terverifikasi'])->count(),
-            'paid' => (clone $statsQuery)->whereIn($paymentCol, ['paid', 'lunas', 'settlement', 'success'])->count(),
+            'verified' => (clone $statsQuery)->whereIn('spmb_status', ['verified', 'accepted', 'diterima', 'terverifikasi', 'completed', 'agreement_signed'])->count(),
+            'paid' => (clone $statsQuery)->whereIn('spmb_payment_status', ['paid', 'lunas', 'settlement', 'success'])->count(),
             'enrolled' => (clone $statsQuery)->where('is_enrolled', true)->count(),
+            'has_payment_data' => (clone $statsQuery)->where(function($q) {
+                $q->whereNotNull('spmb_payment_status')
+                  ->orWhereNotNull('payments_data');
+            })->exists(),
         ];
 
-        // 4. Get available waves for filter dropdown
-        $availableWaves = (clone $statsQuery)->whereNotNull('wave')->distinct()->pluck('wave')->toArray();
+        // 4. Dynamic Filter Options Lists
+        $dbTypes = SpmbCandidate::whereNotNull('raw_payload')->pluck('raw_payload')->map(function($p) {
+            return is_array($p) ? ($p['registration_type'] ?? ($p['entry_type'] ?? null)) : null;
+        })->filter()->unique()->toArray();
+        $apiTypes = $masterOptions['registration_types'] ?? ['Murid Baru', 'Mutasi Masuk / Pindahan'];
+        $registrationTypes = array_values(array_unique(array_filter(array_merge($apiTypes, $dbTypes))));
+
+        $dbWaves = SpmbCandidate::whereNotNull('wave')->where('wave', '!=', '')->distinct()->pluck('wave')->toArray();
+        $apiWaves = $masterOptions['waves'] ?? ['Indent', 'Gelombang 1', 'Gelombang 2'];
+        $availableWaves = array_values(array_unique(array_filter(array_merge($apiWaves, $dbWaves))));
+
+        $allMasterGrades = $masterOptions['grades'] ?? [
+            ['name' => 'Kelas 1', 'jenjang_code' => 'SD'],
+            ['name' => 'Kelas 2', 'jenjang_code' => 'SD'],
+            ['name' => 'Kelas 3', 'jenjang_code' => 'SD'],
+            ['name' => 'Kelas 4', 'jenjang_code' => 'SD'],
+            ['name' => 'Kelas 5', 'jenjang_code' => 'SD'],
+            ['name' => 'Kelas 6', 'jenjang_code' => 'SD'],
+        ];
+        $availableAdmissionLevels = array_values(array_unique(array_column($allMasterGrades, 'name')));
+
+        $categories = ['Reguler', 'PDBK (Inklusi)'];
 
         $perPage = $request->get('per_page', 15);
         if ($perPage === 'all' || (int)$perPage >= 999999) {
@@ -170,17 +208,25 @@ class SpmbCandidateController extends Controller
             $candidates = $query->orderBy('created_at', 'desc')->paginate($perPageVal)->withQueryString();
         }
 
-        $academicYears = $academicYearOptions->pluck('value')->toArray();
+        $masterAcademicYears = AcademicYear::orderBy('name', 'desc')->get();
+        $masterClassrooms = Classroom::with(['classLevel', 'homeroomTeacher'])
+            ->where('is_active', true)
+            ->orderBy('class_level_id')
+            ->orderBy('name')
+            ->get();
 
         return view('admin.spmb-candidates.index', compact(
             'candidates', 
             'academicYears', 
-            'academicYearOptions', 
-            'uniqueAcademicYears',
             'selectedYear', 
             'stats', 
+            'registrationTypes',
             'availableWaves',
-            'activeAcademicYear'
+            'allMasterGrades',
+            'availableAdmissionLevels',
+            'categories',
+            'masterAcademicYears',
+            'masterClassrooms'
         ));
     }
 
@@ -189,10 +235,16 @@ class SpmbCandidateController extends Controller
      */
     public function show($id): JsonResponse
     {
-        $candidate = SpmbCandidate::with('student.classroom.classLevel')->findOrFail($id);
+        $candidate = SpmbCandidate::with([
+            'student.classroom.classLevel',
+            'student.classroom.homeroomTeacher',
+            'student.academicYear'
+        ])->findOrFail($id);
+
         return response()->json([
             'success' => true,
             'candidate' => $candidate,
+            'clean_phone' => $candidate->getCleanPhone(),
             'wa_url' => $candidate->whatsapp_url,
         ]);
     }
@@ -202,15 +254,10 @@ class SpmbCandidateController extends Controller
      */
     public function sync(Request $request): JsonResponse
     {
-        $filters = [];
-        if ($request->filled('period') && $request->period !== 'all') {
-            $filters['period'] = $request->period;
-        }
-        if ($request->filled('status') && $request->status !== 'all') {
-            $filters['status'] = $request->status;
-        }
+        $period = $request->input('period');
+        $status = $request->input('status');
 
-        $result = $this->service->syncCandidates($filters);
+        $result = $this->service->syncCandidates($period, $status);
 
         return response()->json($result, $result['success'] ? 200 : 400);
     }
@@ -229,9 +276,9 @@ class SpmbCandidateController extends Controller
      */
     public function getEnrollData($id): JsonResponse
     {
-        $candidate = SpmbCandidate::with('student.classroom')->findOrFail($id);
+        $candidate = SpmbCandidate::with('student.classroom.classLevel')->findOrFail($id);
 
-        $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
 
         // Match academic year from candidate's period
         $matchedYear = null;
@@ -240,44 +287,24 @@ class SpmbCandidateController extends Controller
             $matchedYear = AcademicYear::where('name', $cleanYear)->first();
         }
         if (!$matchedYear) {
-            $matchedYear = AcademicYear::where('is_active', true)->first();
+            $matchedYear = AcademicYear::where('is_active', true)->first() ?? $academicYears->first();
         }
 
-        // Unique yearly academic years for enrollment selector
-        $uniqueYears = $academicYears->groupBy('name')->map(function ($group) {
-            $activeInGroup = $group->firstWhere('is_active', true);
-            $chosen = $activeInGroup ?: $group->first();
-            return [
-                'id' => $chosen->id,
-                'name' => $chosen->name . ($activeInGroup ? ' (Aktif)' : ''),
-                'raw_name' => $chosen->name,
-                'is_active' => (bool) $activeInGroup,
-            ];
-        })->values();
-
-        // Matching academic year IDs (all semesters for that annual year)
-        $matchingYearIds = $matchedYear ? $academicYears->where('name', $matchedYear->name)->pluck('id')->toArray() : [];
-
-        // Get active classrooms (including all classrooms with academic_year_id for dynamic client-side filtering)
-        $classrooms = Classroom::with(['classLevel', 'homeroomTeacher', 'academicYear'])
-            ->withCount(['students as active_students_count' => function ($q) {
+        // Get active classrooms with count of active students
+        $classrooms = Classroom::with(['classLevel', 'homeroomTeacher'])
+            ->withCount(['students as active_students_count' => function ($q) use ($matchedYear) {
                 $q->where('status', 'aktif');
+                if ($matchedYear) {
+                    $q->where('academic_year_id', $matchedYear->id);
+                }
             }])
-            ->where('classrooms.is_active', true)
-            ->join('class_levels', 'classrooms.class_level_id', '=', 'class_levels.id')
-            ->orderBy('class_levels.order', 'asc')
-            ->orderBy('classrooms.code', 'asc')
-            ->orderBy('classrooms.name', 'asc')
-            ->select('classrooms.*')
+            ->where('is_active', true)
+            ->orderBy('class_level_id')
+            ->orderBy('code')
+            ->orderBy('name')
             ->get();
 
-        // Filter classrooms for the matched academic year if available
-        $matchedClassrooms = $classrooms->filter(function($cr) use ($matchingYearIds) {
-            return empty($matchingYearIds) || in_array($cr->academic_year_id, $matchingYearIds);
-        })->values();
-
-        // If no classrooms matched for future year, fallback to all active classrooms
-        $finalClassrooms = $matchedClassrooms->isNotEmpty() ? $matchedClassrooms : $classrooms;
+        $classLevels = \App\Models\ClassLevel::orderBy('order')->get();
 
         // Generate suggested NIS for SD (e.g. 26.SD.001 or 27.SD.001)
         $yearDigits = $matchedYear ? substr(explode('/', $matchedYear->name)[0] ?? '2026', -2) : date('y');
@@ -298,10 +325,10 @@ class SpmbCandidateController extends Controller
             'candidate' => $candidate,
             'student' => $candidate->student,
             'suggested_nis' => $suggestedNis,
-            'academic_years' => $uniqueYears,
+            'academic_years' => $academicYears,
             'selected_year_id' => $matchedYear?->id,
-            'classrooms' => $finalClassrooms,
-            'all_classrooms' => $classrooms,
+            'class_levels' => $classLevels,
+            'classrooms' => $classrooms,
         ]);
     }
 
@@ -313,20 +340,24 @@ class SpmbCandidateController extends Controller
         $candidate = SpmbCandidate::findOrFail($id);
 
         $validated = $request->validate([
-            'nis' => 'required|string|max:50|unique:students,nis,' . ($candidate->student_id ?? 'NULL'),
+            'nis' => 'nullable|string|max:50|unique:students,nis,' . ($candidate->student_id ?? 'NULL'),
             'classroom_id' => 'required|exists:classrooms,id',
             'academic_year_id' => 'required|exists:academic_years,id',
             'enrolled_date' => 'nullable|date',
             'notes' => 'nullable|string',
         ]);
 
+        $classroom = Classroom::with('classLevel')->findOrFail($validated['classroom_id']);
+        $classLevelId = $classroom->class_level_id;
+
         $studentData = [
-            'nis' => $validated['nis'],
+            'nis' => !empty($validated['nis']) ? trim($validated['nis']) : null,
             'nisn' => $candidate->nisn,
             'nik' => $candidate->nik,
             'no_kk' => $candidate->no_kk,
             'spmb_candidate_id' => $candidate->id,
-            'classroom_id' => $validated['classroom_id'],
+            'class_level_id' => $classLevelId,
+            'classroom_id' => $classroom->id,
             'academic_year_id' => $validated['academic_year_id'],
             'full_name' => $candidate->full_name,
             'nickname' => $candidate->nickname,
@@ -385,24 +416,26 @@ class SpmbCandidateController extends Controller
         $candidate->save();
 
         // Rekam riwayat rombel / enrollment history
-        $student->load(['classroom.classLevel', 'classroom.homeroomTeacher']);
-        \App\Models\StudentClassroomHistory::updateOrCreate(
-            [
-                'student_id' => $student->id,
-                'academic_year_id' => $validated['academic_year_id'],
-            ],
-            [
-                'classroom_id' => $validated['classroom_id'],
-                'classroom_name' => $student->classroom ? $student->classroom->name : null,
-                'grade_level' => $student->classroom && $student->classroom->classLevel ? $student->classroom->classLevel->name : '1',
-                'homeroom_teacher_name' => $student->classroom && $student->classroom->homeroomTeacher ? $student->classroom->homeroomTeacher->name : null,
-                'status' => 'aktif',
-                'start_date' => $validated['enrolled_date'] ?? now()->toDateString(),
-                'notes' => 'Penerimaan Siswa Baru SPMB',
-            ]
-        );
+        if ($student->classroom_id) {
+            $student->load(['classroom.classLevel', 'classroom.homeroomTeacher']);
+            \App\Models\StudentClassroomHistory::updateOrCreate(
+                [
+                    'student_id' => $student->id,
+                    'academic_year_id' => $student->academic_year_id,
+                    'classroom_id' => $student->classroom_id,
+                ],
+                [
+                    'classroom_name' => $student->classroom ? $student->classroom->name : null,
+                    'grade_level' => $student->classroom && $student->classroom->classLevel ? $student->classroom->classLevel->name : '1',
+                    'homeroom_teacher_name' => $student->classroom && $student->classroom->homeroomTeacher ? $student->classroom->homeroomTeacher->name : null,
+                    'status' => 'aktif',
+                    'start_date' => $student->enrolled_date ?? now()->toDateString(),
+                    'notes' => "Pendaftaran Siswa Baru via SPMB ({$candidate->registration_number})",
+                ]
+            );
+        }
 
-        $unitName = function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh';
+        $unitName = function_exists('setting') ? setting('unit_name', 'SD Anak Saleh Malang') : 'SD Anak Saleh Malang';
 
         return response()->json([
             'success' => true,
@@ -421,6 +454,7 @@ class SpmbCandidateController extends Controller
         if ($candidate->student_id) {
             $student = Student::find($candidate->student_id);
             if ($student) {
+                \App\Models\StudentClassroomHistory::where('student_id', $student->id)->delete();
                 $student->delete();
             }
         }
@@ -451,17 +485,22 @@ class SpmbCandidateController extends Controller
             'birth_date' => 'nullable|date',
             'nik' => 'nullable|string|max:30',
             'nisn' => 'nullable|string|max:30',
+            'no_kk' => 'nullable|string|max:30',
             'student_type' => 'nullable|string|max:50',
             'special_needs_type' => 'nullable|string|max:255',
             'target_class' => 'nullable|string|max:100',
             'academic_year' => 'nullable|string|max:50',
             'wave' => 'nullable|string|max:100',
             'father_name' => 'nullable|string|max:255',
+            'father_nik' => 'nullable|string|max:30',
             'father_phone' => 'nullable|string|max:50',
             'father_job' => 'nullable|string|max:100',
+            'father_education' => 'nullable|string|max:100',
             'mother_name' => 'nullable|string|max:255',
+            'mother_nik' => 'nullable|string|max:30',
             'mother_phone' => 'nullable|string|max:50',
             'mother_job' => 'nullable|string|max:100',
+            'mother_education' => 'nullable|string|max:100',
             'guardian_name' => 'nullable|string|max:255',
             'guardian_phone' => 'nullable|string|max:50',
             'parent_phone' => 'nullable|string|max:50',
@@ -491,21 +530,8 @@ class SpmbCandidateController extends Controller
             }
         }
 
-        // Handle status column compatibility
-        $hasRegStatus = \Illuminate\Support\Facades\Schema::hasColumn('spmb_candidates', 'registration_status');
-        $hasSpmbStatus = \Illuminate\Support\Facades\Schema::hasColumn('spmb_candidates', 'spmb_status');
-        $statusVal = $request->input('registration_status', $request->input('spmb_status'));
-        if ($statusVal) {
-            if ($hasRegStatus) $validated['registration_status'] = $statusVal;
-            if ($hasSpmbStatus) $validated['spmb_status'] = $statusVal;
-        }
-
-        $hasPayStatus = \Illuminate\Support\Facades\Schema::hasColumn('spmb_candidates', 'payment_status');
-        $hasSpmbPayStatus = \Illuminate\Support\Facades\Schema::hasColumn('spmb_candidates', 'spmb_payment_status');
-        $payVal = $request->input('payment_status', $request->input('spmb_payment_status'));
-        if ($payVal) {
-            if ($hasPayStatus) $validated['payment_status'] = $payVal;
-            if ($hasSpmbPayStatus) $validated['spmb_payment_status'] = $payVal;
+        if (!empty($validated['academic_year'])) {
+            $validated['academic_year'] = str_replace('-', '/', trim($validated['academic_year']));
         }
 
         $candidate->update($validated);
@@ -515,17 +541,24 @@ class SpmbCandidateController extends Controller
             $studentUpdate = [
                 'full_name' => $candidate->full_name,
                 'nickname' => $candidate->nickname,
-                'gender' => $candidate->gender === 'female' ? 'P' : 'L',
+                'gender' => in_array($candidate->gender, ['female', 'P']) ? 'P' : 'L',
                 'birth_place' => $candidate->birth_place,
                 'birth_date' => $candidate->birth_date,
                 'nik' => $candidate->nik,
                 'nisn' => $candidate->nisn,
+                'no_kk' => $candidate->no_kk,
+                'student_type' => $candidate->student_type,
+                'special_needs_type' => $candidate->special_needs_type,
                 'father_name' => $candidate->father_name,
+                'father_nik' => $candidate->father_nik,
                 'father_phone' => $candidate->father_phone,
                 'father_job' => $candidate->father_job,
+                'father_education' => $candidate->father_education,
                 'mother_name' => $candidate->mother_name,
+                'mother_nik' => $candidate->mother_nik,
                 'mother_phone' => $candidate->mother_phone,
                 'mother_job' => $candidate->mother_job,
+                'mother_education' => $candidate->mother_education,
                 'guardian_name' => $candidate->guardian_name,
                 'guardian_phone' => $candidate->guardian_phone,
                 'parent_phone' => $candidate->parent_phone,

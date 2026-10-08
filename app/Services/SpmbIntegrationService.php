@@ -10,17 +10,23 @@ use Illuminate\Support\Facades\Log;
 class SpmbIntegrationService
 {
     /**
-     * Ambil Base URL SPMB dari database settings
+     * Ambil Base URL SPMB dari database settings / config
      */
+    public static function getBaseUrl(): string
+    {
+        $url = Setting::get('spmb_api_url', config('services.spmb.url', 'http://sans-spmb.test'));
+        return rtrim($url, '/');
+    }
+
     public function getApiUrl(): string
     {
-        return rtrim(Setting::get('spmb_api_url', config('services.spmb.url', 'http://sans-spmb.test')), '/');
+        return self::getBaseUrl();
     }
 
     /**
      * Ambil Bearer Token API SPMB
      */
-    public function getApiToken(): ?string
+    public static function getApiToken(): ?string
     {
         return Setting::get('spmb_api_token', config('services.spmb.token'));
     }
@@ -28,7 +34,7 @@ class SpmbIntegrationService
     /**
      * Ambil Webhook Secret Key SPMB
      */
-    public function getWebhookSecret(): ?string
+    public static function getWebhookSecret(): ?string
     {
         return Setting::get('spmb_webhook_secret', config('services.spmb.webhook_secret'));
     }
@@ -38,13 +44,13 @@ class SpmbIntegrationService
      */
     public function testConnection(): array
     {
-        $url = $this->getApiUrl();
-        $token = $this->getApiToken();
+        $url = self::getBaseUrl();
+        $token = self::getApiToken();
 
         if (empty($url) || empty($token)) {
             return [
                 'success' => false,
-                'message' => 'URL Aplikasi SPMB atau Token Kunci API belum diisi di Pengaturan.',
+                'message' => 'URL Aplikasi SPMB atau Token Kunci API belum diisi di Pengaturan Sistem.',
             ];
         }
 
@@ -58,22 +64,40 @@ class SpmbIntegrationService
 
             if ($response->successful()) {
                 $data = $response->json();
-                $total = $data['meta']['total'] ?? 0;
-                $clientName = $data['client']['name'] ?? 'Client Unit';
+                $total = $data['meta']['total'] ?? count($data['data'] ?? []);
+                $clientName = $data['client']['name'] ?? 'Client Unit SD';
 
                 return [
                     'success' => true,
-                    'message' => "Koneksi berhasil! Terhubung sebagai [{$clientName}] dengan {$total} calon murid terdeteksi.",
+                    'status_code' => $response->status(),
+                    'message' => "Koneksi berhasil! Terhubung sebagai [{$clientName}] dengan {$total} calon murid terdeteksi di SPMB Pusat.",
                     'data' => $data,
+                ];
+            }
+
+            if ($response->status() === 401) {
+                return [
+                    'success' => false,
+                    'status_code' => 401,
+                    'message' => 'Autentikasi Gagal: Token API SPMB tidak valid atau telah dicabut.',
+                ];
+            }
+
+            if ($response->status() === 403) {
+                return [
+                    'success' => false,
+                    'status_code' => 403,
+                    'message' => 'Akses Ditolak: Client API tidak memiliki hak akses untuk Unit SD.',
                 ];
             }
 
             return [
                 'success' => false,
-                'message' => 'Gagal terhubung ke SPMB: ' . ($response->json('message') ?? 'HTTP Status ' . $response->status()),
                 'status_code' => $response->status(),
+                'message' => 'Gagal terhubung ke SPMB: ' . ($response->json('message') ?? 'HTTP Status ' . $response->status()),
             ];
         } catch (\Throwable $e) {
+            Log::error('SPMB test connection error: ' . $e->getMessage());
             return [
                 'success' => false,
                 'message' => 'Kesalahan koneksi jaringan: ' . $e->getMessage(),
@@ -84,30 +108,43 @@ class SpmbIntegrationService
     /**
      * Tarik Data Calon Murid dari SPMB (Pull Sync)
      */
-    public function syncCandidates(array $filters = []): array
+    public function syncCandidates($period = null, $status = null): array
     {
-        $url = $this->getApiUrl();
-        $token = $this->getApiToken();
+        $url = self::getBaseUrl();
+        $token = self::getApiToken();
 
         if (empty($url) || empty($token)) {
             return [
                 'success' => false,
-                'message' => 'Konfigurasi URL atau Token API SPMB belum lengkap.',
+                'message' => 'Konfigurasi URL atau Token API SPMB belum lengkap di Pengaturan.',
                 'synced_count' => 0,
             ];
         }
 
+        // Support passing array of filters or individual string args
+        if (is_array($period)) {
+            $filters = $period;
+            $period = $filters['period'] ?? null;
+            $status = $filters['status'] ?? null;
+        }
+
         $page = 1;
-        $totalSynced = 0;
         $syncedIds = [];
-        $hasMore = true;
+        $totalSynced = 0;
+        $errors = [];
 
         try {
-            while ($hasMore) {
-                $queryParams = array_merge($filters, [
+            do {
+                $queryParams = [
                     'page' => $page,
                     'per_page' => 50,
-                ]);
+                ];
+                if ($period && $period !== 'all') {
+                    $queryParams['period'] = $period;
+                }
+                if ($status && $status !== 'all') {
+                    $queryParams['status'] = $status;
+                }
 
                 $response = Http::withToken($token)
                     ->acceptJson()
@@ -128,27 +165,28 @@ class SpmbIntegrationService
                 $meta = $json['meta'] ?? [];
 
                 foreach ($candidates as $cand) {
-                    $savedCandidate = $this->upsertCandidateFromPayload($cand);
-                    $regId = $savedCandidate->spmb_registration_id ?? ($cand['id'] ?? null);
-                    if ($regId) {
-                        $syncedIds[] = (int) $regId;
+                    try {
+                        $savedCandidate = SpmbCandidate::syncFromPayload($cand);
+                        $regId = $savedCandidate->spmb_registration_id ?? ($cand['id'] ?? null);
+                        if ($regId) {
+                            $syncedIds[] = (int) $regId;
+                        }
+                        $totalSynced++;
+                    } catch (\Throwable $ex) {
+                        $errors[] = "No. Reg " . ($cand['registration_number'] ?? '?') . ": " . $ex->getMessage();
                     }
-                    $totalSynced++;
                 }
 
-                if ($page >= ($meta['last_page'] ?? 1) || empty($candidates)) {
-                    $hasMore = false;
-                } else {
-                    $page++;
-                }
-            }
+                $lastPage = $meta['last_page'] ?? 1;
+                $page++;
+            } while ($page <= $lastPage);
 
             // Full Mirroring (Prune data yang tidak lagi diizinkan / tidak ada di SPMB)
             $syncedIds = array_values(array_filter(array_unique($syncedIds)));
             $pruneQuery = SpmbCandidate::query();
-            if (!empty($filters['period']) && $filters['period'] !== 'all') {
-                $slashPeriod = str_replace('-', '/', $filters['period']);
-                $hyphenPeriod = str_replace('/', '-', $filters['period']);
+            if (!empty($period) && $period !== 'all') {
+                $slashPeriod = str_replace('-', '/', $period);
+                $hyphenPeriod = str_replace('/', '-', $period);
                 $pruneQuery->where(function($q) use ($slashPeriod, $hyphenPeriod) {
                     $q->where('academic_year', $slashPeriod)
                       ->orWhere('academic_year', $hyphenPeriod);
@@ -159,7 +197,12 @@ class SpmbIntegrationService
             }
             $prunedCount = $pruneQuery->delete();
 
-            $msg = "Berhasil menyinkronkan {$totalSynced} data calon murid dari SPMB.";
+            $periodLabel = $period && $period !== 'all' ? " Tapel " . str_replace('-', '/', $period) : "";
+            if ($totalSynced > 0) {
+                $msg = "Berhasil menyinkronkan {$totalSynced} data calon murid dari SPMB Pusat{$periodLabel}.";
+            } else {
+                $msg = "Sinkronisasi selesai. Belum ada calon murid baru yang memenuhi kriteria administrasi/lolos di SPMB{$periodLabel}.";
+            }
             if ($prunedCount > 0) {
                 $msg .= " ({$prunedCount} data lama yang tidak lagi masuk izin SPMB telah dibersihkan).";
             }
@@ -169,6 +212,7 @@ class SpmbIntegrationService
                 'message' => $msg,
                 'synced_count' => $totalSynced,
                 'pruned_count' => $prunedCount,
+                'errors' => $errors,
             ];
         } catch (\Throwable $e) {
             Log::error('[SPMB Sync] Exception: ' . $e->getMessage());
@@ -181,146 +225,16 @@ class SpmbIntegrationService
     }
 
     /**
-     * Upsert Kandidat ke Database Unit
-     */
-    public function upsertCandidateFromPayload(array $payload): SpmbCandidate
-    {
-        $registrationId = $payload['id'] ?? ($payload['registration_id'] ?? ($payload['spmb_registration_id'] ?? null));
-        if (!$registrationId) {
-            throw new \InvalidArgumentException('Payload harus memiliki id / registration_id.');
-        }
-
-        $bio = $payload['student_bio'] ?? ($payload['candidate_bio'] ?? []);
-        $address = $bio['address'] ?? ($payload['address'] ?? []);
-        $parents = $payload['parent_info'] ?? ($payload['parents'] ?? []);
-        $father = $parents['father'] ?? [];
-        $mother = $parents['mother'] ?? [];
-        $guardian = $parents['guardian'] ?? ($payload['guardian'] ?? []);
-        $contact = $parents['primary_contact'] ?? ($payload['primary_contact'] ?? []);
-        $schoolOrigin = $payload['school_origin'] ?? [];
-        $unit = $payload['unit'] ?? [];
-
-        // Gender formatting
-        $gender = $bio['gender'] ?? ($payload['gender'] ?? null);
-        if ($gender) {
-            $genderLower = strtolower($gender);
-            if (str_contains($genderLower, 'laki') || $genderLower === 'male' || $genderLower === 'l') {
-                $gender = 'male';
-            } elseif (str_contains($genderLower, 'perempuan') || $genderLower === 'female' || $genderLower === 'p') {
-                $gender = 'female';
-            }
-        }
-
-        // Birth Date
-        $birthDate = null;
-        if (!empty($bio['birth_date'])) {
-            try {
-                $birthDate = \Carbon\Carbon::parse($bio['birth_date'])->format('Y-m-d');
-            } catch (\Exception $e) {
-                $birthDate = null;
-            }
-        }
-
-        $verifiedAt = null;
-        if (!empty($payload['verified_at'])) {
-            try {
-                $verifiedAt = \Carbon\Carbon::parse($payload['verified_at']);
-            } catch (\Exception $e) {
-                $verifiedAt = null;
-            }
-        }
-
-        $registeredAt = null;
-        if (!empty($payload['created_at'])) {
-            try {
-                $registeredAt = \Carbon\Carbon::parse($payload['created_at']);
-            } catch (\Exception $e) {
-                $registeredAt = null;
-            }
-        }
-
-        $parentPhone = $contact['whatsapp'] ?? ($parents['primary_whatsapp'] ?? ($father['phone'] ?? ($mother['phone'] ?? ($guardian['phone'] ?? ($payload['parent_phone'] ?? null)))));
-
-        $fullAddress = is_string($address) ? $address : ($address['full_address'] ?? ($address['street'] ?? ($address['street_address'] ?? null)));
-
-        return SpmbCandidate::updateOrCreate(
-            ['spmb_registration_id' => $registrationId],
-            [
-                'registration_number' => $payload['registration_number'] ?? ($payload['registration_no'] ?? null),
-                'full_name' => $bio['full_name'] ?? ($payload['candidate_name'] ?? ($payload['full_name'] ?? 'Calon Siswa')),
-                'nickname' => $bio['nickname'] ?? null,
-                'gender' => $gender,
-                'birth_place' => $bio['birth_place'] ?? null,
-                'birth_date' => $birthDate,
-                'nik' => $bio['nik'] ?? null,
-                'nisn' => $bio['nisn'] ?? null,
-                'child_number' => $bio['child_number'] ?? null,
-                'siblings_count' => $bio['siblings_count'] ?? null,
-
-                // Student Type (MBK / ABK / Inklusi -> PDBK)
-                'student_type' => (function() use ($payload, $bio) {
-                    $raw = $payload['student_type'] ?? ($payload['type'] ?? ($payload['applicant_type'] ?? ($bio['student_type'] ?? 'REGULER')));
-                    $upper = strtoupper(trim((string)$raw));
-                    return (str_contains($upper, 'MBK') || str_contains($upper, 'ABK') || str_contains($upper, 'PDBK') || str_contains($upper, 'KHUSUS') || str_contains($upper, 'INKLUSI')) ? 'PDBK' : 'REGULER';
-                })(),
-                'special_needs_type' => $payload['special_needs_type'] ?? ($bio['special_needs_type'] ?? ($bio['special_needs'] ?? null)),
-
-                // Academic
-                'target_unit' => $unit['code'] ?? ($unit['name'] ?? ($payload['target_unit'] ?? 'SD')),
-                'target_class' => $payload['class_program'] ?? ($payload['target_class'] ?? 'Kelas 1'),
-                'academic_year' => (function() use ($payload) {
-                    $raw = $payload['period'] ?? ($payload['academic_year'] ?? null);
-                    return $raw ? str_replace('-', '/', trim((string)$raw)) : null;
-                })(),
-                'wave' => $payload['wave'] ?? null,
-
-                // Contact & Parents
-                'parent_phone' => $parentPhone,
-                'father_name' => $father['name'] ?? null,
-                'father_job' => $father['job'] ?? ($father['occupation'] ?? null),
-                'father_phone' => $father['phone'] ?? null,
-                'mother_name' => $mother['name'] ?? null,
-                'mother_job' => $mother['job'] ?? ($mother['occupation'] ?? null),
-                'mother_phone' => $mother['phone'] ?? null,
-                'guardian_name' => $guardian['name'] ?? null,
-                'guardian_phone' => $guardian['phone'] ?? null,
-
-                // Address
-                'address' => $fullAddress,
-                'rt' => is_array($address) ? ($address['rt'] ?? null) : null,
-                'rw' => is_array($address) ? ($address['rw'] ?? null) : null,
-                'village' => is_array($address) ? ($address['village'] ?? null) : null,
-                'district' => is_array($address) ? ($address['district'] ?? null) : null,
-                'city' => is_array($address) ? ($address['city'] ?? null) : null,
-                'province' => is_array($address) ? ($address['province'] ?? null) : null,
-                'postal_code' => is_array($address) ? ($address['postal_code'] ?? null) : null,
-
-                // School Origin
-                'previous_school' => $schoolOrigin['previous_school'] ?? null,
-                'previous_school_npsn' => $schoolOrigin['npsn'] ?? null,
-                'previous_school_address' => $schoolOrigin['school_address'] ?? null,
-
-                // Status
-                'spmb_status' => $payload['registration_status'] ?? 'verified',
-                'spmb_payment_status' => $payload['payment_status'] ?? 'unpaid',
-                'spmb_verified_at' => $verifiedAt,
-                'spmb_registered_at' => $registeredAt,
-
-                // Snapshots
-                'documents' => $payload['documents'] ?? null,
-                'payments_data' => $payload['payments'] ?? null,
-                'raw_payload' => $payload,
-            ]
-        );
-    }
-
-    /**
      * Validasi HMAC SHA256 Webhook Signature
      */
     public function verifyWebhookSignature(string $payloadContent, ?string $signatureHeader): bool
     {
-        $secret = $this->getWebhookSecret();
-        if (empty($secret) || empty($signatureHeader)) {
+        $secret = self::getWebhookSecret();
+        if (empty($secret)) {
+            return false;
+        }
+
+        if (empty($signatureHeader)) {
             return false;
         }
 
@@ -331,41 +245,99 @@ class SpmbIntegrationService
     /**
      * Proses Webhook Event dari SPMB
      */
-    public function processWebhookEvent(array $eventPayload): array
+    public function processWebhookEvent($event, $payload = []): array
     {
-        $event = $eventPayload['event'] ?? 'unknown';
-        $data = $eventPayload['data'] ?? [];
-
-        Log::info("[SPMB Webhook Received] Event: {$event}", ['data_id' => $data['id'] ?? ($data['registration_id'] ?? null)]);
-
-        switch ($event) {
-            case 'ping':
-                return [
-                    'success' => true,
-                    'message' => 'Pong! Webhook endpoint aktif dan terhubung dengan aman.',
-                ];
-
-            case 'candidate.verified':
-            case 'payment.success':
-            case 'candidate.updated':
-                if (!empty($data['id']) || !empty($data['registration_id'])) {
-                    $candidate = $this->upsertCandidateFromPayload($data);
-                    return [
-                        'success' => true,
-                        'message' => "Data calon murid [{$candidate->full_name}] berhasil diperbarui secara otomatis.",
-                        'candidate_id' => $candidate->id,
-                    ];
-                }
-                return [
-                    'success' => false,
-                    'message' => 'Data payload event tidak lengkap.',
-                ];
-
-            default:
-                return [
-                    'success' => true,
-                    'message' => "Event '{$event}' diterima namun diabaikan.",
-                ];
+        if (is_array($event) && empty($payload)) {
+            $eventPayload = $event;
+            $event = $eventPayload['event'] ?? 'unknown';
+            $payload = $eventPayload['data'] ?? $eventPayload;
         }
+
+        Log::info("[SPMB Webhook Received] Event: {$event}", ['payload' => $payload]);
+
+        if ($event === 'ping') {
+            return [
+                'success' => true,
+                'status' => 'pong',
+                'message' => 'Webhook ping received successfully by SANS SD.',
+                'timestamp' => now()->toIso8601String(),
+            ];
+        }
+
+        // Candidate events
+        if (in_array($event, [
+            'candidate.agreement_signed', 
+            'candidate.verified', 
+            'candidate.accepted', 
+            'candidate.created', 
+            'candidate.updated',
+            'payment.tuition_paid', 
+            'payment.success', 
+            'registration.completed'
+        ])) {
+            $candidateData = $payload['data'] ?? $payload;
+            if (!empty($candidateData)) {
+                $candidate = SpmbCandidate::syncFromPayload($candidateData);
+                return [
+                    'success' => true,
+                    'status' => 'success',
+                    'event' => $event,
+                    'registration_number' => $candidate->registration_number,
+                    'full_name' => $candidate->full_name,
+                    'message' => "Calon murid {$candidate->full_name} ({$candidate->registration_number}) berhasil diperbarui secara otomatis.",
+                    'candidate_id' => $candidate->id,
+                ];
+            }
+        }
+
+        return [
+            'success' => true,
+            'status' => 'ignored',
+            'message' => "Event {$event} tidak membutuhkan pemrosesan khusus.",
+        ];
+    }
+
+    /**
+     * Get dynamic master filter options from SPMB API with fallback for SD
+     */
+    public function getFilterOptions(): array
+    {
+        $baseUrl = self::getBaseUrl();
+        $token = self::getApiToken();
+
+        if (!empty($baseUrl) && !empty($token)) {
+            try {
+                $response = Http::withToken($token)
+                    ->timeout(4)
+                    ->acceptJson()
+                    ->get("{$baseUrl}/api/v1/options");
+
+                if ($response->successful()) {
+                    $data = $response->json('data');
+                    if (!empty($data) && is_array($data)) {
+                        return $data;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Ignore and use master fallback
+            }
+        }
+
+        // Fallback default master for SD
+        return [
+            'periods' => ['2027/2028', '2026/2027', '2028/2029', '2029/2030'],
+            'default_period' => '2027/2028',
+            'registration_types' => ['Murid Baru', 'Mutasi Masuk / Pindahan'],
+            'waves' => ['Indent', 'Gelombang 1', 'Gelombang 2'],
+            'categories' => ['Reguler', 'Murid Berkebutuhan Khusus (MBK)'],
+            'grades' => [
+                ['name' => 'Kelas 1', 'jenjang_code' => 'SD'],
+                ['name' => 'Kelas 2', 'jenjang_code' => 'SD'],
+                ['name' => 'Kelas 3', 'jenjang_code' => 'SD'],
+                ['name' => 'Kelas 4', 'jenjang_code' => 'SD'],
+                ['name' => 'Kelas 5', 'jenjang_code' => 'SD'],
+                ['name' => 'Kelas 6', 'jenjang_code' => 'SD'],
+            ],
+        ];
     }
 }
