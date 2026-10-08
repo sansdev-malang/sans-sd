@@ -485,13 +485,25 @@ class SpmbCandidate extends Model
             $academicYear = str_replace('-', '/', trim((string)$academicYear));
         }
 
-        $regStatus = $payload['registration_status'] ?? 'verified';
-        $payStatus = $payload['payment_status'] ?? null;
+        $regStatus = $payload['registration_status'] ?? ($payload['status'] ?? 'verified');
+        if (empty($regStatus)) {
+            $regStatus = 'verified';
+        }
+
+        $payStatus = $payload['payment_status'] ?? ($payload['spmb_payment_status'] ?? 'unpaid');
+        if (empty($payStatus)) {
+            $payStatus = 'unpaid';
+        }
+
+        $spmbRegId = $payload['id'] ?? ($payload['spmb_registration_id'] ?? null);
+        if (!$spmbRegId) {
+            $spmbRegId = abs(crc32($regNumber));
+        }
 
         return self::updateOrCreate(
             ['registration_number' => $regNumber],
             [
-                'spmb_registration_id' => $payload['id'] ?? null,
+                'spmb_registration_id' => $spmbRegId,
                 'full_name' => $bio['full_name'] ?? ($payload['candidate_name'] ?? ($payload['full_name'] ?? 'Calon Siswa')),
                 'nickname' => $bio['nickname'] ?? null,
                 'gender' => $gender,

@@ -183,19 +183,25 @@ class SpmbIntegrationService
 
             // Full Mirroring (Prune data yang tidak lagi diizinkan / tidak ada di SPMB)
             $syncedIds = array_values(array_filter(array_unique($syncedIds)));
-            $pruneQuery = SpmbCandidate::query();
-            if (!empty($period) && $period !== 'all') {
-                $slashPeriod = str_replace('-', '/', $period);
-                $hyphenPeriod = str_replace('/', '-', $period);
-                $pruneQuery->where(function($q) use ($slashPeriod, $hyphenPeriod) {
-                    $q->where('academic_year', $slashPeriod)
-                      ->orWhere('academic_year', $hyphenPeriod);
-                });
-            }
+            $prunedCount = 0;
+
             if (!empty($syncedIds)) {
+                $pruneQuery = SpmbCandidate::query()
+                    ->where('is_enrolled', false)
+                    ->whereNull('student_id');
+
+                if (!empty($period) && $period !== 'all') {
+                    $slashPeriod = str_replace('-', '/', $period);
+                    $hyphenPeriod = str_replace('/', '-', $period);
+                    $pruneQuery->where(function($q) use ($slashPeriod, $hyphenPeriod) {
+                        $q->where('academic_year', $slashPeriod)
+                          ->orWhere('academic_year', $hyphenPeriod);
+                    });
+                }
+                
                 $pruneQuery->whereNotIn('spmb_registration_id', $syncedIds);
+                $prunedCount = $pruneQuery->delete();
             }
-            $prunedCount = $pruneQuery->delete();
 
             $periodLabel = $period && $period !== 'all' ? " Tapel " . str_replace('-', '/', $period) : "";
             if ($totalSynced > 0) {
