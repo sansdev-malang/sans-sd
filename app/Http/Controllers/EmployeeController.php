@@ -61,9 +61,34 @@ class EmployeeController extends Controller
             $query->where('position', $request->input('position'));
         }
 
+        // Calculate statistics
+        $statsQuery = Employee::query();
+        if ($schoolUnit) {
+            $statsQuery->where('unit', $schoolUnit);
+        }
+        $totalEmployees = (clone $statsQuery)->count();
+        $activeEmployees = (clone $statsQuery)->where('status', 'Active')->count();
+        $teacherCount = (clone $statsQuery)->where(function ($q) {
+            $q->whereHas('employeeType', function ($et) {
+                $et->where('code', 'teacher')
+                   ->orWhere('name', 'like', '%guru%')
+                   ->orWhere('name', 'like', '%pendidik%');
+            })->orWhere('position', 'like', '%guru%');
+        })->count();
+        $staffCount = max($totalEmployees - $teacherCount, 0);
+
+        $stats = [
+            'total' => $totalEmployees,
+            'active' => $activeEmployees,
+            'teachers' => $teacherCount,
+            'staff' => $staffCount,
+        ];
+
         $perPage = $request->input('per_page', 10);
-        if ($perPage === 'all') {
+        if ($perPage === 'all' || (int)$perPage >= 99999) {
             $perPage = $query->count() > 0 ? $query->count() : 1;
+        } else {
+            $perPage = in_array((int)$perPage, [10, 25, 50, 100]) ? (int)$perPage : 10;
         }
 
         $employees = $query->with('employeeType')->orderBy('name', 'asc')->paginate($perPage)->withQueryString();
@@ -74,10 +99,11 @@ class EmployeeController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $employees,
+                'stats' => $stats,
             ]);
         }
 
-        return view('admin.employees.index', compact('employees', 'employeeTypes', 'positions'));
+        return view('admin.employees.index', compact('employees', 'employeeTypes', 'positions', 'stats'));
     }
 
     /**

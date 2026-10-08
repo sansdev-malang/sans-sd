@@ -52,6 +52,72 @@
                 </form>
                 @endif
             </div>
+        <!-- STATS CARDS GRID (Compact & Interactive Quick-Filter) -->
+        <section class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-3.5">
+            <!-- Stat Card 1: Total Pegawai -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40">
+                    <i data-lucide="users-2" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Pegawai</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-mono">
+                            {{ number_format($stats['total'] ?? 0) }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">SD</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stat Card 2: Pegawai Aktif -->
+            <a href="{{ route('employees.index', array_merge(request()->except(['page', 'status']), ['status' => request('status') === 'Active' ? '' : 'Active'])) }}"
+                class="bg-white dark:bg-slate-900 border {{ request('status') === 'Active' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700' }} rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-all cursor-pointer group">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40 group-hover:scale-105 transition-transform">
+                    <i data-lucide="user-check" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Pegawai Aktif</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
+                            {{ number_format($stats['active'] ?? 0) }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Orang</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Stat Card 3: Pendidik (Guru) -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/40">
+                    <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Pendidik (Guru)</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono">
+                            {{ number_format($stats['teachers'] ?? 0) }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Guru</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stat Card 4: Tenaga Kependidikan (Staff) -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-100 dark:border-purple-900/40">
+                    <i data-lucide="briefcase" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Kependidikan (Tendik)</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-purple-600 dark:text-purple-400 font-mono">
+                            {{ number_format($stats['staff'] ?? 0) }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Staff</span>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- IMPORT ERRORS ALERT -->
@@ -139,9 +205,9 @@
                         <option value="Inactive" {{ request('status') == 'Inactive' ? 'selected' : '' }}>Nonaktif</option>
                     </select>
 
-                    @if(request()->anyFilled(['search', 'type', 'unit', 'status']))
+                    @if(request()->anyFilled(['search', 'type', 'unit', 'status', 'position']) || (request('per_page') && request('per_page') != 10))
                         <a href="{{ route('employees.index') }}" class="h-9 px-3 flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 rounded-lg transition-colors" title="Reset Filter">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
                         </a>
                     @endif
                 </div>
