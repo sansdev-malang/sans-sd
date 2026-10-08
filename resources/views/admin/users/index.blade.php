@@ -126,8 +126,8 @@
                                 <td class="px-6 py-4 text-center">
                                     @if($user->role === 'super_admin')
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30 uppercase">Super Admin</span>
-                                    @elseif(str_starts_with($user->role, 'admin_'))
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30 uppercase">Admin Unit</span>
+                                    @elseif($user->role === 'admin_sd' || $user->role === 'admin' || str_starts_with($user->role, 'admin_'))
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30 uppercase">Admin SD</span>
                                     @elseif($user->role === 'kepala_sekolah')
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 uppercase">Kepala Sekolah</span>
                                     @elseif($user->role === 'waka')
