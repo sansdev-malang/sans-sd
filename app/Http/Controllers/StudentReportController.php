@@ -20,16 +20,8 @@ class StudentReportController extends Controller
      */
     public function index(Request $request)
     {
-        $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
         $activeAcademicYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
-
-        // Unique yearly academic years for annual entities (Tahunan)
-        $uniqueAcademicYears = $academicYears->groupBy('name')->map(function ($group) {
-            $activeInGroup = $group->firstWhere('is_active', true);
-            $chosen = $activeInGroup ?: $group->first();
-            $chosen->has_active = (bool) $activeInGroup;
-            return $chosen;
-        })->values();
 
         // Selected year ID or active year ID
         $selectedYearId = $request->filled('academic_year_id')
@@ -38,12 +30,12 @@ class StudentReportController extends Controller
 
         $selectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? $activeAcademicYear;
         $selectedYearName = $selectedYear?->name;
-        $matchingYearIds = $academicYears->where('name', $selectedYearName)->pluck('id')->toArray();
+        $matchingYearIds = $selectedYearId ? [$selectedYearId] : [];
 
         $reportData = $this->calculateReportData($matchingYearIds);
 
         return view('admin.reports.students.index', array_merge($reportData, [
-            'academicYears' => $uniqueAcademicYears,
+            'academicYears' => $academicYears,
             'selectedYear' => $selectedYear,
             'selectedYearId' => $selectedYear?->id,
             'selectedYearName' => $selectedYearName,

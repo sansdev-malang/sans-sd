@@ -124,95 +124,85 @@
             </div>
         @endif
 
-        <!-- STATS CARDS GRID -->
+        <!-- STATS CARDS GRID (Compact) -->
         <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-3.5">
             <!-- Stat Card 1: Total Siswa Aktif -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Siswa Aktif</p>
-                        <h3 class="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Siswa Aktif</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400 font-mono">
                             {{ number_format($stats['total_active']) }}
                         </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">/ {{ number_format($stats['total_all']) }}</span>
                     </div>
-                    <div class="p-1.5 sm:p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
-                        <i data-lucide="users" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
-                    </div>
-                </div>
-                <div class="mt-2 text-[10px] text-slate-400">
-                    Total terdata: <span class="font-semibold text-slate-600 dark:text-slate-300">{{ number_format($stats['total_all']) }}</span>
                 </div>
             </div>
 
             <!-- Stat Card 2: Laki-laki -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Putra (L)</p>
-                        <h3 class="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/40">
+                    <i data-lucide="user" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Putra (L)</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-blue-700 dark:text-blue-300 font-mono">
                             {{ number_format($stats['male']) }}
                         </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Siswa</span>
                     </div>
-                    <div class="p-1.5 sm:p-2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-100 dark:border-blue-900/50">
-                        <i data-lucide="user" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
-                    </div>
-                </div>
-                <div class="mt-2 text-[10px] text-slate-400">
-                    {{ $stats['total_active'] > 0 ? round(($stats['male'] / $stats['total_active']) * 100) : 0 }}% dari total aktif
                 </div>
             </div>
 
             <!-- Stat Card 3: Perempuan -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Putri (P)</p>
-                        <h3 class="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/40">
+                    <i data-lucide="user-check" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Putri (P)</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-rose-700 dark:text-rose-300 font-mono">
                             {{ number_format($stats['female']) }}
                         </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Siswi</span>
                     </div>
-                    <div class="p-1.5 sm:p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-lg border border-rose-100 dark:border-rose-900/50">
-                        <i data-lucide="user-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
-                    </div>
-                </div>
-                <div class="mt-2 text-[10px] text-slate-400">
-                    {{ $stats['total_active'] > 0 ? round(($stats['female'] / $stats['total_active']) * 100) : 0 }}% dari total aktif
                 </div>
             </div>
 
             <!-- Stat Card 4: Inklusi (PDBK) -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-xs flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Inklusi (PDBK)</p>
-                        <h3 class="text-lg sm:text-xl font-black tracking-tight text-purple-700 dark:text-purple-300 mt-1">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-100 dark:border-purple-900/40">
+                    <i data-lucide="heart-handshake" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">PDBK (Inklusi)</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-purple-700 dark:text-purple-300 font-mono">
                             {{ number_format($stats['pdbk']) }}
                         </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Siswa</span>
                     </div>
-                    <div class="p-1.5 sm:p-2 bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-lg border border-purple-100 dark:border-purple-900/50">
-                        <i data-lucide="heart-handshake" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
-                    </div>
-                </div>
-                <div class="mt-2 text-[10px] text-purple-600/80 dark:text-purple-400/80">
-                    Berkebutuhan khusus
                 </div>
             </div>
 
             <!-- Stat Card 5: Rombongan Belajar -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-xs flex flex-col justify-between col-span-2 sm:col-span-1">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Rombel</p>
-                        <h3 class="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors col-span-2 sm:col-span-1">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40">
+                    <i data-lucide="layout-grid" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Rombel</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-mono">
                             {{ number_format($stats['classrooms']) }}
                         </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">1A–6D</span>
                     </div>
-                    <div class="p-1.5 sm:p-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-lg border border-emerald-100 dark:border-emerald-900/50">
-                        <i data-lucide="layout-grid" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
-                    </div>
-                </div>
-                <div class="mt-2 text-[10px] text-slate-400">
-                    24 Rombel (1A - 6D)
                 </div>
             </div>
         </section>
@@ -236,8 +226,8 @@
                     <select name="academic_year_id" onchange="this.form.submit()"
                         class="h-8.5 px-2.5 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer shadow-xs">
                         @foreach($academicYears as $year)
-                            <option value="{{ $year->id }}" {{ ($selectedYearName ?? '') == $year->name || $selectedYearId == $year->id ? 'selected' : '' }}>
-                                Tapel {{ $year->name }} {{ $year->has_active || $year->is_active ? '★' : '' }}
+                            <option value="{{ $year->id }}" {{ ($selectedYear && $selectedYear->id === $year->id) || $selectedYearId == $year->id ? 'selected' : '' }}>
+                                Tapel {{ $year->name }} {{ $year->is_active ? '★' : '' }}
                             </option>
                         @endforeach
                     </select>

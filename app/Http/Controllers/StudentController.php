@@ -26,16 +26,8 @@ class StudentController extends Controller
      */
     private function getFilteredStudentsQuery(Request $request): array
     {
-        $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
         $activeAcademicYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
-
-        // Unique yearly academic years for annual entities (Tahunan - Opsi A)
-        $uniqueAcademicYears = $academicYears->groupBy('name')->map(function ($group) {
-            $activeInGroup = $group->firstWhere('is_active', true);
-            $chosen = $activeInGroup ?: $group->first();
-            $chosen->has_active = (bool) $activeInGroup;
-            return $chosen;
-        })->values();
 
         // Default to active academic year if not explicitly selected
         $selectedYearId = $request->filled('academic_year_id')
@@ -43,8 +35,6 @@ class StudentController extends Controller
             : ($activeAcademicYear?->id ?? null);
 
         $selectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? $activeAcademicYear;
-        $selectedYearName = $selectedYear?->name;
-        $matchingYearIds = $academicYears->where('name', $selectedYearName)->pluck('id');
 
         $query = Student::with([
             'classroom.classLevel', 
@@ -54,9 +44,9 @@ class StudentController extends Controller
             'gpkTeacher'
         ]);
 
-        // Academic Year Filter (covers all semester records of the selected annual year)
-        if ($matchingYearIds->isNotEmpty()) {
-            $query->whereIn('academic_year_id', $matchingYearIds);
+        // Academic Year Filter
+        if ($selectedYearId) {
+            $query->where('academic_year_id', $selectedYearId);
         }
 
         // Search query
@@ -128,11 +118,9 @@ class StudentController extends Controller
         return [
             'query' => $query,
             'academicYears' => $academicYears,
-            'uniqueAcademicYears' => $uniqueAcademicYears,
             'selectedYear' => $selectedYear,
             'selectedYearId' => $selectedYearId,
-            'selectedYearName' => $selectedYearName,
-            'matchingYearIds' => $matchingYearIds,
+            'selectedYearName' => $selectedYear?->name,
             'activeAcademicYear' => $activeAcademicYear,
         ];
     }
@@ -144,8 +132,7 @@ class StudentController extends Controller
     {
         $filterData = $this->getFilteredStudentsQuery($request);
         $query = $filterData['query'];
-        $matchingYearIds = $filterData['matchingYearIds'];
-        $uniqueAcademicYears = $filterData['uniqueAcademicYears'];
+        $academicYears = $filterData['academicYears'];
         $activeAcademicYear = $filterData['activeAcademicYear'];
         $selectedYearId = $filterData['selectedYearId'];
         $selectedYear = $filterData['selectedYear'];
@@ -153,8 +140,8 @@ class StudentController extends Controller
 
         // Stats calculation based on selected academic year
         $statsQuery = Student::query();
-        if ($matchingYearIds->isNotEmpty()) {
-            $statsQuery->whereIn('academic_year_id', $matchingYearIds);
+        if ($selectedYearId) {
+            $statsQuery->where('academic_year_id', $selectedYearId);
         }
 
         $totalStudents = (clone $statsQuery)->count();
@@ -170,8 +157,8 @@ class StudentController extends Controller
         })->count();
         
         $rombelQuery = Classroom::where('is_active', true);
-        if ($matchingYearIds->isNotEmpty()) {
-            $rombelQuery->whereIn('academic_year_id', $matchingYearIds);
+        if ($selectedYearId) {
+            $rombelQuery->where('academic_year_id', $selectedYearId);
         }
         $totalClassrooms = $rombelQuery->count();
 
@@ -195,8 +182,8 @@ class StudentController extends Controller
             ->orderBy('classrooms.name', 'asc')
             ->select('classrooms.*');
 
-        if ($matchingYearIds->isNotEmpty()) {
-            $classroomListQuery->whereIn('classrooms.academic_year_id', $matchingYearIds);
+        if ($selectedYearId) {
+            $classroomListQuery->where('classrooms.academic_year_id', $selectedYearId);
         }
         $classrooms = $classroomListQuery->get();
 
@@ -249,7 +236,7 @@ class StudentController extends Controller
             'classrooms' => $classrooms,
             'allClassrooms' => $allClassrooms,
             'teachers' => $teachers,
-            'academicYears' => $uniqueAcademicYears,
+            'academicYears' => $academicYears,
             'activeAcademicYear' => $activeAcademicYear,
             'selectedYearId' => $selectedYearId,
             'selectedYear' => $selectedYear,

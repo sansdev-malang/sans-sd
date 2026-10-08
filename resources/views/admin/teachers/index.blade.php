@@ -42,77 +42,69 @@
             </div>
         @endif
 
-        <!-- SECTION 2: STATS CARDS GRID -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- SECTION 2: STATS CARDS GRID (Compact) -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <!-- Stat Card 1 -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Guru Aktif</p>
-                        <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                            <span class="stat-counter" data-target="{{ $totalGuru }}">{{ $totalGuru }}</span>
-                        </h3>
-                    </div>
-                    <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                        <i data-lucide="users" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
-                    </div>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40">
+                    <i data-lucide="users" class="w-5 h-5"></i>
                 </div>
-                <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                    <span class="text-emerald-600 dark:text-emerald-400 font-bold">+2.4%</span> dari bulan lalu
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Guru Aktif</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-mono">
+                            {{ $totalGuru }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Pendidik</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Stat Card 2 -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Guru Laki-laki</p>
-                        <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                            <span class="stat-counter" data-target="{{ $guruMale }}">{{ $guruMale }}</span>
-                        </h3>
-                    </div>
-                    <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                        <i data-lucide="user" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
-                    </div>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/40">
+                    <i data-lucide="user" class="w-5 h-5"></i>
                 </div>
-                <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                    Distribusi gender guru laki-laki
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Guru Laki-laki</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono">
+                            {{ $guruMale }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Orang</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Stat Card 3 -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Guru Perempuan</p>
-                        <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                            <span class="stat-counter" data-target="{{ $guruFemale }}">{{ $guruFemale }}</span>
-                        </h3>
-                    </div>
-                    <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                        <i data-lucide="user" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
-                    </div>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/40">
+                    <i data-lucide="user-check" class="w-5 h-5"></i>
                 </div>
-                <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                    Distribusi gender guru perempuan
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Guru Perempuan</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-rose-600 dark:text-rose-400 font-mono">
+                            {{ $guruFemale }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Orang</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Stat Card 4 -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Telah Sertifikasi</p>
-                        <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                            <span class="stat-counter" data-target="{{ $certifiedPercent }}">{{ $certifiedPercent }}</span>%
-                        </h3>
-                    </div>
-                    <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                        <i data-lucide="award" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
-                    </div>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40">
+                    <i data-lucide="award" class="w-5 h-5"></i>
                 </div>
-                <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                    Persentase guru dengan identitas NUPTK/NIP
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Tercatat NUPTK/NIP</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
+                            {{ $certifiedPercent }}%
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Sertifikasi</span>
+                    </div>
                 </div>
             </div>
         </section>

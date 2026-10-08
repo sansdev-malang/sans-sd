@@ -31,8 +31,8 @@
                         <select name="academic_year_id" onchange="this.form.submit()"
                             class="h-8.5 pl-8 pr-8 text-xs font-semibold rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 shadow-xs cursor-pointer appearance-none transition-colors">
                             @foreach($academicYears as $ay)
-                                <option value="{{ $ay->id }}" {{ ($selectedYear && $selectedYear->name === $ay->name) || $selectedYearId == $ay->id ? 'selected' : '' }}>
-                                    Tapel {{ $ay->name }} {{ $ay->has_active ? '(Aktif)' : '' }}
+                                <option value="{{ $ay->id }}" {{ ($selectedYear && $selectedYear->id === $ay->id) || $selectedYearId == $ay->id ? 'selected' : '' }}>
+                                    Tapel {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}
                                 </option>
                             @endforeach
                         </select>
@@ -119,95 +119,75 @@
         <!-- TAB 1: REKAPITULASI DISTRIBUSI SISWA & ROMBEL (8 KOLOM BERSIH) -->
         <!-- ========================================================================= -->
         <div x-show="activeReportTab === 'rekap'" class="space-y-4 lg:space-y-5">
-            <!-- KPI SUMMARY CARDS -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            <!-- KPI SUMMARY CARDS (Compact) -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-3.5">
                 <!-- Total Peserta Didik -->
-                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs relative overflow-hidden flex flex-col justify-between">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Total Peserta Didik</span>
-                        <div class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                            <i data-lucide="users" class="w-4 h-4"></i>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Siswa</p>
+                        <div class="flex items-baseline gap-1.5 mt-0.5">
+                            <h3 class="text-xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400 font-mono">{{ $grandTotalStudents }}</h3>
+                            <span class="text-[10px] text-slate-400 font-medium truncate">Siswa</span>
                         </div>
-                    </div>
-                    <div class="mt-2.5 flex items-baseline gap-2">
-                        <span class="text-xl sm:text-2xl font-bold font-mono text-slate-900 dark:text-slate-100">{{ $grandTotalStudents }}</span>
-                        <span class="text-[11px] text-slate-400">Siswa Aktif</span>
-                    </div>
-                    <div class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 text-[10px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
-                        <span>Rata-rata/Rombel:</span>
-                        <span class="font-bold text-slate-700 dark:text-slate-300 font-mono">
-                            {{ $grandTotalClassrooms > 0 ? round($grandTotalStudents / $grandTotalClassrooms, 1) : 0 }}
-                        </span>
                     </div>
                 </div>
 
                 <!-- Laki-laki -->
-                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs relative overflow-hidden flex flex-col justify-between">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Laki-Laki (L)</span>
-                        <div class="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                            <i data-lucide="user" class="w-4 h-4"></i>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/40">
+                        <i data-lucide="user" class="w-5 h-5"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Putra (L)</p>
+                        <div class="flex items-baseline gap-1.5 mt-0.5">
+                            <h3 class="text-xl font-bold tracking-tight text-blue-700 dark:text-blue-300 font-mono">{{ $grandTotalMale }}</h3>
+                            <span class="text-[10px] text-slate-400 font-medium truncate">({{ $malePercent }}%)</span>
                         </div>
-                    </div>
-                    <div class="mt-2.5 flex items-baseline gap-2">
-                        <span class="text-xl sm:text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">{{ $grandTotalMale }}</span>
-                        <span class="text-[11px] font-semibold text-blue-600/80 dark:text-blue-400/80 font-mono">({{ $malePercent }}%)</span>
-                    </div>
-                    <div class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                        <div class="bg-blue-500 h-1.5 rounded-full" style="width: {{ $malePercent }}%"></div>
                     </div>
                 </div>
 
                 <!-- Perempuan -->
-                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs relative overflow-hidden flex flex-col justify-between">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Perempuan (P)</span>
-                        <div class="w-7 h-7 rounded-lg bg-pink-50 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 flex items-center justify-center">
-                            <i data-lucide="user" class="w-4 h-4"></i>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                    <div class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 flex items-center justify-center shrink-0 border border-pink-100 dark:border-pink-900/40">
+                        <i data-lucide="user-check" class="w-5 h-5"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Putri (P)</p>
+                        <div class="flex items-baseline gap-1.5 mt-0.5">
+                            <h3 class="text-xl font-bold tracking-tight text-pink-700 dark:text-pink-300 font-mono">{{ $grandTotalFemale }}</h3>
+                            <span class="text-[10px] text-slate-400 font-medium truncate">({{ $femalePercent }}%)</span>
                         </div>
-                    </div>
-                    <div class="mt-2.5 flex items-baseline gap-2">
-                        <span class="text-xl sm:text-2xl font-bold font-mono text-pink-600 dark:text-pink-400">{{ $grandTotalFemale }}</span>
-                        <span class="text-[11px] font-semibold text-pink-600/80 dark:text-pink-400/80 font-mono">({{ $femalePercent }}%)</span>
-                    </div>
-                    <div class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                        <div class="bg-pink-500 h-1.5 rounded-full" style="width: {{ $femalePercent }}%"></div>
                     </div>
                 </div>
 
                 <!-- Inklusi / PDBK -->
-                <div class="bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs relative overflow-hidden flex flex-col justify-between">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Inklusi (PDBK)</span>
-                        <div class="w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                            <i data-lucide="heart-handshake" class="w-4 h-4"></i>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
+                    <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-100 dark:border-purple-900/40">
+                        <i data-lucide="heart-handshake" class="w-5 h-5"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">PDBK (Inklusi)</p>
+                        <div class="flex items-baseline gap-1.5 mt-0.5">
+                            <h3 class="text-xl font-bold tracking-tight text-purple-700 dark:text-purple-300 font-mono">{{ $grandTotalPdbk }}</h3>
+                            <span class="text-[10px] text-slate-400 font-medium truncate">({{ $pdbkPercent }}%)</span>
                         </div>
-                    </div>
-                    <div class="mt-2.5 flex items-baseline gap-2">
-                        <span class="text-xl sm:text-2xl font-bold font-mono text-purple-600 dark:text-purple-400">{{ $grandTotalPdbk }}</span>
-                        <span class="text-[11px] font-semibold text-purple-600/80 dark:text-purple-400/80 font-mono">({{ $pdbkPercent }}%)</span>
-                    </div>
-                    <div class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 text-[10px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
-                        <span>Dukungan GPK:</span>
-                        <span class="font-semibold text-purple-700 dark:text-purple-300">Aktif Terpantau</span>
                     </div>
                 </div>
 
                 <!-- Total Rombel -->
-                <div class="col-span-2 sm:col-span-1 bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs relative overflow-hidden flex flex-col justify-between">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Rombongan Belajar</span>
-                        <div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                            <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors col-span-2 sm:col-span-1">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40">
+                        <i data-lucide="layout-grid" class="w-5 h-5"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Rombel</p>
+                        <div class="flex items-baseline gap-1.5 mt-0.5">
+                            <h3 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-mono">{{ $grandTotalClassrooms }}</h3>
+                            <span class="text-[10px] text-slate-400 font-medium truncate">Kelas</span>
                         </div>
-                    </div>
-                    <div class="mt-2.5 flex items-baseline gap-2">
-                        <span class="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ $grandTotalClassrooms }}</span>
-                        <span class="text-[11px] text-slate-400">Kelas Aktif</span>
-                    </div>
-                    <div class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 text-[10px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
-                        <span>Status Tapel:</span>
-                        <span class="font-bold text-emerald-600 dark:text-emerald-400">6 Tingkat (1-6)</span>
                     </div>
                 </div>
             </div>
