@@ -28,6 +28,8 @@ class SpmbCandidate extends Model
     ];
 
     protected $appends = [
+        'registration_status',
+        'payment_status',
         'whatsapp_url', 
         'initials', 
         'formatted_birth_date',
@@ -81,9 +83,9 @@ class SpmbCandidate extends Model
         $this->attributes['spmb_status'] = $value;
     }
 
-    public function getPaymentStatusAttribute(): string
+    public function getPaymentStatusAttribute(): ?string
     {
-        return $this->attributes['spmb_payment_status'] ?? 'unpaid';
+        return $this->attributes['spmb_payment_status'] ?? null;
     }
 
     public function setPaymentStatusAttribute($value): void
@@ -344,7 +346,7 @@ class SpmbCandidate extends Model
 
     public function getHasPaymentAccessAttribute(): bool
     {
-        return !empty($this->payment_status)
+        return !empty($this->attributes['spmb_payment_status'])
             || (!empty($this->payments_data) && is_array($this->payments_data) && count($this->payments_data) > 0)
             || (!empty($this->raw_payload['fee_categories']) && is_array($this->raw_payload['fee_categories']) && count($this->raw_payload['fee_categories']) > 0);
     }
@@ -490,10 +492,7 @@ class SpmbCandidate extends Model
             $regStatus = 'verified';
         }
 
-        $payStatus = $payload['payment_status'] ?? ($payload['spmb_payment_status'] ?? 'unpaid');
-        if (empty($payStatus)) {
-            $payStatus = 'unpaid';
-        }
+        $payStatus = $payload['payment_status'] ?? ($payload['spmb_payment_status'] ?? null);
 
         $spmbRegId = $payload['id'] ?? ($payload['spmb_registration_id'] ?? null);
         if (!$spmbRegId) {

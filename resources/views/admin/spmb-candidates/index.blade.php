@@ -178,12 +178,14 @@
                         </select>
 
                         <!-- 7. Status Pembayaran -->
+                        @if(!empty($stats['has_payment_data']))
                         <select name="payment_status" onchange="this.form.submit()" 
                             class="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer">
                             <option value="all">Semua Status Bayar</option>
                             <option value="paid" {{ request('payment_status') === 'paid' ? 'selected' : '' }}>Lunas</option>
                             <option value="unpaid" {{ request('payment_status') === 'unpaid' ? 'selected' : '' }}>Belum Lunas</option>
                         </select>
+                        @endif
 
                         <!-- Filter Jumlah Baris (Per Page) -->
                         <select name="per_page" onchange="this.form.submit()"
