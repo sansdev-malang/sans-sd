@@ -41,6 +41,13 @@ class SpmbCandidate extends Model
         'referral',
         'has_payment_access',
         'category',
+        'admission_level',
+        'class_program',
+        'registration_type',
+        'jenjang_code',
+        'jenjang_name',
+        'all_jenjang_codes',
+        'services_list',
     ];
 
     public function student(): BelongsTo
@@ -219,6 +226,72 @@ class SpmbCandidate extends Model
             return 'PDBK';
         }
         return 'REGULER';
+    }
+
+    /**
+     * Jenjang / Level Masuk (Kelas 1 - Kelas 6)
+     */
+    public function getAdmissionLevelAttribute(): string
+    {
+        return $this->target_class ?: ($this->raw_payload['admission_level'] ?? ($this->raw_payload['target_class'] ?? 'Kelas 1'));
+    }
+
+    /**
+     * Program / Kategori Murid (Reguler / PDBK)
+     */
+    public function getClassProgramAttribute(): string
+    {
+        return $this->student_type ?: ($this->raw_payload['class_program'] ?? ($this->raw_payload['student_type'] ?? 'Reguler'));
+    }
+
+    /**
+     * Jalur Pendaftaran
+     */
+    public function getRegistrationTypeAttribute(): string
+    {
+        return $this->raw_payload['registration_type'] ?? ($this->raw_payload['entry_type'] ?? ($this->raw_payload['admission_type'] ?? 'Murid Baru'));
+    }
+
+    /**
+     * Kode Jenjang Singkat (SD)
+     */
+    public function getJenjangCodeAttribute(): string
+    {
+        return 'SD';
+    }
+
+    /**
+     * Nama Lengkap Jenjang (Sekolah Dasar)
+     */
+    public function getJenjangNameAttribute(): string
+    {
+        return 'Sekolah Dasar (SD)';
+    }
+
+    /**
+     * Seluruh Kode Jenjang
+     */
+    public function getAllJenjangCodesAttribute(): array
+    {
+        return ['SD'];
+    }
+
+    /**
+     * Layanan Tambahan
+     */
+    public function getServicesListAttribute(): array
+    {
+        $rawServices = $this->raw_payload['extra_services'] 
+            ?? ($this->raw_payload['services'] 
+            ?? ($this->raw_payload['additional_services'] ?? []));
+
+        if (is_array($rawServices) && !empty($rawServices)) {
+            return array_map(function($s) {
+                return is_array($s) ? ($s['name'] ?? 'Layanan') : (string)$s;
+            }, $rawServices);
+        }
+
+        return [];
     }
 
     /**
