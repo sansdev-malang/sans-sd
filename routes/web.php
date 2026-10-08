@@ -106,6 +106,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('report-cards', fn() => redirect()->route('report-cards.index'));
     Route::get('report-cards/{any}', fn() => redirect()->route('report-cards.index'))->where('any', '.*');
+
+    Route::get('cbt-launcher', function () {
+        $cbtUrl = \App\Models\Setting::get('cbt_url', env('SANS_CBT_URL', 'http://sans-cbt.test'));
+        $ssoSecret = \App\Models\Setting::get('cbt_sso_secret', env('SSO_CBT_SECRET_KEY', 'sans_cbt_secret_sso_key_2026'));
+        $curUser = auth()->user();
+        $isAdmin = in_array($curUser?->role, ['super_admin', 'superadmin', 'admin_sd', 'admin_smp']);
+        $ssoPayload = base64_encode(json_encode([
+            'id' => $curUser?->id,
+            'name' => $curUser?->name,
+            'email' => $curUser?->email,
+            'employee_id' => $curUser?->employee_id,
+            'role' => $curUser?->role ?? ($isAdmin ? 'super_admin' : 'guru'),
+            'unit' => 'sd',
+            'timestamp' => time(),
+        ]));
+        $ssoSig = hash_hmac('sha256', $ssoPayload, $ssoSecret);
+        return redirect("{$cbtUrl}/sso/login?data=" . urlencode($ssoPayload) . "&signature=" . urlencode($ssoSig));
+    })->name('cbt.launcher');
 });
 
 // SPMB Webhook Receiver (Real-time Push)
@@ -116,6 +134,7 @@ Route::middleware(['auth', 'verified', 'role:super_admin'])->group(function () {
     Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     Route::post('/settings/test-spmb-connection', [SettingController::class, 'testSpmbConnection'])->name('spmb.test-connection');
     Route::post('/settings/test-rapor-connection', [SettingController::class, 'testRaporConnection'])->name('settings.test-rapor');
+    Route::post('/settings/test-cbt-connection', [SettingController::class, 'testCbtConnection'])->name('settings.test-cbt');
     Route::resource('users', \App\Http\Controllers\UserController::class);
 });
 

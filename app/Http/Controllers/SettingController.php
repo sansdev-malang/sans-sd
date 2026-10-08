@@ -38,6 +38,9 @@ class SettingController extends Controller
             'rapor_url' => 'nullable|url|max:255',
             'rapor_sso_secret' => 'nullable|string|max:255',
             'rapor_db_name' => 'nullable|string|max:255',
+            'cbt_url' => 'nullable|url|max:255',
+            'cbt_sso_secret' => 'nullable|string|max:255',
+            'cbt_db_name' => 'nullable|string|max:255',
         ]);
 
         // Save text fields
@@ -56,6 +59,9 @@ class SettingController extends Controller
             'rapor_url',
             'rapor_sso_secret',
             'rapor_db_name',
+            'cbt_url',
+            'cbt_sso_secret',
+            'cbt_db_name',
         ];
 
         foreach ($fields as $field) {
@@ -244,6 +250,41 @@ class SettingController extends Controller
             'message' => $dbStatus 
                 ? "Koneksi ke Database SANS Rapor ('{$raporDb}') berhasil terhubung!" 
                 : "Gagal terhubung ke Database SANS Rapor: {$dbError}",
+        ]);
+    }
+
+    /**
+     * Test connection to SANS CBT database & system.
+     */
+    public function testCbtConnection(Request $request)
+    {
+        $cbtUrl = $request->input('cbt_url') ?: Setting::get('cbt_url', env('SANS_CBT_URL', 'http://sans-cbt.test'));
+        $cbtDb = $request->input('cbt_db_name') ?: Setting::get('cbt_db_name', env('DB_CBT_DATABASE', 'sans-cbt'));
+        $ssoSecret = $request->input('cbt_sso_secret') ?: Setting::get('cbt_sso_secret', env('SSO_CBT_SECRET_KEY', 'sans_cbt_secret_sso_key_2026'));
+
+        $dbStatus = false;
+        $dbError = null;
+
+        try {
+            $baseConfig = config('database.connections.sans_cbt') ?: config('database.connections.mysql');
+            $baseConfig['database'] = $cbtDb;
+            config(['database.connections.sans_cbt' => $baseConfig]);
+            \Illuminate\Support\Facades\DB::purge('sans_cbt');
+            \Illuminate\Support\Facades\DB::connection('sans_cbt')->getPdo();
+            $dbStatus = true;
+        } catch (\Throwable $e) {
+            $dbError = $e->getMessage();
+        }
+
+        return response()->json([
+            'success' => $dbStatus,
+            'db_status' => $dbStatus,
+            'db_name' => $cbtDb,
+            'db_error' => $dbError,
+            'cbt_url' => $cbtUrl,
+            'message' => $dbStatus 
+                ? "Koneksi ke Database SANS CBT ('{$cbtDb}') berhasil terhubung!" 
+                : "Gagal terhubung ke Database SANS CBT: {$dbError}",
         ]);
     }
 }
