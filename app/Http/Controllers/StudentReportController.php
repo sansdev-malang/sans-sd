@@ -296,6 +296,14 @@ class StudentReportController extends Controller
 
         $staffMatrix = $this->getStaffMatrixReport();
 
+        // Load dynamic assignments from database per selected academic year
+        $dbAssignments = \App\Models\HomeroomAssignment::with('employee')
+            ->when(!empty($matchingYearIds), function($q) use ($matchingYearIds) {
+                $q->whereIn('academic_year_id', $matchingYearIds);
+            })
+            ->where('is_active', true)
+            ->get();
+
         foreach ($classLevels as $level) {
             $classroomsData = [];
             $subMale = 0;
@@ -304,6 +312,14 @@ class StudentReportController extends Controller
             $subPdbk = 0;
             $levelNum = $level->order ?: (int) filter_var($level->name, FILTER_SANITIZE_NUMBER_INT);
             $levelStaffInfo = $staffMatrix[$levelNum] ?? null;
+
+            // Coordinator & Assistants for this level
+            $levelAssignments = $dbAssignments->where('class_level_id', $level->id);
+            $dbCoordinator = $levelAssignments->where('role', 'koordinator_tingkat')->first()?->employee?->name;
+            $dbAssistants = $levelAssignments->where('role', 'pendamping_tingkat')->pluck('employee.name')->filter()->values()->all();
+
+            $coordinatorName = $dbCoordinator ?: ($levelStaffInfo['coordinator'] ?? null);
+            $assistantsList = !empty($dbAssistants) ? $dbAssistants : ($levelStaffInfo['assistants'] ?? []);
 
             foreach ($level->classrooms as $cr) {
                 $male = $cr->students->whereIn('gender', ['L', 'Laki-laki', 'Male', 'LAKI-LAKI'])->count();
@@ -315,14 +331,20 @@ class StudentReportController extends Controller
 
                 $gpkTeachers = $cr->students->whereNotNull('gpkTeacher')->pluck('gpkTeacher.name')->unique()->values()->all();
 
-                // Matched staff data from Sheet Report TU
+                // Matched staff data from database assignments or Sheet Report TU fallback
                 $staffCode = strtoupper(trim($cr->code ?: ''));
                 $matchedStaff = $levelStaffInfo['classes'][$staffCode] ?? null;
 
-                $homeroomTeacher = $matchedStaff['homeroom'] ?? ($cr->homeroomTeacher?->name ?: '-');
-                $classTeacher = $matchedStaff['class_teacher'] ?? '-';
-                $gpkList = !empty($matchedStaff['gpk']) ? $matchedStaff['gpk'] : (!empty($gpkTeachers) ? $gpkTeachers : []);
-                $gpq = $matchedStaff['gpq'] ?? '-';
+                $crAssignments = $dbAssignments->where('classroom_id', $cr->id);
+                $dbHomeroom = $crAssignments->where('role', 'wali_kelas')->first()?->employee?->name;
+                $dbClassTeacher = $crAssignments->where('role', 'guru_kelas')->first()?->employee?->name;
+                $dbGpk = $crAssignments->where('role', 'gpk')->pluck('employee.name')->filter()->values()->all();
+                $dbGpq = $crAssignments->where('role', 'gpq')->first()?->employee?->name;
+
+                $homeroomTeacher = $dbHomeroom ?: ($cr->homeroomTeacher?->name ?: ($matchedStaff['homeroom'] ?? '-'));
+                $classTeacher = $dbClassTeacher ?: ($matchedStaff['class_teacher'] ?? '-');
+                $gpkList = !empty($dbGpk) ? $dbGpk : (!empty($matchedStaff['gpk']) ? $matchedStaff['gpk'] : (!empty($gpkTeachers) ? $gpkTeachers : []));
+                $gpq = $dbGpq ?: ($matchedStaff['gpq'] ?? '-');
 
                 $classroomsData[] = [
                     'id' => $cr->id,
@@ -350,8 +372,8 @@ class StudentReportController extends Controller
 
             $levelReports[] = [
                 'level' => $level,
-                'coordinator' => $levelStaffInfo['coordinator'] ?? null,
-                'assistants' => $levelStaffInfo['assistants'] ?? [],
+                'coordinator' => $coordinatorName,
+                'assistants' => $assistantsList,
                 'classrooms' => $classroomsData,
                 'subtotal_male' => $subMale,
                 'subtotal_female' => $subFemale,

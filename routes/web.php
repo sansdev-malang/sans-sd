@@ -54,6 +54,11 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
     Route::resource('students', StudentController::class);
     Route::get('/siswa', fn() => redirect()->route('students.index'))->name('siswa');
 
+    // Homeroom & Teacher Assignments (Penugasan Wali Kelas & Formasi Guru)
+    Route::post('homeroom-assignments/{id}/toggle-status', [\App\Http\Controllers\HomeroomAssignmentController::class, 'toggleStatus'])->name('homeroom-assignments.toggle-status');
+    Route::resource('homeroom-assignments', \App\Http\Controllers\HomeroomAssignmentController::class);
+    Route::get('/wali-kelas', fn() => redirect()->route('homeroom-assignments.index'))->name('wali-kelas');
+
     // Student & Classroom Distribution Report (Rekapitulasi Rombel & Kesiswaan - Sheet 2 TU)
     Route::get('student-reports', [\App\Http\Controllers\StudentReportController::class, 'index'])->name('student-reports.index');
     Route::get('student-reports/print', [\App\Http\Controllers\StudentReportController::class, 'print'])->name('student-reports.print');
