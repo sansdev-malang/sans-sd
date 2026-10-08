@@ -125,10 +125,12 @@
         @endif
 
         <!-- STATS CARDS GRID (Compact) -->
+        <!-- STATS CARDS GRID (Compact & Interactive Quick-Filter) -->
         <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-3.5">
             <!-- Stat Card 1: Total Siswa Aktif -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
-                <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40">
+            <a href="{{ route('students.index', array_merge(request()->except(['page', 'status']), ['status' => request('status') === 'aktif' ? 'all' : 'aktif'])) }}"
+                class="bg-white dark:bg-slate-900 border {{ request('status') === 'aktif' ? 'border-indigo-500 ring-2 ring-indigo-500/20' : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700' }} rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-all cursor-pointer group">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40 group-hover:scale-105 transition-transform">
                     <i data-lucide="users" class="w-5 h-5"></i>
                 </div>
                 <div class="min-w-0">
@@ -140,11 +142,12 @@
                         <span class="text-[10px] text-slate-400 font-medium truncate">/ {{ number_format($stats['total_all']) }}</span>
                     </div>
                 </div>
-            </div>
+            </a>
 
             <!-- Stat Card 2: Laki-laki -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
-                <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/40">
+            <a href="{{ route('students.index', array_merge(request()->except(['page', 'gender']), ['gender' => request('gender') === 'L' ? 'all' : 'L'])) }}"
+                class="bg-white dark:bg-slate-900 border {{ request('gender') === 'L' ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700' }} rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-all cursor-pointer group">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/40 group-hover:scale-105 transition-transform">
                     <i data-lucide="user" class="w-5 h-5"></i>
                 </div>
                 <div class="min-w-0">
@@ -156,11 +159,12 @@
                         <span class="text-[10px] text-slate-400 font-medium truncate">Siswa</span>
                     </div>
                 </div>
-            </div>
+            </a>
 
             <!-- Stat Card 3: Perempuan -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
-                <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/40">
+            <a href="{{ route('students.index', array_merge(request()->except(['page', 'gender']), ['gender' => request('gender') === 'P' ? 'all' : 'P'])) }}"
+                class="bg-white dark:bg-slate-900 border {{ request('gender') === 'P' ? 'border-rose-500 ring-2 ring-rose-500/20' : 'border-slate-200 dark:border-slate-800 hover:border-rose-300 dark:hover:border-rose-700' }} rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-all cursor-pointer group">
+                <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/40 group-hover:scale-105 transition-transform">
                     <i data-lucide="user-check" class="w-5 h-5"></i>
                 </div>
                 <div class="min-w-0">
@@ -172,11 +176,12 @@
                         <span class="text-[10px] text-slate-400 font-medium truncate">Siswi</span>
                     </div>
                 </div>
-            </div>
+            </a>
 
             <!-- Stat Card 4: Inklusi (PDBK) -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
-                <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-100 dark:border-purple-900/40">
+            <a href="{{ route('students.index', array_merge(request()->except(['page', 'student_type']), ['student_type' => request('student_type') === 'PDBK' ? '' : 'PDBK'])) }}"
+                class="bg-white dark:bg-slate-900 border {{ request('student_type') === 'PDBK' ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-700' }} rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-all cursor-pointer group">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-100 dark:border-purple-900/40 group-hover:scale-105 transition-transform">
                     <i data-lucide="heart-handshake" class="w-5 h-5"></i>
                 </div>
                 <div class="min-w-0">
@@ -188,11 +193,12 @@
                         <span class="text-[10px] text-slate-400 font-medium truncate">Siswa</span>
                     </div>
                 </div>
-            </div>
+            </a>
 
             <!-- Stat Card 5: Rombongan Belajar -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors col-span-2 sm:col-span-1">
-                <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40">
+            <a href="{{ route('classrooms.index', ['academic_year_id' => $selectedYearId]) }}"
+                class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-all cursor-pointer group col-span-2 sm:col-span-1">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40 group-hover:scale-105 transition-transform">
                     <i data-lucide="layout-grid" class="w-5 h-5"></i>
                 </div>
                 <div class="min-w-0">
@@ -204,7 +210,7 @@
                         <span class="text-[10px] text-slate-400 font-medium truncate">1A–6D</span>
                     </div>
                 </div>
-            </div>
+            </a>
         </section>
 
         <!-- SEARCH & FILTERS -->
@@ -215,7 +221,7 @@
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500"></i>
                     </span>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, NIS, NIK, No. Ortu..."
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, NIS, NIK, rombel, ortu..."
                         style="padding-left: 2.25rem;"
                         class="w-full h-8.5 pr-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900 dark:text-slate-50 placeholder-slate-400 shadow-inner">
                 </div>
@@ -233,7 +239,7 @@
                     </select>
 
                     <!-- Filter Tingkat Kelas -->
-                    <select name="class_level_id" onchange="this.form.submit()"
+                    <select name="class_level_id" onchange="if(this.form.classroom_id) this.form.classroom_id.value = 'all'; this.form.submit()"
                         class="h-8.5 px-2.5 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer shadow-xs">
                         <option value="all">Semua Tingkat</option>
                         @foreach($classLevels as $lvl)
@@ -247,11 +253,24 @@
                     <select name="classroom_id" onchange="this.form.submit()"
                         class="h-8.5 px-2.5 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer shadow-xs max-w-[150px] truncate">
                         <option value="all">Semua Rombel</option>
-                        @foreach($classrooms as $rombel)
+                        @php
+                            $filteredClassrooms = request('class_level_id') && request('class_level_id') !== 'all'
+                                ? $classrooms->where('class_level_id', request('class_level_id'))
+                                : $classrooms;
+                        @endphp
+                        @foreach($filteredClassrooms as $rombel)
                             <option value="{{ $rombel->id }}" {{ request('classroom_id') == $rombel->id ? 'selected' : '' }}>
                                 {{ $rombel->full_name }}
                             </option>
                         @endforeach
+                    </select>
+
+                    <!-- Filter Gender (L / P) -->
+                    <select name="gender" onchange="this.form.submit()"
+                        class="h-8.5 px-2.5 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer shadow-xs">
+                        <option value="all">Semua L/P</option>
+                        <option value="L" {{ in_array(request('gender'), ['L', 'Laki-laki', 'Male']) ? 'selected' : '' }}>Putra (L)</option>
+                        <option value="P" {{ in_array(request('gender'), ['P', 'Perempuan', 'Female']) ? 'selected' : '' }}>Putri (P)</option>
                     </select>
 
                     <!-- Filter Tipe Siswa (Reguler / Inklusi) -->
@@ -284,10 +303,10 @@
                         <option value="all" {{ request('per_page') === 'all' ? 'selected' : '' }}>Semua Baris</option>
                     </select>
 
-                    @if(request()->hasAny(['search', 'academic_year_id', 'class_level_id', 'classroom_id', 'student_type', 'status', 'gender']) || (request('per_page') && request('per_page') != 15))
-                        <a href="{{ route('students.index') }}" 
+                    @if(request()->hasAny(['search', 'class_level_id', 'classroom_id', 'student_type', 'status', 'gender']) || (request('academic_year_id') && request('academic_year_id') != ($activeAcademicYear?->id ?? '')) || (request('per_page') && request('per_page') != 15))
+                        <a href="{{ route('students.index', ['academic_year_id' => $activeAcademicYear?->id]) }}" 
                             class="h-8.5 px-2.5 inline-flex items-center justify-center text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors"
-                            title="Reset Filter">
+                            title="Reset Semua Filter">
                             <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
                         </a>
                     @endif

@@ -49,7 +49,7 @@ class StudentController extends Controller
             $query->where('academic_year_id', $selectedYearId);
         }
 
-        // Search query
+        // Search query (Supports Name, NIS, NISN, NIK, No KK, Parent Phone, Father, Mother, Special Needs, GPK Teacher, Classroom)
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('full_name', 'like', "%{$search}%")
@@ -63,6 +63,10 @@ class StudentController extends Controller
                   ->orWhere('special_needs_type', 'like', "%{$search}%")
                   ->orWhereHas('gpkTeacher', function($tq) use ($search) {
                       $tq->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('classroom', function($cq) use ($search) {
+                      $cq->where('name', 'like', "%{$search}%")
+                         ->orWhere('code', 'like', "%{$search}%");
                   });
             });
         }
@@ -111,7 +115,13 @@ class StudentController extends Controller
         // Filter: Gender
         if ($gender = $request->get('gender')) {
             if ($gender !== 'all') {
-                $query->where('gender', $gender);
+                if (in_array(strtoupper($gender), ['L', 'LAKI-LAKI', 'MALE'])) {
+                    $query->whereIn('gender', ['L', 'Laki-laki', 'Male', 'LAKI-LAKI']);
+                } elseif (in_array(strtoupper($gender), ['P', 'PEREMPUAN', 'FEMALE'])) {
+                    $query->whereIn('gender', ['P', 'Perempuan', 'Female', 'PEREMPUAN']);
+                } else {
+                    $query->where('gender', $gender);
+                }
             }
         }
 
