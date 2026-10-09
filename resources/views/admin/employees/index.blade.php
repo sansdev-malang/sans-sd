@@ -52,6 +52,8 @@
                 </form>
                 @endif
             </div>
+        </section>
+
         <!-- STATS CARDS GRID (Compact & Interactive Quick-Filter) -->
         <section class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-3.5">
             <!-- Stat Card 1: Total Pegawai -->
