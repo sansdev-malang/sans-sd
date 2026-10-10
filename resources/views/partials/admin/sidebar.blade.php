@@ -7,6 +7,7 @@
         auth()->user()->hasRole('kepala_sekolah') || 
         auth()->user()->hasRole('waka')
     );
+    $isSuperAdmin = auth()->user() && auth()->user()->hasRole('super_admin');
 @endphp
 <aside id="sidebar"
     class="fixed inset-y-0 left-0 z-[60] md:z-20 flex flex-col w-64 h-full md:h-screen max-h-screen bg-white dark:bg-[#09090b] border-r border-slate-200 dark:border-slate-800 p-3 shrink-0 transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative shadow-sm md:shadow-none overflow-hidden">
@@ -124,6 +125,7 @@
         </div>
 
         <!-- Group: Rapor & Penilaian & CBT SSO Launcher -->
+        @if($isSuperAdmin)
         @php
             $ssoSecret = \App\Models\Setting::get('rapor_sso_secret', env('SSO_SECRET_KEY', 'sans_rapor_secret_sso_key_2026'));
             $raporUrl = \App\Models\Setting::get('rapor_url', env('SANS_RAPOR_URL', 'http://sans-rapor.test'));
@@ -135,7 +137,7 @@
                 'name' => $curUser?->name,
                 'email' => $curUser?->email,
                 'employee_id' => $curUser?->employee_id,
-                'role' => $curUser?->role ?? ($isAdmin ? 'super_admin' : 'guru'),
+                'role' => $curUser?->role ?? 'super_admin',
                 'unit' => 'sd',
                 'timestamp' => time(),
             ]));
@@ -173,6 +175,7 @@
                 </a>
             </nav>
         </div>
+        @endif
 
         @if($isAdmin)
         <!-- Group 2: Akademik & Kesiswaan -->
