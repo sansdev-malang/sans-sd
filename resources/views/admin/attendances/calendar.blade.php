@@ -113,7 +113,7 @@
                 <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Data Riwayat Absensi</h2>
                 <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Memantau waktu kedatangan, kepulangan, dan estimasi bonus ketepatan waktu Anda.</p>
             </div>
-            <div>
+            <div class="flex items-center flex-wrap gap-2">
                 <a href="{{ route('attendances.index', array_merge(request()->query(), ['refresh' => 1])) }}" 
                    x-data="{ syncing: false }" 
                    @click="syncing = true" 
@@ -123,6 +123,20 @@
                     <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" :class="{ 'animate-spin': syncing }"></i>
                     <span x-text="syncing ? 'Menyinkronkan...' : 'Sinkronkan Data'">Sinkronkan Data</span>
                 </a>
+
+                @php
+                    $loggedEmployeeName = $reports->first()['employee']['name'] ?? auth()->user()->employee?->name ?? auth()->user()->name ?? 'Pegawai';
+                    $loggedEmployeeNip = $reports->first()['employee']['nuptk_nip_nik'] ?? auth()->user()->employee?->nip ?? auth()->user()->employee?->nuptk ?? null;
+                @endphp
+                <div class="h-9 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center gap-2 shadow-sm text-xs" title="Nama Pegawai: {{ $loggedEmployeeName }}{{ $loggedEmployeeNip ? ' (' . $loggedEmployeeNip . ')' : '' }}">
+                    <div class="w-5 h-5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                        <i data-lucide="user" class="w-3 h-3"></i>
+                    </div>
+                    <span class="font-bold text-slate-800 dark:text-slate-200 truncate max-w-[170px] sm:max-w-[260px]">{{ $loggedEmployeeName }}</span>
+                    @if($loggedEmployeeNip)
+                        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono hidden sm:inline">({{ $loggedEmployeeNip }})</span>
+                    @endif
+                </div>
             </div>
         </section>
 

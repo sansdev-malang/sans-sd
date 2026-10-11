@@ -235,8 +235,8 @@
                                 <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 font-nasalization">Tren Kehadiran Guru & Staf</h3>
                                 <p class="text-xs text-slate-500 dark:text-slate-400">Tingkat kehadiran harian guru & staf pada periode berjalan</p>
                             @else
-                                <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 font-nasalization">Riwayat Absensi Harian</h3>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">Tren waktu kedatangan (jam masuk) Anda pada bulan ini</p>
+                                <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 font-nasalization">Jadwal Shift Kerja</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Informasi jam kerja dan kalender jadwal shift Anda pada bulan ini</p>
                             @endif
                         </div>
                     </div>
@@ -273,6 +273,28 @@
                                                 <div class="{{ $index > 0 ? 'pt-3 border-t border-slate-100 dark:border-slate-800/50' : '' }}">
                                                     <div class="font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center justify-between">
                                                         <span>{{ $shift['name'] }}</span>
+                                                        @if(!empty($shift['short_code']))
+                                                            @php
+                                                                $scUpper = strtoupper($shift['short_code']);
+                                                                $scBadge = 'bg-blue-600 text-white';
+                                                                if ($scUpper === 'P') {
+                                                                    $scBadge = 'bg-cyan-500 text-white';
+                                                                } elseif ($scUpper === 'PS-1' || $scUpper === 'SP1') {
+                                                                    $scBadge = 'bg-blue-600 text-white';
+                                                                } elseif ($scUpper === 'PS-1B') {
+                                                                    $scBadge = 'bg-emerald-600 text-white';
+                                                                } elseif ($scUpper === 'PS-2' || $scUpper === 'SP2') {
+                                                                    $scBadge = 'bg-orange-500 text-white';
+                                                                } elseif ($scUpper === 'PB' || stripos($shift['name'], 'toko belakang') !== false) {
+                                                                    $scBadge = 'bg-purple-600 text-white';
+                                                                } elseif (stripos($shift['name'], 'malam') !== false || stripos($scUpper, 'M') === 0 || $scUpper === 'SP3') {
+                                                                    $scBadge = 'bg-indigo-800 text-white';
+                                                                } elseif (stripos($shift['name'], 'siang') !== false || stripos($scUpper, 'S') === 0) {
+                                                                    $scBadge = 'bg-amber-500 text-white';
+                                                                }
+                                                            @endphp
+                                                            <span class="text-[10px] font-black px-1.5 py-0.5 rounded shadow-xs {{ $scBadge }}">{{ $shift['short_code'] }}</span>
+                                                        @endif
                                                     </div>
                                                     @if(!empty($shift['description']))
                                                         <div class="text-xs text-slate-450 dark:text-slate-500 mb-1.5 leading-snug">{{ $shift['description'] }}</div>
@@ -320,9 +342,9 @@
                                         <div>
                                             <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Kalender Jadwal Anda Bulan Ini</p>
                                             
-                                            <div class="max-w-xs sm:max-w-sm">
+                                            <div class="w-full max-w-sm sm:max-w-md">
                                                 <!-- Calendar Grid Header -->
-                                                <div class="grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-slate-400 dark:text-slate-500 uppercase mb-1.5">
+                                                <div class="grid grid-cols-7 gap-1 sm:gap-1.5 text-center font-bold text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 uppercase mb-1.5">
                                                     <div>Sen</div>
                                                     <div>Sel</div>
                                                     <div>Rab</div>
@@ -333,48 +355,100 @@
                                                 </div>
                                                 
                                                 <!-- Calendar Days Grid -->
-                                                <div class="grid grid-cols-7 gap-1 items-start">
+                                                <div class="grid grid-cols-7 gap-1 sm:gap-1.5 items-start">
                                                     @foreach($myCalendarDays as $day)
                                                         @if($day['is_empty'])
                                                             <div class="aspect-square bg-slate-50/30 dark:bg-slate-900/10 rounded-md" style="aspect-ratio: 1 / 1;"></div>
                                                         @else
                                                             @php
-                                                                $typeClass = 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500';
+                                                                $cellClass = 'bg-slate-100 hover:bg-slate-200/70 dark:bg-slate-800/60 dark:hover:bg-slate-800 border-slate-200/70 dark:border-slate-800 text-slate-400 dark:text-slate-500';
+                                                                $numClass = 'text-slate-400 dark:text-slate-500';
+                                                                $labelClass = 'text-slate-400 dark:text-slate-400 font-bold';
+
                                                                 switch($day['type'] ?? 'default') {
+                                                                    case 'ps1':
+                                                                        $cellClass = 'bg-blue-600 hover:bg-blue-700 text-white border-blue-700 shadow-xs';
+                                                                        $numClass = 'text-blue-100';
+                                                                        $labelClass = 'text-white font-black';
+                                                                        break;
+                                                                    case 'ps1b':
+                                                                        $cellClass = 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700 shadow-xs';
+                                                                        $numClass = 'text-emerald-100';
+                                                                        $labelClass = 'text-white font-black';
+                                                                        break;
+                                                                    case 'ps2':
+                                                                        $cellClass = 'bg-orange-500 hover:bg-orange-600 text-white border-orange-600 shadow-xs';
+                                                                        $numClass = 'text-orange-100';
+                                                                        $labelClass = 'text-white font-black';
+                                                                        break;
+                                                                    case 'pb':
+                                                                        $cellClass = 'bg-purple-600 hover:bg-purple-700 text-white border-purple-700 shadow-xs';
+                                                                        $numClass = 'text-purple-100';
+                                                                        $labelClass = 'text-white font-black';
+                                                                        break;
                                                                     case 'malam':
-                                                                        $typeClass = 'bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400';
+                                                                        $cellClass = 'bg-indigo-800 hover:bg-indigo-900 text-white border-indigo-900 shadow-xs';
+                                                                        $numClass = 'text-indigo-200';
+                                                                        $labelClass = 'text-white font-black';
                                                                         break;
                                                                     case 'pagi':
-                                                                        $typeClass = 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400';
+                                                                        $cellClass = 'bg-cyan-500 hover:bg-cyan-600 text-white border-cyan-600 shadow-xs';
+                                                                        $numClass = 'text-cyan-100';
+                                                                        $labelClass = 'text-white font-black';
                                                                         break;
                                                                     case 'siang':
-                                                                        $typeClass = 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400';
+                                                                        $cellClass = 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-xs';
+                                                                        $numClass = 'text-amber-100';
+                                                                        $labelClass = 'text-white font-black';
                                                                         break;
                                                                     case 'other':
-                                                                        $typeClass = 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400';
+                                                                        $cellClass = 'bg-cyan-600 hover:bg-cyan-700 text-white border-cyan-700 shadow-xs';
+                                                                        $numClass = 'text-cyan-100';
+                                                                        $labelClass = 'text-white font-black';
                                                                         break;
                                                                     case 'off':
-                                                                        $typeClass = 'bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500';
+                                                                        $cellClass = 'bg-slate-100 hover:bg-slate-200/70 dark:bg-slate-800/60 dark:hover:bg-slate-800 border-slate-200/70 dark:border-slate-800 text-slate-400 dark:text-slate-500';
+                                                                        $numClass = 'text-slate-400 dark:text-slate-500';
+                                                                        $labelClass = 'text-slate-400 dark:text-slate-400 font-bold';
                                                                         break;
                                                                     case 'sakit':
-                                                                        $typeClass = 'bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400';
+                                                                        $cellClass = 'bg-rose-600 hover:bg-rose-700 text-white border-rose-700 shadow-xs';
+                                                                        $numClass = 'text-rose-100';
+                                                                        $labelClass = 'text-white font-black';
                                                                         break;
                                                                     case 'izin':
-                                                                        $typeClass = 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400';
+                                                                        $cellClass = 'bg-yellow-400 hover:bg-yellow-500 text-yellow-950 border-yellow-500 shadow-xs';
+                                                                        $numClass = 'text-yellow-900';
+                                                                        $labelClass = 'text-yellow-950 font-black';
                                                                         break;
                                                                     case 'cuti':
-                                                                        $typeClass = 'bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400';
+                                                                        $cellClass = 'bg-teal-600 hover:bg-teal-700 text-white border-teal-700 shadow-xs';
+                                                                        $numClass = 'text-teal-100';
+                                                                        $labelClass = 'text-white font-black';
                                                                         break;
                                                                 }
+
+                                                                $codeLen = mb_strlen($day['short_label'] ?? '');
+                                                                if ($codeLen <= 1) {
+                                                                    $codeSizeClass = 'text-[10px] sm:text-xs';
+                                                                } elseif ($codeLen <= 2) {
+                                                                    $codeSizeClass = 'text-[9.5px] sm:text-[11px]';
+                                                                } elseif ($codeLen <= 4) {
+                                                                    $codeSizeClass = 'text-[8.5px] sm:text-[10px] tracking-tight';
+                                                                } else {
+                                                                    $codeSizeClass = 'text-[7px] sm:text-[8.5px] tracking-tighter';
+                                                                }
                                                             @endphp
-                                                            <div class="calendar-cell aspect-square flex flex-col justify-between p-1 border border-slate-100 dark:border-slate-800/60 rounded-md bg-white dark:bg-slate-900 shadow-sm relative group outline-none cursor-pointer" style="aspect-ratio: 1 / 1;" tabindex="0">
+                                                            <div class="calendar-cell aspect-square flex flex-col justify-between p-1 sm:p-1.5 border rounded-md relative group outline-none cursor-pointer transition-all duration-150 shadow-xs hover:scale-[1.04] hover:z-10 {{ $cellClass }}" style="aspect-ratio: 1 / 1;" tabindex="0">
                                                                 <!-- Date Number -->
-                                                                <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-none">{{ $day['day_num'] }}</span>
+                                                                <span class="text-[9px] sm:text-[10px] font-bold leading-none {{ $numClass }}">{{ $day['day_num'] }}</span>
                                                                 
-                                                                <!-- Shift Label Badge -->
-                                                                <span class="text-[8px] font-bold text-center py-0.5 rounded {{ $typeClass }} block w-full truncate leading-none">
-                                                                    {{ $day['short_label'] }}
-                                                                </span>
+                                                                <!-- Shift Code (Center & Responsive) -->
+                                                                <div class="flex-1 flex items-center justify-center">
+                                                                    <span class="{{ $codeSizeClass }} {{ $labelClass }} text-center leading-none select-none max-w-full whitespace-nowrap">
+                                                                        {{ $day['short_label'] }}
+                                                                    </span>
+                                                                </div>
                                                                 
                                                                 <!-- Tooltip on hover/tap -->
                                                                 <div class="calendar-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-32 hidden group-hover:block group-focus:block z-50 pointer-events-none">

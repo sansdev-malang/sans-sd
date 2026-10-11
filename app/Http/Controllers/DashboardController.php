@@ -455,6 +455,13 @@ class DashboardController extends Controller
                 ];
             }
 
+            $shiftCodeMap = [];
+            foreach ($myActiveShifts as $as) {
+                if (!empty($as['name']) && !empty($as['short_code'])) {
+                    $shiftCodeMap[$as['name']] = $as['short_code'];
+                }
+            }
+
             foreach ($dailyDetails as $dateStr => $det) {
                 $dateCarbon = \Carbon\Carbon::parse($dateStr);
                 $shiftName = $det['shift_name'] ?? null;
@@ -462,17 +469,48 @@ class DashboardController extends Controller
                 $type = 'default';
 
                 if ($shiftName) {
-                    if (stripos($shiftName, 'malam') !== false) {
-                        $shortLabel = 'M';
+                    // 1. Prioritaskan short_code langsung dari HRD API atau mapping active_shifts
+                    $code = $det['short_code'] ?? $det['shift_code'] ?? ($shiftCodeMap[$shiftName] ?? null);
+
+                    if (!$code) {
+                        // 2. Pattern matching cerdas jika belum ada short_code dari cache lama
+                        if (preg_match('/pagi\s+shift\s+(\d+)\s*([a-z]?)/i', $shiftName, $m)) {
+                            $code = 'PS-' . $m[1] . strtoupper($m[2]);
+                        } elseif (preg_match('/siang\s+shift\s+(\d+)\s*([a-z]?)/i', $shiftName, $m)) {
+                            $code = 'SS-' . $m[1] . strtoupper($m[2]);
+                        } elseif (preg_match('/malam\s+shift\s+(\d+)\s*([a-z]?)/i', $shiftName, $m)) {
+                            $code = 'MS-' . $m[1] . strtoupper($m[2]);
+                        } elseif (stripos($shiftName, 'toko belakang') !== false) {
+                            $code = 'PB';
+                        } elseif (stripos($shiftName, 'malam') !== false) {
+                            $code = 'M';
+                        } elseif (stripos($shiftName, 'pagi') !== false) {
+                            $code = 'P';
+                        } elseif (stripos($shiftName, 'siang') !== false) {
+                            $code = 'S';
+                        } else {
+                            $code = strtoupper(substr($shiftName, 0, 3));
+                        }
+                    }
+
+                    $shortLabel = $code;
+                    $codeUpper = strtoupper($code);
+
+                    if ($codeUpper === 'PS-1' || $codeUpper === 'SP1') {
+                        $type = 'ps1';
+                    } elseif ($codeUpper === 'PS-1B') {
+                        $type = 'ps1b';
+                    } elseif ($codeUpper === 'PS-2' || $codeUpper === 'SP2') {
+                        $type = 'ps2';
+                    } elseif ($codeUpper === 'PB' || stripos($shiftName, 'toko belakang') !== false) {
+                        $type = 'pb';
+                    } elseif (stripos($shiftName, 'malam') !== false || stripos($code, 'M') === 0 || $codeUpper === 'SP3') {
                         $type = 'malam';
-                    } elseif (stripos($shiftName, 'pagi') !== false) {
-                        $shortLabel = 'P';
-                        $type = 'pagi';
-                    } elseif (stripos($shiftName, 'siang') !== false) {
-                        $shortLabel = 'S';
+                    } elseif (stripos($shiftName, 'siang') !== false || stripos($code, 'S') === 0) {
                         $type = 'siang';
+                    } elseif (stripos($shiftName, 'pagi') !== false || stripos($code, 'P') === 0) {
+                        $type = 'pagi';
                     } else {
-                        $shortLabel = strtoupper(substr($shiftName, 0, 1));
                         $type = 'other';
                     }
                 } else {

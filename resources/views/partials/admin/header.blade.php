@@ -13,7 +13,14 @@
             class="hidden sm:flex items-center space-x-1.5 text-xs font-medium text-slate-400 dark:text-slate-500 select-none">
             <span class="hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer">{{ setting('unit_name', 'SANS Malang') }}</span>
             <span class="text-slate-300 dark:text-slate-700">/</span>
-            <span class="hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer font-bold">{{ ucwords(str_replace(['_', 'hrd', 'smp', 'sd', 'paud', 'employee'], [' ', 'HRD', 'SMP', 'SD', 'PAUD', 'Pegawai'], auth()->user()->role ?? 'Admin')) }}</span>
+            @php
+                $currentUser = auth()->user();
+                $isEmployeeUser = $currentUser && ($currentUser->role === 'employee' || str_contains($currentUser->role ?? '', 'employee') || $currentUser->employee_id);
+                $navLabel = $isEmployeeUser 
+                    ? ($currentUser->employee->name ?? $currentUser->name ?? 'Pegawai') 
+                    : ucwords(str_replace(['_', 'hrd', 'smp', 'sd', 'paud', 'employee'], [' ', 'HRD', 'SMP', 'SD', 'PAUD', 'Pegawai'], $currentUser->role ?? 'Admin'));
+            @endphp
+            <span class="hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer font-bold truncate max-w-[200px] md:max-w-xs" title="{{ $navLabel }}">{{ $navLabel }}</span>
         </nav>
     </div>
 
