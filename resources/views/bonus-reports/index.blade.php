@@ -190,37 +190,81 @@
                                 @php
                                     $dateStr = $date->format('Y-m-d');
                                     $detail = $report['daily_details'][$dateStr] ?? null;
+                                    $isPicket = $detail['is_picket'] ?? false;
+                                    $picketArea = $detail['picket_area'] ?? 'Area Piket';
                                 @endphp
-                                <td class="py-1 px-1 text-center border-r border-slate-50 dark:border-slate-800/30">
-                                     @if($detail && !in_array($detail['status'] ?? '', ['Off', 'Libur']))
+                                <td class="py-1 px-1 text-center border-r border-slate-50 dark:border-slate-800/30 {{ $date->isSunday() ? 'bg-red-50/30 dark:bg-red-950/10' : '' }}">
+                                    @if($detail)
+                                        @php
+                                            $picketPrefix = $isPicket ? "⚡ [PIKET: 06:30 ({$picketArea})] " : "";
+                                        @endphp
                                         @if($detail['bonus_nominal'] > 0)
                                             @php 
                                                 $nominal = $detail['bonus_nominal'];
                                                 $shortNominal = ($nominal >= 1000) ? ($nominal / 1000) . 'k' : $nominal;
+                                                $tierStr = !empty($detail['tier_level']) ? "Tier {$detail['tier_level']}" : 'Bonus';
+                                                $statusName = $detail['status'] ?? '';
+                                                $isKedinasanStatus = $statusName === 'Dinas' || 
+                                                    str_contains(strtolower($statusName), 'dinas') || 
+                                                    str_contains(strtolower($statusName), 'kedinasan');
+
+                                                $schemaNameStr = !empty($detail['schema_name']) ? " • [{$detail['schema_name']}]" : '';
+
                                                 if (isset($detail['status']) && $detail['status'] === 'Reward Libur') {
                                                     $rName = $detail['reward_name'] ?? 'Libur Reward';
-                                                    $titleText = "🎁 Reward Libur ({$rName}): Rp " . number_format($nominal, 0, ',', '.');
+                                                    $titleText = "🎁 Reward Libur ({$rName}): Rp " . number_format($nominal, 0, ',', '.') . $schemaNameStr;
+                                                } elseif ($isKedinasanStatus) {
+                                                    $shortStatus = str_contains($statusName, '(') ? trim(explode('(', $statusName)[0]) : $statusName;
+                                                    $titleText = $picketPrefix . "{$tierStr} ({$shortStatus}): Rp " . number_format($nominal, 0, ',', '.') . $schemaNameStr;
                                                 } else {
-                                                    $titleText = "Rp " . number_format($nominal, 0, ',', '.');
+                                                    $earlyStr = !empty($detail['early_minutes']) ? " (Hadir {$detail['early_minutes']} mnt sblm masuk)" : " (Tepat Waktu)";
+                                                    $titleText = $picketPrefix . "{$tierStr}: Rp " . number_format($nominal, 0, ',', '.') . $earlyStr . $schemaNameStr;
                                                 }
                                             @endphp
-                                            <div class="mx-auto w-9 h-6 flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold text-[10px] rounded shadow-sm border border-emerald-200 dark:border-emerald-800/50" title="{{ $titleText }}">
+                                            <div class="relative mx-auto w-7 h-5 flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold text-[9px] rounded border {{ $isPicket ? 'border-amber-400 dark:border-amber-500 shadow-sm' : 'border-emerald-200 dark:border-emerald-800/50' }}" title="{{ $titleText }}">
                                                 {{ $shortNominal }}
+                                                @if($isPicket)
+                                                    <span class="absolute -top-1 -right-1 flex h-2 w-2">
+                                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                                    </span>
+                                                @endif
                                             </div>
                                         @else
                                             @if($dateStr > date('Y-m-d'))
-                                                <div class="mx-auto flex items-center justify-center text-slate-300 dark:text-slate-700 font-medium text-[10px]">-</div>
+                                                <div class="mx-auto flex items-center justify-center text-slate-300 dark:text-slate-700 font-medium text-[9px] {{ $isPicket ? 'text-amber-500 font-bold' : '' }}" title="{{ $isPicket ? $picketPrefix . 'Jadwal Piket' . (!empty($detail['schema_name']) ? ' • [' . $detail['schema_name'] . ']' : '') : '' }}">-</div>
                                             @else
-                                                <div class="mx-auto w-9 h-6 flex items-center justify-center bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold text-[10px] rounded shadow-sm border border-red-200 dark:border-red-800/50" title="Tidak ada bonus">
+                                                @php
+                                                    $statusName = $detail['status'] ?? '';
+                                                    $isKedinasanStatus = $statusName === 'Dinas' || 
+                                                        str_contains(strtolower($statusName), 'dinas') || 
+                                                        str_contains(strtolower($statusName), 'kedinasan');
+                                                    $schemaNameStr = !empty($detail['schema_name']) ? " • [{$detail['schema_name']}]" : '';
+
+                                                    if ($isKedinasanStatus) {
+                                                        $shortStatus = str_contains($statusName, '(') ? trim(explode('(', $statusName)[0]) : $statusName;
+                                                        $titleText = $picketPrefix . "{$shortStatus} (Tidak ada bonus)" . $schemaNameStr;
+                                                    } elseif (!empty($detail['late_minutes'])) {
+                                                        $titleText = $picketPrefix . "Terlambat {$detail['late_minutes']} menit (Bonus Rp 0)" . $schemaNameStr;
+                                                    } else {
+                                                        $titleText = $picketPrefix . 'Tidak ada bonus' . $schemaNameStr;
+                                                    }
+                                                @endphp
+                                                <div class="relative mx-auto w-7 h-5 flex items-center justify-center bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold text-[9px] rounded border {{ $isPicket ? 'border-amber-400 dark:border-amber-500' : 'border-red-200 dark:border-red-800/50' }}" title="{{ $titleText }}">
                                                     0k
+                                                    @if($isPicket)
+                                                        <span class="absolute -top-1 -right-1 flex h-2 w-2">
+                                                            <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             @endif
                                         @endif
                                     @else
                                         @if($date->isSunday())
-                                            <div class="mx-auto flex items-center justify-center text-red-400/80 dark:text-red-900/50 font-bold text-[10px]" title="Hari Minggu (OFF)">OFF</div>
+                                            <div class="mx-auto flex items-center justify-center text-red-400/80 dark:text-red-900/50 font-bold text-[9px]" title="Hari Minggu (OFF)">OFF</div>
                                         @else
-                                            <div class="mx-auto flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold text-[10px]" title="Jadwal Off/Libur">OFF</div>
+                                            <div class="mx-auto flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold text-[9px]" title="Jadwal Off/Libur">OFF</div>
                                         @endif
                                     @endif
                                 </td>
@@ -329,18 +373,25 @@
                         <!-- Calendar Grid -->
                         <div class="grid grid-cols-7 gap-1">
                             <template x-for="day in calendarDays" :key="day.dateStr">
-                                <div class="aspect-square border border-slate-100 dark:border-slate-800/40 rounded-lg p-1 sm:p-1.5 flex flex-col justify-between"
+                                <div class="aspect-square border border-slate-100 dark:border-slate-800/40 rounded-lg p-0.5 sm:p-1 flex flex-col justify-between relative cursor-default"
+                                     :title="selectedReport && selectedReport.daily_details[day.dateStr] ? ((selectedReport.daily_details[day.dateStr].is_picket ? '⚡ PIKET: 06:30 (' + (selectedReport.daily_details[day.dateStr].picket_area || 'Area Piket') + ') | ' : '') + 'Status: ' + (selectedReport.daily_details[day.dateStr].status || '-') + ' | Check-in: ' + (selectedReport.daily_details[day.dateStr].check_in || '-') + ' | Bonus: ' + formatRupiah(selectedReport.daily_details[day.dateStr].bonus_nominal || 0) + (selectedReport.daily_details[day.dateStr].schema_name ? ' | Skema: ' + selectedReport.daily_details[day.dateStr].schema_name : '')) : ''"
                                      :class="[
-                                         day.isCurrentMonth ? (day.dateStr && new Date(day.dateStr).getDay() === 0 ? 'bg-red-50/50 dark:bg-red-95/15' : 'bg-white dark:bg-slate-900') : 'bg-slate-50/50 dark:bg-slate-955/20 opacity-40'
+                                         day.isCurrentMonth ? (day.dateStr && new Date(day.dateStr).getDay() === 0 ? 'bg-red-50/50 dark:bg-red-95/15' : 'bg-white dark:bg-slate-900') : 'bg-slate-50/50 dark:bg-slate-955/20 opacity-40',
+                                         (selectedReport && selectedReport.daily_details[day.dateStr] && selectedReport.daily_details[day.dateStr].is_picket) ? 'border-amber-400 dark:border-amber-500/80 ring-1 ring-amber-400/30' : ''
                                      ]">
                                      
-                                    <!-- Day Number -->
-                                    <span class="text-[10px] font-bold"
-                                          :class="[
-                                              day.isCurrentMonth ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400',
-                                              (new Date(day.dateStr).getDay() === 0) ? 'text-red-505 font-bold' : ''
-                                          ]"
-                                          x-text="day.day"></span>
+                                    <!-- Header Tanggal & Picket Icon -->
+                                    <div class="flex items-center justify-between w-full px-0.5">
+                                        <span class="text-[10px] font-bold"
+                                              :class="[
+                                                  day.isCurrentMonth ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400',
+                                                  (new Date(day.dateStr).getDay() === 0) ? 'text-red-505 font-bold' : ''
+                                              ]"
+                                              x-text="day.day"></span>
+                                        <template x-if="selectedReport && selectedReport.daily_details[day.dateStr] && selectedReport.daily_details[day.dateStr].is_picket">
+                                            <span class="text-[9px] leading-none text-amber-500 dark:text-amber-400 font-bold" :title="'Piket: 06:30 (' + (selectedReport.daily_details[day.dateStr].picket_area || 'Area Piket') + ')'">⚡</span>
+                                        </template>
+                                    </div>
                                           
                                     <!-- Status Indicator inside day -->
                                     <div class="mt-auto w-full">

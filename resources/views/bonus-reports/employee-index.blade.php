@@ -155,12 +155,21 @@
                         </span>
                         
                         <!-- Bonus Badge -->
+                        @php
+                            $isPicket = $detail['is_picket'] ?? false;
+                        @endphp
                         @if($bonusNominal > 0)
                             @php 
                                 $shortNominal = ($bonusNominal >= 1000) ? ($bonusNominal / 1000) . 'k' : $bonusNominal;
                             @endphp
-                            <div class="mt-2 text-[10px] sm:text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/50 px-2 py-0.5 rounded-full shadow-sm">
+                            <div class="relative mt-2 text-[10px] sm:text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/50 px-2 py-0.5 rounded-full shadow-sm {{ $isPicket ? 'border border-amber-400 dark:border-amber-500 ring-1 ring-amber-400/30' : '' }}">
                                 +{{ $shortNominal }}
+                                @if($isPicket)
+                                    <span class="absolute -top-1 -right-1 flex h-2 w-2">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                    </span>
+                                @endif
                             </div>
                         @else
                             @if(in_array($status, ['Off', 'Libur']))
@@ -169,12 +178,17 @@
                                 </div>
                              @else
                                  @if($dateStr > date('Y-m-d'))
-                                     <div class="mt-2 text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500">
+                                     <div class="mt-2 text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 {{ $isPicket ? 'text-amber-500 font-bold' : '' }}">
                                          -
                                      </div>
                                  @else
-                                     <div class="mt-2 text-[10px] sm:text-xs font-bold text-rose-600 dark:text-rose-400 bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded-full shadow-sm">
+                                     <div class="relative mt-2 text-[10px] sm:text-xs font-bold text-rose-600 dark:text-rose-400 bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded-full shadow-sm {{ $isPicket ? 'border border-amber-400 dark:border-amber-500 ring-1 ring-amber-400/30' : '' }}">
                                          0k
+                                         @if($isPicket)
+                                             <span class="absolute -top-1 -right-1 flex h-2 w-2">
+                                                 <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                             </span>
+                                         @endif
                                      </div>
                                  @endif
                              @endif

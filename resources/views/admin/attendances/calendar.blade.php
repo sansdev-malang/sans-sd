@@ -412,10 +412,12 @@
                                         
                                         // Group active details by time range
                                         $groupedDetails = [];
-                                        foreach($shift['details'] as $dt) {
-                                            if(!$dt['is_off']) {
-                                                $timeRange = substr($dt['start_time'], 0, 5) . ' - ' . substr($dt['end_time'], 0, 5);
-                                                $groupedDetails[$timeRange][] = $dt['day_of_week'];
+                                        if (!empty($shift['details']) && is_array($shift['details'])) {
+                                            foreach($shift['details'] as $dt) {
+                                                if(empty($dt['is_off'])) {
+                                                    $timeRange = substr($dt['start_time'] ?? '', 0, 5) . ' - ' . substr($dt['end_time'] ?? '', 0, 5);
+                                                    $groupedDetails[$timeRange][] = $dt['day_of_week'] ?? 0;
+                                                }
                                             }
                                         }
                                         
@@ -442,10 +444,10 @@
                                             }, $sortableDays);
                                             
                                             if (count($originalDays) >= 3 && $isConsecutive) {
-                                                $dayStr = $daysName[$originalDays[0]] . ' - ' . $daysName[$originalDays[count($originalDays)-1]];
+                                                $dayStr = ($daysName[$originalDays[0]] ?? '') . ' - ' . ($daysName[$originalDays[count($originalDays)-1]] ?? '');
                                             } else {
                                                 $dayStr = implode(',', array_map(function($d) use ($daysName) {
-                                                    return $daysName[$d];
+                                                    return $daysName[$d] ?? '';
                                                 }, $originalDays));
                                             }
                                             
@@ -456,6 +458,11 @@
                                         <div class="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 font-medium">
                                             <span class="font-bold text-slate-800 dark:text-slate-200">{{ $shift['name'] }}</span>
                                             <span class="text-slate-450 dark:text-slate-500">({{ implode(', ', $scheduleParts) }})</span>
+                                        </div>
+                                    @elseif(!empty($shift['schedule']))
+                                        <div class="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400 font-medium">
+                                            <span class="font-bold text-slate-800 dark:text-slate-200">{{ $shift['name'] }}</span>
+                                            <span class="text-slate-450 dark:text-slate-500">({{ $shift['schedule'] }})</span>
                                         </div>
                                     @endif
                                     @if($index < count($myActiveShifts) - 1)

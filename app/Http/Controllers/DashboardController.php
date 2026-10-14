@@ -349,7 +349,14 @@ class DashboardController extends Controller
                         'active_shifts' => [
                             [
                                 'name' => 'Shift Reguler',
-                                'schedule' => 'Senin - Jumat: 07.00 - 15.30'
+                                'schedule' => 'Senin - Jumat: 07.00 - 15.30',
+                                'details' => [
+                                    ['day_of_week' => 1, 'start_time' => '07:00:00', 'end_time' => '15:30:00', 'is_off' => false],
+                                    ['day_of_week' => 2, 'start_time' => '07:00:00', 'end_time' => '15:30:00', 'is_off' => false],
+                                    ['day_of_week' => 3, 'start_time' => '07:00:00', 'end_time' => '15:30:00', 'is_off' => false],
+                                    ['day_of_week' => 4, 'start_time' => '07:00:00', 'end_time' => '15:30:00', 'is_off' => false],
+                                    ['day_of_week' => 5, 'start_time' => '07:00:00', 'end_time' => '15:30:00', 'is_off' => false],
+                                ]
                             ]
                         ]
                     ];
@@ -532,6 +539,26 @@ class DashboardController extends Controller
                     }
                 }
 
+                $picketSchedule = $myPicketSchedules->firstWhere('day_of_week', $dateCarbon->dayOfWeek);
+                $isPicket = false;
+                $picketAreaName = null;
+                $picketDutyHours = null;
+
+                if ($picketSchedule) {
+                    $inRange = true;
+                    if ($picketSchedule->start_date && $dateCarbon->lt($picketSchedule->start_date)) {
+                        $inRange = false;
+                    }
+                    if ($picketSchedule->end_date && $dateCarbon->gt($picketSchedule->end_date)) {
+                        $inRange = false;
+                    }
+                    if ($inRange) {
+                        $isPicket = true;
+                        $picketAreaName = $picketSchedule->picketArea?->name;
+                        $picketDutyHours = $picketSchedule->picketArea?->duty_hours;
+                    }
+                }
+
                 $myCalendarDays[] = [
                     'is_empty' => false,
                     'date' => $dateStr,
@@ -542,6 +569,9 @@ class DashboardController extends Controller
                     'shift_start' => isset($det['shift_start']) ? substr($det['shift_start'], 0, 5) : null,
                     'shift_end' => isset($det['shift_end']) ? substr($det['shift_end'], 0, 5) : null,
                     'status' => $det['status'] ?? '-',
+                    'is_picket' => $isPicket,
+                    'picket_area_name' => $picketAreaName,
+                    'picket_duty_hours' => $picketDutyHours,
                 ];
             }
         }

@@ -235,8 +235,8 @@
                                 <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 font-nasalization">Tren Kehadiran Guru & Staf</h3>
                                 <p class="text-xs text-slate-500 dark:text-slate-400">Tingkat kehadiran harian guru & staf pada periode berjalan</p>
                             @else
-                                <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 font-nasalization">Jadwal Shift Kerja</h3>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">Informasi jam kerja dan kalender jadwal shift Anda pada bulan ini</p>
+                                <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 font-nasalization">Jadwal Kerja</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Informasi jam kerja dan kalender jadwal kerja Anda pada bulan ini</p>
                             @endif
                         </div>
                     </div>
@@ -260,12 +260,12 @@
                         <div class="mb-4 p-3.5 bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/80 rounded-lg text-sm">
                             <div class="flex items-center gap-1.5 font-semibold text-slate-900 dark:text-slate-200 mb-3">
                                 <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-500 shrink-0"></i>
-                                <span>Informasi Shift Kerja Bulan Ini:</span>
+                                <span>Informasi Jadwal Kerja Bulan Ini:</span>
                             </div>
                             
-                            <div class="grid grid-cols-1 {{ count($myActiveShifts) > 1 && !empty($myCalendarDays) ? 'md:grid-cols-3' : '' }} gap-4">
+                            <div class="grid grid-cols-1 {{ !empty($myCalendarDays) ? 'md:grid-cols-3' : '' }} gap-4">
                                 <!-- Left Column: Shift List (List Jam Kerja) -->
-                                <div class="{{ count($myActiveShifts) > 1 && !empty($myCalendarDays) ? 'md:col-span-1' : '' }} bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/50 rounded-md p-3 shadow-sm flex flex-col justify-between">
+                                <div class="{{ !empty($myCalendarDays) ? 'md:col-span-1' : '' }} bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/50 rounded-md p-3 shadow-sm flex flex-col justify-between">
                                     <div>
                                         <p class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Daftar Jam Kerja</p>
                                         <div class="space-y-3">
@@ -303,41 +303,96 @@
                                                     @php
                                                         $daysName = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 0 => 'Minggu'];
                                                         $groupedDetails = [];
-                                                        foreach($shift['details'] as $dt) {
-                                                            if(!$dt['is_off']) {
-                                                                $timeRange = $dt['start_time'] . ' - ' . $dt['end_time'];
-                                                                $groupedDetails[$timeRange][] = $dt['day_of_week'];
+                                                        if (!empty($shift['details']) && is_array($shift['details'])) {
+                                                            foreach($shift['details'] as $dt) {
+                                                                if(empty($dt['is_off'])) {
+                                                                    $startTime = isset($dt['start_time']) ? substr($dt['start_time'], 0, 5) : '-';
+                                                                    $endTime = isset($dt['end_time']) ? substr($dt['end_time'], 0, 5) : '-';
+                                                                    $timeRange = $startTime . ' - ' . $endTime;
+                                                                    $groupedDetails[$timeRange][] = $dt['day_of_week'] ?? 0;
+                                                                }
                                                             }
                                                         }
                                                     @endphp
                                                     
-                                                    <div class="space-y-1 mt-1">
-                                                        @foreach($groupedDetails as $timeRange => $days)
-                                                            @php
-                                                                usort($days, function($a, $b) {
-                                                                    $valA = $a == 0 ? 7 : $a;
-                                                                    $valB = $b == 0 ? 7 : $b;
-                                                                    return $valA <=> $valB;
-                                                                });
-                                                                $dayLabels = array_map(function($d) use ($daysName) {
-                                                                    return $daysName[$d] ?? '';
-                                                                }, $days);
-                                                                $daysStr = implode(', ', $dayLabels);
-                                                            @endphp
-                                                            <div class="flex flex-col gap-0.5 pb-1 border-b border-slate-50 dark:border-slate-800/40 last:border-0 last:pb-0">
-                                                                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{{ $daysStr }}</span>
-                                                                <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 font-mono">{{ $timeRange }}</span>
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
+                                                    @if(!empty($groupedDetails))
+                                                        <div class="space-y-1 mt-1">
+                                                            @foreach($groupedDetails as $timeRange => $days)
+                                                                @php
+                                                                    usort($days, function($a, $b) {
+                                                                        $valA = $a == 0 ? 7 : $a;
+                                                                        $valB = $b == 0 ? 7 : $b;
+                                                                        return $valA <=> $valB;
+                                                                    });
+                                                                    $dayLabels = array_map(function($d) use ($daysName) {
+                                                                        return $daysName[$d] ?? '';
+                                                                    }, $days);
+                                                                    $daysStr = implode(', ', array_filter($dayLabels));
+                                                                @endphp
+                                                                <div class="flex flex-col gap-0.5 pb-1 border-b border-slate-50 dark:border-slate-800/40 last:border-0 last:pb-0">
+                                                                    <span class="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{{ $daysStr }}</span>
+                                                                    <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 font-mono">{{ $timeRange }}</span>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    @elseif(!empty($shift['schedule']))
+                                                        <div class="text-xs text-slate-600 dark:text-slate-400 font-mono mt-1">
+                                                            {{ $shift['schedule'] }}
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             @endforeach
                                         </div>
+
+                                        @if(isset($myPicketSchedules) && $myPicketSchedules->isNotEmpty())
+                                            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/60">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <div class="flex items-center gap-1.5">
+                                                        <i data-lucide="shield-check" class="w-4 h-4 text-amber-500"></i>
+                                                        <span class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">Jadwal Piket</span>
+                                                    </div>
+                                                    <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/50">
+                                                        {{ $myPicketSchedules->count() }} Hari
+                                                    </span>
+                                                </div>
+
+                                                <div class="space-y-2">
+                                                    @php
+                                                        $daysName = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 0 => 'Minggu'];
+                                                    @endphp
+                                                    @foreach($myPicketSchedules as $picket)
+                                                        @php
+                                                            $isTodayPicket = now()->dayOfWeek == $picket->day_of_week;
+                                                        @endphp
+                                                        <div class="p-2 rounded-md border transition-all {{ $isTodayPicket ? 'bg-amber-50/70 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800/60 shadow-xs' : 'bg-slate-50/70 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-800/50' }}">
+                                                            <div class="flex items-center justify-between text-xs mb-1">
+                                                                <span class="font-bold {{ $isTodayPicket ? 'text-amber-800 dark:text-amber-300' : 'text-slate-700 dark:text-slate-200' }}">
+                                                                    {{ $daysName[$picket->day_of_week] ?? 'Hari' }}
+                                                                </span>
+                                                                @if($isTodayPicket)
+                                                                    <span class="text-[8.5px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-500 text-white animate-pulse">Hari Ini</span>
+                                                                @endif
+                                                            </div>
+                                                            <div class="text-[11px] text-slate-600 dark:text-slate-350 flex items-center gap-1.5 mb-1">
+                                                                <i data-lucide="map-pin" class="w-3 h-3 text-slate-400 shrink-0"></i>
+                                                                <span class="font-medium truncate" title="{{ $picket->picketArea?->name ?? 'Area Piket' }}">{{ $picket->picketArea?->name ?? 'Area Piket' }}</span>
+                                                            </div>
+                                                            @if($picket->picketArea?->duty_hours)
+                                                                <div class="text-[10px] text-amber-600 dark:text-amber-400 font-mono font-semibold flex items-center gap-1.5">
+                                                                    <i data-lucide="clock" class="w-3 h-3 text-amber-500 shrink-0"></i>
+                                                                    <span>{{ $picket->picketArea->duty_hours }}</span>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                                 
                                 <!-- Right Column: Calendar Roster (Kalender Jadwal Kerja Roster) -->
-                                @if(count($myActiveShifts) > 1 && !empty($myCalendarDays))
+                                @if(!empty($myCalendarDays))
                                     <div class="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/50 rounded-md p-3 shadow-sm flex flex-col justify-between">
                                         <div>
                                             <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Kalender Jadwal Anda Bulan Ini</p>
@@ -439,9 +494,14 @@
                                                                     $codeSizeClass = 'text-[7px] sm:text-[8.5px] tracking-tighter';
                                                                 }
                                                             @endphp
-                                                            <div class="calendar-cell aspect-square flex flex-col justify-between p-1 sm:p-1.5 border rounded-md relative group outline-none cursor-pointer transition-all duration-150 shadow-xs hover:scale-[1.04] hover:z-10 {{ $cellClass }}" style="aspect-ratio: 1 / 1;" tabindex="0">
-                                                                <!-- Date Number -->
-                                                                <span class="text-[9px] sm:text-[10px] font-bold leading-none {{ $numClass }}">{{ $day['day_num'] }}</span>
+                                                            <div class="calendar-cell aspect-square flex flex-col justify-between p-1 sm:p-1.5 border rounded-md relative group outline-none cursor-pointer transition-all duration-150 shadow-xs hover:scale-[1.04] hover:z-10 {{ !empty($day['is_picket']) ? 'ring-2 ring-amber-400 ring-offset-1 dark:ring-offset-slate-900 border-amber-400' : '' }} {{ $cellClass }}" style="aspect-ratio: 1 / 1;" tabindex="0">
+                                                                <!-- Date Number & Picket Indicator -->
+                                                                <div class="flex items-center justify-between w-full leading-none">
+                                                                    <span class="text-[9px] sm:text-[10px] font-bold {{ $numClass }}">{{ $day['day_num'] }}</span>
+                                                                    @if(!empty($day['is_picket']))
+                                                                        <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-400 border border-white dark:border-slate-900 shadow-xs animate-pulse shrink-0" title="Jadwal Piket"></span>
+                                                                    @endif
+                                                                </div>
                                                                 
                                                                 <!-- Shift Code (Center & Responsive) -->
                                                                 <div class="flex-1 flex items-center justify-center">
@@ -451,7 +511,7 @@
                                                                 </div>
                                                                 
                                                                 <!-- Tooltip on hover/tap -->
-                                                                <div class="calendar-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-32 hidden group-hover:block group-focus:block z-50 pointer-events-none">
+                                                                <div class="calendar-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-36 hidden group-hover:block group-focus:block z-50 pointer-events-none">
                                                                     <div class="bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-white p-2 rounded-lg shadow-lg text-[9px] sm:text-[10px] leading-snug border border-slate-200 dark:border-slate-800/80 backdrop-blur-sm relative">
                                                                         <div class="font-semibold border-b border-slate-200 dark:border-slate-800/50 pb-0.5 mb-1 flex justify-between">
                                                                             <span class="text-slate-950 dark:text-white">{{ \Carbon\Carbon::parse($day['date'])->translatedFormat('d M Y') }}</span>
@@ -461,6 +521,19 @@
                                                                             <div class="text-[8px] text-slate-500 dark:text-slate-400">Jam: {{ $day['shift_start'] }} - {{ $day['shift_end'] }}</div>
                                                                         @else
                                                                             <div class="text-slate-400 dark:text-slate-500">Libur / Off</div>
+                                                                        @endif
+
+                                                                        @if(!empty($day['is_picket']))
+                                                                            <div class="mt-1 pt-1 border-t border-amber-200 dark:border-amber-800/60 text-amber-600 dark:text-amber-400">
+                                                                                <div class="font-bold flex items-center gap-1">
+                                                                                    <i data-lucide="shield-check" class="w-2.5 h-2.5 shrink-0"></i>
+                                                                                    <span>Tugas Piket:</span>
+                                                                                </div>
+                                                                                <div class="text-[8.5px] font-semibold text-slate-800 dark:text-slate-200">{{ $day['picket_area_name'] ?? 'Piket' }}</div>
+                                                                                @if(!empty($day['picket_duty_hours']))
+                                                                                    <div class="text-[8px] font-mono text-amber-600 dark:text-amber-400">{{ $day['picket_duty_hours'] }}</div>
+                                                                                @endif
+                                                                            </div>
                                                                         @endif
                                                                         <!-- Arrow -->
                                                                         <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white dark:bg-slate-900 border-r border-b border-slate-200 dark:border-slate-800/80 rotate-45"></div>
@@ -473,10 +546,18 @@
                                             </div>
                                         </div>
                                         
-                                        <!-- Footer Note -->
-                                        <div class="mt-4 pt-2 border-t border-slate-100 dark:border-slate-800/50 flex items-center gap-1.5 text-[9px] text-slate-500 dark:text-slate-400 leading-normal">
-                                            <i data-lucide="info" class="w-3 h-3 text-amber-500 shrink-0"></i>
-                                            <span><strong>Catatan:</strong> Pengajuan tukar shift minimal dilakukan 1 hari sebelumnya.</span>
+                                        <!-- Footer Note & Legend -->
+                                        <div class="mt-4 pt-2 border-t border-slate-100 dark:border-slate-800/50 flex flex-wrap items-center justify-between gap-2 text-[9px] text-slate-500 dark:text-slate-400 leading-normal">
+                                            <div class="flex items-center gap-1.5">
+                                                <i data-lucide="info" class="w-3 h-3 text-amber-500 shrink-0"></i>
+                                                <span><strong>Catatan:</strong> Pengajuan tukar shift minimal dilakukan 1 hari sebelumnya.</span>
+                                            </div>
+                                            @if(isset($myPicketSchedules) && $myPicketSchedules->isNotEmpty())
+                                                <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/50 text-amber-700 dark:text-amber-300 font-semibold shrink-0">
+                                                    <span class="w-2 h-2 rounded-full bg-amber-400 border border-white dark:border-slate-900 shadow-xs animate-pulse"></span>
+                                                    <span>Jadwal Piket</span>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 @endif
