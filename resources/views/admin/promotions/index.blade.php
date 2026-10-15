@@ -142,7 +142,7 @@
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-24">NIS</th>
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase">Nama Siswa & Tipe</th>
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-32 whitespace-nowrap">L/P</th>
-                                <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-72">Status Kenaikan</th>
+                                <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-[340px] whitespace-nowrap">Status Kenaikan</th>
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-60">Rombel Tujuan Spesifik</th>
                             </tr>
                         </thead>
@@ -172,8 +172,8 @@
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400 whitespace-nowrap" x-text="s.gender === 'L' ? 'Laki-laki' : 'Perempuan'"></td>
-                                    <td class="px-4 py-3">
-                                        <div class="flex items-center gap-1.5">
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <div class="flex items-center gap-1.5 whitespace-nowrap">
                                             <button type="button" @click="s.action = 'promote'"
                                                 :class="s.action === 'promote' ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'"
                                                 class="px-2.5 py-1 rounded-md text-[11px] transition-all cursor-pointer">
