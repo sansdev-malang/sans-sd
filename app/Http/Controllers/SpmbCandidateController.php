@@ -209,8 +209,18 @@ class SpmbCandidateController extends Controller
         }
 
         $masterAcademicYears = AcademicYear::orderBy('name', 'desc')->get();
+
+        $selectedYearId = null;
+        if ($selectedYear && $selectedYear !== 'all') {
+            $matchedAcademicYear = $masterAcademicYears->first(function ($ay) use ($selectedYear) {
+                return $ay->name === $selectedYear || str_replace('-', '/', $ay->name) === str_replace('-', '/', $selectedYear);
+            });
+            $selectedYearId = $matchedAcademicYear?->id;
+        }
+
         $masterClassrooms = Classroom::with(['classLevel', 'homeroomTeacher'])
             ->where('is_active', true)
+            ->when($selectedYearId, fn($q) => $q->where('academic_year_id', $selectedYearId))
             ->orderBy('class_level_id')
             ->orderBy('name')
             ->get();
@@ -290,7 +300,7 @@ class SpmbCandidateController extends Controller
             $matchedYear = AcademicYear::where('is_active', true)->first() ?? $academicYears->first();
         }
 
-        // Get active classrooms with count of active students
+        // Get active classrooms for matched academic year with count of active students
         $classrooms = Classroom::with(['classLevel', 'homeroomTeacher'])
             ->withCount(['students as active_students_count' => function ($q) use ($matchedYear) {
                 $q->where('status', 'aktif');
@@ -299,6 +309,7 @@ class SpmbCandidateController extends Controller
                 }
             }])
             ->where('is_active', true)
+            ->when($matchedYear?->id, fn($q) => $q->where('academic_year_id', $matchedYear->id))
             ->orderBy('class_level_id')
             ->orderBy('code')
             ->orderBy('name')
@@ -368,7 +379,13 @@ class SpmbCandidateController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $classroom = Classroom::with('classLevel')->findOrFail($validated['classroom_id']);
+        $classroom = Classroom::with(['classLevel', 'academicYear'])->findOrFail($validated['classroom_id']);
+        if ($classroom->academic_year_id && $classroom->academic_year_id != $validated['academic_year_id']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kelas yang dipilih tidak sesuai dengan tahun ajaran pendaftaran (' . ($classroom->academicYear?->name ?? 'Tahun lain') . ').'
+            ], 422);
+        }
         $classLevelId = $classroom->class_level_id;
 
         $studentData = [

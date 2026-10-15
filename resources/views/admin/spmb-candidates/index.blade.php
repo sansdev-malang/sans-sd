@@ -882,7 +882,7 @@
                                 </label>
                                 <select x-model="enrollForm.classroom_id" required
                                     class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-50 cursor-pointer">
-                                    <option value="">Pilih Rombel...</option>
+                                    <option value="" x-text="filteredClassrooms.length === 0 ? '⚠️ Belum ada rombel pada tahun ajaran ini' : 'Pilih Rombel...'"></option>
                                     <template x-for="r in filteredClassrooms" :key="r.id">
                                         <option :value="r.id" x-text="(r.code ? r.code + ' - ' : '') + r.name + ' • ' + (r.active_students_count ?? 0) + '/' + (r.capacity ?? 28) + ' siswa'"></option>
                                     </template>
@@ -1308,7 +1308,7 @@
                     const ayId = parseInt(this.enrollForm.academic_year_id);
                     return this.enrollData.classrooms.filter(r => {
                         const matchLevel = !levelId || parseInt(r.class_level_id) === levelId;
-                        const matchAy = !ayId || !r.academic_year_id || parseInt(r.academic_year_id) === ayId;
+                        const matchAy = !ayId || parseInt(r.academic_year_id) === ayId;
                         return matchLevel && matchAy;
                     });
                 },
