@@ -171,7 +171,7 @@
         </div>
 
         <!-- Group 2: Kesiswaan & Akademik -->
-        @if($isAdmin || $empId || $canAccessRapor)
+        @if($isAdmin || $canAccessRapor)
         <div>
             <h3 class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
                 Kesiswaan & Akademik
