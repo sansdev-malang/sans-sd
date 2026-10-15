@@ -141,7 +141,7 @@
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-12">No</th>
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-24">NIS</th>
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase">Nama Siswa & Tipe</th>
-                                <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-28">L/P</th>
+                                <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-32 whitespace-nowrap">L/P</th>
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-72">Status Kenaikan</th>
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-60">Rombel Tujuan Spesifik</th>
                             </tr>
@@ -171,7 +171,7 @@
                                             </template>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400" x-text="s.gender === 'L' ? 'Laki-laki' : 'Perempuan'"></td>
+                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400 whitespace-nowrap" x-text="s.gender === 'L' ? 'Laki-laki' : 'Perempuan'"></td>
                                     <td class="px-4 py-3">
                                         <div class="flex items-center gap-1.5">
                                             <button type="button" @click="s.action = 'promote'"
@@ -294,7 +294,7 @@
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-12">No</th>
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-24">NIS</th>
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase">Nama Siswa</th>
-                                <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-28">L/P</th>
+                                <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-32 whitespace-nowrap">L/P</th>
                                 <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-72">Nomor Ijazah (Opsional)</th>
                             </tr>
                         </thead>
@@ -314,7 +314,7 @@
                                     <td class="px-4 py-3 text-slate-400 font-mono text-[11px]" x-text="idx + 1"></td>
                                     <td class="px-4 py-3 font-mono font-bold text-blue-600 dark:text-blue-400" x-text="s.nis"></td>
                                     <td class="px-4 py-3 font-bold text-slate-900 dark:text-slate-100" x-text="s.full_name"></td>
-                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400" x-text="s.gender === 'L' ? 'Laki-laki' : 'Perempuan'"></td>
+                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400 whitespace-nowrap" x-text="s.gender === 'L' ? 'Laki-laki' : 'Perempuan'"></td>
                                     <td class="px-4 py-3">
                                         <input type="text" x-model="s.diploma_number" placeholder="No. Seri Ijazah..."
                                             class="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg font-mono">
