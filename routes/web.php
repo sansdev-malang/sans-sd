@@ -87,16 +87,30 @@ Route::post('/leaves/{id}/reject', [\App\Http\Controllers\LeaveRequestController
 // Rekap & Hasil Rapor (1-Click SSO to SANS Rapor)
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/rapor', function () {
+        $curUser = auth()->user();
+        if (!$curUser || !$curUser->canAccessRapor()) {
+            abort(403, 'Akses terbatas untuk Wali Kelas dan Administrator.');
+        }
+
         $ssoSecret = \App\Models\Setting::get('rapor_sso_secret', env('SSO_SECRET_KEY', 'sans_rapor_secret_sso_key_2026'));
         $raporUrl = \App\Models\Setting::get('rapor_url', env('SANS_RAPOR_URL', 'http://sans-rapor.test'));
-        $curUser = auth()->user();
-        $isAdmin = in_array($curUser?->role, ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp']);
+        $isAdmin = in_array($curUser->role, ['super_admin', 'superadmin', 'admin_sd', 'admin_smp', 'admin_paud', 'kepala_sekolah', 'waka']);
+        
+        $ssoRole = $curUser->role;
+        if ($curUser->hasRole('super_admin')) {
+            $ssoRole = 'super_admin';
+        } elseif ($curUser->hasRole('kepala_sekolah')) {
+            $ssoRole = 'kepala_sekolah';
+        } elseif ($curUser->isActiveHomeroomTeacher()) {
+            $ssoRole = 'wali_kelas';
+        }
+
         $ssoPayload = base64_encode(json_encode([
-            'id' => $curUser?->id,
-            'name' => $curUser?->name,
-            'email' => $curUser?->email,
-            'employee_id' => $curUser?->employee_id,
-            'role' => $curUser?->role ?? ($isAdmin ? 'super_admin' : 'guru'),
+            'id' => $curUser->id,
+            'name' => $curUser->name,
+            'email' => $curUser->email,
+            'employee_id' => $curUser->employee_id,
+            'role' => $ssoRole ?? ($isAdmin ? 'super_admin' : 'wali_kelas'),
             'unit' => 'sd',
             'timestamp' => time(),
         ]));
@@ -108,16 +122,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('report-cards/{any}', fn() => redirect()->route('report-cards.index'))->where('any', '.*');
 
     Route::get('cbt-launcher', function () {
+        $curUser = auth()->user();
+        if (!$curUser || !$curUser->canAccessCbt()) {
+            abort(403, 'Akses terbatas untuk Tenaga Pendidik (Guru) dan Administrator.');
+        }
+
         $cbtUrl = \App\Models\Setting::get('cbt_url', env('SANS_CBT_URL', 'http://sans-cbt.test'));
         $ssoSecret = \App\Models\Setting::get('cbt_sso_secret', env('SSO_CBT_SECRET_KEY', 'sans_cbt_secret_sso_key_2026'));
-        $curUser = auth()->user();
-        $isAdmin = in_array($curUser?->role, ['super_admin', 'superadmin', 'admin_sd', 'admin_smp']);
+        $isAdmin = in_array($curUser->role, ['super_admin', 'superadmin', 'admin_sd', 'admin_smp', 'admin_paud', 'kepala_sekolah', 'waka']);
+
+        $ssoRole = $curUser->role;
+        if ($curUser->hasRole('super_admin')) {
+            $ssoRole = 'super_admin';
+        } elseif ($curUser->hasRole('kepala_sekolah')) {
+            $ssoRole = 'kepala_sekolah';
+        } elseif ($curUser->isActiveHomeroomTeacher()) {
+            $ssoRole = 'wali_kelas';
+        } elseif ($curUser->isTeacher()) {
+            $ssoRole = 'guru';
+        }
+
         $ssoPayload = base64_encode(json_encode([
-            'id' => $curUser?->id,
-            'name' => $curUser?->name,
-            'email' => $curUser?->email,
-            'employee_id' => $curUser?->employee_id,
-            'role' => $curUser?->role ?? ($isAdmin ? 'super_admin' : 'guru'),
+            'id' => $curUser->id,
+            'name' => $curUser->name,
+            'email' => $curUser->email,
+            'employee_id' => $curUser->employee_id,
+            'role' => $ssoRole ?? ($isAdmin ? 'super_admin' : 'guru'),
             'unit' => 'sd',
             'timestamp' => time(),
         ]));

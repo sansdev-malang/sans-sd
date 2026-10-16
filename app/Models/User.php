@@ -57,27 +57,86 @@ class User extends Authenticatable
 
         return \Illuminate\Support\Facades\Cache::remember('user_is_active_homeroom_' . $this->employee_id, 60, function () {
             $activeAy = \App\Models\AcademicYear::where('is_active', true)->first();
-            if (!$activeAy) {
-                return false;
+
+            // Check Classroom
+            $classroomQuery = \App\Models\Classroom::where('homeroom_teacher_id', $this->employee_id);
+            if ($activeAy) {
+                $classroomQuery->where('academic_year_id', $activeAy->id);
+            }
+            if ($classroomQuery->exists()) {
+                return true;
             }
 
-            return \App\Models\HomeroomAssignment::where('employee_id', $this->employee_id)
-                ->where('academic_year_id', $activeAy->id)
-                ->where('is_active', true)
-                ->exists();
+            // Also check HomeroomAssignment if used
+            if (class_exists(\App\Models\HomeroomAssignment::class)) {
+                $assignmentQuery = \App\Models\HomeroomAssignment::where('employee_id', $this->employee_id)
+                    ->where('is_active', true);
+                if ($activeAy) {
+                    $assignmentQuery->where('academic_year_id', $activeAy->id);
+                }
+                if ($assignmentQuery->exists()) {
+                    return true;
+                }
+            }
+
+            return false;
         });
     }
 
     /**
-     * Check if the user can access E-Rapor and CBT (Super Admin, Kepala Sekolah, Admin, or Active Homeroom Teachers / Teachers).
+     * Check if the user is a teacher / tenaga pendidik (Semua Guru).
+     */
+    public function isTeacher(): bool
+    {
+        if (in_array($this->role, ['guru', 'wali_kelas'])) {
+            return true;
+        }
+
+        if (!$this->employee_id) {
+            return false;
+        }
+
+        return \Illuminate\Support\Facades\Cache::remember('user_is_teacher_' . $this->employee_id, 300, function () {
+            $employee = $this->employee;
+            if (!$employee) {
+                return false;
+            }
+
+            if ($employee->employee_type_id == 1) {
+                return true;
+            }
+
+            if ($employee->relationLoaded('employeeType') ? ($employee->employeeType?->code === 'teacher') : ($employee->employeeType()->where('code', 'teacher')->exists())) {
+                return true;
+            }
+
+            $pos = strtolower($employee->position ?? '');
+            return str_contains($pos, 'guru') || in_array(strtoupper(trim($employee->position ?? '')), ['GPK', 'GPQ']);
+        });
+    }
+
+    /**
+     * Check if the user can access E-Rapor (Super Admin, Kepala Sekolah, Admin, or Active Homeroom Teachers).
      */
     public function canAccessRapor(): bool
     {
-        if (in_array($this->role, ['super_admin', 'kepala_sekolah', 'admin_paud', 'admin_sd', 'admin_smp', 'waka', 'wali_kelas', 'guru'])) {
+        if (in_array($this->role, ['super_admin', 'superadmin', 'kepala_sekolah', 'admin_paud', 'admin_sd', 'admin_smp', 'waka', 'wali_kelas'])) {
             return true;
         }
 
         return $this->isActiveHomeroomTeacher();
+    }
+
+    /**
+     * Check if the user can access CBT (Super Admin, Kepala Sekolah, Admin, Homeroom Teachers, or Any Teacher).
+     */
+    public function canAccessCbt(): bool
+    {
+        if (in_array($this->role, ['super_admin', 'superadmin', 'kepala_sekolah', 'admin_paud', 'admin_sd', 'admin_smp', 'waka', 'wali_kelas', 'guru'])) {
+            return true;
+        }
+
+        return $this->canAccessRapor() || $this->isTeacher();
     }
 
     /**

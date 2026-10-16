@@ -13,36 +13,42 @@
         return \App\Models\PicketSchedule::where('employee_id', $empId)->exists();
     }));
     $canAccessRapor = auth()->user()?->canAccessRapor();
+    $canAccessCbt = auth()->user()?->canAccessCbt();
     $raporLink = '#';
     $cbtLink = '#';
-    if ($canAccessRapor) {
+    $curUser = auth()->user();
+    if ($curUser && ($canAccessRapor || $canAccessCbt)) {
         $ssoSecret = \App\Models\Setting::get('rapor_sso_secret', env('SSO_SECRET_KEY', 'sans_rapor_secret_sso_key_2026'));
         $raporUrl = \App\Models\Setting::get('rapor_url', env('SANS_RAPOR_URL', 'http://sans-rapor.test'));
         $cbtSecret = \App\Models\Setting::get('cbt_sso_secret', env('SSO_CBT_SECRET_KEY', 'sans_cbt_secret_sso_key_2026'));
         $cbtUrl = \App\Models\Setting::get('cbt_url', env('SANS_CBT_URL', 'http://sans-cbt.test'));
-        $curUser = auth()->user();
-        $ssoRole = $curUser?->role;
-        if ($curUser?->hasRole('super_admin')) {
+        $ssoRole = $curUser->role;
+        if ($curUser->hasRole('super_admin')) {
             $ssoRole = 'super_admin';
-        } elseif ($curUser?->hasRole('kepala_sekolah')) {
+        } elseif ($curUser->hasRole('kepala_sekolah')) {
             $ssoRole = 'kepala_sekolah';
-        } elseif ($curUser?->isActiveHomeroomTeacher()) {
+        } elseif ($curUser->isActiveHomeroomTeacher()) {
             $ssoRole = 'wali_kelas';
+        } elseif ($curUser->isTeacher()) {
+            $ssoRole = 'guru';
         }
         $ssoPayload = base64_encode(json_encode([
-            'id' => $curUser?->id,
-            'name' => $curUser?->name,
-            'email' => $curUser?->email,
-            'employee_id' => $curUser?->employee_id,
+            'id' => $curUser->id,
+            'name' => $curUser->name,
+            'email' => $curUser->email,
+            'employee_id' => $curUser->employee_id,
             'role' => $ssoRole ?? 'guru',
             'unit' => 'sd',
             'timestamp' => time(),
         ]));
-        $ssoSig = hash_hmac('sha256', $ssoPayload, $ssoSecret);
-        $raporLink = "{$raporUrl}/sso/login?data=" . urlencode($ssoPayload) . "&signature=" . urlencode($ssoSig);
-
-        $cbtSig = hash_hmac('sha256', $ssoPayload, $cbtSecret);
-        $cbtLink = "{$cbtUrl}/sso/login?data=" . urlencode($ssoPayload) . "&signature=" . urlencode($cbtSig);
+        if ($canAccessRapor) {
+            $ssoSig = hash_hmac('sha256', $ssoPayload, $ssoSecret);
+            $raporLink = "{$raporUrl}/sso/login?data=" . urlencode($ssoPayload) . "&signature=" . urlencode($ssoSig);
+        }
+        if ($canAccessCbt) {
+            $cbtSig = hash_hmac('sha256', $ssoPayload, $cbtSecret);
+            $cbtLink = "{$cbtUrl}/sso/login?data=" . urlencode($ssoPayload) . "&signature=" . urlencode($cbtSig);
+        }
     }
 @endphp
 <aside id="sidebar"
@@ -171,7 +177,7 @@
         </div>
 
         <!-- Group 2: Kesiswaan & Akademik -->
-        @if($isAdmin || $canAccessRapor)
+        @if($isAdmin || $canAccessRapor || $canAccessCbt)
         <div>
             <h3 class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
                 Kesiswaan & Akademik
@@ -219,7 +225,7 @@
                 @endif
 
                 @if($canAccessRapor)
-                <!-- Dropdown: Rapor & Ujian (CBT) -->
+                <!-- Dropdown: Rapor & Ujian (CBT) (Wali Kelas & Admin) -->
                 <div x-data="{ openRapor: false }">
                     <button @click="openRapor = !openRapor"
                         class="menu-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors text-xs font-medium relative group cursor-pointer">
@@ -258,6 +264,22 @@
                         </a>
                     </div>
                 </div>
+                @elseif($canAccessCbt)
+                <!-- Aplikasi CBT (Untuk Guru Non-Wali Kelas) -->
+                <a href="{{ $cbtLink }}" target="_blank"
+                    class="menu-item flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50 text-xs font-medium relative group">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="award" class="menu-icon w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0"></i>
+                        <span class="menu-text">Aplikasi CBT</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-[9px] uppercase tracking-wider font-semibold px-1 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/50 leading-none">SSO</span>
+                        <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-400 opacity-60 group-hover:opacity-100 transition-opacity"></i>
+                    </div>
+                    <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
+                        Aplikasi CBT
+                    </span>
+                </a>
                 @endif
 
                 @if($isAdmin)
