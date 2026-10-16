@@ -7,12 +7,13 @@
         auth()->user()->hasRole('kepala_sekolah') || 
         auth()->user()->hasRole('waka')
     );
-    $isSuperAdmin = auth()->user() && auth()->user()->hasRole('super_admin');
+    $isSuperAdmin = auth()->user() && (auth()->user()->hasRole('super_admin') || auth()->user()->role === 'superadmin');
     $empId = auth()->user()?->employee_id;
     $showPicketMenu = $isAdmin || ($empId && \Illuminate\Support\Facades\Cache::remember('user_has_picket_' . $empId, 300, function() use ($empId) {
         return \App\Models\PicketSchedule::where('employee_id', $empId)->exists();
     }));
-    $canAccessRapor = auth()->user()?->canAccessRapor();
+    // Menu E-Rapor disembunyikan sementara, khusus Super Admin saja
+    $canAccessRapor = $isSuperAdmin;
     $canAccessCbt = auth()->user()?->canAccessCbt();
     $raporLink = '#';
     $cbtLink = '#';
