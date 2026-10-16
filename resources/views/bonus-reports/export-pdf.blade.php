@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Rekap Bonus Ketepatan Waktu</title>
+    <title>Rekap Uang Kehadiran Pegawai</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -59,7 +59,7 @@
 </head>
 <body>
 
-    <h2>Rekap Bonus Ketepatan Waktu</h2>
+    <h2>Rekap Uang Kehadiran Pegawai</h2>
     <div class="subtitle">
         Periode: {{ $periodeStr }} <br>
         Unit: {{ count($reports) > 0 ? ($reports[0]['employee']['unit']['name'] ?? ($reports[0]['employee']['unit_name'] ?? 'Semua Unit')) : 'Semua Unit' }}
@@ -71,7 +71,7 @@
                 <th class="col-no">No</th>
                 <th class="col-name">Pegawai</th>
                 
-                <th class="col-total">Total Bonus (Rp)</th>
+                <th class="col-total">Total Uang Kehadiran (Rp)</th>
                 @foreach($dates as $date)
                     @php
                         $colorClass = $date->dayOfWeek == 0 ? 'text-red' : '';

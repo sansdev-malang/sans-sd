@@ -50,9 +50,13 @@
             x: 0,
             y: 0,
             placement: 'top',
-            activeDate: ''
+            activeDate: '',
+            shiftName: '',
+            lateMinutes: 0,
+            isPicket: false,
+            picketArea: ''
         },
-        showTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus, isInCutoff = true) {
+        showTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus, isInCutoff = true, shiftName = '', lateMinutes = 0, isPicket = false, picketArea = '') {
             if (!status) return;
             this.tooltip.date = date;
             this.tooltip.status = status;
@@ -63,6 +67,10 @@
             this.tooltip.bonus = bonus || 0;
             this.tooltip.isInCutoff = isInCutoff;
             this.tooltip.activeDate = date;
+            this.tooltip.shiftName = shiftName;
+            this.tooltip.lateMinutes = lateMinutes;
+            this.tooltip.isPicket = isPicket;
+            this.tooltip.picketArea = picketArea;
             
             const containerRect = this.$refs.container.getBoundingClientRect();
             const targetRect = e.currentTarget.getBoundingClientRect();
@@ -95,11 +103,11 @@
             
             this.tooltip.show = true;
         },
-        toggleTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus, isInCutoff = true) {
+        toggleTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus, isInCutoff = true, shiftName = '', lateMinutes = 0, isPicket = false, picketArea = '') {
             if (this.tooltip.show && this.tooltip.activeDate === date) {
                 this.hideTooltip();
             } else {
-                this.showTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus, isInCutoff);
+                this.showTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus, isInCutoff, shiftName, lateMinutes, isPicket, picketArea);
             }
         },
         hideTooltip() {
@@ -110,8 +118,8 @@
         <!-- DATA BONUS KEHADIRAN / PAGE TITLE -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 sm:gap-3">
             <div class="flex flex-col gap-0.5">
-                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Bonus Kehadiran</h2>
-                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">Rincian perolehan bonus Anda berdasarkan ketepatan waktu kehadiran harian.</p>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Uang Kehadiran</h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">Rincian perolehan uang kehadiran Anda berdasarkan ketepatan waktu kehadiran harian.</p>
             </div>
             <div class="flex items-center flex-wrap gap-2">
                 <!-- SINKRONKAN DATA -->
@@ -413,12 +421,16 @@
                                         }
                                         
                                         $bonus = $detail['calculated_bonus'] ?? ($detail['bonus_nominal'] ?? 0.00);
+                                        $shiftName = $detail['shift_name'] ?? '';
+                                        $lateMinutes = (int) ($detail['late_minutes'] ?? 0);
+                                        $isPicket = !empty($detail['is_picket']);
+                                        $picketArea = $detail['picket_area'] ?? '';
                                     @endphp
 
                                     <div
-                                        @mouseenter="showTooltip($event, '{{ $date->translatedFormat('d F Y') }}', '{{ $status }}', '{{ $checkIn }}', '{{ $checkOut }}', {{ $isLate ? 'true' : 'false' }}, '{{ $modalColor }}', {{ $bonus }}, {{ $isInCutoff ? 'true' : 'false' }})"
+                                        @mouseenter="showTooltip($event, '{{ $date->translatedFormat('d F Y') }}', '{{ $status }}', '{{ $checkIn }}', '{{ $checkOut }}', {{ $isLate ? 'true' : 'false' }}, '{{ $modalColor }}', {{ $bonus }}, {{ $isInCutoff ? 'true' : 'false' }}, '{{ addslashes($shiftName) }}', {{ $lateMinutes }}, {{ $isPicket ? 'true' : 'false' }}, '{{ addslashes($picketArea) }}')"
                                         @mouseleave="hideTooltip()"
-                                        @click.stop="toggleTooltip($event, '{{ $date->translatedFormat('d F Y') }}', '{{ $status }}', '{{ $checkIn }}', '{{ $checkOut }}', {{ $isLate ? 'true' : 'false' }}, '{{ $modalColor }}', {{ $bonus }}, {{ $isInCutoff ? 'true' : 'false' }})"
+                                        @click.stop="toggleTooltip($event, '{{ $date->translatedFormat('d F Y') }}', '{{ $status }}', '{{ $checkIn }}', '{{ $checkOut }}', {{ $isLate ? 'true' : 'false' }}, '{{ $modalColor }}', {{ $bonus }}, {{ $isInCutoff ? 'true' : 'false' }}, '{{ addslashes($shiftName) }}', {{ $lateMinutes }}, {{ $isPicket ? 'true' : 'false' }}, '{{ addslashes($picketArea) }}')"
                                         class="group relative flex min-h-[28px] sm:min-h-[34px] items-center justify-center px-0.5 sm:px-1 transition-all {{ $isToday ? 'bg-slate-950 text-white dark:bg-slate-100 dark:text-slate-900 rounded-[200px] font-bold shadow-sm' : 'hover:bg-slate-100 dark:hover:bg-slate-900/80 rounded-lg' }} {{ $isInCutoff ? 'opacity-100 font-semibold' : 'opacity-30 hover:opacity-100' }} cursor-pointer">
                                         <span class="text-[12px] sm:text-[13px] leading-none tracking-[0.01em] {{ $isToday ? 'text-inherit' : $numberColor }}">
                                             {{ $date->format('d') }}
@@ -615,12 +627,18 @@
             <!-- Details (Check In & Check Out) -->
             <template x-if="tooltip.status === 'Hadir' || (tooltip.checkIn && tooltip.checkIn !== '--:--')">
                 <div class="space-y-2">
-                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <template x-if="tooltip.isPicket || tooltip.shiftName">
+                        <div class="px-2 py-1 rounded bg-slate-50 dark:bg-slate-800/40 text-[10px] border border-slate-100/50 dark:border-slate-800 flex items-center justify-between">
+                            <span class="text-slate-400 dark:text-slate-500 font-medium" x-text="tooltip.isPicket ? 'Piket' : 'Shift'"></span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200 truncate max-w-[130px]" x-text="tooltip.isPicket ? (tooltip.picketArea || 'Area Piket') : tooltip.shiftName"></span>
+                        </div>
+                    </template>
+                    <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
                         <div class="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-lg p-1.5 border border-slate-100/50 dark:border-slate-800 text-center">
                             <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Masuk</span>
                             <span class="font-bold text-[11px]" :class="tooltip.isLate ? 'text-amber-600 dark:text-amber-500' : 'text-slate-700 dark:text-slate-200'" x-text="tooltip.checkIn"></span>
                             <template x-if="tooltip.isLate">
-                                <span class="text-[8px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none">Telat</span>
+                                <span class="text-[8px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none" x-text="tooltip.lateMinutes ? 'Telat ' + tooltip.lateMinutes + 'm' : 'Telat'"></span>
                             </template>
                         </div>
                         <div class="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-lg p-1.5 border border-slate-100/50 dark:border-slate-800 text-center">
@@ -630,7 +648,7 @@
                     </div>
                     <!-- Attendance Bonus Section -->
                     <div class="flex items-center justify-between bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/30 dark:border-emerald-900/30 rounded-lg px-2 py-1.5 text-[10px]">
-                        <span class="text-slate-500 dark:text-slate-400 font-medium">Bonus Ketepatan Waktu</span>
+                        <span class="text-slate-500 dark:text-slate-400 font-medium">Uang Kehadiran</span>
                         <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="tooltip.bonus > 0 ? 'Rp ' + Number(tooltip.bonus).toLocaleString('id-ID') : 'Rp 0'"></span>
                     </div>
                 </div>
@@ -638,7 +656,7 @@
             <template x-if="tooltip.status !== 'Hadir' && !(tooltip.checkIn && tooltip.checkIn !== '--:--') && tooltip.bonus > 0">
                 <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
                     <div class="flex items-center justify-between bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/30 dark:border-emerald-900/30 rounded-lg px-2 py-1.5 text-[10px]">
-                        <span class="text-slate-500 dark:text-slate-400 font-medium">Bonus Ketepatan Waktu</span>
+                        <span class="text-slate-500 dark:text-slate-400 font-medium">Uang Kehadiran</span>
                         <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="'Rp ' + Number(tooltip.bonus).toLocaleString('id-ID')"></span>
                     </div>
                 </div>

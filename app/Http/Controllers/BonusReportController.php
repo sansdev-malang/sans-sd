@@ -19,9 +19,9 @@ class BonusReportController extends Controller
             abort(403);
         }
 
-        // Pegawai biasa diarahkan ke Data Kehadiran karena log absensi dan bonusnya sudah ada di sana
+        // Pegawai biasa diarahkan ke Data Kehadiran karena log absensi dan uang kehadirannya sudah ada di sana
         if ($user->role === 'employee') {
-            return redirect()->route('attendances.index')->with('info', 'Rincian kehadiran dan bonus harian Anda dapat dilihat langsung pada menu Data Kehadiran.');
+            return redirect()->route('attendances.index')->with('info', 'Rincian kehadiran dan uang kehadiran harian Anda dapat dilihat langsung pada menu Data Kehadiran.');
         }
 
         $cutoffDate = (int) Setting::get('payroll_cutoff_date', 26);
@@ -462,7 +462,7 @@ class BonusReportController extends Controller
                 $sheet->setCellValue('A1', 'No');
                 $sheet->setCellValue('B1', 'Nama Pegawai');
                 $sheet->setCellValue('C1', 'Unit');
-                $sheet->setCellValue('D1', 'Total Bonus (Rp)');
+                $sheet->setCellValue('D1', 'Total Uang Kehadiran (Rp)');
 
                 // Build dynamic date headers starting from column E (Index 5)
                 $colIndex = 5;
@@ -541,7 +541,7 @@ class BonusReportController extends Controller
                 return response()->streamDownload(function() use ($spreadsheet) {
                     $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
                     $writer->save('php://output');
-                }, 'Rekap_Bonus_' . $unitStr . '_' . $month . '.xlsx', [
+                }, 'Rekap_Uang_Kehadiran_' . $unitStr . '_' . $month . '.xlsx', [
                     'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     'Cache-Control' => 'max-age=0'
                 ]);
@@ -558,7 +558,7 @@ class BonusReportController extends Controller
                 'totalSemuaBonus' => $totalSemuaBonus
             ])->setPaper('a4', 'landscape');
 
-            return $pdf->download('Rekap_Bonus_' . $unitStr . '_' . $month . '.pdf');
+            return $pdf->download('Rekap_Uang_Kehadiran_' . $unitStr . '_' . $month . '.pdf');
 
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memuat rekap bonus dari HRD: ' . $e->getMessage());
