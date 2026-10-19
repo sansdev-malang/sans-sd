@@ -314,6 +314,39 @@
                         </a>
                     </div>
                 </div>
+
+                <!-- Dropdown: Master Akademik -->
+                <div x-data="{ openAcademic: {{ Request::routeIs('classrooms.*', 'class-levels.*', 'academic-years.*', 'semesters.*') ? 'true' : 'false' }} }">
+                    <button @click="openAcademic = !openAcademic"
+                        class="menu-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors text-xs font-medium relative group cursor-pointer {{ Request::routeIs('classrooms.*', 'class-levels.*', 'academic-years.*', 'semesters.*') ? 'text-slate-900 dark:text-slate-50 bg-slate-100 dark:bg-slate-800 font-medium' : '' }}">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="layers" class="menu-icon w-4 h-4 shrink-0"></i>
+                            <span class="menu-text">Master Akademik</span>
+                        </div>
+                        <i data-lucide="chevron-right" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200"
+                            :style="openAcademic ? 'transform: rotate(90deg);' : ''"></i>
+                        <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
+                            Master Akademik
+                        </span>
+                    </button>
+
+                    <!-- Dropdown content with line connector -->
+                    <div x-show="openAcademic" x-collapse
+                        class="sidebar-dropdown-content mt-1 ml-5 pl-4 border-l border-slate-200 dark:border-slate-800 space-y-1">
+                        <a href="{{ route('classrooms.index') }}"
+                            class="flex items-center justify-between gap-2 py-1 text-xs font-medium {{ Request::routeIs('classrooms.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
+                            <span>Rombongan Belajar</span>
+                        </a>
+                        <a href="{{ route('class-levels.index') }}"
+                            class="flex items-center justify-between gap-2 py-1 text-xs font-medium {{ Request::routeIs('class-levels.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
+                            <span>Tingkat Kelas</span>
+                        </a>
+                        <a href="{{ route('academic-years.index') }}"
+                            class="flex items-center justify-between gap-2 py-1 text-xs font-medium {{ Request::routeIs('academic-years.*', 'semesters.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
+                            <span>Tahun Ajaran & Semester</span>
+                        </a>
+                    </div>
+                </div>
                 @endif
             </nav>
         </div>
@@ -412,44 +445,12 @@
         @endif
 
         <!-- Group 4: Pusat Data & Pengaturan -->
-        @if($isAdmin)
+        @if($isSuperAdmin)
         <div>
             <h3 class="school-info px-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
                 Pusat Data & Pengaturan
             </h3>
             <nav class="space-y-1">
-                <!-- Dropdown: Master Akademik -->
-                <div x-data="{ openAcademic: {{ Request::routeIs('classrooms.*', 'class-levels.*', 'academic-years.*', 'semesters.*') ? 'true' : 'false' }} }">
-                    <button @click="openAcademic = !openAcademic"
-                        class="menu-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors text-xs font-medium relative group cursor-pointer {{ Request::routeIs('classrooms.*', 'class-levels.*', 'academic-years.*', 'semesters.*') ? 'text-slate-900 dark:text-slate-50 bg-slate-100 dark:bg-slate-800 font-medium' : '' }}">
-                        <div class="flex items-center gap-3">
-                            <i data-lucide="layers" class="menu-icon w-4 h-4 shrink-0"></i>
-                            <span class="menu-text">Master Akademik</span>
-                        </div>
-                        <i data-lucide="chevron-right" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200"
-                            :style="openAcademic ? 'transform: rotate(90deg);' : ''"></i>
-                        <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
-                            Master Akademik
-                        </span>
-                    </button>
-
-                    <!-- Dropdown content with line connector -->
-                    <div x-show="openAcademic" x-collapse
-                        class="sidebar-dropdown-content mt-1 ml-5 pl-4 border-l border-slate-200 dark:border-slate-800 space-y-1">
-                        <a href="{{ route('classrooms.index') }}"
-                            class="flex items-center justify-between gap-2 py-1 text-xs font-medium {{ Request::routeIs('classrooms.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
-                            <span>Rombongan Belajar</span>
-                        </a>
-                        <a href="{{ route('class-levels.index') }}"
-                            class="flex items-center justify-between gap-2 py-1 text-xs font-medium {{ Request::routeIs('class-levels.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
-                            <span>Tingkat Kelas</span>
-                        </a>
-                        <a href="{{ route('academic-years.index') }}"
-                            class="flex items-center justify-between gap-2 py-1 text-xs font-medium {{ Request::routeIs('academic-years.*', 'semesters.*') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
-                            <span>Tahun Ajaran & Semester</span>
-                        </a>
-                    </div>
-                </div>
 
                 @if($isSuperAdmin)
                 <!-- Dropdown: Pengaturan Sistem -->
