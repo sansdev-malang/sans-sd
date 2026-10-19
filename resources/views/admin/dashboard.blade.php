@@ -783,11 +783,11 @@
                                 @php
                                     $empName = $leave->employee->name ?? 'Pegawai';
                                     $empPos = $leave->employee->position ?? null;
-                                    $start = \Carbon\Carbon::parse($leave->start_date);
-                                    $end = \Carbon\Carbon::parse($leave->end_date);
-                                    $diff = $start->diffInDays($end) + 1;
-                                    $rangeString = $start->translatedFormat('d M Y');
-                                    if ($start->format('Y-m-d') !== $end->format('Y-m-d')) {
+                                    $start = $leave->start_date ? \Carbon\Carbon::parse($leave->start_date)->startOfDay() : null;
+                                    $end = $leave->end_date ? \Carbon\Carbon::parse($leave->end_date)->startOfDay() : null;
+                                    $diff = ($start && $end) ? (int) round($start->diffInDays($end)) + 1 : 1;
+                                    $rangeString = $start ? $start->translatedFormat('d M Y') : '-';
+                                    if ($start && $end && $start->format('Y-m-d') !== $end->format('Y-m-d')) {
                                         $rangeString .= ' s/d ' . $end->translatedFormat('d M Y');
                                     }
                                     $statusClass = [
@@ -1005,11 +1005,11 @@
                         @if(isset($myRecentLeaves) && count($myRecentLeaves) > 0)
                             @foreach($myRecentLeaves as $leave)
                                 @php
-                                    $start = \Carbon\Carbon::parse($leave->start_date);
-                                    $end = \Carbon\Carbon::parse($leave->end_date);
-                                    $diff = $start->diffInDays($end) + 1;
-                                    $rangeString = $start->translatedFormat('d M Y');
-                                    if ($start->format('Y-m-d') !== $end->format('Y-m-d')) {
+                                    $start = $leave->start_date ? \Carbon\Carbon::parse($leave->start_date)->startOfDay() : null;
+                                    $end = $leave->end_date ? \Carbon\Carbon::parse($leave->end_date)->startOfDay() : null;
+                                    $diff = ($start && $end) ? (int) round($start->diffInDays($end)) + 1 : 1;
+                                    $rangeString = $start ? $start->translatedFormat('d M Y') : '-';
+                                    if ($start && $end && $start->format('Y-m-d') !== $end->format('Y-m-d')) {
                                         $rangeString .= ' s/d ' . $end->translatedFormat('d M Y');
                                     }
                                     $statusClass = [

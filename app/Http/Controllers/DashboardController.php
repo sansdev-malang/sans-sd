@@ -315,13 +315,15 @@ class DashboardController extends Controller
                     ->get();
 
                 foreach ($approvedLeavesThisYear as $req) {
-                    $totalLeavesThisYear += \Carbon\Carbon::parse($req->start_date)->diffInDays(\Carbon\Carbon::parse($req->end_date)) + 1;
+                    $s = \Carbon\Carbon::parse($req->start_date)->startOfDay();
+                    $e = \Carbon\Carbon::parse($req->end_date)->startOfDay();
+                    $totalLeavesThisYear += (int) round($s->diffInDays($e)) + 1;
                 }
 
                 // Fetch Recent Activity (Leaves/Permits status) with eager loading
                 $myRecentLeaves = \App\Models\LeaveRequest::with('leaveType:id,name')
                     ->where('employee_id', $employee->id)
-                    ->select('id', 'employee_id', 'leave_type_id', 'type', 'status', 'created_at')
+                    ->select('id', 'employee_id', 'leave_type_id', 'type', 'start_date', 'end_date', 'notes', 'status', 'created_at')
                     ->latest()
                     ->limit(5)
                     ->get();
