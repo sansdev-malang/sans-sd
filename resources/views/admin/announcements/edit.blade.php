@@ -1,37 +1,77 @@
 <x-admin-layout>
-    <div class="p-6 space-y-6">
-        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="flex flex-col gap-0.5">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Edit Pengumuman</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Perbarui informasi pengumuman.</p>
+    <div class="p-3.5 sm:p-5 lg:p-6 space-y-4 sm:space-y-5 lg:space-y-6 text-left">
+        <!-- Page Header -->
+        <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div>
+                <h1 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Edit Pengumuman</h1>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Perbarui informasi dan konten pengumuman sekolah.</p>
+            </div>
+            <div>
+                <a href="{{ route('announcements.index') }}" class="h-8 sm:h-9 px-3 sm:px-3.5 inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs transition-colors cursor-pointer">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                    <span>Kembali</span>
+                </a>
             </div>
         </section>
 
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm p-6">
-            <form action="{{ route('announcements.update', $announcement) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <!-- Form Card Container -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden p-4 sm:p-6">
+            <form action="{{ route('announcements.update', $announcement) }}" method="POST" enctype="multipart/form-data" class="space-y-5 sm:space-y-6">
                 @csrf
                 @method('PUT')
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                    <!-- Judul (Full Width) -->
                     <div class="md:col-span-2">
-                        <label for="title" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Judul Pengumuman</label>
-                        <input type="text" name="title" id="title" value="{{ old('title', $announcement->title) }}" required class="mt-1 block w-full border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 focus:ring-indigo-500 rounded-md shadow-sm">
-                        @error('title') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        <label for="title" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                            Judul Pengumuman <span class="text-rose-500">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            name="title" 
+                            id="title" 
+                            value="{{ old('title', $announcement->title) }}" 
+                            required 
+                            placeholder="Contoh: Jadwal Libur Semester Ganjil TA 2026/2027"
+                            class="w-full h-9 sm:h-9.5 px-3 text-xs bg-slate-50/50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-colors shadow-xs"
+                        >
+                        @error('title') 
+                            <p class="text-rose-500 text-[11px] font-medium mt-1">{{ $message }}</p> 
+                        @enderror
                     </div>
 
+                    <!-- Kategori -->
                     <div>
-                        <label for="category" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Kategori</label>
-                        <select name="category" id="category" required class="mt-1 block w-full border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 focus:ring-indigo-500 rounded-md shadow-sm">
+                        <label for="category" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                            Kategori <span class="text-rose-500">*</span>
+                        </label>
+                        <select 
+                            name="category" 
+                            id="category" 
+                            required 
+                            class="w-full h-9 sm:h-9.5 px-3 text-xs bg-slate-50/50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-colors shadow-xs cursor-pointer"
+                        >
                             <option value="umum" {{ old('category', $announcement->category) == 'umum' ? 'selected' : '' }}>Umum / Info Sekolah</option>
                             <option value="akademik" {{ old('category', $announcement->category) == 'akademik' ? 'selected' : '' }}>Kurikulum / Akademik</option>
                             <option value="kepegawaian" {{ old('category', $announcement->category) == 'kepegawaian' ? 'selected' : '' }}>Kepegawaian / HRD</option>
                             <option value="penting" {{ old('category', $announcement->category) == 'penting' ? 'selected' : '' }}>Penting / Urgent</option>
                         </select>
+                        @error('category') 
+                            <p class="text-rose-500 text-[11px] font-medium mt-1">{{ $message }}</p> 
+                        @enderror
                     </div>
 
+                    <!-- Target Audiens -->
                     <div>
-                        <label for="target_audience" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Target Audiens</label>
-                        <select name="target_audience" id="target_audience" required class="mt-1 block w-full border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 focus:ring-indigo-500 rounded-md shadow-sm">
+                        <label for="target_audience" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                            Target Audiens <span class="text-rose-500">*</span>
+                        </label>
+                        <select 
+                            name="target_audience" 
+                            id="target_audience" 
+                            required 
+                            class="w-full h-9 sm:h-9.5 px-3 text-xs bg-slate-50/50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-colors shadow-xs cursor-pointer"
+                        >
                             <option value="global" {{ old('target_audience', $announcement->target_audience) == 'global' ? 'selected' : '' }}>Semua (Global)</option>
                             <option value="management" {{ old('target_audience', $announcement->target_audience) == 'management' ? 'selected' : '' }}>Manajemen Saja (Kepala Sekolah, Waka, Admin)</option>
                             <option value="teacher" {{ old('target_audience', $announcement->target_audience) == 'teacher' ? 'selected' : '' }}>Guru Saja</option>
@@ -39,58 +79,124 @@
                             <option value="student" {{ old('target_audience', $announcement->target_audience) == 'student' ? 'selected' : '' }}>Siswa Saja (API)</option>
                             <option value="parent" {{ old('target_audience', $announcement->target_audience) == 'parent' ? 'selected' : '' }}>Orang Tua Saja (API)</option>
                         </select>
+                        @error('target_audience') 
+                            <p class="text-rose-500 text-[11px] font-medium mt-1">{{ $message }}</p> 
+                        @enderror
                     </div>
 
+                    <!-- Isi Pengumuman (CKEditor) -->
                     <div class="md:col-span-2">
-                        <label for="content" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Isi Pengumuman</label>
-                        <textarea name="content" id="content" rows="6" required class="mt-1 block w-full border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('content', $announcement->content) }}</textarea>
+                        <label for="content" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                            Isi Pengumuman <span class="text-rose-500">*</span>
+                        </label>
+                        <textarea name="content" id="content" rows="6" required class="w-full text-xs rounded-lg">{{ old('content', $announcement->content) }}</textarea>
+                        @error('content') 
+                            <p class="text-rose-500 text-[11px] font-medium mt-1">{{ $message }}</p> 
+                        @enderror
                     </div>
 
-                    <div>
-                        <label for="attachment" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Lampiran (Opsional)</label>
+                    <!-- Lampiran -->
+                    <div class="space-y-2">
+                        <label for="attachment" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Lampiran Dokumen / Gambar <span class="text-[11px] font-normal text-slate-400">(Opsional)</span>
+                        </label>
                         @if($announcement->attachment)
-                            <div class="mb-2">
-                                <a href="{{ Storage::url($announcement->attachment) }}" target="_blank" class="text-indigo-600 hover:underline text-sm">Lihat Lampiran Saat Ini</a>
+                            <div class="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-lg text-xs">
+                                <div class="flex items-center gap-2 truncate mr-2">
+                                    <i data-lucide="paperclip" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0"></i>
+                                    <span class="truncate text-slate-700 dark:text-slate-300 font-medium">
+                                        {{ basename($announcement->attachment) }}
+                                    </span>
+                                </div>
+                                <a href="{{ filter_var($announcement->attachment, FILTER_VALIDATE_URL) ? $announcement->attachment : Storage::url($announcement->attachment) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline shrink-0">
+                                    <i data-lucide="external-link" class="w-3 h-3"></i>
+                                    <span>Lihat Saat Ini</span>
+                                </a>
                             </div>
                         @endif
-                        <input type="file" name="attachment" id="attachment" accept=".pdf,.jpg,.jpeg,.png" class="mt-1 block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-slate-50">
-                        <p class="text-xs text-slate-500 mt-1">Biarkan kosong jika tidak ingin mengubah lampiran.</p>
+                        <input 
+                            type="file" 
+                            name="attachment" 
+                            id="attachment" 
+                            accept=".pdf,.jpg,.jpeg,.png" 
+                            class="w-full text-xs text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-950/60 file:text-indigo-600 dark:file:text-indigo-400 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/50 file:transition-colors file:cursor-pointer border border-slate-200 dark:border-slate-800 rounded-lg p-1 bg-slate-50/50 dark:bg-slate-950 shadow-xs cursor-pointer"
+                        >
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500">Biarkan kosong jika tidak ingin mengubah lampiran. Format: PDF, JPG, PNG (Maks 5MB).</p>
+                        @error('attachment') 
+                            <p class="text-rose-500 text-[11px] font-medium mt-1">{{ $message }}</p> 
+                        @enderror
                     </div>
                     
-                    <div class="space-y-4">
-                        <div>
-                            <label for="publish_date" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Tanggal Publish</label>
-                            <input type="datetime-local" name="publish_date" id="publish_date" value="{{ old('publish_date', $announcement->publish_date ? $announcement->publish_date->format('Y-m-d\TH:i') : '') }}" class="mt-1 block w-full border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 focus:ring-indigo-500 rounded-md shadow-sm">
-                        </div>
+                    <!-- Pengaturan Waktu & Status -->
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label for="publish_date" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                    Tanggal Publikasi
+                                </label>
+                                <input 
+                                    type="datetime-local" 
+                                    name="publish_date" 
+                                    id="publish_date" 
+                                    value="{{ old('publish_date', $announcement->publish_date ? $announcement->publish_date->format('Y-m-d\TH:i') : '') }}" 
+                                    class="w-full h-9 sm:h-9.5 px-3 text-xs bg-slate-50/50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-colors shadow-xs"
+                                >
+                            </div>
 
-                        <div>
-                            <label for="expiry_date" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Waktu Berakhir (Opsional)</label>
-                            <input type="datetime-local" name="expiry_date" id="expiry_date" value="{{ old('expiry_date', $announcement->expiry_date ? $announcement->expiry_date->format('Y-m-d\TH:i') : '') }}" class="mt-1 block w-full border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 focus:ring-indigo-500 rounded-md shadow-sm">
-                            <p class="text-xs text-slate-500 mt-1">Kosongkan jika pengumuman berlaku selamanya.</p>
+                            <div>
+                                <label for="expiry_date" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                    Masa Berlaku Berakhir <span class="text-[11px] font-normal text-slate-400">(Opsional)</span>
+                                </label>
+                                <input 
+                                    type="datetime-local" 
+                                    name="expiry_date" 
+                                    id="expiry_date" 
+                                    value="{{ old('expiry_date', $announcement->expiry_date ? $announcement->expiry_date->format('Y-m-d\TH:i') : '') }}" 
+                                    class="w-full h-9 sm:h-9.5 px-3 text-xs bg-slate-50/50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-colors shadow-xs"
+                                >
+                            </div>
                         </div>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500">Kosongkan waktu berakhir jika pengumuman berlaku selamanya.</p>
                         
-                        <div class="flex items-center">
-                            <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $announcement->is_active) ? 'checked' : '' }} class="rounded border-slate-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                            <label for="is_active" class="ml-2 block text-sm text-slate-700 dark:text-slate-300">Status Aktif</label>
+                        <div class="pt-1">
+                            <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                                <input 
+                                    type="checkbox" 
+                                    name="is_active" 
+                                    id="is_active" 
+                                    value="1" 
+                                    {{ old('is_active', $announcement->is_active) ? 'checked' : '' }} 
+                                    class="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-900 cursor-pointer"
+                                >
+                                <span class="text-xs font-medium text-slate-700 dark:text-slate-300">Status Aktif</span>
+                            </label>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-                    <a href="{{ route('announcements.index') }}" class="inline-flex items-center px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md font-semibold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-widest shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition ease-in-out duration-100">
+                <!-- Footer Buttons -->
+                <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <a href="{{ route('announcements.index') }}" class="h-8 sm:h-9 px-3.5 inline-flex items-center justify-center rounded-lg font-semibold text-xs text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs transition-colors cursor-pointer">
                         Batal
                     </a>
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 transition duration-100">
-                        Update Pengumuman
+                    <button type="submit" class="h-8 sm:h-9 px-4 inline-flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-xs shadow-xs transition-colors cursor-pointer">
+                        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                        <span>Perbarui Pengumuman</span>
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Tambahkan CKEditor CDN -->
+    <!-- CKEditor CDN -->
     <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
     <style>
+        .cke_chrome {
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 0.5rem !important;
+            overflow: hidden !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+        }
         /* Custom styling for CKEditor Toolbar in Dark Mode */
         html.dark .cke_chrome {
             border-color: #334155 !important;
@@ -117,10 +223,9 @@
         CKEDITOR.replace('content', {
             height: 300,
             versionCheck: false,
-            removeButtons: 'PasteFromWord,Image,Table', // Sesuaikan fitur sesuai kebutuhan
+            removeButtons: 'PasteFromWord,Image,Table',
             on: {
                 instanceReady: function(evt) {
-                    // Cek apakah dark mode aktif
                     const isDark = document.documentElement.classList.contains('dark');
                     if (isDark) {
                         const body = evt.editor.document.getBody();
@@ -131,7 +236,6 @@
             }
         });
 
-        // Optional: Listen to theme changes if your app has a dynamic toggle
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.attributeName === 'class') {

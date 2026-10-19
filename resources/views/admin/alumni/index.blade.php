@@ -9,13 +9,10 @@
                         <i data-lucide="graduation-cap" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
+                        <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
                             Buku Induk Alumni
-                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400 font-semibold border border-blue-200 dark:border-blue-800">
-                                Lulusan SD
-                            </span>
                         </h2>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Database resmi seluruh peserta didik yang telah lulus dari {{ setting('unit_name', 'SD Anak Saleh') }}, arsip nomor ijazah, dan sekolah lanjutan.</p>
+                        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Database resmi seluruh peserta didik yang telah lulus dari {{ setting('unit_name', 'SD Anak Saleh') }}, arsip nomor ijazah, dan sekolah lanjutan.</p>
                     </div>
                 </div>
             </div>

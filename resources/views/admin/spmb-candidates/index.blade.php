@@ -4,15 +4,10 @@
         <!-- HEADER / ACTION BAR -->
         <section class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <div class="flex items-center gap-2">
-                    <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
-                        SPMB
-                        <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 font-bold border border-emerald-200 dark:border-emerald-800">
-                            Unit SD
-                        </span>
-                    </h2>
-                </div>
-                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Data pendaftar dan calon murid yang masuk dari sistem pendaftaran SPMB Pusat.</p>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                    SPMB
+                </h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Data pendaftar dan calon murid yang masuk dari sistem pendaftaran SPMB Pusat.</p>
             </div>
 
             <!-- ACTION CONTROLS: TEST CONNECTION & SYNC BUTTON -->
@@ -400,7 +395,7 @@
                                             </div>
                                             <p class="font-bold text-slate-800 dark:text-slate-200 text-sm">Belum Ada Calon Murid Masuk di TA {{ $selectedYear }}</p>
                                             <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                                                Data calon murid baru akan otomatis masuk ke SANS SD saat pendaftar di SPMB telah mencapai <b>Tahap Administrasi / Daftar Ulang</b> (surat pernyataan disetujui / pembayaran daftar ulang).
+                                                Data calon murid baru akan otomatis masuk ke SAANS SD saat pendaftar di SPMB telah mencapai <b>Tahap Administrasi / Daftar Ulang</b> (surat pernyataan disetujui / pembayaran daftar ulang).
                                             </p>
                                             <button type="button" @click="syncData()" :disabled="syncing"
                                                 class="mt-1 inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs cursor-pointer">

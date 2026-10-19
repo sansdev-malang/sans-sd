@@ -9,10 +9,10 @@
                         <i data-lucide="user-check" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                        <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
                             Wali Kelas & Formasi Guru
                         </h2>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Pengelolaan dan riwayat penugasan Wali Kelas, Guru Kelas, GPK, GPQ, dan Koordinator Jenjang per Tahun Pelajaran.</p>
+                        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pengelolaan dan riwayat penugasan Wali Kelas, Guru Kelas, GPK, GPQ, dan Koordinator Jenjang per Tahun Pelajaran.</p>
                     </div>
                 </div>
             </div>

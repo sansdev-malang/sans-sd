@@ -50,9 +50,14 @@
             x: 0,
             y: 0,
             placement: 'top',
-            activeDate: ''
+            activeDate: '',
+            shiftName: '',
+            lateMinutes: 0,
+            earlyMinutes: 0,
+            isPicket: false,
+            picketArea: ''
         },
-        showTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus, isInCutoff = true) {
+        showTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus, isInCutoff = true, shiftName = '', lateMinutes = 0, earlyMinutes = 0, isPicket = false, picketArea = '') {
             if (!status) return;
             this.tooltip.date = date;
             this.tooltip.status = status;
@@ -63,6 +68,11 @@
             this.tooltip.bonus = bonus || 0;
             this.tooltip.isInCutoff = isInCutoff;
             this.tooltip.activeDate = date;
+            this.tooltip.shiftName = shiftName;
+            this.tooltip.lateMinutes = lateMinutes;
+            this.tooltip.earlyMinutes = earlyMinutes;
+            this.tooltip.isPicket = isPicket;
+            this.tooltip.picketArea = picketArea;
             
             const containerRect = this.$refs.container.getBoundingClientRect();
             const targetRect = e.currentTarget.getBoundingClientRect();
@@ -95,11 +105,11 @@
             
             this.tooltip.show = true;
         },
-        toggleTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus, isInCutoff = true) {
+        toggleTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus, isInCutoff = true, shiftName = '', lateMinutes = 0, earlyMinutes = 0, isPicket = false, picketArea = '') {
             if (this.tooltip.show && this.tooltip.activeDate === date) {
                 this.hideTooltip();
             } else {
-                this.showTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus, isInCutoff);
+                this.showTooltip(e, date, status, checkIn, checkOut, isLate, color, bonus, isInCutoff, shiftName, lateMinutes, earlyMinutes, isPicket, picketArea);
             }
         },
         hideTooltip() {
@@ -107,11 +117,11 @@
             this.tooltip.activeDate = '';
         }
     }" x-ref="container" @click="hideTooltip()">
-        <!-- DATA RIWAYAT ABSENSI / PAGE TITLE -->
-        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <!-- DATA KEHADIRAN / PAGE TITLE -->
+        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 sm:gap-3">
             <div class="flex flex-col gap-0.5">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Data Riwayat Absensi</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Memantau waktu kedatangan, kepulangan, dan estimasi bonus ketepatan waktu Anda.</p>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50 font-nasalization">Data Kehadiran</h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">Memantau waktu kedatangan, kepulangan, dan estimasi uang kehadiran ketepatan waktu Anda.</p>
             </div>
             <div class="flex items-center flex-wrap gap-2">
                 <a href="{{ route('attendances.index', array_merge(request()->query(), ['refresh' => 1])) }}" 
@@ -162,6 +172,13 @@
             $countSakit = 0;
             $countCuti = 0;
             $countAlfa = 0;
+
+            $myPicketSchedules = collect();
+            if (auth()->check() && auth()->user()->employee_id) {
+                $myPicketSchedules = \App\Models\PicketSchedule::with('picketArea')
+                    ->where('employee_id', auth()->user()->employee_id)
+                    ->get();
+            }
             
             foreach ($dailyDetails as $dateStr => $detail) {
                 if ($dateStr >= $cutOffStart && $dateStr <= $cutOffEnd) {
@@ -229,7 +246,7 @@
         <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="md:col-span-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[18px] shadow-sm w-full p-4 sm:p-5">
                 <div class="calendar-header-container pb-4 border-b border-slate-200 dark:border-slate-800">
-                    <!-- Kiri: Total Bonus Periode Ini -->
+                    <!-- Kiri: Total Uang Kehadiran Periode Ini -->
                     <div class="calendar-header-left flex items-center gap-3">
                         <span class="w-10 h-10 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center shrink-0">
                             <i data-lucide="banknote" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
@@ -240,7 +257,7 @@
                             </span>
                             <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
-                                    Total Bonus Periode Ini
+                                    Total Uang Kehadiran Periode Ini
                                 </span>
                                 <span class="text-[10px] font-semibold text-slate-400 dark:text-slate-500">
                                     ({{ $cutoffDateVal + 1 }} {{ $selectedMonth->copy()->subMonthNoOverflow()->translatedFormat('M') }} - {{ $cutoffDateVal }} {{ $selectedMonth->translatedFormat('M Y') }})
@@ -378,13 +395,35 @@
                                             $modalColor = 'slate';
                                         }
                                         
-                                        $bonus = $detail['calculated_bonus'] ?? 0.00;
+                                        $bonus = $detail['calculated_bonus'] ?? ($detail['bonus_nominal'] ?? 0.00);
+                                        $shiftName = $detail['shift_name'] ?? '';
+                                        $lateMinutes = (int) ($detail['late_minutes'] ?? 0);
+                                        $earlyMinutes = (int) ($detail['early_minutes'] ?? 0);
+                                        $isPicket = !empty($detail['is_picket']);
+                                        $picketArea = $detail['picket_area'] ?? '';
+
+                                        if (!$isPicket && isset($myPicketSchedules) && $myPicketSchedules->isNotEmpty()) {
+                                            $pSched = $myPicketSchedules->firstWhere('day_of_week', $date->dayOfWeek);
+                                            if ($pSched) {
+                                                $inRange = true;
+                                                if ($pSched->start_date && $date->lt($pSched->start_date)) {
+                                                    $inRange = false;
+                                                }
+                                                if ($pSched->end_date && $date->gt($pSched->end_date)) {
+                                                    $inRange = false;
+                                                }
+                                                if ($inRange) {
+                                                    $isPicket = true;
+                                                    $picketArea = $pSched->picketArea?->name ?? 'Piket';
+                                                }
+                                            }
+                                        }
                                     @endphp
 
                                     <div
-                                        @mouseenter="showTooltip($event, '{{ $date->translatedFormat('d F Y') }}', '{{ $status }}', '{{ $checkIn }}', '{{ $checkOut }}', {{ $isLate ? 'true' : 'false' }}, '{{ $modalColor }}', {{ $bonus }}, {{ $isInCutoff ? 'true' : 'false' }})"
+                                        @mouseenter="showTooltip($event, '{{ $date->translatedFormat('d F Y') }}', '{{ $status }}', '{{ $checkIn }}', '{{ $checkOut }}', {{ $isLate ? 'true' : 'false' }}, '{{ $modalColor }}', {{ $bonus }}, {{ $isInCutoff ? 'true' : 'false' }}, '{{ addslashes($shiftName) }}', {{ $lateMinutes }}, {{ $earlyMinutes }}, {{ $isPicket ? 'true' : 'false' }}, '{{ addslashes($picketArea) }}')"
                                         @mouseleave="hideTooltip()"
-                                        @click.stop="toggleTooltip($event, '{{ $date->translatedFormat('d F Y') }}', '{{ $status }}', '{{ $checkIn }}', '{{ $checkOut }}', {{ $isLate ? 'true' : 'false' }}, '{{ $modalColor }}', {{ $bonus }}, {{ $isInCutoff ? 'true' : 'false' }})"
+                                        @click.stop="toggleTooltip($event, '{{ $date->translatedFormat('d F Y') }}', '{{ $status }}', '{{ $checkIn }}', '{{ $checkOut }}', {{ $isLate ? 'true' : 'false' }}, '{{ $modalColor }}', {{ $bonus }}, {{ $isInCutoff ? 'true' : 'false' }}, '{{ addslashes($shiftName) }}', {{ $lateMinutes }}, {{ $earlyMinutes }}, {{ $isPicket ? 'true' : 'false' }}, '{{ addslashes($picketArea) }}')"
                                         class="group relative flex min-h-[28px] sm:min-h-[34px] items-center justify-center px-0.5 sm:px-1 transition-all {{ $isToday ? 'bg-slate-950 text-white dark:bg-slate-100 dark:text-slate-900 rounded-[200px] font-bold shadow-sm' : 'hover:bg-slate-100 dark:hover:bg-slate-900/80 rounded-lg' }} {{ $isInCutoff ? 'opacity-100 font-semibold' : 'opacity-30 hover:opacity-100' }} cursor-pointer">
                                         <span class="text-[12px] sm:text-[13px] leading-none tracking-[0.01em] {{ $isToday ? 'text-inherit' : $numberColor }}">
                                             {{ $date->format('d') }}
@@ -578,6 +617,27 @@
                 </span>
             </div>
 
+            <!-- Shift & Picket Info -->
+            <template x-if="tooltip.shiftName || tooltip.isPicket">
+                <div class="space-y-1 mb-2">
+                    <template x-if="tooltip.shiftName">
+                        <div class="px-2 py-1 rounded bg-slate-50 dark:bg-slate-800/40 text-[10px] border border-slate-100/50 dark:border-slate-800 flex items-center justify-between">
+                            <span class="text-slate-400 dark:text-slate-500 font-medium">Jadwal / Shift</span>
+                            <span class="font-bold text-slate-700 dark:text-slate-200 truncate max-w-[130px]" x-text="tooltip.shiftName"></span>
+                        </div>
+                    </template>
+                    <template x-if="tooltip.isPicket">
+                        <div class="px-2 py-1 rounded bg-indigo-50/50 dark:bg-indigo-950/30 text-[10px] border border-indigo-100/50 dark:border-indigo-900/30 flex items-center justify-between text-indigo-700 dark:text-indigo-300">
+                            <span class="font-medium flex items-center gap-1">
+                                <i data-lucide="shield-check" class="w-3 h-3"></i>
+                                Piket
+                            </span>
+                            <span class="font-bold truncate max-w-[130px]" x-text="tooltip.picketArea || 'Area Piket'"></span>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
             <!-- Details (Check In & Check Out) -->
             <template x-if="tooltip.status === 'Hadir' || (tooltip.checkIn && tooltip.checkIn !== '--:--')">
                 <div class="space-y-2">
@@ -586,26 +646,36 @@
                             <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Masuk</span>
                             <span class="font-bold text-[11px]" :class="tooltip.isLate ? 'text-amber-600 dark:text-amber-500' : 'text-slate-700 dark:text-slate-200'" x-text="tooltip.checkIn"></span>
                             <template x-if="tooltip.isLate">
-                                <span class="text-[8px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none">Telat</span>
+                                <span class="text-[8px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none" x-text="tooltip.lateMinutes ? 'Telat ' + tooltip.lateMinutes + 'm' : 'Telat'"></span>
+                            </template>
+                            <template x-if="!tooltip.isLate && tooltip.checkIn && tooltip.checkIn !== '--:--'">
+                                <span class="text-[8px] font-bold text-emerald-700 bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none">Tepat Waktu</span>
                             </template>
                         </div>
                         <div class="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-lg p-1.5 border border-slate-100/50 dark:border-slate-800 text-center">
                             <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Pulang</span>
-                            <span class="font-bold text-[11px] text-slate-700 dark:text-slate-200" x-text="tooltip.checkOut"></span>
+                            <span class="font-bold text-[11px]" :class="tooltip.earlyMinutes > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-200'" x-text="tooltip.checkOut"></span>
+                            <template x-if="tooltip.earlyMinutes > 0">
+                                <span class="text-[8px] font-bold text-rose-700 bg-rose-100 dark:bg-rose-950/30 dark:text-rose-400 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none" x-text="'Awal ' + tooltip.earlyMinutes + 'm'"></span>
+                            </template>
+                            <template x-if="!(tooltip.earlyMinutes > 0) && tooltip.checkOut && tooltip.checkOut !== '--:--'">
+                                <span class="text-[8px] font-bold text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none">Sesuai Jam</span>
+                            </template>
                         </div>
                     </div>
-                    <!-- Attendance Bonus Section -->
+                    <!-- Attendance Uang Kehadiran Section -->
                     <div class="flex items-center justify-between bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/30 dark:border-emerald-900/30 rounded-lg px-2 py-1.5 text-[10px]">
-                        <span class="text-slate-500 dark:text-slate-400 font-medium">Bonus Ketepatan Waktu</span>
+                        <span class="text-slate-500 dark:text-slate-400 font-medium">Uang Kehadiran</span>
                         <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="tooltip.bonus > 0 ? 'Rp ' + Number(tooltip.bonus).toLocaleString('id-ID') : 'Rp 0'"></span>
                     </div>
                 </div>
             </template>
-            <template x-if="tooltip.status !== 'Hadir' && !(tooltip.checkIn && tooltip.checkIn !== '--:--') && tooltip.bonus > 0">
+            <template x-if="tooltip.status !== 'Hadir' && !(tooltip.checkIn && tooltip.checkIn !== '--:--')">
                 <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <div class="flex items-center justify-between bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/30 dark:border-emerald-900/30 rounded-lg px-2 py-1.5 text-[10px]">
-                        <span class="text-slate-500 dark:text-slate-400 font-medium">Bonus Ketepatan Waktu</span>
-                        <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="'Rp ' + Number(tooltip.bonus).toLocaleString('id-ID')"></span>
+                    <div class="flex items-center justify-between rounded-lg px-2 py-1.5 text-[10px] border"
+                         :class="tooltip.bonus > 0 ? 'bg-emerald-50/50 dark:bg-emerald-950/10 border-emerald-100/30 dark:border-emerald-900/30' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800'">
+                        <span class="text-slate-500 dark:text-slate-400 font-medium">Uang Kehadiran</span>
+                        <span class="font-bold" :class="tooltip.bonus > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'" x-text="tooltip.bonus > 0 ? 'Rp ' + Number(tooltip.bonus).toLocaleString('id-ID') : 'Rp 0'"></span>
                     </div>
                 </div>
             </template>

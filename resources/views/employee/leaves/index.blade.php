@@ -13,7 +13,7 @@
             scrollbar-width: none;
         }
     </style>
-    <div class="p-3 sm:p-6 space-y-4 sm:space-y-6 w-full text-left" x-data="{ 
+    <div class="p-3.5 sm:p-5 lg:p-6 space-y-3 sm:space-y-4 w-full text-left" x-data="{ 
         showAddModal: {{ $errors->any() ? 'true' : 'false' }},
         filterStatus: 'all',
         startDate: '{{ old('start_date', date('Y-m-d')) }}',
@@ -48,70 +48,65 @@
     }">
 
         <!-- HEADER SECTION -->
-        <section class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3.5 sm:gap-4 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs">
-            <div class="flex flex-col gap-0.5 sm:gap-1">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                        <i data-lucide="calendar-days" class="w-4 h-4"></i>
-                    </div>
-                    <h2 class="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Pengajuan Izin</h2>
-                </div>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Pantau riwayat izin, sakit, dinas, dan cuti mandiri Anda.</p>
+        <section class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3">
+            <div class="flex flex-col gap-0.5">
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50 font-nasalization">Pengajuan Izin</h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">Pantau riwayat izin, sakit, dinas, dan cuti mandiri Anda.</p>
             </div>
             <button @click="showAddModal = true"
-                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 dark:bg-indigo-600 dark:hover:bg-indigo-500 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-all cursor-pointer shrink-0">
-                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 px-3.5 py-2 text-xs font-semibold shadow-sm transition-all cursor-pointer shrink-0">
+                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
                 <span>Ajukan Izin / Cuti</span>
             </button>
         </section>
 
-        <!-- BENTO STAT CARDS (4 CARDS) -->
-        <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        <!-- COMPACT STATS (1 ROW SLIM) -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
             <!-- TAHUN INI -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4 transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
-                <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                    <i data-lucide="calendar-check" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-2.5 sm:p-3 shadow-xs flex items-center justify-between transition-all hover:border-slate-300 dark:hover:border-slate-700">
+                <div class="flex flex-col min-w-0 pr-1">
+                    <span class="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">Disetujui {{ date('Y') }}</span>
+                    <span class="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 font-nasalization tracking-tight mt-0.5">{{ $stats['total_this_year'] }}</span>
                 </div>
-                <div class="flex flex-col min-w-0">
-                    <span class="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">Disetujui Tahun {{ date('Y') }}</span>
-                    <span class="text-lg sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{{ $stats['total_this_year'] }}</span>
+                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                    <i data-lucide="calendar-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
             </div>
 
             <!-- MENUNGGU PERSETUJUAN -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4 transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
-                <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 relative">
-                    <i data-lucide="clock" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-                    @if($stats['pending'] > 0)
-                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-amber-500 rounded-full animate-ping"></span>
-                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-amber-500 rounded-full"></span>
-                    @endif
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-2.5 sm:p-3 shadow-xs flex items-center justify-between transition-all hover:border-slate-300 dark:hover:border-slate-700">
+                <div class="flex flex-col min-w-0 pr-1">
+                    <span class="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">Menunggu</span>
+                    <span class="text-base sm:text-lg font-bold text-amber-600 dark:text-amber-400 font-nasalization tracking-tight mt-0.5">{{ $stats['pending'] }}</span>
                 </div>
-                <div class="flex flex-col min-w-0">
-                    <span class="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">Menunggu Persetujuan</span>
-                    <span class="text-lg sm:text-2xl font-bold text-amber-600 dark:text-amber-400 tracking-tight">{{ $stats['pending'] }}</span>
+                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 relative">
+                    <i data-lucide="clock" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+                    @if($stats['pending'] > 0)
+                        <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-500 rounded-full animate-ping"></span>
+                        <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-500 rounded-full"></span>
+                    @endif
                 </div>
             </div>
 
             <!-- TOTAL DISETUJUI -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4 transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
-                <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                    <i data-lucide="check-circle-2" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-2.5 sm:p-3 shadow-xs flex items-center justify-between transition-all hover:border-slate-300 dark:hover:border-slate-700">
+                <div class="flex flex-col min-w-0 pr-1">
+                    <span class="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">Total Disetujui</span>
+                    <span class="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400 font-nasalization tracking-tight mt-0.5">{{ $stats['approved'] }}</span>
                 </div>
-                <div class="flex flex-col min-w-0">
-                    <span class="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">Total Disetujui (Semua)</span>
-                    <span class="text-lg sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $stats['approved'] }}</span>
+                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
             </div>
 
             <!-- DITOLAK -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4 transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
-                <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
-                    <i data-lucide="x-circle" class="w-4 h-4 sm:w-5 sm:h-5"></i>
-                </div>
-                <div class="flex flex-col min-w-0">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-2.5 sm:p-3 shadow-xs flex items-center justify-between transition-all hover:border-slate-300 dark:hover:border-slate-700">
+                <div class="flex flex-col min-w-0 pr-1">
                     <span class="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">Ditolak</span>
-                    <span class="text-lg sm:text-2xl font-bold text-rose-600 dark:text-rose-400 tracking-tight">{{ $stats['rejected'] }}</span>
+                    <span class="text-base sm:text-lg font-bold text-rose-600 dark:text-rose-400 font-nasalization tracking-tight mt-0.5">{{ $stats['rejected'] }}</span>
+                </div>
+                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                    <i data-lucide="x-circle" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
                 </div>
             </div>
         </section>

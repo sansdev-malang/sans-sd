@@ -4,8 +4,8 @@
         <!-- HEADER -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Tipe Pegawai / Peran</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Atur tipe pegawai dan peran dinamis (seperti Guru, Karyawan, Satpam, Staf Administrasi) untuk klasifikasi data pegawai.</p>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Tipe Pegawai / Peran</h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Atur tipe pegawai dan peran dinamis (seperti Guru, Karyawan, Satpam, Staf Administrasi) untuk klasifikasi data pegawai.</p>
             </div>
             <div class="flex items-center gap-3 shrink-0">
                 <button onclick="toggleModal('add-type-modal')" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 dark:bg-slate-50 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all duration-100 cursor-pointer">

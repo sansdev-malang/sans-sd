@@ -1,46 +1,45 @@
 <x-admin-layout>
-    <div class="p-6 space-y-6">
-
+    <div class="p-3.5 sm:p-5 lg:p-6 space-y-4 sm:space-y-5 lg:space-y-6">
 
         <!-- GREETING / PAGE TITLE -->
-        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 sm:gap-3">
             <div class="flex flex-col gap-0.5">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-nasalization">Dashboard</h2>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50 font-nasalization">Dashboard</h2>
                 @if($isAdmin)
-                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Selamat datang kembali! Aktivitas sekolah terpantau kondusif.</p>
+                    <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">Selamat datang kembali! Aktivitas sekolah terpantau kondusif.</p>
                 @else
-                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Selamat datang kembali, {{ auth()->user()->name }}! Pantau performa kehadiran harian Anda disini.</p>
+                    <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">Selamat datang kembali, {{ auth()->user()->name }}! Pantau performa kehadiran harian Anda disini.</p>
                 @endif
             </div>
         </section>
 
         <!-- STAT CARDS GRID -->
-        <section class="grid {{ $isAdmin ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' }} gap-4">
-            @if($isAdmin)
+        @if($isAdmin)
+            <section class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-3.5 lg:gap-4">
                 <!-- Admin Card 1: Total Siswa -->
-                <div onclick="window.location='{{ route('students.index') }}'" class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer">
+                <div onclick="window.location='{{ route('students.index') }}'" class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer">
                     <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Siswa Aktif</p>
-                            <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                        <div class="min-w-0 pr-1">
+                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Siswa Aktif</p>
+                            <h3 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
                                 <span class="stat-counter" data-target="{{ $studentCount ?? 0 }}">{{ $studentCount ?? 0 }}</span>
                             </h3>
                         </div>
-                        <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                            <i data-lucide="users" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                        <div class="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg shrink-0">
+                            <i data-lucide="users" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400"></i>
                         </div>
                     </div>
-                    <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                        Total data peserta didik aktif
+                    <div class="mt-2.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                        Peserta didik aktif
                     </div>
                 </div>
 
                 <!-- Admin Card 2: Guru & Staf -->
-                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Guru & Staf</p>
-                            <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                        <div class="min-w-0 pr-1">
+                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Guru & Staf</p>
+                            <h3 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
                                 @if(isset($employeeCount))
                                     <span class="stat-counter" data-target="{{ $employeeCount }}">{{ $employeeCount }}</span>
                                 @else
@@ -48,21 +47,21 @@
                                 @endif
                             </h3>
                         </div>
-                        <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                            <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                        <div class="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg shrink-0">
+                            <i data-lucide="graduation-cap" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400"></i>
                         </div>
                     </div>
-                    <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $employeeAttendancePercent ?? 0 }}%</span> tingkat kehadiran
+                    <div class="mt-2.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $employeeAttendancePercent ?? 0 }}%</span> kehadiran
                     </div>
                 </div>
 
-                <!-- Admin Card 2: GPK -->
-                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <!-- Admin Card 3: GPK -->
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Guru Pendamping Khusus</p>
-                            <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                        <div class="min-w-0 pr-1">
+                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate" title="Guru Pendamping Khusus">GPK</p>
+                            <h3 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
                                 @if(isset($gpkCount))
                                     <span class="stat-counter" data-target="{{ $gpkCount }}">{{ $gpkCount }}</span>
                                 @else
@@ -70,21 +69,21 @@
                                 @endif
                             </h3>
                         </div>
-                        <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                            <i data-lucide="sun" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                        <div class="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg shrink-0">
+                            <i data-lucide="sun" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400"></i>
                         </div>
                     </div>
-                    <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $gpkAttendancePercent ?? 0 }}%</span> tingkat kehadiran
+                    <div class="mt-2.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $gpkAttendancePercent ?? 0 }}%</span> kehadiran
                     </div>
                 </div>
 
-                <!-- Admin Card 2: GPQ -->
-                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <!-- Admin Card 4: GPQ -->
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Guru Pengajar Qur'an</p>
-                            <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                        <div class="min-w-0 pr-1">
+                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate" title="Guru Pengajar Qur'an">GPQ</p>
+                            <h3 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
                                 @if(isset($gpqCount))
                                     <span class="stat-counter" data-target="{{ $gpqCount }}">{{ $gpqCount }}</span>
                                 @else
@@ -92,89 +91,91 @@
                                 @endif
                             </h3>
                         </div>
-                        <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                            <i data-lucide="book-open" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                        <div class="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg shrink-0">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400"></i>
                         </div>
                     </div>
-                    <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $gpqAttendancePercent ?? 0 }}%</span> tingkat kehadiran
+                    <div class="mt-2.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ $gpqAttendancePercent ?? 0 }}%</span> kehadiran
                     </div>
                 </div>
 
-                <!-- Admin Card 3: Total Rombel / Kelas -->
-                <div onclick="window.location='{{ route('classrooms.index') }}'" class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer">
+                <!-- Admin Card 5: Total Rombel / Kelas -->
+                <div onclick="window.location='{{ route('classrooms.index') }}'" class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer">
                     <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Rombel / Kelas</p>
-                            <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                        <div class="min-w-0 pr-1">
+                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Rombel</p>
+                            <h3 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
                                 <span class="stat-counter" data-target="{{ $classroomCount ?? 0 }}">{{ $classroomCount ?? 0 }}</span>
                             </h3>
                         </div>
-                        <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                            <i data-lucide="layout-grid" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                        <div class="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg shrink-0">
+                            <i data-lucide="layout-grid" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400"></i>
                         </div>
                     </div>
-                    <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                        Total ruang kelas & rombel aktif
+                    <div class="mt-2.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                        Rombel / kelas aktif
                     </div>
                 </div>
 
-                <!-- Admin Card 4: Presensi Hari Ini -->
-                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <!-- Admin Card 6: Presensi Hari Ini -->
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Presensi Hari Ini</p>
-                            <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                        <div class="min-w-0 pr-1">
+                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Presensi Hari Ini</p>
+                            <h3 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
                                 <span class="stat-counter" data-target="{{ $todayOverallPercent ?? 0 }}">{{ $todayOverallPercent ?? 0 }}</span>%
                             </h3>
                         </div>
-                        <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                            <i data-lucide="clock" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                        <div class="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg shrink-0">
+                            <i data-lucide="clock" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400"></i>
                         </div>
                     </div>
-                    <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
+                    <div class="mt-2.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
                         @if(($diffPercent ?? 0) > 0)
-                            <span class="text-emerald-600 dark:text-emerald-400 font-bold">+{{ $diffPercent }}%</span> dari kemarin
+                            <span class="text-emerald-600 dark:text-emerald-400 font-bold">+{{ $diffPercent }}%</span> kemarin
                         @elseif(($diffPercent ?? 0) < 0)
-                            <span class="text-red-600 dark:text-red-400 font-bold">{{ $diffPercent }}%</span> dari kemarin
+                            <span class="text-red-600 dark:text-red-400 font-bold">{{ $diffPercent }}%</span> kemarin
                         @else
-                            <span class="text-slate-500 dark:text-slate-400 font-bold">Sama seperti kemarin</span>
+                            <span class="text-slate-500 dark:text-slate-400 font-bold">Sama dg kemarin</span>
                         @endif
                     </div>
                 </div>
-            @else
+            </section>
+        @else
+            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <!-- Pegawai Card 1: Kehadiran Bulan Ini -->
-                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kehadiran Bulan Ini</p>
-                            <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                                <span>{{ $myReport['total_present'] ?? 0 }}</span> Hari
+                        <div class="min-w-0 pr-1">
+                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Kehadiran Bulan Ini</p>
+                            <h3 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                                <span>{{ $myReport['total_present'] ?? 0 }}</span> <span class="text-xs sm:text-sm font-medium text-slate-500">Hari</span>
                             </h3>
                         </div>
-                        <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                            <i data-lucide="calendar" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                        <div class="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg shrink-0">
+                            <i data-lucide="calendar" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400"></i>
                         </div>
                     </div>
-                    <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
+                    <div class="mt-2.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
                         Siklus aktif terhitung hadir
                     </div>
                 </div>
 
-                <!-- Pegawai Card 2: Menit Terlambat -->
-                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <!-- Pegawai Card 2: Total Keterlambatan -->
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Keterlambatan</p>
-                            <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                                <span>{{ $totalLateDays ?? 0 }}</span> Hari
+                        <div class="min-w-0 pr-1">
+                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Keterlambatan</p>
+                            <h3 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                                <span>{{ $totalLateDays ?? 0 }}</span> <span class="text-xs sm:text-sm font-medium text-slate-500">Hari</span>
                             </h3>
                         </div>
-                        <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                            <i data-lucide="hourglass" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                        <div class="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg shrink-0">
+                            <i data-lucide="hourglass" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400"></i>
                         </div>
                     </div>
-                    <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
+                    <div class="mt-2.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
                         @if(($totalLateDays ?? 0) > 0)
                             <span class="text-amber-500 font-bold">Terlambat</span> pada siklus aktif
                         @elseif(($myReport['total_present'] ?? 0) == 0)
@@ -186,38 +187,38 @@
                 </div>
 
                 <!-- Pegawai Card 3: Total Izin & Cuti -->
-                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Izin & Cuti</p>
-                            <h3 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                                <span>{{ $totalLeavesThisYear }}</span> Hari
+                        <div class="min-w-0 pr-1">
+                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Izin & Cuti</p>
+                            <h3 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
+                                <span>{{ $totalLeavesThisYear }}</span> <span class="text-xs sm:text-sm font-medium text-slate-500">Hari</span>
                             </h3>
                         </div>
-                        <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                            <i data-lucide="calendar-days" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                        <div class="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg shrink-0">
+                            <i data-lucide="calendar-days" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400"></i>
                         </div>
                     </div>
-                    <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
+                    <div class="mt-2.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
                         Akumulasi persetujuan tahun ini
                     </div>
                 </div>
 
-                <!-- Pegawai Card 4: Estimasi Bonus -->
-                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <!-- Pegawai Card 4: Estimasi Uang Kehadiran -->
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
                     <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Estimasi Bonus</p>
-                            <h3 class="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-1">
+                        <div class="min-w-0 pr-1">
+                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Uang Kehadiran</p>
+                            <h3 class="text-lg sm:text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-1">
                                 Rp {{ number_format($myReport['bonus_nominal'] ?? 0, 0, ',', '.') }}
                             </h3>
                         </div>
-                        <div class="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                            <i data-lucide="award" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                        <div class="p-1.5 sm:p-2 bg-emerald-50 dark:bg-emerald-950/50 rounded-lg shrink-0">
+                            <i data-lucide="banknote" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400"></i>
                         </div>
                     </div>
-                    <div class="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                        Akumulasi bonus bulan ini
+                    <div class="mt-2.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                        Akumulasi uang kehadiran bulan ini
                     </div>
                 </div>
             @endif
@@ -649,7 +650,7 @@
                                                             <span class="text-indigo-600 dark:text-indigo-400 font-bold">{{ $pt['percent'] }}% Hadir</span>
                                                         </div>
                                                         <div>Pegawai Hadir: <span class="font-semibold text-slate-950 dark:text-white">{{ $pt['count'] }} orang</span></div>
-                                                        <div class="text-[8px] text-slate-500 dark:text-slate-400 mt-0.5">Basis data kepegawaian SANS SD</div>
+                                                        <div class="text-[8px] text-slate-500 dark:text-slate-400 mt-0.5">Basis data kepegawaian SAANS SD</div>
                                                         <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white dark:bg-slate-950 border-r border-b border-slate-200 dark:border-slate-800/80 rotate-45"></div>
                                                     </div>
                                                 </foreignObject>
@@ -762,163 +763,355 @@
             </div>
         </section>
 
-        <!-- QUICK ACTIONS & ACTIVITY FEED -->
-        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        @if($isAdmin)
+        <!-- RIWAYAT IZIN/CUTI PEGAWAI & AKTIVITAS KEHADIRAN TERKINI (ADMIN ONLY) -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-6">
             
-            <!-- Quick Actions Grid -->
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
-                <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">Aksi Cepat</h3>
-                <div class="grid grid-cols-2 gap-2">
-                    @if($isAdmin)
-                        <button onclick="window.location='{{ route('students.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
-                            <i data-lucide="user-plus" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
-                            <span class="text-[10px] font-medium text-slate-700 dark:text-slate-300 mt-1.5 text-center leading-tight">Tambah Siswa</span>
-                        </button>
-                        <button onclick="window.location='{{ route('employees.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
-                            <i data-lucide="users" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
-                            <span class="text-[10px] font-medium text-slate-700 dark:text-slate-300 mt-1.5 text-center leading-tight">Data Pegawai</span>
-                        </button>
-                        <button onclick="window.location='{{ route('picket-schedules.admin') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
-                            <i data-lucide="calendar-range" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
-                            <span class="text-[10px] font-medium text-slate-700 dark:text-slate-300 mt-1.5 text-center leading-tight">Kelola Piket</span>
-                        </button>
-                        <button onclick="window.location='{{ route('leaves.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
-                            <i data-lucide="file-check-2" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
-                            <span class="text-[10px] font-medium text-slate-700 dark:text-slate-300 mt-1.5 text-center leading-tight">Verifikasi Cuti</span>
-                        </button>
-                        <button onclick="window.location='{{ route('attendances.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
-                            <i data-lucide="history" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
-                            <span class="text-[10px] font-medium text-slate-700 dark:text-slate-300 mt-1.5 text-center leading-tight">Riwayat Kehadiran</span>
-                        </button>
-                        <button onclick="window.location='{{ route('zkteco-devices.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
-                            <i data-lucide="hard-drive" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
-                            <span class="text-[10px] font-medium text-slate-700 dark:text-slate-300 mt-1.5 text-center leading-tight">Mesin Absensi</span>
-                        </button>
-                    @else
-                        <button onclick="window.location='{{ route('my-leaves.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
-                            <i data-lucide="file-text" class="w-4 h-4 text-indigo-600 dark:text-indigo-400 group-hover:scale-105 transition-transform"></i>
-                            <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5">Ajukan Cuti/Izin</span>
-                        </button>
-                        <button onclick="window.location='{{ route('attendances.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
-                            <i data-lucide="calendar-check" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
-                            <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5">Data Absensi</span>
-                        </button>
-                        <button onclick="window.location='{{ route('my-employee-profile.edit') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
-                            <i data-lucide="user" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
-                            <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5">Profile</span>
-                        </button>
-                        <button onclick="window.location='{{ route('payslips.index') }}'" class="flex flex-col items-center justify-center p-3 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg group transition-all duration-100 cursor-pointer">
-                            <i data-lucide="receipt" class="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:scale-105 transition-transform"></i>
-                            <span class="text-xs font-medium text-slate-700 dark:text-slate-300 mt-1.5">Lihat Slip Gaji</span>
-                        </button>
-                    @endif
+            <!-- Card 1: Riwayat Izin/Cuti Pegawai -->
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex flex-col transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <div class="px-4 sm:px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="calendar-clock" class="w-4 h-4 text-indigo-500"></i>
+                        <h3 class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-nasalization">Riwayat Izin/Cuti Pegawai</h3>
+                    </div>
+                    <a href="{{ route('leaves.index') }}" class="text-[11px] sm:text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">Lihat Semua</a>
                 </div>
-                
+                <div class="flex-1 overflow-y-auto max-h-[340px]">
+                    <div class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                        @if(isset($recentLeaves) && count($recentLeaves) > 0)
+                            @foreach($recentLeaves as $leave)
+                                @php
+                                    $empName = $leave->employee->name ?? 'Pegawai';
+                                    $empPos = $leave->employee->position ?? null;
+                                    $start = \Carbon\Carbon::parse($leave->start_date);
+                                    $end = \Carbon\Carbon::parse($leave->end_date);
+                                    $diff = $start->diffInDays($end) + 1;
+                                    $rangeString = $start->translatedFormat('d M Y');
+                                    if ($start->format('Y-m-d') !== $end->format('Y-m-d')) {
+                                        $rangeString .= ' s/d ' . $end->translatedFormat('d M Y');
+                                    }
+                                    $statusClass = [
+                                        'Pending' => 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-200/60 dark:border-amber-900/40',
+                                        'Approved' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-900/40',
+                                        'Rejected' => 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border-rose-200/60 dark:border-rose-900/40',
+                                    ][$leave->status] ?? 'bg-slate-50 text-slate-700 border-slate-200';
+                                @endphp
+                                <a href="{{ route('leaves.index') }}" class="block p-3.5 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-all border-b last:border-b-0 border-slate-100 dark:border-slate-800/40">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
+                                        <!-- Left Side: Employee Details & Leave Info -->
+                                        <div class="flex-1 min-w-0 text-left">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <p class="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 hover:text-indigo-600 transition-colors truncate">
+                                                    {{ $empName }}
+                                                </p>
+                                                @if($empPos)
+                                                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full border uppercase tracking-wider bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 border-indigo-200/50 dark:border-indigo-800/40 shrink-0">
+                                                        {{ $empPos }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            
+                                            <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] sm:text-xs text-slate-600 dark:text-slate-400">
+                                                <span class="flex items-center gap-1">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0"></span>
+                                                    Mengajukan <strong class="text-slate-800 dark:text-slate-200 font-semibold">{{ $leave->leaveType->name ?? $leave->type }}</strong>
+                                                </span>
+                                                <span class="text-slate-300 dark:text-slate-700">|</span>
+                                                <span class="text-slate-500 dark:text-slate-400">
+                                                    {{ $rangeString }} <span class="font-semibold text-slate-700 dark:text-slate-300">({{ $diff }} Hari)</span>
+                                                </span>
+                                            </div>
+                                            
+                                            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 flex items-center gap-1">
+                                                <svg class="w-3 h-3 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                Diajukan pada: <span class="font-mono text-slate-500 dark:text-slate-400 font-semibold">{{ \Carbon\Carbon::parse($leave->created_at)->translatedFormat('d M Y, H:i') }} WIB</span>
+                                            </p>
+                                        </div>
 
+                                        <!-- Right Side: Status Badge -->
+                                        <div class="flex items-center sm:items-end justify-between sm:justify-center sm:flex-col gap-1.5 shrink-0">
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg border flex items-center gap-1.5 tracking-wider {{ $statusClass }}">
+                                                <span class="w-1.5 h-1.5 rounded-full shrink-0 {{ $leave->status === 'Pending' ? 'bg-amber-500' : ($leave->status === 'Approved' ? 'bg-emerald-500' : 'bg-rose-500') }}"></span>
+                                                {{ $leave->status }}
+                                            </span>
+                                            
+                                            @if($leave->notes)
+                                                <span class="text-[9px] text-slate-400 dark:text-slate-500 truncate max-w-[140px] italic" title="{{ $leave->notes }}">
+                                                    "{{ $leave->notes }}"
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </a>
+                            @endforeach
+                        @else
+                            <div class="p-8 text-center text-slate-400">
+                                <p class="text-xs">Belum ada riwayat pengajuan izin/cuti.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
             </div>
 
-            <!-- Jadwal Piket Saya Card -->
-            @if(isset($myPicketSchedules) && $myPicketSchedules->isNotEmpty())
-            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 flex flex-col justify-between" x-data="{ openJobs: null }">
-                <div>
-                    <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4 font-nasalization">Jadwal Piket Saya</h3>
-                    
-                    @if($myPicketToday)
-                        <!-- Hari Ini Ada Piket -->
-                        <div class="bg-gradient-to-br from-indigo-500/10 via-indigo-600/5 to-transparent dark:from-indigo-950/30 dark:via-indigo-900/10 dark:to-transparent border border-indigo-100 dark:border-indigo-900/40 rounded-2xl p-4 mb-4 relative overflow-hidden">
-                            <!-- Subtle decorative gradient circle -->
-                            <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-indigo-500/10 rounded-full blur-xl pointer-events-none"></div>
-                            
-                            <div class="flex items-start gap-3">
-                                <div class="w-8 h-8 rounded-xl bg-indigo-600 dark:bg-indigo-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/30 mt-0.5">
-                                    <i data-lucide="bell-ring" class="w-4 h-4"></i>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-indigo-600 text-white uppercase tracking-wider animate-pulse">TUGAS HARI INI</span>
-                                        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu'][$myPicketToday->day_of_week] ?? '-' }}</span>
-                                    </div>
-                                    <h4 class="text-xs font-extrabold text-slate-900 dark:text-slate-100 mt-1 leading-snug break-words pr-2">
-                                        {{ $myPicketToday->picketArea->name }}
-                                    </h4>
-                                    
-                                    <div class="flex items-center gap-1.5 font-bold text-indigo-600 dark:text-indigo-400 text-[10px] mt-1.5">
-                                        <i data-lucide="clock" class="w-3.5 h-3.5"></i>
-                                        <span>{{ $myPicketToday->picketArea->duty_hours }} WIB</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            @if($myPicketToday->picketArea->jobs)
-                                <div class="mt-3.5 pt-3.5 border-t border-indigo-100/50 dark:border-indigo-900/30">
-                                    <p class="text-[9px] font-black text-slate-700 dark:text-slate-350 uppercase tracking-widest mb-1.5">TUPOKSI ANDA:</p>
-                                    <div class="space-y-2">
-                                        @foreach(explode("\n", $myPicketToday->picketArea->jobs) as $job)
-                                            @if(trim($job))
-                                                <div class="flex items-start gap-2 text-[10px] text-slate-655 dark:text-slate-400 leading-relaxed font-medium">
-                                                    <div class="w-3.5 h-3.5 rounded-md bg-indigo-50 dark:bg-indigo-955 text-indigo-600 dark:text-indigo-450 flex items-center justify-center shrink-0 shadow-3xs border border-indigo-100/10 mt-0.5">
-                                                        <i data-lucide="check" class="w-2.5 h-2.5 stroke-[3]"></i>
-                                                    </div>
-                                                    <p class="flex-1">{{ trim($job) }}</p>
+            <!-- Card 2: Aktivitas Kehadiran Terkini -->
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex flex-col transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <div class="px-4 sm:px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
+                    <div class="flex items-center gap-2">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        <i data-lucide="activity" class="w-4 h-4 text-emerald-500"></i>
+                        <h3 class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-nasalization">Aktivitas Kehadiran Terkini</h3>
+                    </div>
+                    <span class="text-[10px] sm:text-[11px] text-slate-400 font-medium">Hari ini, {{ now()->translatedFormat('d M Y') }}</span>
+                </div>
+                <div class="p-4 sm:p-5 flex-1 overflow-hidden flex flex-col">
+                    <div class="max-h-[340px] overflow-y-auto pr-2 custom-scrollbar flex-1">
+                        @if(isset($recentAttendancesToday) && count($recentAttendancesToday) > 0)
+                            <div class="border-l-2 border-slate-200 dark:border-slate-800 ml-2 space-y-4">
+                                @foreach($recentAttendancesToday as $att)
+                                    @php
+                                        $isCheckout = !empty($att['check_out']);
+                                        $empName = $att['name'] ?? 'Pegawai';
+                                        $empPhoto = $att['photo'] ?? null;
+                                        $photoSrc = null;
+                                        if ($empPhoto) {
+                                            $photoSrc = str_starts_with($empPhoto, 'http') ? $empPhoto : asset('storage/' . ltrim($empPhoto, '/'));
+                                        }
+                                    @endphp
+                                    <div class="relative pl-5">
+                                        <span class="absolute -left-[9px] top-2 w-3.5 h-3.5 rounded-full border-4 border-white dark:border-slate-900 {{ $isCheckout ? 'bg-blue-500' : 'bg-emerald-500' }}"></span>
+                                        <div class="flex items-center gap-3">
+                                            <div class="relative shrink-0 w-8 h-8">
+                                                @if($photoSrc)
+                                                    <img src="{{ $photoSrc }}" onerror="this.remove(); document.getElementById('att-init-{{ $loop->index }}').classList.remove('hidden');" class="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700">
+                                                @endif
+                                                <div id="att-init-{{ $loop->index }}" class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-slate-700 dark:text-slate-300 bg-slate-200 dark:bg-slate-800 shrink-0 {{ $photoSrc ? 'hidden' : '' }}">
+                                                    {{ strtoupper(substr($empName, 0, 2)) }}
                                                 </div>
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                    @endif                    <!-- List Roster Jadwal Mingguan -->
-                    <div class="space-y-2.5">
-                        @php
-                            $groupedSchedules = $myPicketSchedules->groupBy('picket_area_id');
-                        @endphp
-                        @forelse($groupedSchedules as $areaId => $schedulesGroup)
-                            @php
-                                $area = $schedulesGroup->first()->picketArea;
-                                $daysOfWeek = $schedulesGroup->pluck('day_of_week')->sort()->toArray();
-                                $hasTodayInGroup = in_array($todayDayOfWeek, $daysOfWeek);
-                            @endphp
-                            <div class="p-3 border rounded-2xl transition-all duration-200 cursor-pointer {{ $hasTodayInGroup ? 'bg-indigo-500/5 dark:bg-indigo-500/5 border-indigo-200 dark:border-indigo-950' : 'bg-slate-50/50 dark:bg-slate-950/30 border-slate-200/50 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-950' }}"
-                                @click="openJobs = (openJobs === {{ $areaId }} ? null : {{ $areaId }})">
-                                <div class="flex items-center justify-between gap-3">
-                                    <div class="flex items-start gap-2.5 min-w-0">
-                                        <div class="w-7 h-7 rounded-lg {{ $hasTodayInGroup ? 'bg-indigo-650 text-white shadow-3xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-550 dark:text-slate-400' }} flex items-center justify-center shrink-0 border border-indigo-150/10 mt-0.5">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
-                                        </div>
-                                        <div class="flex flex-col min-w-0">
-                                            <span class="font-bold text-[11px] {{ $hasTodayInGroup ? 'text-indigo-950 dark:text-indigo-300' : 'text-slate-800 dark:text-slate-200' }} leading-tight break-words">{{ $area->name }}</span>
-                                            <span class="text-[9px] text-slate-500 dark:text-slate-300 mt-0.5">Jam: {{ $area->duty_hours }}</span>
-                                            
-                                            <!-- Day badges list -->
-                                            <div class="flex items-center gap-1.5 flex-wrap mt-2">
-                                                @foreach($daysOfWeek as $dayNum)
-                                                    @php
-                                                        $isDayToday = ($dayNum === $todayDayOfWeek);
-                                                    @endphp
-                                                    <span class="px-2 py-0.5 rounded-lg text-[9px] font-bold {{ $isDayToday ? 'bg-indigo-600 text-white shadow-2xs' : 'bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 text-slate-700 dark:text-slate-350' }} shrink-0">
-                                                        {{ [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu'][$dayNum] }}
-                                                    </span>
-                                                @endforeach
+                                            </div>
+                                            <div class="min-w-0 flex-1 text-left">
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <span class="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">{{ $empName }}</span>
+                                                    @if(!empty($att['position']))
+                                                        <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">({{ $att['position'] }})</span>
+                                                    @endif
+                                                </div>
+                                                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                                                    @if(!empty($att['check_in']))
+                                                        Hadir <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ $att['check_in'] }}</span>
+                                                    @endif
+                                                    @if(!empty($att['check_out']))
+                                                        @if(!empty($att['check_in']))
+                                                            <span class="mx-1">&bull;</span>
+                                                        @endif
+                                                        Pulang <span class="font-bold text-blue-600 dark:text-blue-400">{{ $att['check_out'] }}</span>
+                                                    @endif
+                                                    @if(!empty($att['shift_name']))
+                                                        <span class="text-slate-400 ml-1">({{ $att['shift_name'] }})</span>
+                                                    @endif
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
-                                    @if($area->jobs)
-                                        <button type="button" class="shrink-0 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-1 cursor-pointer border-0 bg-transparent flex items-center justify-center" title="Lihat Tugas/Tupoksi">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform duration-200" :class="openJobs === {{ $areaId }} && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
-                                        </button>
-                                    @endif
-                                </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-center py-12">
+                                <i data-lucide="clock" class="w-7 h-7 text-slate-300 dark:text-slate-700 mx-auto mb-2"></i>
+                                <p class="text-xs text-slate-400">Belum ada aktivitas kehadiran terekam hari ini.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </section>
+        @else
+        <!-- AKSI CEPAT & RIWAYAT IZIN/CUTI SAYA (PEGAWAI ONLY) -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-6">
+            
+            <!-- Card 1: Aksi Cepat -->
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex flex-col transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <div class="px-4 sm:px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i>
+                        <h3 class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-nasalization">Aksi Cepat</h3>
+                    </div>
+                    <span class="text-[10px] sm:text-[11px] font-medium text-slate-400 dark:text-slate-500">Pintasan Layanan</span>
+                </div>
+                <div class="p-4 sm:p-5 flex-1 flex flex-col justify-center">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        
+                        <!-- 1. Ajukan Izin / Cuti -->
+                        <a href="{{ route('my-leaves.index') }}" class="group flex items-start gap-3 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 hover:bg-indigo-50/60 dark:hover:bg-indigo-950/30 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all duration-200 shadow-2xs hover:shadow-xs">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                <i data-lucide="file-signature" class="w-5 h-5"></i>
+                            </div>
+                            <div class="min-w-0 text-left">
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight">Ajukan Izin / Cuti</h4>
+                                <p class="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 mt-1 line-clamp-1">Formulir izin & cuti mandiri</p>
+                            </div>
+                        </a>
+
+                        <!-- 2. Presensi & Kalender -->
+                        <a href="{{ route('attendances.index') }}" class="group flex items-start gap-3 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30 hover:border-emerald-200 dark:hover:border-emerald-900/50 transition-all duration-200 shadow-2xs hover:shadow-xs">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-800/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                                <i data-lucide="calendar-check-2" class="w-5 h-5"></i>
+                            </div>
+                            <div class="min-w-0 text-left">
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors leading-tight">Presensi & Kalender</h4>
+                                <p class="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 mt-1 line-clamp-1">Riwayat & jadwal kerja</p>
+                            </div>
+                        </a>
+
+                        <!-- 3. Slip Gaji -->
+                        <a href="{{ route('payslips.index') }}" class="group flex items-start gap-3 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 hover:bg-sky-50/60 dark:hover:bg-sky-950/30 hover:border-sky-200 dark:hover:border-sky-900/50 transition-all duration-200 shadow-2xs hover:shadow-xs">
+                            <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950/60 border border-sky-100 dark:border-sky-800/50 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-sky-600 group-hover:text-white transition-all">
+                                <i data-lucide="receipt" class="w-5 h-5"></i>
+                            </div>
+                            <div class="min-w-0 text-left">
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors leading-tight">Slip Gaji</h4>
+                                <p class="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 mt-1 line-clamp-1">Lihat & unduh rincian gaji</p>
+                            </div>
+                        </a>
+
+                        <!-- 4. Jadwal Piket -->
+                        <a href="{{ route('picket-schedules.index') }}" class="group flex items-start gap-3 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 hover:bg-amber-50/60 dark:hover:bg-amber-950/30 hover:border-amber-200 dark:hover:border-amber-900/50 transition-all duration-200 shadow-2xs hover:shadow-xs">
+                            <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-800/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-amber-600 group-hover:text-white transition-all">
+                                <i data-lucide="shield-check" class="w-5 h-5"></i>
+                            </div>
+                            <div class="min-w-0 text-left">
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors leading-tight">Jadwal Piket</h4>
+                                <p class="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 mt-1 line-clamp-1">Roster & area tugas piket</p>
+                            </div>
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Riwayat Izin/Cuti Saya -->
+            <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex flex-col transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <div class="px-4 sm:px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="calendar-clock" class="w-4 h-4 text-indigo-500"></i>
+                        <h3 class="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-nasalization">Riwayat Izin/Cuti Saya</h3>
+                    </div>
+                    <a href="{{ route('my-leaves.index') }}" class="text-[11px] sm:text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">Lihat Semua</a>
+                </div>
+                <div class="flex-1 overflow-y-auto max-h-[340px]">
+                    <div class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                        @if(isset($myRecentLeaves) && count($myRecentLeaves) > 0)
+                            @foreach($myRecentLeaves as $leave)
+                                @php
+                                    $start = \Carbon\Carbon::parse($leave->start_date);
+                                    $end = \Carbon\Carbon::parse($leave->end_date);
+                                    $diff = $start->diffInDays($end) + 1;
+                                    $rangeString = $start->translatedFormat('d M Y');
+                                    if ($start->format('Y-m-d') !== $end->format('Y-m-d')) {
+                                        $rangeString .= ' s/d ' . $end->translatedFormat('d M Y');
+                                    }
+                                    $statusClass = [
+                                        'Pending' => 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-200/60 dark:border-amber-900/40',
+                                        'Approved' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-900/40',
+                                        'Rejected' => 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border-rose-200/60 dark:border-rose-900/40',
+                                    ][$leave->status] ?? 'bg-slate-50 text-slate-700 border-slate-200';
+                                @endphp
+                                <a href="{{ route('my-leaves.index') }}" class="block p-3.5 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-all border-b last:border-b-0 border-slate-100 dark:border-slate-800/40">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
+                                        <!-- Left Side: Leave Info -->
+                                        <div class="flex-1 min-w-0 text-left">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <p class="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 hover:text-indigo-600 transition-colors truncate">
+                                                    {{ $leave->leaveType->name ?? $leave->type }}
+                                                </p>
+                                            </div>
+                                            
+                                            <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] sm:text-xs text-slate-600 dark:text-slate-400">
+                                                <span class="text-slate-500 dark:text-slate-400">
+                                                    {{ $rangeString }} <span class="font-semibold text-slate-700 dark:text-slate-300">({{ $diff }} Hari)</span>
+                                                </span>
+                                            </div>
+                                            
+                                            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 flex items-center gap-1">
+                                                <svg class="w-3 h-3 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                Diajukan pada: <span class="font-mono text-slate-500 dark:text-slate-400 font-semibold">{{ \Carbon\Carbon::parse($leave->created_at)->translatedFormat('d M Y, H:i') }} WIB</span>
+                                            </p>
+                                        </div>
+
+                                        <!-- Right Side: Status Badge -->
+                                        <div class="flex items-center sm:items-end justify-between sm:justify-center sm:flex-col gap-1.5 shrink-0">
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-lg border flex items-center gap-1.5 tracking-wider {{ $statusClass }}">
+                                                <span class="w-1.5 h-1.5 rounded-full shrink-0 {{ $leave->status === 'Pending' ? 'bg-amber-500' : ($leave->status === 'Approved' ? 'bg-emerald-500' : 'bg-rose-500') }}"></span>
+                                                {{ $leave->status }}
+                                            </span>
+                                            
+                                            @if($leave->notes)
+                                                <span class="text-[9px] text-slate-400 dark:text-slate-500 truncate max-w-[140px] italic" title="{{ $leave->notes }}">
+                                                    "{{ $leave->notes }}"
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </a>
+                            @endforeach
+                        @else
+                            <div class="p-8 text-center text-slate-400">
+                                <p class="text-xs">Belum ada riwayat pengajuan izin/cuti.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </section>
+        @endif
+
+        <!-- ACTIVITY FEED & JADWAL PIKET -->
+        @if($isAdmin || (isset($myPicketSchedules) && $myPicketSchedules->isNotEmpty()))
+        <section class="grid grid-cols-1 {{ ($isAdmin && isset($myPicketSchedules) && $myPicketSchedules->isNotEmpty()) ? 'lg:grid-cols-3' : 'lg:grid-cols-1' }} gap-4 sm:gap-5 lg:gap-6">
+            @if(isset($myPicketSchedules) && $myPicketSchedules->isNotEmpty())
+                <!-- Jadwal Piket Saya Card -->
+                <div class="animate-card {{ $isAdmin ? '' : 'lg:col-span-1' }} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 flex flex-col justify-between" x-data="{ openJobs: null }">
+                    <div>
+                        <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4 font-nasalization">Jadwal Piket Saya</h3>
+                        
+                        @if($myPicketToday)
+                            <!-- Hari Ini Ada Piket -->
+                            <div class="bg-gradient-to-br from-indigo-500/10 via-indigo-600/5 to-transparent dark:from-indigo-950/30 dark:via-indigo-900/10 dark:to-transparent border border-indigo-100 dark:border-indigo-900/40 rounded-2xl p-4 mb-4 relative overflow-hidden">
+                                <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-indigo-500/10 rounded-full blur-xl pointer-events-none"></div>
                                 
-                                <!-- Expandable Jobs/Tupoksi List -->
-                                @if($area->jobs)
-                                    <div x-show="openJobs === {{ $areaId }}" @click.stop x-collapse x-cloak class="mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-800/60 text-[10px] text-slate-550 dark:text-slate-400 space-y-2">
-                                        <p class="font-black text-slate-700 dark:text-slate-350 uppercase tracking-widest text-[8px]">TUGAS & TUPOKSI:</p>
-                                        <div class="space-y-1.5 pl-1">
-                                            @foreach(explode("\n", $area->jobs) as $job)
+                                <div class="flex items-start gap-3">
+                                    <div class="w-8 h-8 rounded-xl bg-indigo-600 dark:bg-indigo-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-indigo-500/30 mt-0.5">
+                                        <i data-lucide="bell-ring" class="w-4 h-4"></i>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-indigo-600 text-white uppercase tracking-wider animate-pulse">TUGAS HARI INI</span>
+                                            <span class="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{{ [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu'][$myPicketToday->day_of_week] ?? '-' }}</span>
+                                        </div>
+                                        <h4 class="text-xs font-extrabold text-slate-900 dark:text-slate-100 mt-1 leading-snug break-words pr-2">
+                                            {{ $myPicketToday->picketArea->name }}
+                                        </h4>
+                                        
+                                        <div class="flex items-center gap-1.5 font-bold text-indigo-600 dark:text-indigo-400 text-[10px] mt-1.5">
+                                            <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                                            <span>{{ $myPicketToday->picketArea->duty_hours }} WIB</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @if($myPicketToday->picketArea->jobs)
+                                    <div class="mt-3.5 pt-3.5 border-t border-indigo-100/50 dark:border-indigo-900/30">
+                                        <p class="text-[9px] font-black text-slate-700 dark:text-slate-350 uppercase tracking-widest mb-1.5">TUPOKSI ANDA:</p>
+                                        <div class="space-y-2">
+                                            @foreach(explode("\n", $myPicketToday->picketArea->jobs) as $job)
                                                 @if(trim($job))
-                                                    <div class="flex items-start gap-1.5 leading-relaxed font-medium">
-                                                        <span class="w-1 h-1 rounded-full {{ $hasTodayInGroup ? 'bg-indigo-500' : 'bg-slate-400 dark:bg-slate-600' }} mt-1.5 shrink-0"></span>
-                                                        <p>{{ trim($job) }}</p>
+                                                    <div class="flex items-start gap-2 text-[10px] text-slate-655 dark:text-slate-400 leading-relaxed font-medium">
+                                                        <div class="w-3.5 h-3.5 rounded-md bg-indigo-50 dark:bg-indigo-955 text-indigo-600 dark:text-indigo-450 flex items-center justify-center shrink-0 shadow-3xs border border-indigo-100/10 mt-0.5">
+                                                            <i data-lucide="check" class="w-2.5 h-2.5 stroke-[3]"></i>
+                                                        </div>
+                                                        <p class="flex-1">{{ trim($job) }}</p>
                                                     </div>
                                                 @endif
                                             @endforeach
@@ -926,72 +1119,108 @@
                                     </div>
                                 @endif
                             </div>
-                        @empty
-                            @if(!$myPicketToday)
-                                <div class="text-xs text-slate-500 text-center py-8">
-                                    <i data-lucide="calendar" class="w-6 h-6 text-slate-300 dark:text-slate-750 mx-auto mb-2"></i>
-                                    Anda tidak memiliki jadwal piket minggu ini.
+                        @endif
+
+                        <!-- List Roster Jadwal Mingguan -->
+                        <div class="space-y-2.5">
+                            @php
+                                $groupedSchedules = $myPicketSchedules->groupBy('picket_area_id');
+                            @endphp
+                            @forelse($groupedSchedules as $areaId => $schedulesGroup)
+                                @php
+                                    $area = $schedulesGroup->first()->picketArea;
+                                    $daysOfWeek = $schedulesGroup->pluck('day_of_week')->sort()->toArray();
+                                    $hasTodayInGroup = in_array($todayDayOfWeek, $daysOfWeek);
+                                @endphp
+                                <div class="p-3 border rounded-2xl transition-all duration-200 cursor-pointer {{ $hasTodayInGroup ? 'bg-indigo-500/5 dark:bg-indigo-500/5 border-indigo-200 dark:border-indigo-950' : 'bg-slate-50/50 dark:bg-slate-950/30 border-slate-200/50 dark:border-slate-850 hover:bg-slate-50 dark:hover:bg-slate-950' }}"
+                                    @click="openJobs = (openJobs === {{ $areaId }} ? null : {{ $areaId }})">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div class="flex items-start gap-2.5 min-w-0">
+                                            <div class="w-7 h-7 rounded-lg {{ $hasTodayInGroup ? 'bg-indigo-650 text-white shadow-3xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-550 dark:text-slate-400' }} flex items-center justify-center shrink-0 border border-indigo-150/10 mt-0.5">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="font-bold text-[11px] {{ $hasTodayInGroup ? 'text-indigo-950 dark:text-indigo-300' : 'text-slate-800 dark:text-slate-200' }} leading-tight break-words">{{ $area->name }}</span>
+                                                <span class="text-[9px] text-slate-500 dark:text-slate-300 mt-0.5">Jam: {{ $area->duty_hours }}</span>
+                                                
+                                                <div class="flex items-center gap-1.5 flex-wrap mt-2">
+                                                    @foreach($daysOfWeek as $dayNum)
+                                                        @php
+                                                             $isDayToday = ($dayNum === $todayDayOfWeek);
+                                                        @endphp
+                                                        <span class="px-2 py-0.5 rounded-lg text-[9px] font-bold {{ $isDayToday ? 'bg-indigo-600 text-white shadow-2xs' : 'bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 text-slate-700 dark:text-slate-350' }} shrink-0">
+                                                            {{ [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu'][$dayNum] }}
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @if($area->jobs)
+                                            <button type="button" class="shrink-0 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-1 cursor-pointer border-0 bg-transparent flex items-center justify-center" title="Lihat Tugas/Tupoksi">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform duration-200" :class="openJobs === {{ $areaId }} && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                                            </button>
+                                        @endif
+                                    </div>
+                                    
+                                    @if($area->jobs)
+                                        <div x-show="openJobs === {{ $areaId }}" @click.stop x-collapse x-cloak class="mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-800/60 text-[10px] text-slate-550 dark:text-slate-400 space-y-2">
+                                            <p class="font-black text-slate-700 dark:text-slate-350 uppercase tracking-widest text-[8px]">TUGAS & TUPOKSI:</p>
+                                            <div class="space-y-1.5 pl-1">
+                                                @foreach(explode("\n", $area->jobs) as $job)
+                                                    @if(trim($job))
+                                                        <div class="flex items-start gap-1.5 leading-relaxed font-medium">
+                                                            <span class="w-1 h-1 rounded-full {{ $hasTodayInGroup ? 'bg-indigo-500' : 'bg-slate-400 dark:bg-slate-600' }} mt-1.5 shrink-0"></span>
+                                                            <p>{{ trim($job) }}</p>
+                                                        </div>
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
-                            @endif
-                        @endforelse
+                            @empty
+                                @if(!$myPicketToday)
+                                    <div class="text-xs text-slate-500 text-center py-8">
+                                        <i data-lucide="calendar" class="w-6 h-6 text-slate-300 dark:text-slate-750 mx-auto mb-2"></i>
+                                        Anda tidak memiliki jadwal piket minggu ini.
+                                    </div>
+                                @endif
+                            @endforelse
+                        </div>
                     </div>
+                </div>
+            @endif
+
+            @if($isAdmin)
+            <!-- Recent Activity Logs (Admin Only) -->
+            <div class="animate-card {{ (isset($myPicketSchedules) && $myPicketSchedules->isNotEmpty()) ? 'lg:col-span-2' : '' }} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4 font-nasalization">Log Aktivitas Terbaru</h3>
+                <div class="space-y-3.5 max-h-[380px] overflow-y-auto pr-1.5 scrollbar-thin">
+                    @forelse($activityLogs as $log)
+                        <div class="flex items-start justify-between gap-3 py-1 border-b border-slate-50 dark:border-slate-900/60 pb-3 last:border-b-0 last:pb-0">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-7 h-7 rounded-lg {{ $log['icon_color'] }} flex items-center justify-center shrink-0">
+                                    <i data-lucide="{{ $log['icon'] }}" class="w-3.5 h-3.5"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{{ $log['title'] }}</p>
+                                    <p class="text-[10px] text-slate-500 mt-0.5 leading-snug break-words pr-2">{{ $log['description'] }}</p>
+                                    <span class="mobile-time text-[9px] text-slate-400 dark:text-slate-500 font-medium block mt-1">{{ $log['time']->diffForHumans() }}</span>
+                                </div>
+                            </div>
+                            <span class="desktop-time text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0 mt-0.5">{{ $log['time']->diffForHumans() }}</span>
+                        </div>
+                    @empty
+                        <div class="text-xs text-slate-500 text-center py-6">
+                            <i data-lucide="activity" class="w-6 h-6 text-slate-300 dark:text-slate-700 mx-auto mb-2"></i>
+                            Belum ada aktivitas terbaru hari ini.
+                        </div>
+                    @endforelse
                 </div>
             </div>
             @endif
-
-            <!-- Recent Activity Logs -->
-            <div class="animate-card {{ (!isset($myPicketSchedules) || $myPicketSchedules->isEmpty()) ? 'lg:col-span-2' : 'lg:col-span-1' }} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
-                @if($isAdmin)
-                    <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4">Log Aktivitas Terbaru</h3>
-                     <div class="space-y-3.5 max-h-[380px] overflow-y-auto pr-1.5 scrollbar-thin">
-                        @forelse($activityLogs as $log)
-                            <div class="flex items-start justify-between gap-3 py-1 border-b border-slate-50 dark:border-slate-900/60 pb-3 last:border-b-0 last:pb-0">
-                                <div class="flex items-center gap-3 min-w-0">
-                                    <div class="w-7 h-7 rounded-lg {{ $log['icon_color'] }} flex items-center justify-center shrink-0">
-                                        <i data-lucide="{{ $log['icon'] }}" class="w-3.5 h-3.5"></i>
-                                    </div>
-                                    <div class="min-w-0">
-                                        <p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{{ $log['title'] }}</p>
-                                        <p class="text-[10px] text-slate-500 mt-0.5 leading-snug break-words pr-2">{{ $log['description'] }}</p>
-                                        <!-- Time on mobile -->
-                                        <span class="mobile-time text-[9px] text-slate-400 dark:text-slate-500 font-medium block mt-1">{{ $log['time']->diffForHumans() }}</span>
-                                    </div>
-                                </div>
-                                <!-- Time on desktop -->
-                                <span class="desktop-time text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0 mt-0.5">{{ $log['time']->diffForHumans() }}</span>
-                            </div>
-                        @empty
-                            <div class="text-xs text-slate-500 text-center py-6">
-                                <i data-lucide="activity" class="w-6 h-6 text-slate-300 dark:text-slate-700 mx-auto mb-2"></i>
-                                Belum ada aktivitas terbaru hari ini.
-                            </div>
-                        @endforelse
-                    </div>
-                @else
-                    <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-50 mb-4 font-nasalization">Aktivitas Saya (Pengajuan Terakhir)</h3>
-                     <div class="space-y-3.5 max-h-[380px] overflow-y-auto pr-1.5 scrollbar-thin">
-                        @forelse($myRecentLeaves as $leave)
-                            <div class="flex items-start justify-between gap-3 py-1 border-b border-slate-50 dark:border-slate-900/60 pb-3">
-                                <div class="flex items-center gap-3 min-w-0">
-                                    <div class="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-400 shrink-0">
-                                        <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
-                                    </div>
-                                    <div class="min-w-0">
-                                        <p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">Pengajuan Izin / Cuti ({{ $leave->type }})</p>
-                                        <!-- Time on mobile -->
-                                        <span class="mobile-time text-[10px] text-slate-400 dark:text-slate-500 font-medium block mt-0.5">{{ $leave->created_at->translatedFormat('d M Y, H:i') }}</span>
-                                    </div>
-                                </div>
-                                <!-- Time on desktop -->
-                                <span class="desktop-time text-[10px] text-slate-400 dark:text-slate-500 font-medium shrink-0 mt-0.5">{{ $leave->created_at->translatedFormat('d M Y, H:i') }}</span>
-                            </div>
-                        @empty
-                            <div class="text-xs text-slate-500 text-center py-4">Belum ada riwayat aktivitas pengajuan cuti/izin.</div>
-                        @endforelse
-                    </div>
-                @endif
-            </div>
         </section>
+        @endif
 
     </div>
 </x-admin-layout>

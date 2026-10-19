@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sans-sd-v1.0.0';
+const CACHE_NAME = 'sans-sd-v1.0.3';
 const OFFLINE_URL = '/offline';
 
 const PRECACHE_ASSETS = [

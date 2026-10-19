@@ -31,10 +31,10 @@ class BonusReportController extends Controller
             $month = $today->day > $cutoffDate ? $today->copy()->startOfMonth()->addMonth()->format('Y-m') : $today->format('Y-m');
         }
 
-        $isSuperAdmin = $user->hasRole('super_admin');
+        $isAdmin = $user->isAdmin();
 
-        // Jika bukan Super Admin (Kepala Sekolah, Admin Unit, Waka, dll), tampilkan kalender kehadiran & bonus personal
-        if (! $isSuperAdmin) {
+        // Jika bukan Admin Unit / Super Admin, tampilkan kalender kehadiran & bonus personal
+        if (! $isAdmin) {
             return $this->employeeCalendarIndex($request, $user, $month);
         }
 
@@ -411,9 +411,9 @@ class BonusReportController extends Controller
                 return redirect()->route('attendances.index');
             }
 
-            $isSuperAdmin = $user->hasRole('super_admin');
+            $isAdmin = $user->isAdmin();
 
-            if (! $isSuperAdmin) {
+            if (! $isAdmin) {
                 $empId = $user->employee_id ?? $user->employee?->id;
                 if (! $empId) {
                     $empId = Employee::where('email', $user->email)->orWhere('name', $user->name)->value('id');

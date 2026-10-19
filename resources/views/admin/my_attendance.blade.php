@@ -4,8 +4,8 @@
         <!-- HEADER -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Riwayat Absensi Saya</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Pantau seluruh catatan kehadiran, keterlambatan, dan status izin/sakit Anda.</p>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Riwayat Absensi Saya</h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pantau seluruh catatan kehadiran, keterlambatan, dan status izin/sakit Anda.</p>
             </div>
             <div class="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300">
                 <i data-lucide="user" class="w-3.5 h-3.5"></i>

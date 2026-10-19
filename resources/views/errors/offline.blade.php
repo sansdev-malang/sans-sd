@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Offline - {{ setting('app_name', 'SANS SD') }}</title>
+    <title>Offline - {{ setting('app_name', 'SAANS SD') }}</title>
     
     <!-- Google Fonts & CDN -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,7 +52,7 @@
     </div>
 
     <div class="text-xs font-semibold text-slate-400">
-        {{ setting('app_name', 'SANS School Information System') }} &bull; Mode Offline
+        {{ setting('app_name', 'SAANS School Information System') }} &bull; Mode Offline
     </div>
 
     <script>

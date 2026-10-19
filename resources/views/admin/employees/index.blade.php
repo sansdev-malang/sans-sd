@@ -4,8 +4,8 @@
         <!-- HEADER -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Data Pegawai</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Kelola dan pantau seluruh data pendidik (guru) dan kependidikan (karyawan/staff) di semua unit.</p>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Data Pegawai</h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kelola dan pantau seluruh data pendidik (guru) dan kependidikan (karyawan/staff) di semua unit.</p>
             </div>
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto shrink-0">
                 <form action="{{ route('employees.sync-cache') }}" method="POST" class="m-0 p-0 flex w-full sm:w-auto">

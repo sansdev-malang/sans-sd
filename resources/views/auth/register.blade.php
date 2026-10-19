@@ -4,7 +4,7 @@
     <div class="my-auto mx-auto w-full max-w-sm space-y-6 py-8">
         <div class="space-y-2 text-center lg:text-left">
             <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">Daftar Akun Baru</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400">Buat akun SANS.dev Anda untuk memulai pengelolaan
+            <p class="text-sm text-slate-500 dark:text-slate-400">Buat akun SAANS Anda untuk memulai pengelolaan
                 akademik.</p>
         </div>
 

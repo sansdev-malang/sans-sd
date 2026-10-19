@@ -4,12 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Sistem Informasi Manajemen Akademik & Administrasi Terpadu SANS SD">
-    <title>{{ setting('app_name', 'SANS SD') }}</title>
+    <meta name="description" content="Sistem Informasi Manajemen Akademik & Administrasi Terpadu SAANS SD">
+    <title>{{ setting('app_name', 'SAANS SD') }}</title>
     @if(setting('app_favicon'))
         <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . setting('app_favicon')) }}">
     @else
-        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%236366f1'/><stop offset='100%' stop-color='%23a855f7'/></linearGradient></defs><rect width='100' height='100' rx='25' fill='url(%23g)'/><text x='50' y='75' font-family='Arial, sans-serif' font-size='65' font-weight='bold' fill='white' text-anchor='middle'>{{ substr(setting('app_name', 'SANS'), 0, 1) }}</text></svg>">
+        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%236366f1'/><stop offset='100%' stop-color='%23a855f7'/></linearGradient></defs><rect width='100' height='100' rx='25' fill='url(%23g)'/><text x='50' y='75' font-family='Arial, sans-serif' font-size='65' font-weight='bold' fill='white' text-anchor='middle'>{{ substr(setting('app_name', 'SAANS SD'), 0, 1) }}</text></svg>">
     @endif
 
     <!-- PWA Settings -->
@@ -18,7 +18,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="{{ setting('app_name', 'SANS SD') }}">
+    <meta name="apple-mobile-web-app-title" content="{{ setting('app_name', 'SAANS SD') }}">
     <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192.png') }}">
 
     <!-- DNS Prefetch & Google Fonts: Inter, Plus Jakarta Sans -->
@@ -125,6 +125,32 @@
     </script>
 
     <style>
+        /* Responsive Root Typography & UI Density System */
+        html {
+            font-size: 15px;
+            -webkit-text-size-adjust: 100%;
+        }
+        @media (min-width: 1024px) and (max-width: 1366px) {
+            html {
+                font-size: 14.5px;
+            }
+        }
+        @media (min-width: 1367px) and (max-width: 1599px) {
+            html {
+                font-size: 15px;
+            }
+        }
+        @media (min-width: 1600px) and (max-width: 1920px) {
+            html {
+                font-size: 16px;
+            }
+        }
+        @media (min-width: 1921px) {
+            html {
+                font-size: 16.5px;
+            }
+        }
+
         body {
             font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
         }
@@ -158,7 +184,7 @@
     <div class="grid min-h-screen lg:grid-cols-2">
         <!-- FORM COLUMN -->
         <div class="relative flex flex-col justify-between p-8 lg:p-12 overflow-hidden">
-            <!-- Aesthetic "SANS DEV" watermark background -->
+            <!-- Aesthetic "SAANS DEV" watermark background -->
             <div aria-hidden="true" style="
                 position: absolute;
                 bottom: 60px;
@@ -178,7 +204,7 @@
                 background-clip: text;
                 opacity: 0.15;
                 z-index: 0;
-            ">SANS DEV</div>
+            ">SAANS DEV</div>
             <!-- Header section (Logo and Theme Toggle) -->
             <div class="flex items-center justify-between">
                 <a href="/" class="flex items-center gap-2.5">
@@ -186,10 +212,10 @@
                         <img src="{{ asset('storage/' . setting('app_logo')) }}" alt="Logo" class="w-8 h-8 rounded-lg object-cover shrink-0 shadow-sm">
                     @else
                         <div class="w-8 h-8 rounded-lg logo-gradient-bg flex items-center justify-center shrink-0 shadow-sm">
-                            <span class="text-white text-lg font-bold" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">{{ substr(setting('app_name', 'SANS'), 0, 1) }}</span>
+                            <span class="text-white text-lg font-bold" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">{{ substr(setting('app_name', 'SAANS SD'), 0, 1) }}</span>
                         </div>
                     @endif
-                    <span class="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">{{ setting('app_name', 'SANS') }}</span>
+                    <span class="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">{{ setting('app_name', 'SAANS SD') }}</span>
                 </a>
 
                 <div class="flex items-center gap-3 sm:gap-4">
@@ -205,7 +231,7 @@
                     <!-- Back to Home link (Pure Link: Icon on mobile, Icon + Text on desktop) -->
                     <a href="https://sans.sch.id" 
                         class="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50 transition-colors"
-                        title="Kembali ke Portal Utama SANS"
+                        title="Kembali ke Portal Utama SAANS"
                         aria-label="Back to Portal">
                         <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
                         <span class="hidden sm:inline">Back to Portal</span>
@@ -217,7 +243,7 @@
 
             <!-- Footer links -->
             <div class="text-center lg:text-left text-[10px] font-semibold text-slate-400">
-                {{ setting('app_copyright', '© 2026 SANS School Information System. All rights reserved.') }}
+                {{ setting('app_copyright', '© 2026 SAANS SD School Information System. All rights reserved.') }}
             </div>
         </div>
 
@@ -234,7 +260,7 @@
             <!-- Graphic layout content overlay -->
             <div class="absolute inset-0 flex flex-col justify-between p-12 text-white">
                 <div class="flex items-center gap-2">
-                    <span class="text-xs font-bold uppercase tracking-widest text-slate-400">SANS Portal</span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-slate-400">SAANS Portal</span>
                 </div>
 
                 <div class="space-y-4 max-w-md">
@@ -243,7 +269,7 @@
                         kolaborasi di sekolah."
                     </blockquote>
                     <div>
-                        <cite class="text-sm font-bold not-italic text-slate-200">SANS School System</cite>
+                        <cite class="text-sm font-bold not-italic text-slate-200">SAANS School System</cite>
                         <p class="text-xs text-slate-400 mt-1">Platform Informasi Sekolah Terintegrasi</p>
                     </div>
                 </div>

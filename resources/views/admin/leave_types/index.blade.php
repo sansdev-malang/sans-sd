@@ -4,8 +4,8 @@
         <!-- HEADER -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Tipe Izin Pegawai</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Katalog referensi tipe izin/cuti pegawai beserta pemetaan status kehadiran, absensi fisik, dan bonus.</p>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Tipe Izin Pegawai</h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Katalog referensi tipe izin/cuti pegawai beserta pemetaan status kehadiran, absensi fisik, dan bonus.</p>
             </div>
             <div class="flex items-center gap-2 px-3 py-1.5 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 rounded-lg border border-blue-200/50 dark:border-blue-900/40 text-xs font-semibold shrink-0">
                 <i data-lucide="shield-check" class="w-4 h-4"></i>

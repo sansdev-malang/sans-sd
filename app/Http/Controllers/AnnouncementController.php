@@ -11,7 +11,7 @@ use Intervention\Image\Drivers\Gd\Driver;
 
 class AnnouncementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         
@@ -43,7 +43,19 @@ class AnnouncementController extends Controller
             }
         }
 
-        $announcements = $query->paginate(10);
+        if ($request->filled('category') && $request->category !== 'all') {
+            $query->where('category', $request->category);
+        }
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('content', 'like', "%{$search}%");
+            });
+        }
+
+        $announcements = $query->paginate(10)->withQueryString();
         return view('admin.announcements.index', compact('announcements'));
     }
 

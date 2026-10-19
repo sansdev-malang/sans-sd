@@ -8,17 +8,10 @@
                         <i data-lucide="file-bar-chart-2" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <div class="flex items-center gap-2">
-                            <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                                Rekapitulasi Rombel
-                            </h2>
-                            @if($selectedYear)
-                                <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                                    {{ $selectedYear->name }}
-                                </span>
-                            @endif
-                        </div>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Laporan komprehensif distribusi peserta didik, rasio gender, PDBK, dan penugasan wali kelas {{ function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh' }}.</p>
+                        <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                            Rekapitulasi Rombel
+                        </h2>
+                        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Laporan komprehensif distribusi peserta didik, rasio gender, PDBK, dan penugasan wali kelas {{ function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh' }}.</p>
                     </div>
                 </div>
             </div>

@@ -4,8 +4,8 @@
         <!-- PAGE HEADER -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex flex-col gap-0.5">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Pengaturan Sistem</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Konfigurasi identitas sistem, informasi unit kerja, dan integrasi API eksternal.</p>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Pengaturan Sistem</h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Konfigurasi identitas sistem, informasi unit kerja, dan integrasi API eksternal.</p>
             </div>
         </section>
 
@@ -60,7 +60,7 @@
                                 <!-- App Name -->
                                 <div>
                                     <label for="app_name" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Nama Aplikasi <span class="text-red-500">*</span></label>
-                                    <input type="text" name="app_name" id="app_name" value="{{ old('app_name', setting('app_name', 'SANS SD Malang')) }}" required
+                                    <input type="text" name="app_name" id="app_name" value="{{ old('app_name', setting('app_name', 'SAANS SD')) }}" required
                                         class="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700 transition-colors">
                                 </div>
 
@@ -175,7 +175,7 @@
             <!-- TAB 2: INTEGRASI API (HRD, SPMB & E-RAPOR) -->
             <div x-show="activeTab === 'integrations'" x-cloak class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                <!-- Card 1: Integrasi E-Rapor Terpusat (SANS Rapor) -->
+                <!-- Card 1: Integrasi E-Rapor Terpusat (SAANS Rapor) -->
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
@@ -184,7 +184,7 @@
                                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                                     Integrasi E-Rapor Terpusat
                                 </h3>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Koneksi modul rapor terpusat, autentikasi 1-Click SSO, dan database SANS Rapor.</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Koneksi modul rapor terpusat, autentikasi 1-Click SSO, dan database SAANS Rapor.</p>
                             </div>
                             <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-md border border-emerald-200 dark:border-emerald-800">
                                 E-Rapor
@@ -207,7 +207,7 @@
 
                             <!-- Database Name -->
                             <div>
-                                <label for="rapor_db_name" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Nama Database SANS Rapor (MySQL)</label>
+                                <label for="rapor_db_name" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Nama Database SAANS Rapor (MySQL)</label>
                                 <input type="text" name="rapor_db_name" id="rapor_db_name" value="{{ old('rapor_db_name', setting('rapor_db_name', env('DB_RAPOR_DATABASE', 'sans-rapor'))) }}" placeholder="sans-rapor"
                                     class="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700 transition-colors font-mono">
                             </div>
@@ -216,7 +216,7 @@
                             <div class="pt-2 flex items-center justify-between">
                                 <button type="button" id="btn-test-rapor" onclick="testRaporConnection()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-xs">
                                     <i data-lucide="activity" class="w-3.5 h-3.5"></i>
-                                    <span>Tes Koneksi SANS Rapor</span>
+                                    <span>Tes Koneksi SAANS Rapor</span>
                                 </button>
                                 <div id="rapor-test-result" class="text-xs font-semibold"></div>
                             </div>
@@ -224,19 +224,19 @@
                     </div>
                 </div>
 
-                <!-- Card 2: Integrasi SANS CBT (Computer-Based Test) -->
+                <!-- Card 2: Integrasi SAANS CBT (Computer-Based Test) -->
                 <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden flex flex-col justify-between">
                     <div>
                         <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                             <div>
                                 <h3 class="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                    Integrasi SANS CBT
+                                    Integrasi SAANS CBT
                                 </h3>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Koneksi aplikasi ujian CBT, autentikasi 1-Click SSO, dan database SANS CBT.</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Koneksi aplikasi ujian CBT, autentikasi 1-Click SSO, dan database SAANS CBT.</p>
                             </div>
                             <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-md border border-indigo-200 dark:border-indigo-800">
-                                SANS CBT
+                                SAANS CBT
                             </span>
                         </div>
                         <div class="p-6 space-y-4">
@@ -256,7 +256,7 @@
 
                             <!-- Database Name -->
                             <div>
-                                <label for="cbt_db_name" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Nama Database SANS CBT (MySQL)</label>
+                                <label for="cbt_db_name" class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5">Nama Database SAANS CBT (MySQL)</label>
                                 <input type="text" name="cbt_db_name" id="cbt_db_name" value="{{ old('cbt_db_name', setting('cbt_db_name', env('DB_CBT_DATABASE', 'sans-cbt'))) }}" placeholder="sans-cbt"
                                     class="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:border-slate-400 dark:focus:border-slate-700 transition-colors font-mono">
                             </div>
@@ -265,7 +265,7 @@
                             <div class="pt-2 flex items-center justify-between">
                                 <button type="button" id="btn-test-cbt" onclick="testCbtConnection()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-xs">
                                     <i data-lucide="activity" class="w-3.5 h-3.5"></i>
-                                    <span>Tes Koneksi SANS CBT</span>
+                                    <span>Tes Koneksi SAANS CBT</span>
                                 </button>
                                 <div id="cbt-test-result" class="text-xs font-semibold"></div>
                             </div>
@@ -457,7 +457,7 @@
 
             btn.disabled = true;
             btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-3.5 w-3.5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Memeriksa...`;
-            resultBox.innerHTML = `<span class="text-slate-400 font-normal">Menghubungi database SANS Rapor...</span>`;
+            resultBox.innerHTML = `<span class="text-slate-400 font-normal">Menghubungi database SAANS Rapor...</span>`;
 
             fetch("{{ route('settings.test-rapor') }}", {
                 method: "POST",
@@ -481,7 +481,7 @@
                 if (res.ok && res.data.success) {
                     resultBox.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-semibold">✓ ${res.data.message}</span>`;
                 } else {
-                    resultBox.innerHTML = `<span class="text-red-500 dark:text-red-400 flex items-center gap-1 font-semibold">✕ ${res.data.message || 'Gagal terhubung ke Database SANS Rapor'}</span>`;
+                    resultBox.innerHTML = `<span class="text-red-500 dark:text-red-400 flex items-center gap-1 font-semibold">✕ ${res.data.message || 'Gagal terhubung ke Database SAANS Rapor'}</span>`;
                 }
             })
             .catch(err => {
@@ -503,7 +503,7 @@
 
             btn.disabled = true;
             btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-3.5 w-3.5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Memeriksa...`;
-            resultBox.innerHTML = `<span class="text-slate-400 font-normal">Menghubungi database SANS CBT...</span>`;
+            resultBox.innerHTML = `<span class="text-slate-400 font-normal">Menghubungi database SAANS CBT...</span>`;
 
             fetch("{{ route('settings.test-cbt') }}", {
                 method: "POST",
@@ -527,7 +527,7 @@
                 if (res.ok && res.data.success) {
                     resultBox.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-semibold">✓ ${res.data.message}</span>`;
                 } else {
-                    resultBox.innerHTML = `<span class="text-red-500 dark:text-red-400 flex items-center gap-1 font-semibold">✕ ${res.data.message || 'Gagal terhubung ke Database SANS CBT'}</span>`;
+                    resultBox.innerHTML = `<span class="text-red-500 dark:text-red-400 flex items-center gap-1 font-semibold">✕ ${res.data.message || 'Gagal terhubung ke Database SAANS CBT'}</span>`;
                 }
             })
             .catch(err => {

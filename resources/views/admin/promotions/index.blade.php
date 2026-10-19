@@ -9,13 +9,10 @@
                         <i data-lucide="arrow-up-circle" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2">
+                        <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
                             Kenaikan & Kelulusan Kelas
-                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 font-semibold border border-indigo-200 dark:border-indigo-800">
-                                Transisi T.A.
-                            </span>
                         </h2>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Pindahkan rombel siswa secara massal, kelola siswa tinggal kelas, dan proses kelulusan angkatan kelas 6.</p>
+                        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pindahkan rombel siswa secara massal, kelola siswa tinggal kelas, dan proses kelulusan angkatan kelas 6.</p>
                     </div>
                 </div>
             </div>

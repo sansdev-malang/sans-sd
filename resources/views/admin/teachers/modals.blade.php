@@ -267,7 +267,7 @@
                         <input type="text" name="zkteco_uid" value="{{ old('zkteco_uid') }}" readonly
                             class="w-full h-9 px-3 font-mono bg-slate-100 dark:bg-slate-800 border rounded-lg text-slate-500 dark:text-slate-400 focus:outline-none cursor-not-allowed @error('zkteco_uid') border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-900/40 @else border-slate-200 dark:border-slate-800 focus:ring-slate-100 @enderror">
                         <span class="text-[10px] text-amber-600 dark:text-amber-500 mt-1 block">
-                            *Pendaftaran/Perubahan PIN Mesin ZKTeco hanya dapat dilakukan melalui Portal SANS HRD Pusat.
+                            *Pendaftaran/Perubahan PIN Mesin ZKTeco hanya dapat dilakukan melalui Portal SAANS HRD Pusat.
                         </span>
                         @error('zkteco_uid')
                             <span class="text-[10px] text-rose-500 mt-1 block font-medium">{{ $message }}</span>
@@ -600,7 +600,7 @@
                         <input type="text" name="zkteco_uid" :value="selectedTeacher ? selectedTeacher.zkteco_uid : '{{ old('zkteco_uid') }}'" readonly
                             class="w-full h-9 px-3 font-mono bg-slate-100 dark:bg-slate-800 border rounded-lg text-slate-500 dark:text-slate-400 focus:outline-none cursor-not-allowed @error('zkteco_uid') border-rose-500 focus:ring-rose-200 dark:focus:ring-rose-900/40 @else border-slate-200 dark:border-slate-800 focus:ring-slate-100 @enderror">
                         <span class="text-[10px] text-amber-600 dark:text-amber-500 mt-1 block">
-                            *Pendaftaran/Perubahan PIN Mesin ZKTeco hanya dapat dilakukan melalui Portal SANS HRD Pusat.
+                            *Pendaftaran/Perubahan PIN Mesin ZKTeco hanya dapat dilakukan melalui Portal SAANS HRD Pusat.
                         </span>
                         @error('zkteco_uid')
                             <span class="text-[10px] text-rose-500 mt-1 block font-medium">{{ $message }}</span>

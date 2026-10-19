@@ -30,6 +30,8 @@ class DashboardController extends Controller
         $diffPercent = 0;
         $adminChartPoints = [];
         $activityLogs = collect();
+        $recentLeaves = collect();
+        $recentAttendancesToday = collect();
 
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
 
@@ -211,6 +213,72 @@ class DashboardController extends Controller
                     'y' => $y
                 ];
             }
+
+            // Fetch recent leave requests for admin widget
+            $recentLeaves = \App\Models\LeaveRequest::with(['employee', 'leaveType'])
+                ->latest()
+                ->take(5)
+                ->get();
+
+            // Build recent attendances for today
+            $recentAttList = [];
+            if (!empty($reports)) {
+                foreach ($reports as $report) {
+                    $emp = $report['employee'] ?? [];
+                    $empId = $emp['id'] ?? null;
+                    if (in_array($empId, $tukangIds)) {
+                        continue;
+                    }
+                    $details = $report['daily_details'] ?? [];
+                    $todayDet = $details[$today] ?? null;
+
+                    if ($todayDet && (!empty($todayDet['check_in']) || !empty($todayDet['check_out']) || in_array($todayDet['status'] ?? '', ['Hadir', 'Late', 'Present']))) {
+                        $checkIn = !empty($todayDet['check_in']) ? substr($todayDet['check_in'], 0, 5) : null;
+                        $checkOut = !empty($todayDet['check_out']) ? substr($todayDet['check_out'], 0, 5) : null;
+                        $recentAttList[] = [
+                            'id' => $empId,
+                            'name' => $emp['name'] ?? 'Pegawai',
+                            'position' => $emp['position'] ?? $emp['subject_position'] ?? null,
+                            'photo' => $emp['photo'] ?? null,
+                            'status' => $todayDet['status'] ?? 'Hadir',
+                            'check_in' => $checkIn,
+                            'check_out' => $checkOut,
+                            'shift_name' => $todayDet['shift_name'] ?? null,
+                            'last_activity' => $checkOut ?: ($checkIn ?: '00:00'),
+                        ];
+                    }
+                }
+            }
+
+            if (empty($recentAttList)) {
+                $localAtts = \App\Models\Attendance::where('date', $today)
+                    ->where(function($q) {
+                        $q->whereNotNull('clock_in')->orWhereNotNull('clock_out');
+                    })
+                    ->with('employee')
+                    ->latest('updated_at')
+                    ->take(15)
+                    ->get();
+
+                foreach ($localAtts as $lAtt) {
+                    $recentAttList[] = [
+                        'id' => $lAtt->employee_id,
+                        'name' => $lAtt->employee->name ?? 'Pegawai',
+                        'position' => $lAtt->employee->position ?? null,
+                        'photo' => $lAtt->employee->photo ?? null,
+                        'status' => $lAtt->status ?? 'Hadir',
+                        'check_in' => $lAtt->clock_in ? substr($lAtt->clock_in, 0, 5) : null,
+                        'check_out' => $lAtt->clock_out ? substr($lAtt->clock_out, 0, 5) : null,
+                        'shift_name' => null,
+                        'last_activity' => $lAtt->clock_out ? substr($lAtt->clock_out, 0, 5) : ($lAtt->clock_in ? substr($lAtt->clock_in, 0, 5) : '00:00'),
+                    ];
+                }
+            }
+
+            $recentAttendancesToday = collect($recentAttList)
+                ->sortByDesc('last_activity')
+                ->values()
+                ->take(10);
         }
 
         $query = \App\Models\Announcement::latest();
@@ -258,59 +326,97 @@ class DashboardController extends Controller
                     ->limit(5)
                     ->get();
 
-                // Fetch Presence & Bonus details from HRD for the top cards
+                // Fetch Presence & Uang Kehadiran details from HRD for the top cards
                 try {
                     $cutoffDate = (int) \App\Models\Setting::get('payroll_cutoff_date', 26);
                     $todayDate = now();
                     $month = $todayDate->day > $cutoffDate ? $todayDate->copy()->startOfMonth()->addMonth()->format('Y-m') : $todayDate->format('Y-m');
-                    $bonusCacheKey = 'hrd_bonus_report_' . $schoolUnitId . '_' . $month;
+                    $bonusCacheKey = 'hrd_bonus_' . $schoolUnitId . '_' . $month;
+                    $matrixCacheKey = 'hrd_att_matrix_' . $schoolUnitId . '_' . $month;
 
-                    $reports = [];
-                    try {
-                        $response = Http::timeout(4.0)->withHeaders([
-                            'X-API-TOKEN' => config('app.hrd_api_token')
-                        ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
-                            'school_unit_id' => $schoolUnitId,
-                            'month' => $month
-                        ]);
-                        if ($response->successful()) {
-                            $reports = $response->json()['data'] ?? [];
-                            Cache::put($bonusCacheKey . '_stale', $reports, 604800); // 7 days stale cache
-                        } else {
-                            $reports = Cache::get($bonusCacheKey . '_stale', []);
-                        }
-                    } catch (\Exception $e) {
-                        $reports = Cache::get($bonusCacheKey . '_stale', []);
+                    $reports = Cache::get($bonusCacheKey) ?? Cache::get($bonusCacheKey . '_stale') ?? [];
+                    if (is_array($reports) && isset($reports['data'])) {
+                        $reports = $reports['data'];
                     }
 
-                    $reportsCol = collect($reports);
-                    $myReport = $reportsCol->first(function ($item) use ($employee) {
-                        return ($item['employee']['id'] ?? 0) == $employee->id;
-                    });
+                    if (empty($reports)) {
+                        try {
+                            $response = Http::timeout(3.0)->withHeaders([
+                                'X-API-TOKEN' => config('app.hrd_api_token')
+                            ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                                'school_unit_id' => $schoolUnitId,
+                                'unit_id' => strtolower(config('app.school_unit', 'sd')),
+                                'month' => $month
+                            ]);
+                            if ($response->successful()) {
+                                $reports = $response->json()['data'] ?? [];
+                                Cache::put($bonusCacheKey . '_stale', ['data' => $reports], 604800); // 7 days stale cache
+                            }
+                        } catch (\Exception $e) {
+                            // Ignore error
+                        }
+                    }
+
+                    if (!empty($reports)) {
+                        $reportsCol = collect($reports);
+                        $myReport = $reportsCol->first(function ($item) use ($employee) {
+                            return ($item['employee']['id'] ?? 0) == $employee->id;
+                        });
+                    }
+
+                    // Also merge matrix cache daily details if available
+                    if ($myReport) {
+                        $matrixCache = Cache::get($matrixCacheKey) ?? Cache::get($matrixCacheKey . '_stale') ?? [];
+                        $matrixData = is_array($matrixCache) && isset($matrixCache['data']) ? $matrixCache['data'] : (is_array($matrixCache) ? $matrixCache : []);
+                        $matrixEmp = collect($matrixData)->first(function ($item) use ($employee) {
+                            return ($item['employee']['id'] ?? 0) == $employee->id;
+                        });
+                        if ($matrixEmp && !empty($matrixEmp['daily_details'])) {
+                            $bonusDaily = $myReport['daily_details'] ?? [];
+                            $myReport['daily_details'] = array_replace($bonusDaily, $matrixEmp['daily_details']);
+                        }
+                    }
                 } catch (\Exception $e) {
                     // Fallback silently
                 }
 
                 // Robust local DB fallback if HRD is unreachable or employee not found in HRD
                 if (empty($myReport)) {
-                    $currentMonthAttendances = \App\Models\Attendance::where('employee_id', $employee->id)
-                        ->whereMonth('date', now()->month)
-                        ->whereYear('date', now()->year)
+                    $cutoffDate = (int) \App\Models\Setting::get('payroll_cutoff_date', 26);
+                    $todayDate = now();
+                    if ($todayDate->day > $cutoffDate) {
+                        $cycleStart = $todayDate->copy()->setDay($cutoffDate + 1)->startOfDay();
+                        $cycleEnd = $todayDate->copy()->addMonthNoOverflow()->setDay($cutoffDate)->endOfDay();
+                    } else {
+                        $cycleStart = $todayDate->copy()->subMonthNoOverflow()->setDay($cutoffDate + 1)->startOfDay();
+                        $cycleEnd = $todayDate->copy()->setDay($cutoffDate)->endOfDay();
+                    }
+
+                    $currentCycleAttendances = \App\Models\Attendance::where('employee_id', $employee->id)
+                        ->whereBetween('date', [$cycleStart->format('Y-m-d'), $cycleEnd->format('Y-m-d')])
                         ->orderBy('date')
                         ->get()
                         ->keyBy(function($att) {
                             return \Carbon\Carbon::parse($att->date)->format('Y-m-d');
                         });
 
-                    $totalPresent = $currentMonthAttendances->where('status', 'Hadir')->count();
+                    $totalPresent = 0;
+                    $totalBonusNominal = 0;
                     $localDaily = [];
-                    $daysInMonth = now()->daysInMonth;
-                    $startOfMonth = now()->startOfMonth();
 
-                    for ($d = 1; $d <= $daysInMonth; $d++) {
-                        $curDate = $startOfMonth->copy()->day($d);
+                    $baseNominal = 10000;
+                    $activeSchema = \App\Models\BonusSchema::where('is_active', true)->first();
+                    if ($activeSchema) {
+                        $maxTier = \App\Models\BonusTier::where('bonus_schema_id', $activeSchema->id)->orderBy('nominal', 'desc')->first();
+                        if ($maxTier) {
+                            $baseNominal = (float) $maxTier->nominal;
+                        }
+                    }
+
+                    $curDate = $cycleStart->copy();
+                    while ($curDate <= $cycleEnd) {
                         $dStr = $curDate->format('Y-m-d');
-                        $att = $currentMonthAttendances->get($dStr);
+                        $att = $currentCycleAttendances->get($dStr);
 
                         $status = 'Off';
                         if ($curDate->dayOfWeek >= 1 && $curDate->dayOfWeek <= 5) {
@@ -319,6 +425,7 @@ class DashboardController extends Controller
                         $checkIn = null;
                         $checkOut = null;
                         $lateMinutes = 0;
+                        $dayBonus = 0;
 
                         if ($att) {
                             $status = $att->status ?? 'Hadir';
@@ -326,6 +433,16 @@ class DashboardController extends Controller
                             $checkOut = $att->clock_out ?? null;
                             if ($checkIn && $checkIn > '07:05:00') {
                                 $lateMinutes = (int) ((\Carbon\Carbon::parse($checkIn)->diffInSeconds(\Carbon\Carbon::parse('07:00:00'))) / 60);
+                            }
+
+                            if (in_array($status, ['Hadir', 'Present', 'Late']) || !empty($checkIn)) {
+                                $totalPresent++;
+                                if (!empty($att->calculated_bonus) && $att->calculated_bonus > 0) {
+                                    $dayBonus = (float) $att->calculated_bonus;
+                                } else {
+                                    $dayBonus = $lateMinutes > 0 ? max(0, $baseNominal - (ceil($lateMinutes / 2) * 1000)) : $baseNominal;
+                                }
+                                $totalBonusNominal += $dayBonus;
                             }
                         }
 
@@ -335,16 +452,19 @@ class DashboardController extends Controller
                             'check_in' => $checkIn,
                             'check_out' => $checkOut,
                             'late_minutes' => $lateMinutes,
+                            'bonus_nominal' => $dayBonus,
                             'shift_name' => 'Shift Reguler',
                             'shift_start' => '07:00:00',
                             'shift_end' => '15:30:00'
                         ];
+
+                        $curDate->addDay();
                     }
 
                     $myReport = [
                         'employee' => ['id' => $employee->id, 'name' => $employee->name],
                         'total_present' => $totalPresent,
-                        'bonus_nominal' => 0,
+                        'bonus_nominal' => $totalBonusNominal,
                         'daily_details' => $localDaily,
                         'active_shifts' => [
                             [
@@ -708,7 +828,9 @@ class DashboardController extends Controller
             'myPicketToday',
             'todayDayOfWeek',
             'activityLogs',
-            'adminChartPoints'
+            'adminChartPoints',
+            'recentLeaves',
+            'recentAttendancesToday'
         ));
     }
 }

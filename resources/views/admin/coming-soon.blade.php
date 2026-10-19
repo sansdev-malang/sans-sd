@@ -16,7 +16,7 @@
         
         <h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-slate-50 mb-3" style="font-family: 'Nasalization Rg', sans-serif;">Tahap Pengembangan</h1>
         <p class="text-slate-500 dark:text-slate-400 max-w-lg mx-auto text-xs md:text-base mb-8">
-            Fitur ini sedang dalam tahap perancangan dan pembuatan oleh tim pengembang SANS. Kami sedang meracik kode-kode ajaib agar fitur ini segera bisa Anda nikmati!
+            Fitur ini sedang dalam tahap perancangan dan pembuatan oleh tim pengembang SAANS. Kami sedang meracik kode-kode ajaib agar fitur ini segera bisa Anda nikmati!
         </p>
 
         <a href="{{ url()->previous() !== url()->current() ? url()->previous() : route('dashboard') }}" class="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 dark:bg-slate-50 text-white dark:text-slate-900 text-xs font-semibold rounded-lg hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 dark:focus:ring-slate-50">

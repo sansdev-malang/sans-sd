@@ -100,7 +100,7 @@ class SettingController extends Controller
     public function syncPwaIconsAndManifest(): void
     {
         try {
-            $appName = Setting::get('app_name', config('app.name', 'SANS SD'));
+            $appName = Setting::get('app_name', config('app.name', 'SAANS SD'));
             $logoRelativePath = Setting::get('app_logo');
             $iconDir = public_path('icons');
 
@@ -248,8 +248,8 @@ class SettingController extends Controller
             'db_error' => $dbError,
             'rapor_url' => $raporUrl,
             'message' => $dbStatus 
-                ? "Koneksi ke Database SANS Rapor ('{$raporDb}') berhasil terhubung!" 
-                : "Gagal terhubung ke Database SANS Rapor: {$dbError}",
+                ? "Koneksi ke Database SAANS Rapor ('{$raporDb}') berhasil terhubung!" 
+                : "Gagal terhubung ke Database SAANS Rapor: {$dbError}",
         ]);
     }
 
@@ -283,8 +283,8 @@ class SettingController extends Controller
             'db_error' => $dbError,
             'cbt_url' => $cbtUrl,
             'message' => $dbStatus 
-                ? "Koneksi ke Database SANS CBT ('{$cbtDb}') berhasil terhubung!" 
-                : "Gagal terhubung ke Database SANS CBT: {$dbError}",
+                ? "Koneksi ke Database SAANS CBT ('{$cbtDb}') berhasil terhubung!" 
+                : "Gagal terhubung ke Database SAANS CBT: {$dbError}",
         ]);
     }
 }

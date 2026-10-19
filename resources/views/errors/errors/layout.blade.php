@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title') - SANS</title>
+    <title>@yield('title') - SAANS</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script>
         // Check for theme in localStorage or system preference

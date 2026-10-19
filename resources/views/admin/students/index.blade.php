@@ -9,10 +9,10 @@
                         <i data-lucide="users" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                        <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
                             Daftar Siswa
                         </h2>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Database komprehensif peserta didik, riwayat kelas, inklusi, dan orang tua {{ setting('unit_name', 'SD Anak Saleh') }}.</p>
+                        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Database komprehensif peserta didik, riwayat kelas, inklusi, dan orang tua {{ setting('unit_name', 'SD Anak Saleh') }}.</p>
                     </div>
                 </div>
             </div>

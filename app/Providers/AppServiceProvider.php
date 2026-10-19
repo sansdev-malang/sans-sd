@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\DevCommands;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (class_exists(DevCommands::class)) {
+            DevCommands::except('logs');
+        }
+
         \App\Models\Employee::observe(\App\Observers\EmployeeObserver::class);
 
         // Directive untuk role tertentu

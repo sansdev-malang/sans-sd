@@ -8,7 +8,7 @@
         @if(setting('app_favicon'))
             <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . setting('app_favicon')) }}">
         @else
-            <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23e91d1d'/%3E%3Cstop offset='25%25' stop-color='%23f3e40f'/%3E%3Cstop offset='50%25' stop-color='%2333ee0d'/%3E%3Cstop offset='75%25' stop-color='%23070be2'/%3E%3Cstop offset='100%25' stop-color='%238a18c5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23grad)'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-weight='900' font-size='18'%3E{{ substr(setting('app_name', 'SANS'), 0, 1) }}%3C/text%3E%3C/svg%3E">
+            <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23e91d1d'/%3E%3Cstop offset='25%25' stop-color='%23f3e40f'/%3E%3Cstop offset='50%25' stop-color='%2333ee0d'/%3E%3Cstop offset='75%25' stop-color='%23070be2'/%3E%3Cstop offset='100%25' stop-color='%238a18c5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23grad)'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='sans-serif' font-weight='900' font-size='18'%3E{{ substr(setting('app_name', 'SAANS SD'), 0, 1) }}%3C/text%3E%3C/svg%3E">
         @endif
 
         <!-- PWA Settings -->
@@ -17,15 +17,16 @@
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="default">
-        <meta name="apple-mobile-web-app-title" content="{{ setting('app_name', 'SANS SD') }}">
+        <meta name="apple-mobile-web-app-title" content="{{ setting('app_name', 'SAANS SD') }}">
         <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192.png') }}">
         @php
             if (!isset($title) || empty($title) || $title === 'Admin Dashboard') {
                 $routeName = request()->route() ? request()->route()->getName() : '';
                 $routeTitles = [
                     'dashboard' => 'Dashboard',
-                    'bonus-reports.index' => (auth()->check() && auth()->user()->hasRole('super_admin')) ? 'Rekap Uang Kehadiran' : 'Uang Kehadiran',
-                    'attendances.index' => 'Data Riwayat Absensi',
+                    'bonus-reports.index' => 'Uang Kehadiran',
+                    'attendance-percentage-reports.index' => 'Persentase Kehadiran',
+                    'attendances.index' => 'Data Kehadiran',
                     'leaves.index' => 'Izin & Cuti',
                     'my-leaves.index' => 'Pengajuan Izin',
                     'my-attendance' => 'Absensi Saya',
@@ -42,7 +43,7 @@
                 $title = $routeTitles[$routeName] ?? 'Dashboard';
             }
         @endphp
-        <title>{{ setting('app_name', 'SANS Malang') }} - @yield('title', $title)</title>
+        <title>{{ setting('app_name', 'SAANS SD') }} - @yield('title', $title)</title>
 
         <!-- Google Fonts: Inter & Plus Jakarta Sans -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -55,6 +56,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
         <style>
             [x-cloak] { display: none !important; }
+            i[data-lucide] { display: inline-block; vertical-align: middle; }
             #nprogress .bar {
                 background: #4f46e5 !important; /* indigo-600 */
                 height: 4px !important; /* Default height */
@@ -183,6 +185,10 @@
 
         <style>
             /* Responsive Root Typography & UI Density System */
+            html, body {
+                height: 100%;
+                overflow: hidden;
+            }
             html {
                 font-size: 15px;
                 -webkit-text-size-adjust: 100%;
@@ -327,8 +333,8 @@
             }
         </style>
     </head>
-    <body class="h-full bg-slate-50 dark:bg-[#09090b] text-[#09090b] dark:text-slate-50 antialiased overflow-x-hidden transition-colors duration-200">
-        <div class="flex h-screen overflow-hidden">
+    <body class="h-full bg-slate-50 dark:bg-[#09090b] text-[#09090b] dark:text-slate-50 antialiased overflow-hidden transition-colors duration-200">
+        <div class="flex h-full w-full overflow-hidden">
 
             <!-- SIDEBAR BACKDROP FOR MOBILE -->
             <div id="sidebar-backdrop" class="fixed inset-0 z-[55] bg-slate-950/55 backdrop-blur-sm hidden md:hidden transition-opacity duration-200 opacity-0"></div>

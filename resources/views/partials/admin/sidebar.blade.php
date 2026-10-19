@@ -70,13 +70,13 @@
             @else
                 <div class="w-8 h-8 rounded-lg logo-gradient-bg flex items-center justify-center shrink-0 shadow-sm">
                     <span class="text-white text-lg font-bold" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">
-                        {{ substr(setting('app_name', config('app.name', 'SANS SD')), 0, 1) }}
+                        {{ substr(setting('app_name', config('app.name', 'SAANS SD')), 0, 1) }}
                     </span>
                 </div>
             @endif
             <div class="school-info overflow-hidden">
                 <h1 class="text-lg text-slate-900 dark:text-slate-50 truncate leading-normal tracking-wide" style="font-family: 'Nasalization Rg', sans-serif; font-weight: 400;">
-                    {{ setting('app_name', config('app.name', 'SANS SD')) }}
+                    {{ setting('app_name', config('app.name', 'SAANS SD')) }}
                 </h1>
             </div>
         </div>
@@ -84,7 +84,7 @@
         <!-- Tooltip for collapsed view -->
         <span
             class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
-            {{ setting('unit_name', 'SANS Malang') }}
+            {{ setting('unit_name', 'SAANS SD Malang') }}
         </span>
     </a>
 
@@ -110,15 +110,6 @@
                 Layanan Pegawai
             </h3>
             <nav class="space-y-1">
-                @if($empId)
-                <a href="{{ route('my-employee-profile.edit') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('my-employee-profile.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} text-xs relative group">
-                    <i data-lucide="user" class="menu-icon w-4 h-4 shrink-0"></i>
-                    <span class="menu-text">Profil Pegawai</span>
-                    <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
-                        Profil Pegawai
-                    </span>
-                </a>
-                @endif
 
                 <a href="{{ route('attendances.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('attendances.index') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} text-xs relative group">
                     <i data-lucide="scan-face" class="menu-icon w-4 h-4 shrink-0"></i>
@@ -141,9 +132,17 @@
                 @if(auth()->user()->role !== 'employee')
                 <a href="{{ route('bonus-reports.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('bonus-reports.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} text-xs relative group">
                     <i data-lucide="award" class="menu-icon w-4 h-4 shrink-0"></i>
-                    <span class="menu-text">{{ auth()->user()->hasRole('super_admin') ? 'Rekap Uang Kehadiran' : 'Uang Kehadiran' }}</span>
+                    <span class="menu-text">Uang Kehadiran</span>
                     <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
-                        {{ auth()->user()->hasRole('super_admin') ? 'Rekap Uang Kehadiran' : 'Uang Kehadiran' }}
+                        Uang Kehadiran
+                    </span>
+                </a>
+
+                <a href="{{ route('attendance-percentage-reports.index') }}" class="menu-item flex items-center gap-3 px-3 py-2 rounded-lg {{ Request::routeIs('attendance-percentage-reports.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }} text-xs relative group">
+                    <i data-lucide="pie-chart" class="menu-icon w-4 h-4 shrink-0"></i>
+                    <span class="menu-text">Persentase Kehadiran</span>
+                    <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
+                        Persentase Kehadiran
                     </span>
                 </a>
                 @endif
@@ -502,9 +501,18 @@
             x-transition:leave-start="transform opacity-100 scale-100"
             x-transition:leave-end="transform opacity-0 scale-95" style="display: none;">
 
+            @if($empId)
+            <!-- Employee Profile -->
+            <a href="{{ route('my-employee-profile.edit') }}"
+                class="flex items-center gap-2 px-3 py-2 text-xs {{ Request::routeIs('my-employee-profile.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
+                <i data-lucide="user" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                <span>Profil Pegawai</span>
+            </a>
+            @endif
+
             <!-- Account Info -->
             <a href="{{ route('profile.edit') }}"
-                class="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+                class="flex items-center gap-2 px-3 py-2 text-xs {{ Request::routeIs('profile.*') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-medium' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-slate-100' }} transition-colors">
                 <i data-lucide="badge-check" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
                 <span>Pengaturan Akun</span>
             </a>

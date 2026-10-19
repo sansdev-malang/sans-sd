@@ -1,6 +1,6 @@
 <x-admin-layout>
 @section('title', 'Manajemen Piket')
-<div class="p-6 space-y-6" x-data="{
+<div class="p-4 sm:p-6 space-y-5" x-data="{
     tab: 'scheduler',
     showAreaModal: false,
     showAssignModal: false,
@@ -147,33 +147,42 @@
     </div>
 
     <!-- TAB 1: SCHEDULER (PENUGASAN PIKET) -->
-    <div x-show="tab === 'scheduler'" class="grid grid-cols-1 lg:grid-cols-3 gap-6" x-data="{ viewMode: 'board' }">
-        <!-- LEFT SIDEBAR: DRAGGABLE TEACHERS -->
-        <div class="space-y-6">
+    <div x-show="tab === 'scheduler'" class="flex flex-col lg:flex-row items-start gap-4" x-data="{ viewMode: 'board', showTeacherDrawer: true }">
+        <!-- LEFT SIDEBAR: DRAGGABLE TEACHERS (Compact & Collapsible) -->
+        <div x-show="showTeacherDrawer" 
+            x-transition:enter="transition ease-out duration-150"
+            x-transition:enter-start="opacity-0 -translate-x-2"
+            x-transition:enter-end="opacity-100 translate-x-0"
+            class="w-full lg:w-56 xl:w-60 shrink-0 space-y-4">
             <!-- Draggable Teachers List Card -->
-            <div class="border border-slate-200 dark:border-slate-800 rounded-2xl p-5 bg-white dark:bg-slate-900/50 shadow-3xs">
-                <h4 class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-350 mb-2">Daftar Guru (Seret / Drag)</h4>
-                <p class="text-[10px] text-slate-450 leading-relaxed mb-4">Tarik nama guru di bawah ini dan jatuhkan ke kotak hari pada tabel di sebelah kanan.</p>
+            <div class="border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 sm:p-4 bg-white dark:bg-slate-900/50 shadow-3xs">
+                <div class="flex items-center justify-between gap-1 mb-1">
+                    <h4 class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">Daftar Guru</h4>
+                    <span class="text-[9.5px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/30 px-1.5 py-0.5 rounded-md">{{ count($employees) }}</span>
+                </div>
+                <p class="text-[9.5px] text-slate-400 leading-snug mb-2.5">Tarik nama guru & jatuhkan ke kotak hari pada tabel.</p>
                 
                 <!-- Filter Search -->
-                <div class="mb-3">
-                    <input type="text" x-model="teacherSearch" placeholder="Cari nama guru..." class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all">
+                <div class="relative mb-2.5">
+                    <input type="text" x-model="teacherSearch" placeholder="Cari nama guru..." class="w-full pl-7 pr-2.5 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all">
+                    <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2 top-2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 </div>
 
                 <!-- Teacher cards scroll list -->
-                <div class="max-h-[500px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                <div class="max-h-[500px] overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
                     @foreach($employees as $emp)
                         <div x-show="teacherSearch === '' || '{{ addslashes(strtolower($emp->name)) }}'.includes(teacherSearch.toLowerCase())"
                             draggable="true"
                             @dragstart="event.dataTransfer.setData('text/plain', JSON.stringify({ employeeId: '{{ $emp->id }}' }))"
-                            class="p-2.5 border border-slate-200 dark:border-slate-800/80 rounded-xl bg-slate-50/50 dark:bg-slate-950 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 hover:border-indigo-300 dark:hover:border-indigo-850 flex items-center gap-2.5 cursor-grab active:cursor-grabbing transition-all select-none">
+                            class="p-2 border border-slate-200 dark:border-slate-800/80 rounded-xl bg-slate-50/50 dark:bg-slate-950 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 hover:border-indigo-300 dark:hover:border-indigo-850 flex items-center gap-2 cursor-grab active:cursor-grabbing transition-all select-none shadow-3xs"
+                            title="{{ $emp->name }}">
                             
-                            <div class="w-6 h-6 rounded-full bg-slate-250 dark:bg-slate-800 text-[10px] font-extrabold flex items-center justify-center text-slate-600 dark:text-slate-400 shrink-0 uppercase border border-slate-300/10">
+                            <div class="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 text-[9px] font-extrabold flex items-center justify-center text-slate-600 dark:text-slate-400 shrink-0 uppercase border border-slate-300/10">
                                 {{ substr($emp->raw_name, 0, 2) }}
                             </div>
-                            <div class="min-w-0 leading-tight text-left">
-                                <p class="font-bold text-[11px] text-slate-800 dark:text-slate-200 truncate">{{ $emp->name }}</p>
-                                <p class="text-[9px] text-slate-400 font-medium truncate mt-0.5">{{ $emp->position ?? $emp->employeeType->name ?? '-' }}</p>
+                            <div class="min-w-0 leading-tight text-left flex-1">
+                                <p class="font-bold text-[10px] text-slate-800 dark:text-slate-200 truncate">{{ $emp->name }}</p>
+                                <p class="text-[8.5px] text-slate-400 font-medium truncate mt-0.5">{{ $emp->position ?? $emp->employeeType->name ?? '-' }}</p>
                             </div>
                         </div>
                     @endforeach
@@ -182,36 +191,45 @@
         </div>
 
         <!-- RIGHT MAIN AREA: BOARD DRAG-DROP OR LIST TABLE -->
-        <div class="lg:col-span-2 border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/10 overflow-hidden shadow-xs flex flex-col h-full min-h-[500px]">
+        <div class="flex-1 w-full min-w-0 border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/10 overflow-hidden shadow-xs flex flex-col h-full min-h-[500px]">
             <!-- Table/Board Toggles -->
-            <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50 dark:bg-slate-950">
-                <div>
-                    <h4 class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-350">Papan Penjadwalan</h4>
-                    <p class="text-[10px] text-slate-455 mt-0.5">Tarik-lepas kartu guru atau kelola penugasan aktif di sini</p>
-                </div>
+            <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5 bg-slate-50 dark:bg-slate-950">
                 <div class="flex items-center gap-2.5">
-                    <button @click="showAssignModal = true" class="h-8 px-3 inline-flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-xl text-xs font-semibold cursor-pointer border-0 transition-colors">
-                        <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-indigo-500"></i>
+                    <button @click="showTeacherDrawer = !showTeacherDrawer" 
+                        class="h-7 px-2.5 inline-flex items-center gap-1.5 rounded-lg text-[10px] font-bold border transition-all cursor-pointer"
+                        :class="showTeacherDrawer ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200/50 dark:border-indigo-800/50' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 shadow-3xs'"
+                        :title="showTeacherDrawer ? 'Sembunyikan daftar guru' : 'Tampilkan daftar guru'">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span x-text="showTeacherDrawer ? 'Tutup Panel Guru' : 'Buka Panel Guru'"></span>
+                    </button>
+                    <div>
+                        <h4 class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-350">Papan Penjadwalan</h4>
+                        <p class="text-[9.5px] text-slate-455">Tarik-lepas kartu guru atau kelola penugasan aktif di sini</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button @click="showAssignModal = true" class="h-7 px-2.5 inline-flex items-center gap-1 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-lg text-[10px] font-bold cursor-pointer border-0 transition-colors">
+                        <i data-lucide="plus-circle" class="w-3 h-3 text-indigo-500"></i>
                         Tugaskan Manual
                     </button>
                     <div class="flex bg-slate-200/60 dark:bg-slate-900/80 p-0.5 rounded-lg text-[10px] font-bold">
-                        <button @click="viewMode = 'board'" :class="viewMode === 'board' ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-3xs' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'" class="px-3 py-1.5 rounded-md cursor-pointer border-0 transition-all">Papan Visual</button>
-                        <button @click="viewMode = 'list'" :class="viewMode === 'list' ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-3xs' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'" class="px-3 py-1.5 rounded-md cursor-pointer border-0 transition-all">Daftar Tabel</button>
+                        <button @click="viewMode = 'board'" :class="viewMode === 'board' ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-3xs' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'" class="px-2.5 py-1 rounded-md cursor-pointer border-0 transition-all">Papan Visual</button>
+                        <button @click="viewMode = 'list'" :class="viewMode === 'list' ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-3xs' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'" class="px-2.5 py-1 rounded-md cursor-pointer border-0 transition-all">Daftar Tabel</button>
                     </div>
                 </div>
             </div>
 
             <!-- BOARD PANEL -->
-            <div x-show="viewMode === 'board'" class="p-5 overflow-x-auto flex-1">
+            <div x-show="viewMode === 'board'" class="p-3 sm:p-4 overflow-x-auto flex-1">
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 text-left">
-                            <th class="pb-3 font-black uppercase tracking-wider w-40">Area Piket</th>
+                            <th class="pb-2.5 pr-2 font-black uppercase tracking-wider w-28 xl:w-32 text-[10px]">Area Piket</th>
                             @php
                                 $days = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu'];
                             @endphp
                             @foreach($days as $idx => $day)
-                                <th class="pb-3 text-center font-black uppercase tracking-wider min-w-[125px]">{{ $day }}</th>
+                                <th class="pb-2.5 px-1 text-center font-black uppercase tracking-wider min-w-[95px] xl:min-w-[105px] text-[10px]">{{ $day }}</th>
                             @endforeach
                         </tr>
                     </thead>
@@ -219,15 +237,17 @@
                         @forelse($areas->where('is_active', true) as $area)
                         <tr>
                             <!-- Area info -->
-                            <td class="py-4 pr-3 align-middle font-bold text-slate-800 dark:text-slate-200 leading-tight">
-                                <div class="text-[11px]">{{ $area->name }}</div>
-                                <div class="text-[9px] text-slate-400 font-normal mt-1">⏰ {{ $area->duty_hours }}</div>
+                            <td class="py-3 pr-2 align-middle font-bold text-slate-800 dark:text-slate-200 leading-tight">
+                                <div class="text-[10.5px] leading-snug break-words">{{ $area->name }}</div>
+                                <div class="text-[8.5px] text-slate-400 font-normal mt-1 flex items-center gap-0.5">
+                                    <span>⏰</span> <span>{{ $area->duty_hours }}</span>
+                                </div>
                             </td>
                             <!-- Days drop zones -->
                             @foreach($days as $idx => $day)
-                                <td class="py-3 px-1.5 align-top">
+                                <td class="py-2 px-1 align-top">
                                     <div 
-                                        class="min-h-[110px] p-2 border border-dashed rounded-xl transition-all flex flex-col gap-1.5"
+                                        class="min-h-[95px] p-1.5 border border-dashed rounded-xl transition-all flex flex-col gap-1.5"
                                         :class="dragOverCell === '{{ $area->id }}-{{ $idx }}' ? 'border-indigo-500 bg-indigo-500/10 scale-[1.02]' : 'border-slate-200 dark:border-slate-800 bg-slate-50/25 dark:bg-slate-900/15'"
                                         @dragover.prevent="dragOverCell = '{{ $area->id }}-{{ $idx }}'"
                                         @dragleave="dragOverCell = null"
@@ -237,13 +257,14 @@
                                             <!-- Assigned Teacher Card (Also Draggable to move) -->
                                             <div draggable="true"
                                                 @dragstart="event.dataTransfer.setData('text/plain', JSON.stringify({ employeeId: sched.employee_id }))"
-                                                class="p-2 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-850 rounded-xl shadow-3xs flex items-center justify-between gap-1.5 hover:border-indigo-300 dark:hover:border-indigo-800 cursor-grab active:cursor-grabbing">
-                                                <div class="min-w-0 leading-tight text-left">
-                                                    <p class="font-bold text-[10px] text-slate-800 dark:text-slate-200 truncate pr-1" x-text="sched.employee_name"></p>
+                                                class="p-1.5 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-850 rounded-lg shadow-3xs flex items-center justify-between gap-1 hover:border-indigo-300 dark:hover:border-indigo-800 cursor-grab active:cursor-grabbing transition-all group/item"
+                                                :title="sched.employee_name">
+                                                <div class="min-w-0 leading-tight text-left flex-1">
+                                                    <p class="font-bold text-[9.5px] text-slate-800 dark:text-slate-200 truncate pr-0.5" x-text="sched.employee_name"></p>
                                                 </div>
                                                 
                                                 <!-- Delete button via AJAX -->
-                                                <button type="button" @click="removeAssignment(sched.id)" class="h-5 w-5 inline-flex items-center justify-center text-slate-400 hover:text-rose-655 dark:hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-md cursor-pointer border-0 bg-transparent transition-colors">
+                                                <button type="button" @click="removeAssignment(sched.id)" class="h-4 w-4 shrink-0 inline-flex items-center justify-center text-slate-400 hover:text-rose-655 dark:hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded cursor-pointer border-0 bg-transparent transition-colors opacity-70 group-hover/item:opacity-100" title="Hapus penugasan">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                                                 </button>
                                             </div>
@@ -251,7 +272,7 @@
 
                                         <!-- Placeholder when empty -->
                                         <div x-show="schedules.filter(s => s.picket_area_id == {{ $area->id }} && s.day_of_week == {{ $idx }}).length === 0" 
-                                            class="flex-1 flex items-center justify-center py-5 text-[9px] text-slate-400 select-none italic text-center leading-normal">
+                                            class="flex-1 flex items-center justify-center py-4 text-[8.5px] text-slate-400 select-none italic text-center leading-normal">
                                             Tarik kemari
                                         </div>
                                     </div>

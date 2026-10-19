@@ -265,7 +265,7 @@ class SpmbIntegrationService
             return [
                 'success' => true,
                 'status' => 'pong',
-                'message' => 'Webhook ping received successfully by SANS SD.',
+                'message' => 'Webhook ping received successfully by SAANS SD.',
                 'timestamp' => now()->toIso8601String(),
             ];
         }

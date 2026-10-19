@@ -27,8 +27,8 @@
         <!-- HEADER -->
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left ">
             <div class="flex flex-col gap-0.5">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-200 font-nasalization">Riwayat Izin Pegawai</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Daftar riwayat izin, sakit, dan cuti pegawai di unit sekolah.</p>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-200 font-nasalization">Riwayat Izin Pegawai</h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Daftar riwayat izin, sakit, dan cuti pegawai di unit sekolah.</p>
             </div>
             <div>
                 <button @click="showAddModal = true" class="h-9 px-4 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer flex items-center gap-2">

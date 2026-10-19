@@ -115,7 +115,7 @@
             this.tooltip.activeDate = '';
         }
     }" x-ref="container" @click="hideTooltip()">
-        <!-- DATA BONUS KEHADIRAN / PAGE TITLE -->
+        <!-- DATA UANG KEHADIRAN / PAGE TITLE -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 sm:gap-3">
             <div class="flex flex-col gap-0.5">
                 <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Uang Kehadiran</h2>
@@ -176,7 +176,7 @@
             </div>
             <h3 class="text-sm font-bold text-amber-900 dark:text-amber-200">Data Pegawai Belum Terhubung</h3>
             <p class="text-xs text-amber-700 dark:text-amber-400 max-w-md mx-auto mt-1">
-                Akun Anda belum ditautkan dengan data pegawai di HRD. Silakan hubungi Super Admin untuk menautkan akun Anda agar dapat melihat kalender dan bonus kehadiran.
+                Akun Anda belum ditautkan dengan data pegawai di HRD. Silakan hubungi Super Admin untuk menautkan akun Anda agar dapat melihat kalender dan uang kehadiran.
             </p>
         </div>
         @else
@@ -270,7 +270,7 @@
         <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="md:col-span-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[18px] shadow-sm w-full p-4 sm:p-5">
                 <div class="calendar-header-container pb-4 border-b border-slate-200 dark:border-slate-800">
-                    <!-- Kiri: Total Bonus Periode Ini -->
+                    <!-- Kiri: Total Uang Kehadiran Periode Ini -->
                     <div class="calendar-header-left flex items-center gap-3">
                         <span class="w-10 h-10 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center shrink-0">
                             <i data-lucide="banknote" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
@@ -281,7 +281,7 @@
                             </span>
                             <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
-                                    Total Bonus Periode Ini
+                                    Total Uang Kehadiran Periode Ini
                                 </span>
                                 <span class="text-[10px] font-semibold text-slate-400 dark:text-slate-500">
                                     ({{ $cutoffDateVal + 1 }} {{ $selectedMonth->copy()->subMonthNoOverflow()->translatedFormat('M') }} - {{ $cutoffDateVal }} {{ $selectedMonth->translatedFormat('M Y') }})
@@ -543,7 +543,7 @@
                             <span class="mt-0.5 inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
                             <div>
                                 <p class="text-xs font-semibold text-slate-900 dark:text-slate-50">Hadir Tepat Waktu / Libur Reward</p>
-                                <p class="text-[11px] leading-4 text-slate-500 dark:text-slate-400 mt-0.5">Memenuhi syarat bonus ketepatan waktu penuh.</p>
+                                <p class="text-[11px] leading-4 text-slate-500 dark:text-slate-400 mt-0.5">Memenuhi syarat uang kehadiran penuh.</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-3">
@@ -653,11 +653,12 @@
                     </div>
                 </div>
             </template>
-            <template x-if="tooltip.status !== 'Hadir' && !(tooltip.checkIn && tooltip.checkIn !== '--:--') && tooltip.bonus > 0">
+            <template x-if="tooltip.status !== 'Hadir' && !(tooltip.checkIn && tooltip.checkIn !== '--:--')">
                 <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <div class="flex items-center justify-between bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/30 dark:border-emerald-900/30 rounded-lg px-2 py-1.5 text-[10px]">
+                    <div class="flex items-center justify-between rounded-lg px-2 py-1.5 text-[10px] border"
+                         :class="tooltip.bonus > 0 ? 'bg-emerald-50/50 dark:bg-emerald-950/10 border-emerald-100/30 dark:border-emerald-900/30' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800'">
                         <span class="text-slate-500 dark:text-slate-400 font-medium">Uang Kehadiran</span>
-                        <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="'Rp ' + Number(tooltip.bonus).toLocaleString('id-ID')"></span>
+                        <span class="font-bold" :class="tooltip.bonus > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'" x-text="tooltip.bonus > 0 ? 'Rp ' + Number(tooltip.bonus).toLocaleString('id-ID') : 'Rp 0'"></span>
                     </div>
                 </div>
             </template>
