@@ -461,6 +461,8 @@ class HrdApiController extends Controller
             'status' => 'required|string|in:Pending,Approved,Rejected',
             'notes' => 'nullable|string',
             'type' => 'nullable|string',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
             'processed_by' => 'nullable|string',
             'action' => 'nullable|string',
         ]);
@@ -471,15 +473,14 @@ class HrdApiController extends Controller
         }
 
         $oldStatus = $leave->status;
-        $requiresAttendance = $leave->leaveType ? $leave->leaveType->requires_attendance : false;
+        $oldStartDate = $leave->start_date ? Carbon::parse($leave->start_date) : null;
+        $oldEndDate = $leave->end_date ? Carbon::parse($leave->end_date) : null;
+        $oldRequiresAttendance = $leave->leaveType ? $leave->leaveType->requires_attendance : false;
 
         // If action is delete, reset attendance if needed and remove the record
         if ($request->input('action') === 'delete') {
-            if ($oldStatus === 'Approved' && !$requiresAttendance) {
-                $startDate = Carbon::parse($leave->start_date);
-                $endDate = Carbon::parse($leave->end_date);
-
-                for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+            if ($oldStatus === 'Approved' && !$oldRequiresAttendance && $oldStartDate && $oldEndDate) {
+                for ($date = $oldStartDate->copy(); $date->lte($oldEndDate); $date->addDay()) {
                     $attendance = Attendance::where('employee_id', $leave->employee_id)
                         ->where('date', $date->format('Y-m-d'))
                         ->first();
@@ -501,10 +502,37 @@ class HrdApiController extends Controller
             return response()->json(['success' => true, 'message' => 'Leave request deleted successfully.']);
         }
 
+        // Clean up previous attendance records if was previously approved
+        if ($oldStatus === 'Approved' && !$oldRequiresAttendance && $oldStartDate && $oldEndDate) {
+            for ($date = $oldStartDate->copy(); $date->lte($oldEndDate); $date->addDay()) {
+                $attendance = Attendance::where('employee_id', $leave->employee_id)
+                    ->where('date', $date->format('Y-m-d'))
+                    ->first();
+
+                if ($attendance) {
+                    if (is_null($attendance->clock_in) && is_null($attendance->clock_out)) {
+                        $attendance->delete();
+                    } else {
+                        $attendance->update([
+                            'status' => 'Present',
+                            'calculated_bonus' => 0.00,
+                        ]);
+                    }
+                }
+            }
+        }
+
         $leave->status = $request->input('status');
         $leave->notes = $request->input('notes');
         $leave->processed_by_id = null;
         $leave->processed_by_name = $request->input('processed_by');
+
+        if ($request->filled('start_date')) {
+            $leave->start_date = $request->input('start_date');
+        }
+        if ($request->filled('end_date')) {
+            $leave->end_date = $request->input('end_date');
+        }
 
         if ($request->filled('type')) {
             $newType = $request->input('type');
@@ -526,6 +554,8 @@ class HrdApiController extends Controller
         }
 
         $leave->save();
+        $leave->load('leaveType');
+        $requiresAttendance = $leave->leaveType ? $leave->leaveType->requires_attendance : false;
 
         try {
             $employee = $leave->employee;
@@ -534,29 +564,6 @@ class HrdApiController extends Controller
             }
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("Failed to notify employee for leave decision in unit: " . $e->getMessage());
-        }
-
-        // If changed from Approved to Pending/Rejected, remove/reset automatic attendance
-        if ($oldStatus === 'Approved' && $leave->status !== 'Approved' && !$requiresAttendance) {
-            $startDate = Carbon::parse($leave->start_date);
-            $endDate = Carbon::parse($leave->end_date);
-            
-            for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
-                $attendance = Attendance::where('employee_id', $leave->employee_id)
-                    ->where('date', $date->format('Y-m-d'))
-                    ->first();
-                
-                if ($attendance) {
-                    if (is_null($attendance->clock_in) && is_null($attendance->clock_out)) {
-                        $attendance->delete();
-                    } else {
-                        $attendance->update([
-                            'status' => 'Present',
-                            'calculated_bonus' => 0.00,
-                        ]);
-                    }
-                }
-            }
         }
 
         // If approved, update attendance table automatically for those days
