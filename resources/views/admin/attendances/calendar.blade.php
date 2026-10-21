@@ -648,17 +648,17 @@
                             <template x-if="tooltip.isLate">
                                 <span class="text-[8px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none" x-text="tooltip.lateMinutes ? 'Telat ' + tooltip.lateMinutes + 'm' : 'Telat'"></span>
                             </template>
-                            <template x-if="!tooltip.isLate && tooltip.checkIn && tooltip.checkIn !== '--:--'">
+                            <template x-if="!tooltip.isLate && tooltip.earlyMinutes > 0">
+                                <span class="text-[8px] font-bold text-emerald-700 bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none" x-text="'Awal ' + tooltip.earlyMinutes + 'm'"></span>
+                            </template>
+                            <template x-if="!tooltip.isLate && !(tooltip.earlyMinutes > 0) && tooltip.checkIn && tooltip.checkIn !== '--:--'">
                                 <span class="text-[8px] font-bold text-emerald-700 bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none">Tepat Waktu</span>
                             </template>
                         </div>
                         <div class="flex flex-col bg-slate-50 dark:bg-slate-800/40 rounded-lg p-1.5 border border-slate-100/50 dark:border-slate-800 text-center">
                             <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Pulang</span>
-                            <span class="font-bold text-[11px]" :class="tooltip.earlyMinutes > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-200'" x-text="tooltip.checkOut"></span>
-                            <template x-if="tooltip.earlyMinutes > 0">
-                                <span class="text-[8px] font-bold text-rose-700 bg-rose-100 dark:bg-rose-950/30 dark:text-rose-400 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none" x-text="'Awal ' + tooltip.earlyMinutes + 'm'"></span>
-                            </template>
-                            <template x-if="!(tooltip.earlyMinutes > 0) && tooltip.checkOut && tooltip.checkOut !== '--:--'">
+                            <span class="font-bold text-[11px] text-slate-700 dark:text-slate-200" x-text="tooltip.checkOut"></span>
+                            <template x-if="tooltip.checkOut && tooltip.checkOut !== '--:--' && tooltip.checkOut !== '-'">
                                 <span class="text-[8px] font-bold text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 px-1 py-0.5 rounded mt-1 mx-auto w-max leading-none">Sesuai Jam</span>
                             </template>
                         </div>
