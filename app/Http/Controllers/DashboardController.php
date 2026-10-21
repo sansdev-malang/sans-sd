@@ -301,25 +301,13 @@ class DashboardController extends Controller
         // Fetch personal stats for non-admin employees
         $myReport = null;
         $totalLeavesThisYear = 0;
+        $totalLeavesThisMonth = 0;
         $myRecentLeaves = collect();
         $chartPoints = [];
 
         if (!$isAdmin && $user->employee_id) {
             $employee = \App\Models\Employee::find($user->employee_id);
             if ($employee) {
-                // Calculate Leave Days Approved This Year (selective query)
-                $approvedLeavesThisYear = \App\Models\LeaveRequest::where('employee_id', $employee->id)
-                    ->where('status', 'Approved')
-                    ->whereYear('start_date', date('Y'))
-                    ->select('start_date', 'end_date')
-                    ->get();
-
-                foreach ($approvedLeavesThisYear as $req) {
-                    $s = \Carbon\Carbon::parse($req->start_date)->startOfDay();
-                    $e = \Carbon\Carbon::parse($req->end_date)->startOfDay();
-                    $totalLeavesThisYear += (int) round($s->diffInDays($e)) + 1;
-                }
-
                 // Fetch Recent Activity (Leaves/Permits status) with eager loading
                 $myRecentLeaves = \App\Models\LeaveRequest::with('leaveType:id,name')
                     ->where('employee_id', $employee->id)
@@ -329,6 +317,8 @@ class DashboardController extends Controller
                     ->get();
 
                 // Fetch Presence & Uang Kehadiran details from HRD for the top cards
+                $cycleStart = null;
+                $cycleEnd = null;
                 try {
                     $cutoffDate = (int) \App\Models\Setting::get('payroll_cutoff_date', 26);
                     $todayDate = now();
@@ -336,10 +326,13 @@ class DashboardController extends Controller
                     $bonusCacheKey = 'hrd_bonus_' . $schoolUnitId . '_' . $month;
                     $matrixCacheKey = 'hrd_att_matrix_' . $schoolUnitId . '_' . $month;
 
-                    $reports = Cache::get($bonusCacheKey) ?? Cache::get($bonusCacheKey . '_stale') ?? [];
-                    if (is_array($reports) && isset($reports['data'])) {
-                        $reports = $reports['data'];
+                    $cachedBonus = Cache::get($bonusCacheKey) ?? Cache::get($bonusCacheKey . '_stale') ?? [];
+                    if (!empty($cachedBonus['start_date']) && !empty($cachedBonus['end_date'])) {
+                        $cycleStart = \Carbon\Carbon::parse($cachedBonus['start_date'])->startOfDay();
+                        $cycleEnd = \Carbon\Carbon::parse($cachedBonus['end_date'])->endOfDay();
                     }
+
+                    $reports = is_array($cachedBonus) && isset($cachedBonus['data']) ? $cachedBonus['data'] : $cachedBonus;
 
                     if (empty($reports)) {
                         try {
@@ -351,8 +344,13 @@ class DashboardController extends Controller
                                 'month' => $month
                             ]);
                             if ($response->successful()) {
-                                $reports = $response->json()['data'] ?? [];
-                                Cache::put($bonusCacheKey . '_stale', ['data' => $reports], 604800); // 7 days stale cache
+                                $json = $response->json();
+                                $reports = $json['data'] ?? [];
+                                if (!empty($json['start_date']) && !empty($json['end_date'])) {
+                                    $cycleStart = \Carbon\Carbon::parse($json['start_date'])->startOfDay();
+                                    $cycleEnd = \Carbon\Carbon::parse($json['end_date'])->endOfDay();
+                                }
+                                Cache::put($bonusCacheKey . '_stale', $json, 604800); // 7 days stale cache
                             }
                         } catch (\Exception $e) {
                             // Ignore error
@@ -369,6 +367,10 @@ class DashboardController extends Controller
                     // Also merge matrix cache daily details if available
                     if ($myReport) {
                         $matrixCache = Cache::get($matrixCacheKey) ?? Cache::get($matrixCacheKey . '_stale') ?? [];
+                        if (!$cycleStart && !empty($matrixCache['start_date']) && !empty($matrixCache['end_date'])) {
+                            $cycleStart = \Carbon\Carbon::parse($matrixCache['start_date'])->startOfDay();
+                            $cycleEnd = \Carbon\Carbon::parse($matrixCache['end_date'])->endOfDay();
+                        }
                         $matrixData = is_array($matrixCache) && isset($matrixCache['data']) ? $matrixCache['data'] : (is_array($matrixCache) ? $matrixCache : []);
                         $matrixEmp = collect($matrixData)->first(function ($item) use ($employee) {
                             return ($item['employee']['id'] ?? 0) == $employee->id;
@@ -382,8 +384,7 @@ class DashboardController extends Controller
                     // Fallback silently
                 }
 
-                // Robust local DB fallback if HRD is unreachable or employee not found in HRD
-                if (empty($myReport)) {
+                if (!$cycleStart || !$cycleEnd) {
                     $cutoffDate = (int) \App\Models\Setting::get('payroll_cutoff_date', 26);
                     $todayDate = now();
                     if ($todayDate->day > $cutoffDate) {
@@ -393,6 +394,59 @@ class DashboardController extends Controller
                         $cycleStart = $todayDate->copy()->subMonthNoOverflow()->setDay($cutoffDate + 1)->startOfDay();
                         $cycleEnd = $todayDate->copy()->setDay($cutoffDate)->endOfDay();
                     }
+                }
+
+                // Calculate Leave Days Approved in Active Cycle (selective query)
+                $approvedLeavesThisCycle = \App\Models\LeaveRequest::where('employee_id', $employee->id)
+                    ->where('status', 'Approved')
+                    ->where(function ($q) use ($cycleStart, $cycleEnd) {
+                        $q->whereBetween('start_date', [$cycleStart->format('Y-m-d'), $cycleEnd->format('Y-m-d')])
+                          ->orWhereBetween('end_date', [$cycleStart->format('Y-m-d'), $cycleEnd->format('Y-m-d')])
+                          ->orWhere(function ($sub) use ($cycleStart, $cycleEnd) {
+                              $sub->where('start_date', '<=', $cycleStart->format('Y-m-d'))
+                                  ->where('end_date', '>=', $cycleEnd->format('Y-m-d'));
+                          });
+                    })
+                    ->select('start_date', 'end_date')
+                    ->get();
+
+                foreach ($approvedLeavesThisCycle as $req) {
+                    $s = \Carbon\Carbon::parse($req->start_date)->startOfDay();
+                    $e = \Carbon\Carbon::parse($req->end_date)->startOfDay();
+                    $overlapStart = $s->max($cycleStart);
+                    $overlapEnd = $e->min($cycleEnd);
+                    if ($overlapStart <= $overlapEnd) {
+                        $totalLeavesThisMonth += (int) round($overlapStart->diffInDays($overlapEnd)) + 1;
+                    }
+                }
+
+                // Also verify against daily_details if available
+                if (!empty($myReport['daily_details'])) {
+                    $dailyLeaveCount = 0;
+                    foreach ($myReport['daily_details'] as $det) {
+                        $st = strtolower($det['status'] ?? '');
+                        if (in_array($st, ['izin', 'cuti', 'sakit', 'cuti melahirkan', 'cuti tahunan', 'leave', 'sick', 'permit'])) {
+                            $dailyLeaveCount++;
+                        }
+                    }
+                    $totalLeavesThisMonth = max($totalLeavesThisMonth, $dailyLeaveCount);
+                }
+
+                // Calculate Leave Days Approved This Year for reference
+                $approvedLeavesThisYear = \App\Models\LeaveRequest::where('employee_id', $employee->id)
+                    ->where('status', 'Approved')
+                    ->whereYear('start_date', date('Y'))
+                    ->select('start_date', 'end_date')
+                    ->get();
+
+                foreach ($approvedLeavesThisYear as $req) {
+                    $s = \Carbon\Carbon::parse($req->start_date)->startOfDay();
+                    $e = \Carbon\Carbon::parse($req->end_date)->startOfDay();
+                    $totalLeavesThisYear += (int) round($s->diffInDays($e)) + 1;
+                }
+
+                // Robust local DB fallback if HRD is unreachable or employee not found in HRD
+                if (empty($myReport)) {
 
                     $currentCycleAttendances = \App\Models\Attendance::where('employee_id', $employee->id)
                         ->whereBetween('date', [$cycleStart->format('Y-m-d'), $cycleEnd->format('Y-m-d')])
@@ -821,6 +875,7 @@ class DashboardController extends Controller
             'latestAnnouncements',
             'myReport',
             'totalLeavesThisYear',
+            'totalLeavesThisMonth',
             'myRecentLeaves',
             'chartPoints',
             'totalLateDays',

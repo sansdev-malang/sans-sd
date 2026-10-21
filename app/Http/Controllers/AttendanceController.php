@@ -28,6 +28,9 @@ class AttendanceController extends Controller
 
         $hrdUrl = \App\Models\Setting::get('hrd_api_url', config('app.hrd_url', 'http://sans-hrd.test'));
         $user = auth()->user();
+        if ($user && $user->role === 'employee' && !$user->employee_id) {
+            return view('admin.attendances.unlinked_employee');
+        }
         $myActiveShifts = [];
 
         $monthCarbon = \Carbon\Carbon::parse($month . '-01');
@@ -411,6 +414,11 @@ class AttendanceController extends Controller
 
     public function export(Request $request)
     {
+        $user = auth()->user();
+        if ($user && $user->role === 'employee' && !$user->employee_id) {
+            return redirect()->route('attendances.index')->with('error', 'Akun Anda belum terhubung dengan data pegawai di unit ini.');
+        }
+
         ini_set('memory_limit', '512M');
         set_time_limit(300);
 

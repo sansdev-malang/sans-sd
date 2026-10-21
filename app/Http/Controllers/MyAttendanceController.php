@@ -15,9 +15,9 @@ class MyAttendanceController extends Controller
     {
         $user = auth()->user();
         
-        // If not mapped to an employee, redirect or abort
+        // If not mapped to an employee, redirect to attendances.index to show protective warning
         if (!$user->employee_id) {
-            abort(403, 'Akun Anda tidak terhubung dengan data pegawai.');
+            return redirect()->route('attendances.index');
         }
 
         // Fetch attendances for this specific employee

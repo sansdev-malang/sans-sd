@@ -134,6 +134,12 @@
                     const isDownload = href.includes("export") || href.includes("download") || link.hasAttribute("download");
                     if (isDownload) return;
 
+                    // Ignore links requiring confirmation until confirmed
+                    const onclick = link.getAttribute("onclick") || "";
+                    if (onclick.includes("confirm") && link.dataset.confirmed !== "true") {
+                        return;
+                    }
+
                     if (typeof NProgress !== "undefined") {
                         NProgress.start();
                     }
@@ -143,7 +149,14 @@
                 document.addEventListener("submit", (e) => {
                     const form = e.target.closest("form");
                     if (!form || form.getAttribute("target") === "_blank") return;
-                    
+                    if (e.defaultPrevented) return;
+
+                    // Ignore forms requiring confirmation until confirmed
+                    const onsubmit = form.getAttribute("onsubmit") || "";
+                    if (onsubmit.includes("confirm") && form.dataset.confirmed !== "true") {
+                        return;
+                    }
+
                     if (typeof NProgress !== "undefined") {
                         NProgress.start();
                     }
@@ -344,6 +357,27 @@
 
             <!-- MAIN LAYOUT -->
             <main id="main-content" class="flex-1 flex flex-col overflow-y-auto">
+                @if(session()->has('impersonator_id'))
+                    <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-slate-950 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs font-semibold shadow-md z-40 sticky top-0 shrink-0 border-b border-amber-600/30">
+                        <div class="flex items-center gap-2.5">
+                            <span class="flex h-2.5 w-2.5 relative shrink-0">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-700"></span>
+                            </span>
+                            <span class="text-slate-950 font-extrabold uppercase tracking-wide text-[11px] bg-amber-600/40 px-2 py-0.5 rounded">Mode Impersonasi</span>
+                            <span class="text-slate-900">
+                                Anda sedang masuk sebagai <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->email }} &bull; Role: <span class="uppercase font-mono font-bold">{{ auth()->user()->role }}</span>)
+                            </span>
+                        </div>
+                        <form method="POST" action="{{ route('impersonate.leave') }}" class="m-0 inline">
+                            @csrf
+                            <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-950 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer hover:scale-[1.02] active:scale-[0.98]">
+                                <i data-lucide="log-out" class="w-3.5 h-3.5 text-amber-400"></i>
+                                <span>Kembali ke Super Admin</span>
+                            </button>
+                        </form>
+                    </div>
+                @endif
                 <!-- HEADER -->
                 @include('partials.admin.header')
 
@@ -511,6 +545,9 @@
         <!-- Global Delete Confirmation Modal Script -->
         <script>
             function showGlobalConfirmModal(message, onConfirm, isDelete = true) {
+                if (typeof NProgress !== 'undefined') {
+                    NProgress.done();
+                }
                 const existing = document.getElementById('global-delete-modal');
                 if (existing) existing.remove();
                 
@@ -583,6 +620,9 @@
                 }, 10);
                 
                 const closeModal = () => {
+                    if (typeof NProgress !== 'undefined') {
+                        NProgress.done();
+                    }
                     const backdrop = document.getElementById('global-delete-backdrop');
                     const panel = document.getElementById('global-delete-panel');
                     if (backdrop) backdrop.style.opacity = '0';
@@ -596,6 +636,9 @@
                 document.getElementById('global-delete-cancel').addEventListener('click', closeModal);
                 document.getElementById('global-delete-backdrop').addEventListener('click', closeModal);
                 document.getElementById('global-delete-confirm').addEventListener('click', function() {
+                    if (typeof NProgress !== 'undefined') {
+                        NProgress.start();
+                    }
                     onConfirm();
                     closeModal();
                 });
@@ -603,6 +646,9 @@
 
             // Override native window.confirm to display our premium custom modal
             window.confirm = function (message) {
+                if (typeof NProgress !== 'undefined') {
+                    NProgress.done();
+                }
                 const triggerEl = document.activeElement;
                 
                 // Determine if this is a delete action
@@ -629,11 +675,17 @@
                             form.dataset.confirmed = 'true';
                             const originalOnsubmit = form.getAttribute('onsubmit');
                             form.removeAttribute('onsubmit');
+                            if (typeof NProgress !== 'undefined') {
+                                NProgress.start();
+                            }
                             form.submit();
                             if (originalOnsubmit) {
                                 form.setAttribute('onsubmit', originalOnsubmit);
                             }
                         } else if (triggerEl.tagName === 'A') {
+                            if (typeof NProgress !== 'undefined') {
+                                NProgress.start();
+                            }
                             window.location.href = triggerEl.href;
                         } else {
                             const origOnclick = triggerEl.getAttribute('onclick');

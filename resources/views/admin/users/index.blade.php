@@ -145,6 +145,14 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-right flex justify-end gap-2">
+                                    @if(auth()->id() !== $user->id)
+                                        <form action="{{ route('impersonate.start', $user->id) }}" method="POST" class="inline m-0" onsubmit="return confirm('Apakah Anda yakin ingin login sebagai {{ addslashes($user->name) }}?')">
+                                            @csrf
+                                            <button type="submit" class="w-8 h-8 rounded-lg bg-indigo-50/70 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 border border-indigo-200/60 dark:border-indigo-800/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center transition-colors cursor-pointer" title="Login Sebagai User Ini (Impersonate)">
+                                                <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                     <button @click="openEdit({{ json_encode($user) }})" class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center transition-colors cursor-pointer" title="Edit Akun">
                                         <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                                     </button>
