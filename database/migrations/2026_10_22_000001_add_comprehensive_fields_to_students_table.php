@@ -11,8 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        \Illuminate\Support\Facades\DB::statement("SET SESSION innodb_strict_mode = 0");
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE students ROW_FORMAT=DYNAMIC");
+        try {
+            \Illuminate\Support\Facades\DB::statement("SET SESSION innodb_strict_mode = 0");
+        } catch (\Throwable $e) {
+            // Ignored if user lacks SESSION_VARIABLES_ADMIN privilege on production
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE students ROW_FORMAT=DYNAMIC");
+        } catch (\Throwable $e) {
+            // Ignored if not permitted or already dynamic
+        }
 
         Schema::table('students', function (Blueprint $table) {
             // Gelar / Salutation
