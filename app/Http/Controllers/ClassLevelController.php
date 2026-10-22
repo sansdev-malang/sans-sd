@@ -19,7 +19,7 @@ class ClassLevelController extends Controller
         $academicYears = AcademicYear::orderBy('name', 'desc')->get();
         $activeYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
 
-        // Filter per Tahun Ajaran, defaulting to active Tapel
+        // Filter per Tahun Ajaran, defaulting to active TA
         $selectedYearId = $request->filled('academic_year_id')
             ? (int) $request->get('academic_year_id')
             : ($activeYear?->id ?? null);
@@ -35,7 +35,7 @@ class ClassLevelController extends Controller
             ->orderBy('order', 'asc')
             ->get();
 
-        // 1-Query optimization for student counts per class level in selected Tapel
+        // 1-Query optimization for student counts per class level in selected TA
         $studentCounts = Student::query()
             ->join('classrooms', 'students.classroom_id', '=', 'classrooms.id')
             ->where('students.status', 'aktif')

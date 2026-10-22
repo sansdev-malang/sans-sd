@@ -203,7 +203,7 @@ class SpmbIntegrationService
                 $prunedCount = $pruneQuery->delete();
             }
 
-            $periodLabel = $period && $period !== 'all' ? " Tapel " . str_replace('-', '/', $period) : "";
+            $periodLabel = $period && $period !== 'all' ? " TA " . str_replace('-', '/', $period) : "";
             if ($totalSynced > 0) {
                 $msg = "Berhasil menyinkronkan {$totalSynced} data calon murid dari SPMB Pusat{$periodLabel}.";
             } else {

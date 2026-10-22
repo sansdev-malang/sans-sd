@@ -139,7 +139,7 @@ class HomeroomAssignmentController extends Controller
             'class_level_id' => 'nullable|exists:class_levels,id',
             'classroom_id' => 'nullable|exists:classrooms,id',
             'employee_id' => 'required|exists:employees,id',
-            'role' => 'required|string|in:wali_kelas,guru_kelas,gpk,gpq,koordinator_tingkat,pendamping_tingkat',
+            'role' => 'required|string|in:wali_kelas,guru_kelas,guru_mapel,gpk,gpq,koordinator_tingkat,pendamping_tingkat',
             'is_active' => 'required|boolean',
             'notes' => 'nullable|string|max:500',
         ]);
@@ -174,7 +174,7 @@ class HomeroomAssignmentController extends Controller
             'class_level_id' => 'nullable|exists:class_levels,id',
             'classroom_id' => 'nullable|exists:classrooms,id',
             'employee_id' => 'required|exists:employees,id',
-            'role' => 'required|string|in:wali_kelas,guru_kelas,gpk,gpq,koordinator_tingkat,pendamping_tingkat',
+            'role' => 'required|string|in:wali_kelas,guru_kelas,guru_mapel,gpk,gpq,koordinator_tingkat,pendamping_tingkat',
             'is_active' => 'required|boolean',
             'notes' => 'nullable|string|max:500',
         ]);

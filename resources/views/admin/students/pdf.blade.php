@@ -187,7 +187,7 @@
     <div class="doc-title">
         <h2>LAPORAN DATA PESERTA DIDIK</h2>
         <p>
-            Tahun Pelajaran: {{ $selectedYearName }}
+            Tahun Ajaran: {{ $selectedYearName }}
             @if($selectedClassroom)
                 &bull; Rombel: {{ $selectedClassroom->full_name }}
             @elseif($selectedClassLevel)

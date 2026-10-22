@@ -111,7 +111,7 @@
 
                     <!-- Dropdowns Filter Sejajar -->
                     <div class="flex flex-wrap items-center gap-2 flex-1 justify-start xl:justify-end">
-                        <!-- 1. Tahun Pelajaran -->
+                        <!-- 1. Tahun Ajaran -->
                         <select name="period" onchange="this.form.submit()" 
                             class="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer">
                             <option value="all" {{ $selectedYear === 'all' ? 'selected' : '' }}>Semua Tahun</option>
@@ -842,17 +842,17 @@
                             <p class="text-[10px] text-slate-400 mt-1">Saran format otomatis berdasarkan tahun masuk dan nomor urut SD.</p>
                         </div>
 
-                        <!-- Tahun Pelajaran, Tingkat Kelas & Rombel Grid -->
+                        <!-- Tahun Ajaran, Tingkat Kelas & Rombel Grid -->
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                            <!-- 1. Tahun Pelajaran (Tapel) -->
+                            <!-- 1. Tahun Ajaran (TA) -->
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                    Tahun Pelajaran (Tapel) <span class="text-rose-500">*</span>
+                                    Tahun Ajaran (TA) <span class="text-rose-500">*</span>
                                 </label>
                                 <select x-model="enrollForm.academic_year_id" @change="onEnrollYearChange()" required
                                     class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-slate-900 dark:text-slate-50 cursor-pointer">
                                     <template x-for="ay in enrollData.academic_years" :key="ay.id">
-                                        <option :value="ay.id" x-text="'Tapel ' + ay.name + (ay.is_active ? ' (Aktif)' : '')"></option>
+                                        <option :value="ay.id" x-text="'TA ' + ay.name + (ay.is_active ? ' (Aktif)' : '')"></option>
                                     </template>
                                 </select>
                             </div>
@@ -1106,11 +1106,11 @@
                             </h4>
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                                 <div>
-                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tahun Pelajaran (Tapel)</label>
+                                    <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tahun Ajaran (TA)</label>
                                     <select x-model="editForm.academic_year"
                                         class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 dark:text-slate-50 cursor-pointer">
                                         @foreach($academicYears as $year)
-                                            <option value="{{ $year }}">Tapel {{ $year }}</option>
+                                            <option value="{{ $year }}">TA {{ $year }}</option>
                                         @endforeach
                                     </select>
                                 </div>

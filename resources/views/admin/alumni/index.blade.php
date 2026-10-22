@@ -114,10 +114,10 @@
 
                 <!-- Filter Toolbar -->
                 <div class="flex flex-wrap items-center gap-2">
-                    <!-- Filter Tahun Pelajaran Kelulusan -->
+                    <!-- Filter Tahun Ajaran Kelulusan -->
                     <select name="academic_year_id" onchange="this.form.submit()"
                         class="h-8.5 px-3 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer shadow-xs">
-                        <option value="all">Semua Tahun Pelajaran Kelulusan</option>
+                        <option value="all">Semua Tahun Ajaran Kelulusan</option>
                         @foreach($academicYears as $ay)
                             <option value="{{ $ay->id }}" {{ request('academic_year_id') == $ay->id ? 'selected' : '' }}>
                                 TP {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}
@@ -164,7 +164,7 @@
                             <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-28">NIS / NISN</th>
                             <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase">Nama Alumni</th>
                             <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-24">L/P</th>
-                            <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-48">Tahun Pelajaran & No. Ijazah</th>
+                            <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-48">Tahun Ajaran & No. Ijazah</th>
                             <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-52">Sekolah Lanjutan (SMP/MTs)</th>
                             <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-40">Kontak Orang Tua / Alumni</th>
                             <th class="px-4 py-3 text-right text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase w-32">Aksi</th>
@@ -300,7 +300,7 @@
                     <div class="p-6 space-y-3.5 text-xs">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tahun Pelajaran Kelulusan <span class="text-rose-500">*</span></label>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tahun Ajaran Kelulusan <span class="text-rose-500">*</span></label>
                                 <select x-model="alumniForm.academic_year_id" required
                                     class="w-full h-8.5 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg font-bold">
                                     @foreach($academicYears as $ay)

@@ -56,9 +56,9 @@
                 </h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <!-- 1. Tahun Pelajaran Asal -->
+                    <!-- 1. Tahun Ajaran Asal -->
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Tapel Asal</label>
+                        <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">TA Asal</label>
                         <select x-model="sourceYearId" @change="onSourceYearChange()"
                             class="w-full h-9 px-3 text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-semibold cursor-pointer">
                             @foreach($academicYears as $y)
@@ -79,13 +79,13 @@
                         </select>
                     </div>
 
-                    <!-- 3. Tahun Pelajaran Tujuan -->
+                    <!-- 3. Tahun Ajaran Tujuan -->
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Tapel Tujuan Baru <span class="text-rose-500">*</span></label>
+                        <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">TA Tujuan Baru <span class="text-rose-500">*</span></label>
                         <select x-model="targetYearId" @change="onTargetYearChange()"
                             class="w-full h-9 px-3 text-xs bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-bold text-indigo-900 dark:text-indigo-300 cursor-pointer">
                             @foreach($academicYears as $y)
-                                <option value="{{ $y->id }}">Tapel {{ $y->name }}</option>
+                                <option value="{{ $y->id }}">TA {{ $y->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -258,16 +258,16 @@
                             class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-semibold cursor-pointer">
                             <option value="">-- Pilih Rombel Kelas 6 --</option>
                             @foreach($grade6Classrooms as $cr)
-                                <option value="{{ $cr->id }}">{{ $cr->full_name }} (Tapel {{ $cr->academicYear->name ?? '-' }})</option>
+                                <option value="{{ $cr->id }}">{{ $cr->full_name }} (TA {{ $cr->academicYear->name ?? '-' }})</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Tahun Pelajaran Kelulusan (Tapel) <span class="text-rose-500">*</span></label>
+                        <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Tahun Ajaran Kelulusan (TA) <span class="text-rose-500">*</span></label>
                         <select x-model="gradAcademicYearId"
                             class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-bold text-blue-900 dark:text-blue-300 cursor-pointer">
                             @foreach($academicYears as $ay)
-                                <option value="{{ $ay->id }}">Tapel {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}</option>
+                                <option value="{{ $ay->id }}">TA {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -453,7 +453,7 @@
 
                 submitPromotion() {
                     if (!this.sourceClassroomId || !this.targetYearId) {
-                        alert('Silakan pilih Rombel Asal dan Tahun Pelajaran Tujuan.');
+                        alert('Silakan pilih Rombel Asal dan Tahun Ajaran Tujuan.');
                         return;
                     }
 
@@ -531,7 +531,7 @@
 
                 submitGraduation() {
                     if (!this.gradClassroomId || !this.gradAcademicYearId) {
-                        alert('Silakan pilih Rombel Kelas 6 dan Tahun Pelajaran Kelulusan.');
+                        alert('Silakan pilih Rombel Kelas 6 dan Tahun Ajaran Kelulusan.');
                         return;
                     }
 

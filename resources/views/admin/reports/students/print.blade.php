@@ -332,7 +332,7 @@
         <!-- DOCUMENT TITLE -->
         <div class="doc-title">
             <h3>REKAPITULASI DISTRIBUSI PESERTA DIDIK & KETENAGAAN ROMBEL</h3>
-            <p>TAHUN PELAJARAN: {{ $selectedYear ? strtoupper($selectedYear->name) : 'SEMUA TAHUN' }}</p>
+            <p>TAHUN AJARAN: {{ $selectedYear ? strtoupper($selectedYear->name) : 'SEMUA TAHUN' }}</p>
         </div>
 
         <!-- TABLE -->

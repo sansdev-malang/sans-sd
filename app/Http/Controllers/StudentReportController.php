@@ -100,7 +100,7 @@ class StudentReportController extends Controller
         $yearName = $selectedYear ? $selectedYear->name : 'Semua Tahun';
 
         $sheet->setCellValue('A1', "Data Peserta Didik " . $unitName);
-        $sheet->setCellValue('A2', "Tapel {$yearName}");
+        $sheet->setCellValue('A2', "TA {$yearName}");
         $sheet->getStyle('A1:A2')->getFont()->setBold(true)->setSize(13);
 
         // Table Header
@@ -337,7 +337,7 @@ class StudentReportController extends Controller
 
                 $crAssignments = $dbAssignments->where('classroom_id', $cr->id);
                 $dbHomeroom = $crAssignments->where('role', 'wali_kelas')->first()?->employee?->name;
-                $dbClassTeacher = $crAssignments->where('role', 'guru_kelas')->first()?->employee?->name;
+                $dbClassTeacher = $crAssignments->whereIn('role', ['guru_mapel', 'guru_kelas'])->first()?->employee?->name;
                 $dbGpk = $crAssignments->where('role', 'gpk')->pluck('employee.name')->filter()->values()->all();
                 $dbGpq = $crAssignments->where('role', 'gpq')->first()?->employee?->name;
 

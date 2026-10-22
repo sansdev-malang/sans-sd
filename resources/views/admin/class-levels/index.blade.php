@@ -99,19 +99,19 @@
                     @if($selectedYear)
                         <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $selectedYear->is_active ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700' }}">
                             <i data-lucide="calendar" class="w-3 h-3"></i>
-                            Tapel {{ $selectedYear->name }} {{ $selectedYear->is_active ? '(Aktif)' : '' }}
+                            TA {{ $selectedYear->name }} {{ $selectedYear->is_active ? '(Aktif)' : '' }}
                         </span>
                     @endif
                 </div>
 
-                <!-- Filter Tahun Pelajaran (Tapel) -->
+                <!-- Filter Tahun Ajaran (TA) -->
                 <form method="GET" action="{{ route('class-levels.index') }}" class="flex items-center gap-2">
-                    <label class="text-xs text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">Filter Tapel:</label>
+                    <label class="text-xs text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">Filter TA:</label>
                     <select name="academic_year_id" onchange="this.form.submit()"
                         class="h-9 px-3 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer shadow-xs">
                         @foreach($academicYears as $ay)
                             <option value="{{ $ay->id }}" {{ $selectedYearId == $ay->id ? 'selected' : '' }}>
-                                Tapel {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}
+                                TA {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}
                             </option>
                         @endforeach
                     </select>
@@ -166,7 +166,7 @@
                                                 {{ $rombel->full_name }}
                                             </a>
                                         @empty
-                                            <span class="text-slate-400 italic text-[11px]">Tidak ada rombel di Tapel ini</span>
+                                            <span class="text-slate-400 italic text-[11px]">Tidak ada rombel di TA ini</span>
                                         @endforelse
                                     </div>
                                 </td>

@@ -112,7 +112,7 @@
 
                 <!-- Filter Toolbar -->
                 <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                    <!-- Filter Tahun Pelajaran -->
+                    <!-- Filter Tahun Ajaran -->
                     <select name="academic_year_id" onchange="this.form.submit()"
                         class="h-9 px-3 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-xs">
                         @foreach($academicYears as $ay)
@@ -170,7 +170,7 @@
                             <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-12 whitespace-nowrap">No</th>
                             <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28 whitespace-nowrap">Tingkat</th>
                             <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Nama Rombel</th>
-                            <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-44 whitespace-nowrap">Tahun Pelajaran</th>
+                            <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-44 whitespace-nowrap">Tahun Ajaran</th>
                             <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Wali Kelas</th>
                             <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-48 whitespace-nowrap">Kapasitas & Kuota</th>
                             <th class="px-4 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-32 whitespace-nowrap">Daftar Siswa</th>
@@ -400,7 +400,7 @@
                     <!-- Modal Body -->
                     <div class="p-6 space-y-5 text-xs">
                         
-                        <!-- Grid 1: Tingkat & Tahun Pelajaran -->
+                        <!-- Grid 1: Tingkat & Tahun Ajaran -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
@@ -417,11 +417,11 @@
 
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                    Tahun Pelajaran <span class="text-rose-500">*</span>
+                                    Tahun Ajaran <span class="text-rose-500">*</span>
                                 </label>
                                 <select x-model="formData.academic_year_id" required
                                     class="w-full h-10 px-3.5 text-xs bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-100 cursor-pointer transition-all">
-                                    <option value="">Pilih Tahun Pelajaran...</option>
+                                    <option value="">Pilih Tahun Ajaran...</option>
                                     @foreach($academicYears as $ay)
                                         <option value="{{ $ay->id }}">{{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}</option>
                                     @endforeach

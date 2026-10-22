@@ -12,7 +12,7 @@
                         <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
                             Wali Kelas & Formasi Guru
                         </h2>
-                        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pengelolaan dan riwayat penugasan Wali Kelas, Guru Kelas, GPK, GPQ, dan Koordinator Jenjang per Tahun Pelajaran.</p>
+                        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pengelolaan dan riwayat penugasan Wali Kelas, Guru Kelas, GPK, GPQ, dan Koordinator Jenjang per Tahun Ajaran.</p>
                     </div>
                 </div>
             </div>
@@ -117,12 +117,12 @@
 
                 <!-- Filter Toolbar -->
                 <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-                    <!-- Tapel -->
+                    <!-- TA -->
                     <select name="academic_year_id" onchange="this.form.submit()"
                         class="h-8.5 px-2.5 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer shadow-xs">
                         @foreach($academicYears as $year)
                             <option value="{{ $year->id }}" {{ $selectedYearId == $year->id ? 'selected' : '' }}>
-                                Tapel {{ $year->name }} {{ $year->is_active ? '★' : '' }}
+                                TA {{ $year->name }} {{ $year->is_active ? '★' : '' }}
                             </option>
                         @endforeach
                     </select>
@@ -160,6 +160,7 @@
                         <option value="all">Semua Peran</option>
                         <option value="wali_kelas" {{ request('role') == 'wali_kelas' ? 'selected' : '' }}>Wali Kelas</option>
                         <option value="guru_kelas" {{ request('role') == 'guru_kelas' ? 'selected' : '' }}>Guru Kelas</option>
+                        <option value="guru_mapel" {{ request('role') == 'guru_mapel' ? 'selected' : '' }}>Guru Mapel</option>
                         <option value="gpk" {{ request('role') == 'gpk' ? 'selected' : '' }}>GPK (Inklusi)</option>
                         <option value="gpq" {{ request('role') == 'gpq' ? 'selected' : '' }}>GPQ (Al-Qur'an)</option>
                         <option value="koordinator_tingkat" {{ request('role') == 'koordinator_tingkat' ? 'selected' : '' }}>Koordinator Tingkat</option>
@@ -197,7 +198,7 @@
                             <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pendidik / Guru</th>
                             <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-40">Peran Guru</th>
                             <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider min-w-[180px]">Tingkat & Rombel</th>
-                            <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">Tahun Pelajaran</th>
+                            <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">Tahun Ajaran</th>
                             <th class="px-4 py-3 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24">Status</th>
                             <th class="px-4 py-3 text-right text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">Aksi</th>
                         </tr>
@@ -301,7 +302,7 @@
                                 <td colspan="7" class="px-4 py-12 text-center text-slate-400">
                                     <div class="flex flex-col items-center justify-center gap-2">
                                         <i data-lucide="user-x" class="w-8 h-8 text-slate-300 dark:text-slate-600"></i>
-                                        <p class="text-xs font-medium">Belum ada data penugasan guru pada tahun pelajaran yang dipilih.</p>
+                                        <p class="text-xs font-medium">Belum ada data penugasan guru pada tahun ajaran yang dipilih.</p>
                                     </div>
                                 </td>
                             </tr>
@@ -348,13 +349,13 @@
                     </div>
 
                     <div class="p-5 space-y-4 text-xs">
-                        <!-- Tahun Pelajaran -->
+                        <!-- Tahun Ajaran -->
                         <div>
-                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tahun Pelajaran <span class="text-rose-500">*</span></label>
+                            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tahun Ajaran <span class="text-rose-500">*</span></label>
                             <select name="academic_year_id" x-model="formData.academic_year_id" required
                                 class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                                 @foreach($academicYears as $year)
-                                    <option value="{{ $year->id }}">Tapel {{ $year->name }} {{ $year->is_active ? '(Aktif)' : '' }}</option>
+                                    <option value="{{ $year->id }}">TA {{ $year->name }} {{ $year->is_active ? '(Aktif)' : '' }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -378,6 +379,7 @@
                                 class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                                 <option value="wali_kelas">Wali Kelas</option>
                                 <option value="guru_kelas">Guru Kelas (Pendamping)</option>
+                                <option value="guru_mapel">Guru Mapel</option>
                                 <option value="gpk">GPK (Guru Pendamping Khusus Inklusi)</option>
                                 <option value="gpq">GPQ (Guru Pembina Al-Qur'an)</option>
                                 <option value="koordinator_tingkat">Koordinator Tingkat / Jenjang</option>

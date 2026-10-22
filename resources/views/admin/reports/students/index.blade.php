@@ -18,14 +18,14 @@
 
             <!-- ACTION CONTROLS & FILTER -->
             <div class="flex flex-wrap items-center gap-2 shrink-0">
-                <!-- Filter Tapel -->
+                <!-- Filter TA -->
                 <form action="{{ route('student-reports.index') }}" method="GET" class="flex items-center">
                     <div class="relative">
                         <select name="academic_year_id" onchange="this.form.submit()"
                             class="h-8.5 pl-8 pr-8 text-xs font-semibold rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 shadow-xs cursor-pointer appearance-none transition-colors">
                             @foreach($academicYears as $ay)
                                 <option value="{{ $ay->id }}" {{ ($selectedYear && $selectedYear->id === $ay->id) || $selectedYearId == $ay->id ? 'selected' : '' }}>
-                                    Tapel {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}
+                                    TA {{ $ay->name }} {{ $ay->is_active ? '(Aktif)' : '' }}
                                 </option>
                             @endforeach
                         </select>
@@ -512,7 +512,7 @@
                         </h2>
                     </div>
                     <span class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                        Tapel {{ $selectedYear ? $selectedYear->name : '-' }}
+                        TA {{ $selectedYear ? $selectedYear->name : '-' }}
                     </span>
                 </div>
 

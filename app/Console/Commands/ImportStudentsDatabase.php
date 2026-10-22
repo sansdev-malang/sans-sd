@@ -47,7 +47,7 @@ class ImportStudentsDatabase extends Command
                     'is_active' => true,
                     'start_date' => '2026-07-15',
                     'end_date' => '2027-06-25',
-                    'description' => 'Tahun Pelajaran 2026/2027 (Berjalan)',
+                    'description' => 'Tahun Ajaran 2026/2027 (Berjalan)',
                 ]
             )))));
 

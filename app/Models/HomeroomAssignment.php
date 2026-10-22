@@ -72,6 +72,7 @@ class HomeroomAssignment extends Model
         return match ($this->role) {
             'wali_kelas' => 'Wali Kelas',
             'guru_kelas' => 'Guru Kelas',
+            'guru_mapel' => 'Guru Mapel',
             'gpk' => 'GPK (Inklusi)',
             'gpq' => 'GPQ (Al-Qur\'an)',
             'koordinator_tingkat' => 'Koordinator Tingkat',

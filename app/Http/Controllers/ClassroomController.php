@@ -19,7 +19,7 @@ class ClassroomController extends Controller
         $academicYears = AcademicYear::orderBy('name', 'desc')->get();
         $activeYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
 
-        // Always filter per Tahun Ajaran, defaulting to currently active Tapel
+        // Always filter per Tahun Ajaran, defaulting to currently active TA
         $selectedYearId = $request->filled('academic_year_id')
             ? (int) $request->get('academic_year_id')
             : ($activeYear?->id ?? null);

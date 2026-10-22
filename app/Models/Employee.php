@@ -221,6 +221,14 @@ class Employee extends Model
     {
         return $this->hasMany(Student::class, 'gpk_employee_id');
     }
+
+    /**
+     * Berkas / Perangkat Pembelajaran Guru.
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(TeacherDocument::class, 'teacher_id');
+    }
 }
 
 

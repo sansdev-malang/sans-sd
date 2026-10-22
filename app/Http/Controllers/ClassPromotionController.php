@@ -288,7 +288,7 @@ class ClassPromotionController extends Controller
                     ->update([
                         'status' => 'lulus',
                         'end_date' => now()->toDateString(),
-                        'notes' => "Lulus Tahun Pelajaran {$gradYearString}" . ($diplomaNumber ? " (No. Ijazah: {$diplomaNumber})" : ""),
+                        'notes' => "Lulus Tahun Ajaran {$gradYearString}" . ($diplomaNumber ? " (No. Ijazah: {$diplomaNumber})" : ""),
                     ]);
 
                 $graduatedCount++;
@@ -298,7 +298,7 @@ class ClassPromotionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Proses kelulusan selesai! {$graduatedCount} siswa rombel {$classroom->name} berhasil diluluskan (Tahun Pelajaran {$gradYearString}).",
+                'message' => "Proses kelulusan selesai! {$graduatedCount} siswa rombel {$classroom->name} berhasil diluluskan (Tahun Ajaran {$gradYearString}).",
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

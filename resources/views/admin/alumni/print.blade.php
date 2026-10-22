@@ -308,7 +308,7 @@
     <table class="bordered">
         <thead>
             <tr>
-                <th style="width: 25%;">Tahun Pelajaran</th>
+                <th style="width: 25%;">Tahun Ajaran</th>
                 <th style="width: 25%;">Tingkat / Rombel</th>
                 <th style="width: 30%;">Wali Kelas</th>
                 <th style="width: 20%;">Status Akhir</th>
@@ -339,7 +339,7 @@
             <td class="value"><strong>LULUS (ALUMNI)</strong></td>
         </tr>
         <tr>
-            <td class="label">2. Tahun Pelajaran Kelulusan</td>
+            <td class="label">2. Tahun Ajaran Kelulusan</td>
             <td class="colon">:</td>
             <td class="value"><strong>TP {{ $student->academicYear ? $student->academicYear->name : ($student->graduation_year ? "Tahun {$student->graduation_year}" : '-') }}</strong></td>
         </tr>

@@ -8,8 +8,11 @@ use App\Models\Classroom;
 use App\Models\Employee;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\FileOptimizerService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -26,8 +29,16 @@ class StudentController extends Controller
      */
     private function getFilteredStudentsQuery(Request $request): array
     {
-        $academicYears = AcademicYear::orderBy('name', 'desc')->get();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
         $activeAcademicYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
+
+        // Unique yearly academic years for annual entities (Tahunan - Opsi A)
+        $uniqueAcademicYears = $academicYears->groupBy('name')->map(function ($group) {
+            $activeInGroup = $group->firstWhere('is_active', true);
+            $chosen = $activeInGroup ?: $group->first();
+            $chosen->has_active = (bool) $activeInGroup;
+            return $chosen;
+        })->values();
 
         // Default to active academic year if not explicitly selected
         $selectedYearId = $request->filled('academic_year_id')
@@ -35,6 +46,8 @@ class StudentController extends Controller
             : ($activeAcademicYear?->id ?? null);
 
         $selectedYear = $academicYears->firstWhere('id', $selectedYearId) ?? $activeAcademicYear;
+        $selectedYearName = $selectedYear?->name;
+        $matchingYearIds = $academicYears->where('name', $selectedYearName)->pluck('id');
 
         $query = Student::with([
             'classroom.classLevel', 
@@ -44,12 +57,12 @@ class StudentController extends Controller
             'gpkTeacher'
         ]);
 
-        // Academic Year Filter
-        if ($selectedYearId) {
-            $query->where('academic_year_id', $selectedYearId);
+        // Academic Year Filter (covers all semester records of the selected annual year)
+        if ($matchingYearIds->isNotEmpty()) {
+            $query->whereIn('academic_year_id', $matchingYearIds);
         }
 
-        // Search query (Supports Name, NIS, NISN, NIK, No KK, Parent Phone, Father, Mother, Special Needs, GPK Teacher, Classroom)
+        // Search query
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('full_name', 'like', "%{$search}%")
@@ -63,10 +76,6 @@ class StudentController extends Controller
                   ->orWhere('special_needs_type', 'like', "%{$search}%")
                   ->orWhereHas('gpkTeacher', function($tq) use ($search) {
                       $tq->where('name', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('classroom', function($cq) use ($search) {
-                      $cq->where('name', 'like', "%{$search}%")
-                         ->orWhere('code', 'like', "%{$search}%");
                   });
             });
         }
@@ -115,22 +124,18 @@ class StudentController extends Controller
         // Filter: Gender
         if ($gender = $request->get('gender')) {
             if ($gender !== 'all') {
-                if (in_array(strtoupper($gender), ['L', 'LAKI-LAKI', 'MALE'])) {
-                    $query->whereIn('gender', ['L', 'Laki-laki', 'Male', 'LAKI-LAKI']);
-                } elseif (in_array(strtoupper($gender), ['P', 'PEREMPUAN', 'FEMALE'])) {
-                    $query->whereIn('gender', ['P', 'Perempuan', 'Female', 'PEREMPUAN']);
-                } else {
-                    $query->where('gender', $gender);
-                }
+                $query->where('gender', $gender);
             }
         }
 
         return [
             'query' => $query,
             'academicYears' => $academicYears,
+            'uniqueAcademicYears' => $uniqueAcademicYears,
             'selectedYear' => $selectedYear,
             'selectedYearId' => $selectedYearId,
-            'selectedYearName' => $selectedYear?->name,
+            'selectedYearName' => $selectedYearName,
+            'matchingYearIds' => $matchingYearIds,
             'activeAcademicYear' => $activeAcademicYear,
         ];
     }
@@ -142,7 +147,8 @@ class StudentController extends Controller
     {
         $filterData = $this->getFilteredStudentsQuery($request);
         $query = $filterData['query'];
-        $academicYears = $filterData['academicYears'];
+        $matchingYearIds = $filterData['matchingYearIds'];
+        $uniqueAcademicYears = $filterData['uniqueAcademicYears'];
         $activeAcademicYear = $filterData['activeAcademicYear'];
         $selectedYearId = $filterData['selectedYearId'];
         $selectedYear = $filterData['selectedYear'];
@@ -150,8 +156,8 @@ class StudentController extends Controller
 
         // Stats calculation based on selected academic year
         $statsQuery = Student::query();
-        if ($selectedYearId) {
-            $statsQuery->where('academic_year_id', $selectedYearId);
+        if ($matchingYearIds->isNotEmpty()) {
+            $statsQuery->whereIn('academic_year_id', $matchingYearIds);
         }
 
         $totalStudents = (clone $statsQuery)->count();
@@ -167,8 +173,8 @@ class StudentController extends Controller
         })->count();
         
         $rombelQuery = Classroom::where('is_active', true);
-        if ($selectedYearId) {
-            $rombelQuery->where('academic_year_id', $selectedYearId);
+        if ($matchingYearIds->isNotEmpty()) {
+            $rombelQuery->whereIn('academic_year_id', $matchingYearIds);
         }
         $totalClassrooms = $rombelQuery->count();
 
@@ -192,8 +198,8 @@ class StudentController extends Controller
             ->orderBy('classrooms.name', 'asc')
             ->select('classrooms.*');
 
-        if ($selectedYearId) {
-            $classroomListQuery->where('classrooms.academic_year_id', $selectedYearId);
+        if ($matchingYearIds->isNotEmpty()) {
+            $classroomListQuery->whereIn('classrooms.academic_year_id', $matchingYearIds);
         }
         $classrooms = $classroomListQuery->get();
 
@@ -246,7 +252,7 @@ class StudentController extends Controller
             'classrooms' => $classrooms,
             'allClassrooms' => $allClassrooms,
             'teachers' => $teachers,
-            'academicYears' => $academicYears,
+            'academicYears' => $uniqueAcademicYears,
             'activeAcademicYear' => $activeAcademicYear,
             'selectedYearId' => $selectedYearId,
             'selectedYear' => $selectedYear,
@@ -259,29 +265,34 @@ class StudentController extends Controller
      */
     public function exportExcel(Request $request)
     {
+        ini_set('memory_limit', '512M');
+        set_time_limit(300);
+
         $filterData = $this->getFilteredStudentsQuery($request);
         $students = $filterData['query']->orderBy('classroom_id', 'asc')->orderBy('full_name', 'asc')->get();
-        $selectedYearName = $filterData['selectedYearName'] ?: 'Semua Tapel';
+        $selectedYearName = $filterData['selectedYearName'] ?: 'Semua Tahun Ajaran';
         $unitName = function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh';
 
         $spreadsheet = new Spreadsheet();
+        $spreadsheet->getDefaultStyle()->getFont()->setName('Arial')->setSize(9);
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Data Siswa');
 
         // Document Titles
         $sheet->setCellValue('A1', "DATA PESERTA DIDIK " . strtoupper($unitName));
-        $sheet->setCellValue('A2', "Tahun Pelajaran: " . $selectedYearName . " | Dicetak: " . date('d/m/Y H:i') . " WIB");
+        $sheet->setCellValue('A2', "Tahun Ajaran: " . $selectedYearName . " | Total: " . count($students) . " Siswa | Dicetak: " . date('d/m/Y H:i') . " WIB");
         
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14)->getColor()->setRGB('1E1B4B');
         $sheet->getStyle('A2')->getFont()->setItalic(true)->setSize(10)->getColor()->setRGB('475569');
 
-        // Table Headers
+        // Table Headers (Comprehensive 75+ Columns covering Ledger, UKS, Parents & Survey)
         $headers = [
             'No',
             'NIS',
             'NISN',
             'NIK',
             'No. Kartu Keluarga',
+            'No. Akta Kelahiran',
             'Nama Lengkap Siswa',
             'Nama Panggilan',
             'L/P',
@@ -289,28 +300,110 @@ class StudentController extends Controller
             'Tanggal Lahir',
             'Usia',
             'Agama',
-            'Tingkat',
+            'Kewarganegaraan',
+            'Suku Bangsa',
+            'Bahasa Sehari-hari',
+            'Anak Ke',
+            'Jumlah Saudara Kandung',
+            'Jumlah Saudara Tiri',
+            'Jumlah Saudara Angkat',
+            'Tingkat / Grade',
             'Rombel',
-            'Tahun Pelajaran',
+            'Tahun Ajaran',
             'Kategori Siswa',
             'Jenis Kebutuhan Khusus',
             'Guru Pendamping Khusus (GPK)',
             'Wali Kelas',
-            'Nama Ayah',
-            'Pekerjaan Ayah',
-            'No. HP/WA Ayah',
-            'Nama Ibu',
-            'Pekerjaan Ibu',
-            'No. HP/WA Ibu',
-            'No. WhatsApp Utama',
-            'Email Orang Tua',
             'Alamat Domisili',
+            'Dusun / Lingkungan',
             'RT',
             'RW',
             'Kelurahan / Desa',
             'Kecamatan',
             'Kota / Kabupaten',
             'Provinsi',
+            'Kode Pos',
+            'Status Tempat Tinggal',
+            'Tinggal Bersama',
+            'Jarak ke Sekolah',
+            'Transportasi ke Sekolah',
+            'Telepon Rumah',
+            'No. WhatsApp Utama Ortu',
+            'Email Utama Orang Tua',
+            'Kontak Darurat (Nama)',
+            'No. Kontak Darurat',
+            'Hubungan Kontak Darurat',
+            'Berat Badan (kg)',
+            'Tinggi Badan (cm)',
+            'Golongan Darah',
+            'Warna Kulit',
+            'Bentuk Rambut',
+            'Warna Rambut',
+            'Riwayat Alergi',
+            'Riwayat Penyakit Berat',
+            'Penyakit Sering Diderita',
+            'Gelar Depan Ayah',
+            'Nama Ayah (sesuai Akta)',
+            'Gelar Belakang Ayah',
+            'NIK Ayah',
+            'Tempat Lahir Ayah',
+            'Tanggal Lahir Ayah',
+            'Agama Ayah',
+            'No. HP/WA Ayah',
+            'Pendidikan Ayah',
+            'Pekerjaan Ayah',
+            'Instansi / Kantor Ayah',
+            'Alamat Kantor Ayah',
+            'Telp Kantor Ayah',
+            'Penghasilan Ayah',
+            'Email Ayah',
+            'Alamat Rumah Ayah',
+            'Media Sosial Ayah',
+            'Gelar Depan Ibu',
+            'Nama Ibu (sesuai Akta)',
+            'Gelar Belakang Ibu',
+            'NIK Ibu',
+            'Tempat Lahir Ibu',
+            'Tanggal Lahir Ibu',
+            'Agama Ibu',
+            'No. HP/WA Ibu',
+            'Pendidikan Ibu',
+            'Pekerjaan Ibu',
+            'Instansi / Kantor Ibu',
+            'Alamat Kantor Ibu',
+            'Telp Kantor Ibu',
+            'Penghasilan Ibu',
+            'Email Ibu',
+            'Alamat Rumah Ibu',
+            'Media Sosial Ibu',
+            'Gelar Depan Wali',
+            'Nama Wali',
+            'Gelar Belakang Wali',
+            'NIK Wali',
+            'Hubungan Wali',
+            'Tempat Lahir Wali',
+            'Tanggal Lahir Wali',
+            'Agama Wali',
+            'No. HP/WA Wali',
+            'Pendidikan Wali',
+            'Pekerjaan Wali',
+            'Instansi / Kantor Wali',
+            'Alamat Kantor Wali',
+            'Telp Kantor Wali',
+            'Penghasilan Wali',
+            'Email Wali',
+            'Alamat Rumah Wali',
+            'Media Sosial Wali',
+            'Kategori Asal Sekolah',
+            'Nama Asal Sekolah',
+            'Alamat Asal Sekolah',
+            'Nomor & Tanggal STTB / Ijazah',
+            'Hobi Murid',
+            'Cita-cita Murid',
+            'Harapan / Cita-cita Orang Tua',
+            'Rencana Sekolah Lanjutan (SMA/SMK)',
+            'Pesan Orang Tua kepada Sekolah',
+            'Saran Orang Tua kepada Sekolah',
             'Status Siswa',
             'Tanggal Masuk / Diterima'
         ];
@@ -318,17 +411,21 @@ class StudentController extends Controller
         $headerRow = 4;
         foreach ($headers as $colIdx => $title) {
             $colLetter = Coordinate::stringFromColumnIndex($colIdx + 1);
-            $sheet->setCellValue($colLetter . $headerRow, $title);
+            $sheet->setCellValueExplicit($colLetter . $headerRow, $title, DataType::TYPE_STRING);
         }
 
         $lastColLetter = Coordinate::stringFromColumnIndex(count($headers));
+        
+        // Merge Document Titles so Column A is not stretched by long title strings
+        $sheet->mergeCells("A1:{$lastColLetter}1");
+        $sheet->mergeCells("A2:{$lastColLetter}2");
         
         // Header Styling
         $sheet->getStyle("A{$headerRow}:{$lastColLetter}{$headerRow}")->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
-                'size' => 10,
+                'size' => 9.5,
             ],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
@@ -346,13 +443,21 @@ class StudentController extends Controller
                 ],
             ],
         ]);
-        $sheet->getRowDimension($headerRow)->setRowHeight(28);
+        $sheet->getRowDimension($headerRow)->setRowHeight(30);
 
         $row = 5;
         $no = 1;
         $countMale = 0;
         $countFemale = 0;
         $countPdbk = 0;
+
+        $cleanCell = function ($val) {
+            $str = (string) ($val ?? '-');
+            if (str_starts_with($str, '=') || str_starts_with($str, '+') || str_starts_with($str, '@')) {
+                return "'" . $str;
+            }
+            return $str;
+        };
 
         foreach ($students as $student) {
             $isFemale = in_array(strtoupper((string)$student->gender), ['P', 'PEREMPUAN', 'FEMALE']);
@@ -367,47 +472,149 @@ class StudentController extends Controller
 
             $birthDateFormatted = $student->birth_date ? \Carbon\Carbon::parse($student->birth_date)->format('d/m/Y') : '-';
             $enrolledDateFormatted = $student->enrolled_date ? \Carbon\Carbon::parse($student->enrolled_date)->format('d/m/Y') : '-';
+            $fatherBirthDateFormatted = $student->father_birth_date ? \Carbon\Carbon::parse($student->father_birth_date)->format('d/m/Y') : '-';
+            $motherBirthDateFormatted = $student->mother_birth_date ? \Carbon\Carbon::parse($student->mother_birth_date)->format('d/m/Y') : '-';
+            $guardianBirthDateFormatted = $student->guardian_birth_date ? \Carbon\Carbon::parse($student->guardian_birth_date)->format('d/m/Y') : '-';
 
-            // Explicit String values for numeric codes (preserves leading zeroes)
-            $sheet->setCellValue('A' . $row, $no++);
-            $sheet->setCellValueExplicit('B' . $row, (string)($student->nis ?? '-'), DataType::TYPE_STRING);
-            $sheet->setCellValueExplicit('C' . $row, (string)($student->nisn ?? '-'), DataType::TYPE_STRING);
-            $sheet->setCellValueExplicit('D' . $row, (string)($student->nik ?? '-'), DataType::TYPE_STRING);
-            $sheet->setCellValueExplicit('E' . $row, (string)($student->no_kk ?? '-'), DataType::TYPE_STRING);
-            $sheet->setCellValue('F' . $row, strtoupper($student->full_name ?? '-'));
-            $sheet->setCellValue('G' . $row, $student->nickname ?? '-');
-            $sheet->setCellValue('H' . $row, $genderCode);
-            $sheet->setCellValue('I' . $row, $student->birth_place ?? '-');
-            $sheet->setCellValue('J' . $row, $birthDateFormatted);
-            $sheet->setCellValue('K' . $row, $student->age ?? '-');
-            $sheet->setCellValue('L' . $row, $student->religion ?? 'Islam');
-            $sheet->setCellValue('M' . $row, $student->classroom?->classLevel?->name ?? '-');
-            $sheet->setCellValue('N' . $row, $student->classroom?->full_name ?? ($student->classroom?->name ?? '-'));
-            $sheet->setCellValue('O' . $row, $student->academicYear?->name ?? '-');
-            $sheet->setCellValue('P' . $row, $kategoriText);
-            $sheet->setCellValue('Q' . $row, $student->special_needs_type ?? '-');
-            $sheet->setCellValue('R' . $row, $student->gpkTeacher?->name ?? '-');
-            $sheet->setCellValue('S' . $row, $student->classroom?->homeroomTeacher?->name ?? '-');
-            $sheet->setCellValue('T' . $row, $student->father_name ?? '-');
-            $sheet->setCellValue('U' . $row, $student->father_job ?? '-');
-            $sheet->setCellValueExplicit('V' . $row, (string)($student->father_phone ?? '-'), DataType::TYPE_STRING);
-            $sheet->setCellValue('W' . $row, $student->mother_name ?? '-');
-            $sheet->setCellValue('X' . $row, $student->mother_job ?? '-');
-            $sheet->setCellValueExplicit('Y' . $row, (string)($student->mother_phone ?? '-'), DataType::TYPE_STRING);
-            $sheet->setCellValueExplicit('Z' . $row, (string)($student->parent_phone ?? '-'), DataType::TYPE_STRING);
-            $sheet->setCellValue('AA' . $row, $student->parent_email ?? '-');
-            $sheet->setCellValue('AB' . $row, $student->address ?? '-');
-            $sheet->setCellValue('AC' . $row, $student->rt ?? '-');
-            $sheet->setCellValue('AD' . $row, $student->rw ?? '-');
-            $sheet->setCellValue('AE' . $row, $student->village ?? '-');
-            $sheet->setCellValue('AF' . $row, $student->district ?? '-');
-            $sheet->setCellValue('AG' . $row, $student->city ?? '-');
-            $sheet->setCellValue('AH' . $row, $student->province ?? '-');
-            $sheet->setCellValue('AI' . $row, $statusText);
-            $sheet->setCellValue('AJ' . $row, $enrolledDateFormatted);
+            $allergiesSummary = '-';
+            if (is_array($student->health_habits) && !empty($student->health_habits['allergies']['summary'])) {
+                $allergiesSummary = $student->health_habits['allergies']['summary'];
+            }
 
-            // Row Border & Zebra Striping
-            $sheet->getStyle("A{$row}:{$lastColLetter}{$row}")->applyFromArray([
+            $c = 1;
+            $write = function ($val) use ($sheet, &$c, $row, $cleanCell) {
+                $colLetter = Coordinate::stringFromColumnIndex($c++);
+                $sheet->setCellValueExplicit($colLetter . $row, $cleanCell($val), DataType::TYPE_STRING);
+            };
+
+            $write($no++);
+            $write($student->nis);
+            $write($student->nisn);
+            $write($student->nik);
+            $write($student->no_kk);
+            $write($student->birth_certificate_no ?: $student->no_akta);
+            $write(strtoupper($student->full_name ?? '-'));
+            $write($student->nickname);
+            $write($genderCode);
+            $write($student->birth_place);
+            $write($birthDateFormatted);
+            $write($student->age);
+            $write($student->religion ?: 'Islam');
+            $write($student->citizenship ?: 'WNI');
+            $write($student->ethnic_group ?: $student->ethnicity);
+            $write($student->home_language ?: 'Bahasa Indonesia');
+            $write($student->child_number ?: $student->child_order);
+            $write($student->siblings_count);
+            $write($student->step_siblings_count);
+            $write($student->adoptive_siblings_count);
+            $write($student->classroom?->classLevel?->name);
+            $write($student->classroom?->full_name ?? ($student->classroom?->name ?? '-'));
+            $write($student->academicYear?->name);
+            $write($kategoriText);
+            $write($student->special_needs_type);
+            $write($student->gpkTeacher?->name);
+            $write($student->classroom?->homeroomTeacher?->name);
+            $write($student->address);
+            $write($student->dusun);
+            $write($student->rt);
+            $write($student->rw);
+            $write($student->village ?: $student->kelurahan);
+            $write($student->district ?: $student->kecamatan);
+            $write($student->city);
+            $write($student->province);
+            $write($student->postal_code);
+            $write($student->residence_status ?: $student->housing_status);
+            $write($student->living_with);
+            $write($student->distance_to_school);
+            $write($student->transportation);
+            $write($student->home_phone);
+            $write($student->parent_phone);
+            $write($student->parent_email);
+            $write($student->emergency_contact_name);
+            $write($student->emergency_contact_phone);
+            $write($student->emergency_contact_relation);
+            $write($student->weight);
+            $write($student->height);
+            $write($student->blood_type);
+            $write($student->skin_color);
+            $write($student->hair_type);
+            $write($student->hair_color);
+            $write($allergiesSummary);
+            $write($student->severe_disease_history);
+            $write($student->frequent_disease);
+            $write($student->father_title_prefix ?: $student->father_title_front);
+            $write($student->father_name);
+            $write($student->father_title_suffix ?: $student->father_title_back);
+            $write($student->father_nik);
+            $write($student->father_birth_place);
+            $write($fatherBirthDateFormatted);
+            $write($student->father_religion);
+            $write($student->father_phone);
+            $write($student->father_education);
+            $write($student->father_job);
+            $write($student->father_company);
+            $write($student->father_company_address);
+            $write($student->father_company_phone);
+            $write($student->father_income);
+            $write($student->father_email);
+            $write($student->father_address);
+            $write($student->father_social_media);
+            $write($student->mother_title_prefix ?: $student->mother_title_front);
+            $write($student->mother_name);
+            $write($student->mother_title_suffix ?: $student->mother_title_back);
+            $write($student->mother_nik);
+            $write($student->mother_birth_place);
+            $write($motherBirthDateFormatted);
+            $write($student->mother_religion);
+            $write($student->mother_phone);
+            $write($student->mother_education);
+            $write($student->mother_job);
+            $write($student->mother_company);
+            $write($student->mother_company_address);
+            $write($student->mother_company_phone);
+            $write($student->mother_income);
+            $write($student->mother_email);
+            $write($student->mother_address);
+            $write($student->mother_social_media);
+            $write($student->guardian_title_prefix);
+            $write($student->guardian_name);
+            $write($student->guardian_title_suffix);
+            $write($student->guardian_nik);
+            $write($student->guardian_relation);
+            $write($student->guardian_birth_place);
+            $write($guardianBirthDateFormatted);
+            $write($student->guardian_religion);
+            $write($student->guardian_phone);
+            $write($student->guardian_education);
+            $write($student->guardian_job);
+            $write($student->guardian_company);
+            $write($student->guardian_company_address);
+            $write($student->guardian_company_phone);
+            $write($student->guardian_income);
+            $write($student->guardian_email);
+            $write($student->guardian_address);
+            $write($student->guardian_social_media);
+            $write($student->origin_category);
+            $write($student->previous_school);
+            $write($student->previous_school_address);
+            $write($student->sttb_number_date ?: $student->diploma_number);
+            $write($student->student_hobby);
+            $write($student->student_aspiration);
+            $write($student->parent_aspiration);
+            $write($student->planned_school_after);
+            $write($student->parent_message);
+            $write($student->parent_suggestion);
+            $write($statusText);
+            $write($enrolledDateFormatted);
+
+            $row++;
+        }
+
+        $lastDataRow = $row - 1;
+
+        if ($lastDataRow >= 5) {
+            // Apply single range border & alignment (super fast, no memory leak)
+            $sheet->getStyle("A5:{$lastColLetter}{$lastDataRow}")->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
@@ -419,25 +626,16 @@ class StudentController extends Controller
                 ],
             ]);
 
-            if ($row % 2 === 0) {
-                $sheet->getStyle("A{$row}:{$lastColLetter}{$row}")->getFill()
-                    ->setFillType(Fill::FILL_SOLID)
-                    ->getStartColor()->setRGB('F8FAFC');
-            }
-
-            // Alignments for specific columns
-            $sheet->getStyle("A{$row}:E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle("H{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle("J{$row}:M{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle("P{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle("AI{$row}:AJ{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-            $row++;
+            // Center alignment for specific columns
+            $sheet->getStyle("A5:F{$lastDataRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("I5:I{$lastDataRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("K5:M{$lastDataRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("Q{$lastDataRow}:W{$lastDataRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         }
 
         // Summary Statistics Footer Row
         $summaryRow = $row;
-        $sheet->setCellValue("A{$summaryRow}", "TOTAL PESERTA DIDIK TERDATA: " . count($students) . " Siswa (Putra: {$countMale}, Putri: {$countFemale}, PDBK/Inklusi: {$countPdbk})");
+        $sheet->setCellValueExplicit("A{$summaryRow}", "TOTAL PESERTA DIDIK TERDATA: " . count($students) . " Siswa (Putra: {$countMale}, Putri: {$countFemale}, PDBK/Inklusi: {$countPdbk})", DataType::TYPE_STRING);
         $sheet->mergeCells("A{$summaryRow}:{$lastColLetter}{$summaryRow}");
         $sheet->getStyle("A{$summaryRow}:{$lastColLetter}{$summaryRow}")->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 10],
@@ -445,28 +643,37 @@ class StudentController extends Controller
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '0F172A']]],
         ]);
-        $sheet->getRowDimension($summaryRow)->setRowHeight(24);
+        $sheet->getRowDimension($summaryRow)->setRowHeight(26);
 
-        // Auto-fit column widths
+        // Fast Column Widths
         foreach (range(1, count($headers)) as $colIdx) {
             $colLetter = Coordinate::stringFromColumnIndex($colIdx);
-            $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+            $sheet->getColumnDimension($colLetter)->setWidth(18);
         }
+        $sheet->getColumnDimension('A')->setWidth(6);
+        $sheet->getColumnDimension('B')->setWidth(14);
+        $sheet->getColumnDimension('C')->setWidth(16);
+        $sheet->getColumnDimension('D')->setWidth(18);
+        $sheet->getColumnDimension('G')->setWidth(30);
 
         $cleanYear = str_replace(['/', ' '], '_', $selectedYearName);
         $fileName = 'Data_Siswa_' . str_replace([' ', '.'], '_', $unitName) . '_' . $cleanYear . '_' . date('Ymd_His') . '.xlsx';
 
+        $writer = new Xlsx($spreadsheet);
+        $writer->setPreCalculateFormulas(false); // CRITICAL: disables formula pre-calculation, preventing external workbook crashes
+
+        $response = response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'max-age=0',
+        ]);
+
         if ($request->filled('download_token')) {
-            setcookie('download_token', $request->query('download_token'), time() + 60, '/', '', false, false);
+            $response->headers->setCookie(cookie('download_token', $request->query('download_token'), 1, '/', null, false, false));
         }
 
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header("Content-Disposition: attachment; filename=\"{$fileName}\"");
-        header('Cache-Control: max-age=0');
-
-        $writer = new Xlsx($spreadsheet);
-        $writer->save('php://output');
-        exit;
+        return $response;
     }
 
     /**
@@ -555,7 +762,7 @@ class StudentController extends Controller
         ini_set('memory_limit', '512M');
         $filterData = $this->getFilteredStudentsQuery($request);
         $students = $filterData['query']->orderBy('classroom_id', 'asc')->orderBy('full_name', 'asc')->get();
-        $selectedYearName = $filterData['selectedYearName'] ?: 'Semua_Tapel';
+        $selectedYearName = $filterData['selectedYearName'] ?: 'Semua_TA';
         $unitName = function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh';
 
         $selectedClassLevel = null;
@@ -597,9 +804,341 @@ class StudentController extends Controller
     }
 
     /**
-     * Show single student detail (JSON) with full profile & lifecycle history.
+     * Helper to retrieve school profile and leadership info dynamically from settings and database.
      */
-    public function show($id): JsonResponse
+    protected function getSchoolAndPrincipalInfo(): array
+    {
+        $schoolName = function_exists('setting') ? setting('unit_name', setting('app_name', 'SD Anak Saleh Malang')) : 'SD Anak Saleh Malang';
+        $schoolAddress = function_exists('setting') ? setting('app_address', 'Jl. Candi Panggung Indah No. 1-3, Mojolangu, Lowokwaru, Kota Malang, Jawa Timur') : 'Jl. Candi Panggung Indah No. 1-3, Mojolangu, Lowokwaru, Kota Malang, Jawa Timur';
+        $schoolPhone = function_exists('setting') ? setting('app_phone', setting('school_phone', '+62 812-3456-7890')) : '+62 812-3456-7890';
+        $schoolEmail = function_exists('setting') ? setting('app_email', 'admin@sans.dev') : 'admin@sans.dev';
+
+        $principalUser = User::where('role', 'kepala_sekolah')->first();
+        $principalEmp = null;
+        if ($principalUser && $principalUser->employee_id) {
+            $principalEmp = Employee::find($principalUser->employee_id);
+        }
+        if (!$principalEmp) {
+            $principalEmp = Employee::where(function ($q) {
+                $q->where('position', 'like', '%Kepala Sekolah%')
+                  ->orWhere('position', 'like', '%Kepsek%');
+            })->first();
+        }
+        $principalName = $principalEmp?->name ?? $principalUser?->name ?? (function_exists('setting') ? setting('school_principal_name', 'Hj. Nurlaili, S.Pd., M.Pd.') : 'Hj. Nurlaili, S.Pd., M.Pd.');
+        $principalNiy = $principalEmp?->niy ?? $principalEmp?->nip ?? (function_exists('setting') ? setting('school_principal_niy', '-') : '-');
+
+        // Logo image as base64 for DomPDF embed
+        $logoPath = function_exists('setting') ? setting('app_logo') : null;
+        $logoSrc = null;
+        if ($logoPath) {
+            $fullLogoPath = public_path('storage/' . $logoPath);
+            if (!file_exists($fullLogoPath)) {
+                $fullLogoPath = storage_path('app/public/' . $logoPath);
+            }
+            if (file_exists($fullLogoPath)) {
+                $type = pathinfo($fullLogoPath, PATHINFO_EXTENSION);
+                $data = @file_get_contents($fullLogoPath);
+                if ($data) {
+                    $logoSrc = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                }
+            }
+        }
+
+        return [
+            'schoolName' => $schoolName,
+            'schoolAddress' => $schoolAddress,
+            'schoolPhone' => $schoolPhone,
+            'schoolEmail' => $schoolEmail,
+            'principalName' => $principalName,
+            'principalNiy' => $principalNiy,
+            'logoSrc' => $logoSrc,
+        ];
+    }
+
+    /**
+     * Download official individual student dossier as PDF (A4 Portrait).
+     */
+    public function dossierPdf(Request $request, $id)
+    {
+        ini_set('memory_limit', '512M');
+        set_time_limit(180);
+
+        if ($request->filled('download_token')) {
+            @setcookie('download_token', $request->query('download_token'), time() + 60, '/', '', false, false);
+        }
+
+        $student = Student::with([
+            'academicYear',
+            'classroom.classLevel',
+            'classroom.homeroomTeacher',
+            'gpkTeacher',
+            'classroomHistories' => function ($q) {
+                $q->with('academicYear')->orderBy('id', 'asc');
+            }
+        ])->findOrFail($id);
+
+        $info = $this->getSchoolAndPrincipalInfo();
+        $schoolName = $info['schoolName'];
+        $schoolAddress = $info['schoolAddress'];
+        $schoolPhone = $info['schoolPhone'];
+        $schoolEmail = $info['schoolEmail'];
+        $principalName = $info['principalName'];
+        $principalNiy = $info['principalNiy'];
+        $logoSrc = $info['logoSrc'];
+
+        $fileName = 'Dossier-Siswa-' . \Illuminate\Support\Str::slug($student->full_name) . '-' . ($student->nis ?? $student->id) . '.pdf';
+
+        $pdf = Pdf::loadView('admin.students.dossier-pdf', compact(
+            'student',
+            'schoolName',
+            'schoolAddress',
+            'schoolPhone',
+            'schoolEmail',
+            'principalName',
+            'principalNiy',
+            'logoSrc'
+        ))->setPaper('a4', 'portrait');
+
+        $response = $pdf->download($fileName);
+
+        if ($request->filled('download_token')) {
+            $response->headers->setCookie(cookie('download_token', $request->query('download_token'), 1, '/', null, false, false));
+        }
+
+        return $response;
+    }
+
+    /**
+     * Display standalone printable official dossier for a student (A4 Portrait HTML).
+     */
+    public function dossierPrint($id): View
+    {
+        $student = Student::with([
+            'academicYear',
+            'classroom.classLevel',
+            'classroom.homeroomTeacher',
+            'gpkTeacher',
+            'classroomHistories' => function ($q) {
+                $q->with('academicYear')->orderBy('id', 'asc');
+            }
+        ])->findOrFail($id);
+
+        $info = $this->getSchoolAndPrincipalInfo();
+        $schoolName = $info['schoolName'];
+        $schoolAddress = $info['schoolAddress'];
+        $schoolPhone = $info['schoolPhone'];
+        $schoolEmail = $info['schoolEmail'];
+        $principalName = $info['principalName'];
+        $principalNiy = $info['principalNiy'];
+        $logoSrc = $info['logoSrc'];
+
+        return view('admin.students.print-dossier', compact(
+            'student',
+            'schoolName',
+            'schoolAddress',
+            'schoolPhone',
+            'schoolEmail',
+            'principalName',
+            'principalNiy',
+            'logoSrc'
+        ));
+    }
+
+    /**
+     * Download comprehensive individual student dossier as Excel (.xlsx).
+     */
+    public function dossierExcel(Request $request, $id)
+    {
+        if ($request->filled('download_token')) {
+            @setcookie('download_token', $request->query('download_token'), time() + 60, '/', '', false, false);
+        }
+
+        $student = Student::with([
+            'academicYear',
+            'classroom.classLevel',
+            'classroom.homeroomTeacher',
+            'gpkTeacher',
+            'classroomHistories' => function ($q) {
+                $q->with('academicYear')->orderBy('id', 'asc');
+            }
+        ])->findOrFail($id);
+
+        $info = $this->getSchoolAndPrincipalInfo();
+        $schoolName = $info['schoolName'];
+        $principalName = $info['principalName'];
+        $principalNiy = $info['principalNiy'];
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Sanitize worksheet title (Excel forbids: \ / ? * : [ ] and max 31 characters)
+        $rawSheetName = 'Dossier ' . ($student->nickname ?: $student->full_name);
+        $cleanSheetName = trim(str_replace(['\\', '/', '?', '*', ':', '[', ']'], ' ', $rawSheetName));
+        $cleanSheetName = preg_replace('/\s+/', ' ', $cleanSheetName);
+        $cleanSheetName = mb_substr($cleanSheetName, 0, 31);
+        if (empty($cleanSheetName)) {
+            $cleanSheetName = 'Dossier Siswa';
+        }
+        $sheet->setTitle($cleanSheetName);
+
+        // Document Banner
+        $sheet->mergeCells('A1:D1');
+        $sheet->mergeCells('A2:D2');
+        $sheet->mergeCells('A3:D3');
+
+        $sheet->setCellValue('A1', strtoupper($schoolName));
+        $sheet->setCellValue('A2', 'LEMBAR DOSSIER & BUKU INDUK SISWA: ' . strtoupper($student->full_name));
+        $sheet->setCellValue('A3', 'Dicetak melalui SIM Akademik pada ' . date('d F Y, H:i') . ' WIB');
+
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(13)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF1E1B4B'));
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(11)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF4338CA'));
+        $sheet->getStyle('A3')->getFont()->setItalic(true)->setSize(8.5)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF64748B'));
+        $sheet->getStyle('A1:D3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setVertical(Alignment::VERTICAL_CENTER);
+
+        $sheet->getRowDimension(1)->setRowHeight(24);
+        $sheet->getRowDimension(2)->setRowHeight(20);
+        $sheet->getRowDimension(3)->setRowHeight(18);
+
+        $row = 5;
+
+        $addSectionHeader = function ($title, $color = 'FF4F46E5') use ($sheet, &$row) {
+            $sheet->mergeCells("A{$row}:D{$row}");
+            $sheet->setCellValue("A{$row}", $title);
+            $sheet->getStyle("A{$row}:D{$row}")->getFont()->setBold(true)->setSize(9.5)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FFFFFFFF'));
+            $sheet->getStyle("A{$row}:D{$row}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB($color);
+            $sheet->getStyle("A{$row}:D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setVertical(Alignment::VERTICAL_CENTER)->setIndent(1);
+            $sheet->getRowDimension($row)->setRowHeight(22);
+            $row++;
+        };
+
+        $addDataRow = function ($label1, $val1, $label2 = '', $val2 = '') use ($sheet, &$row) {
+            $sheet->setCellValue("A{$row}", $label1);
+            $sheet->setCellValueExplicit("B{$row}", (string) ($val1 ?? '-'), DataType::TYPE_STRING);
+            $sheet->setCellValue("C{$row}", $label2);
+            $sheet->setCellValueExplicit("D{$row}", (string) ($val2 ?? '-'), DataType::TYPE_STRING);
+
+            $sheet->getStyle("A{$row}")->getFont()->setBold(true)->setSize(8.5)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF475569'));
+            $sheet->getStyle("A{$row}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFF8FAFC');
+            $sheet->getStyle("B{$row}")->getFont()->setSize(8.5)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF0F172A'));
+
+            if (!empty($label2)) {
+                $sheet->getStyle("C{$row}")->getFont()->setBold(true)->setSize(8.5)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF475569'));
+                $sheet->getStyle("C{$row}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFF8FAFC');
+                $sheet->getStyle("D{$row}")->getFont()->setSize(8.5)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF0F172A'));
+            }
+
+            $sheet->getStyle("A{$row}:D{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setARGB('FFE2E8F0');
+            $sheet->getStyle("A{$row}:D{$row}")->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+            $sheet->getRowDimension($row)->setRowHeight(19);
+            $row++;
+        };
+
+        // 1. IDENTITAS POKOK & LEGALITAS
+        $addSectionHeader('1. IDENTITAS POKOK & LEGALITAS KEPENDUDUKAN (DAPODIK)', 'FF0284C7');
+        $addDataRow('Nama Lengkap Siswa', strtoupper($student->full_name), 'Nama Panggilan', $student->nickname ?? '-');
+        $addDataRow('Jenis Kelamin', $student->gender == 'L' ? 'Laki-laki' : 'Perempuan', 'Nomor Induk Siswa (NIS)', $student->nis ?? '-');
+        $addDataRow('NISN', $student->nisn ?? '-', 'Nomor Induk Kependudukan (NIK)', $student->nik ?? '-');
+        $addDataRow('Nomor Kartu Keluarga (KK)', $student->no_kk ?? '-', 'No. Akta Kelahiran', $student->birth_certificate_no ?? ($student->no_akta ?? '-'));
+        $addDataRow('Tempat Lahir', $student->birth_place ?? '-', 'Tanggal Lahir', $student->birth_date ? $student->birth_date->translatedFormat('d F Y') : '-');
+        $addDataRow('Usia Saat Ini', $student->age, 'Agama & Kepercayaan', $student->religion ?? 'Islam');
+        $addDataRow('Kewarganegaraan', $student->citizenship ?? 'Indonesia (WNI)', 'Anak Ke- / Jml Saudara', 'Anak ke-' . ($student->child_order ?? '-') . ' dari ' . ($student->siblings_count ?? '-') . ' bersaudara');
+        $addDataRow('Kategori Siswa', $student->student_type ?? 'Reguler', 'Kebutuhan Khusus (PDBK)', $student->special_needs_type ?? 'Tidak Ada');
+        $addDataRow('PIN Akses Kios Presensi', $student->pin_access ?? '-', 'Suku Bangsa', $student->ethnicity ?? '-');
+
+        // 2. PENEMPATAN AKADEMIK & ROMBEL
+        $row++;
+        $addSectionHeader('2. PENEMPATAN AKADEMIK & ROMBONGAN BELAJAR', 'FF4F46E5');
+        $addDataRow('Tahun Ajaran Aktif', $student->academicYear?->name ?? '-', 'Status Siswa', strtoupper($student->status ?? 'Aktif'));
+        $addDataRow('Tingkat / Grade', $student->classroom?->classLevel?->name ?? 'Tingkat 1', 'Rombongan Belajar (Rombel)', $student->classroom?->name ?? '-');
+        $addDataRow('Wali Kelas', $student->classroom?->homeroomTeacher?->name ?? '-', 'Guru Pendamping Khusus (GPK)', $student->gpkTeacher?->name ?? 'Tidak Ada GPK Khusus');
+
+        // 3. ALAMAT & DOMISILI
+        $row++;
+        $addSectionHeader('3. ALAMAT TINGGAL & LINGKUNGAN DOMISILI', 'FF0D9488');
+        $addDataRow('Alamat Lengkap', $student->address ?? '-', 'RT / RW & Dusun', 'RT ' . ($student->rt ?? '-') . ' / RW ' . ($student->rw ?? '-') . ' & Dusun: ' . ($student->dusun ?? '-'));
+        $addDataRow('Kelurahan / Desa', $student->village ?? ($student->kelurahan ?? '-'), 'Kecamatan', $student->district ?? ($student->kecamatan ?? '-'));
+        $addDataRow('Kota / Kabupaten', $student->city ?? '-', 'Provinsi & Kode Pos', ($student->province ?? '-') . ' & ' . ($student->postal_code ?? '-'));
+        $addDataRow('Tinggal Bersama', $student->living_with ?? 'Orang Tua', 'Alat Transportasi', $student->transportation ?? '-');
+        $addDataRow('Jarak ke Sekolah', $student->distance_to_school ? $student->distance_to_school . ' km' : '-', 'Waktu Tempuh', $student->travel_time_minutes ? $student->travel_time_minutes . ' menit' : '-');
+
+        // 4. DATA ORANG TUA & WALI
+        $row++;
+        $addSectionHeader('4. DATA ORANG TUA, WALI & KONTAK DARURAT', 'FF059669');
+        $fatherFullName = trim(($student->father_title_front ?? '') . ' ' . ($student->father_name ?? '-') . ' ' . ($student->father_title_back ?? '')) ?: '-';
+        $motherFullName = trim(($student->mother_title_front ?? '') . ' ' . ($student->mother_name ?? '-') . ' ' . ($student->mother_title_back ?? '')) ?: '-';
+        $addDataRow('Nama Ayah Kandung', $fatherFullName, 'Nama Ibu Kandung', $motherFullName);
+        $addDataRow('NIK Ayah', $student->father_nik ?? '-', 'NIK Ibu', $student->mother_nik ?? '-');
+        $addDataRow('Pendidikan Ayah', $student->father_education ?? '-', 'Pendidikan Ibu', $student->mother_education ?? '-');
+        $addDataRow('Pekerjaan Ayah', $student->father_job ?? '-', 'Pekerjaan Ibu', $student->mother_job ?? '-');
+        $addDataRow('Instansi Ayah', $student->father_company ?? '-', 'Instansi Ibu', $student->mother_company ?? '-');
+        $addDataRow('Penghasilan Ayah', $student->father_income ?? '-', 'Penghasilan Ibu', $student->mother_income ?? '-');
+        $addDataRow('No. HP / WA Ayah', $student->father_phone ?? '-', 'No. HP / WA Ibu', $student->mother_phone ?? '-');
+        if ($student->guardian_name) {
+            $addDataRow('Nama Wali Siswa', $student->guardian_name, 'Hubungan / No. HP Wali', ($student->guardian_relation ?? 'Wali') . ' / ' . ($student->guardian_phone ?? '-'));
+        }
+        $addDataRow('Kontak Darurat (Nama)', ($student->emergency_contact_name ?? '-') . ' (' . ($student->emergency_contact_relation ?? 'Keluarga') . ')', 'No. HP Kontak Darurat', $student->emergency_contact_phone ?? '-');
+
+        // 5. FISIK & REKAM MEDIS
+        $row++;
+        $addSectionHeader('5. FISIK, KESEHATAN & REKAM MEDIS UKS', 'FFD97706');
+        $addDataRow('Tinggi Badan (TB)', $student->height ? $student->height . ' cm' : '-', 'Berat Badan (BB)', $student->weight ? $student->weight . ' kg' : '-');
+        $addDataRow('Golongan Darah', $student->blood_type ?? '-', 'Ciri Fisik', 'Kulit: ' . ($student->skin_color ?? '-') . ', Rambut: ' . ($student->hair_type ?? '-'));
+        $addDataRow('Riwayat Penyakit Berat', $student->severe_disease_history ?? 'Tidak Ada', 'Riwayat Alergi', $student->allergy_history ?? 'Tidak Ada');
+
+        // 6. ASAL SEKOLAH & MINAT
+        $row++;
+        $addSectionHeader('6. ASAL SEKOLAH & MINAT BAKAT', 'FF7C3AED');
+        $addDataRow('Sekolah Asal (SD/MI)', $student->previous_school ?? '-', 'NPSN & Nilai Rata-rata', ($student->previous_school_npsn ?? '-') . ' & ' . ($student->previous_school_score ?? '-'));
+        $addDataRow('No. Seri Sertifikat/Ijazah TK', $student->diploma_number ?? '-', 'Hobi & Cita-cita', ($student->student_hobby ?? '-') . ' & ' . ($student->student_aspiration ?? '-'));
+
+        // Signatures
+        $signRow = $row + 2;
+        $sheet->mergeCells("A{$signRow}:B{$signRow}");
+        $sheet->setCellValue("A{$signRow}", "Mengetahui,");
+        $sheet->setCellValue("A" . ($signRow + 1), "Orang Tua / Wali Siswa");
+        $sheet->setCellValue("A" . ($signRow + 4), "( " . ($student->father_name ?? ($student->mother_name ?? ($student->guardian_name ?? '..................................'))) . " )");
+        $sheet->setCellValue("A" . ($signRow + 5), "Orang Tua / Wali");
+
+        $sheet->mergeCells("C{$signRow}:D{$signRow}");
+        $sheet->setCellValue("C{$signRow}", "Malang, " . \Carbon\Carbon::now()->translatedFormat('d F Y'));
+        $sheet->setCellValue("C" . ($signRow + 1), "Kepala Sekolah " . $schoolName);
+        $sheet->setCellValue("C" . ($signRow + 4), "( " . ($principalName ?? 'Kepala Sekolah') . " )");
+        $sheet->setCellValue("C" . ($signRow + 5), "NIY/NIP: " . ($principalNiy ?? '-'));
+
+        $sheet->getStyle("A{$signRow}:D" . ($signRow + 5))->getFont()->setSize(9);
+        $sheet->getStyle("A" . ($signRow + 1))->getFont()->setBold(true);
+        $sheet->getStyle("A" . ($signRow + 4))->getFont()->setBold(true);
+        $sheet->getStyle("C" . ($signRow + 1))->getFont()->setBold(true);
+        $sheet->getStyle("C" . ($signRow + 4))->getFont()->setBold(true);
+        $sheet->getStyle("A{$signRow}:D" . ($signRow + 5))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Column Dimensions
+        $sheet->getColumnDimension('A')->setWidth(26);
+        $sheet->getColumnDimension('B')->setWidth(38);
+        $sheet->getColumnDimension('C')->setWidth(26);
+        $sheet->getColumnDimension('D')->setWidth(38);
+
+        $writer = new Xlsx($spreadsheet);
+        $fileName = 'Dossier-Siswa-' . \Illuminate\Support\Str::slug($student->full_name) . '-' . ($student->nis ?? $student->id) . '.xlsx';
+
+        $response = response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'max-age=0',
+        ]);
+
+        if ($request->filled('download_token')) {
+            $response->headers->setCookie(cookie('download_token', $request->query('download_token'), 1, '/', null, false, false));
+        }
+
+        return $response;
+    }
+
+    /**
+     * Show single student detail (View or JSON for AJAX/API).
+     */
+    public function show($id, ?Request $request = null): View|JsonResponse
     {
         $student = Student::with([
             'classroom.classLevel', 
@@ -612,53 +1151,115 @@ class StudentController extends Controller
             'classroomHistories.academicYear'
         ])->findOrFail($id);
 
-        // Hitung kelengkapan data (Completeness %)
-        $requiredFields = [
-            'nis', 'nik', 'full_name', 'gender', 'birth_place', 'birth_date', 
-            'religion', 'address', 'father_name', 'mother_name', 'parent_phone',
-            'no_kk', 'birth_certificate_no', 'blood_type'
-        ];
-        $filledCount = 0;
-        foreach ($requiredFields as $field) {
-            if (!empty($student->$field)) {
-                $filledCount++;
+        if ($request && ($request->wantsJson() || $request->ajax())) {
+            $requiredFields = [
+                'nis', 'nik', 'full_name', 'gender', 'birth_place', 'birth_date', 
+                'religion', 'address', 'father_name', 'mother_name', 'parent_phone',
+                'no_kk', 'birth_certificate_no', 'blood_type'
+            ];
+            $filledCount = 0;
+            foreach ($requiredFields as $field) {
+                if (!empty($student->$field)) {
+                    $filledCount++;
+                }
+            }
+            $completenessPercent = round(($filledCount / count($requiredFields)) * 100);
+
+            return response()->json([
+                'success' => true,
+                'student' => $student->load(['gpkTeacher', 'classroom.classLevel', 'academicYear']),
+                'completeness_percent' => $completenessPercent,
+                'formatted_gender' => $student->formatted_gender,
+                'age' => $student->age,
+                'whatsapp_url' => $student->whatsapp_url,
+                'classroom_histories' => $student->classroomHistories()->with(['academicYear', 'classroom.classLevel', 'classroom.homeroomTeacher'])->get(),
+            ]);
+        }
+
+        return view('admin.students.show', compact('student'));
+    }
+
+    /**
+     * Show the standalone page for creating a new student.
+     */
+    public function create(Request $request): View
+    {
+        $activeAcademicYear = AcademicYear::where('is_active', true)->first();
+        $classLevels = ClassLevel::orderBy('order', 'asc')->get();
+        $classrooms = Classroom::with('classLevel')->where('is_active', true)->get();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->get()->unique('name');
+        $teachers = Employee::whereIn('status', ['Active', 'aktif', 'active', 'Aktif'])->orderBy('name')->get();
+        $student = new Student();
+
+        // SPMB candidate prefill if query parameter spmb_candidate_id is provided
+        if ($request->filled('spmb_candidate_id')) {
+            $candidate = \App\Models\SpmbCandidate::find($request->spmb_candidate_id);
+            if ($candidate) {
+                $student->fill([
+                    'nisn' => $candidate->nisn,
+                    'nik' => $candidate->nik,
+                    'no_kk' => $candidate->no_kk,
+                    'full_name' => $candidate->full_name,
+                    'nickname' => $candidate->nickname,
+                    'gender' => in_array(strtolower((string)$candidate->gender), ['female', 'p', 'perempuan']) ? 'P' : 'L',
+                    'birth_place' => $candidate->birth_place,
+                    'birth_date' => $candidate->birth_date,
+                    'religion' => $candidate->religion ?: 'Islam',
+                    'address' => $candidate->address,
+                    'rt' => $candidate->rt,
+                    'rw' => $candidate->rw,
+                    'village' => $candidate->village,
+                    'district' => $candidate->district,
+                    'city' => $candidate->city,
+                    'province' => $candidate->province,
+                    'postal_code' => $candidate->postal_code,
+                    'child_number' => $candidate->child_number,
+                    'siblings_count' => $candidate->siblings_count,
+                    'blood_type' => $candidate->blood_type,
+                    'weight' => $candidate->weight,
+                    'height' => $candidate->height,
+                    'previous_school' => $candidate->previous_school,
+                    'previous_school_address' => $candidate->previous_school_address,
+                    'father_name' => $candidate->father_name,
+                    'father_nik' => $candidate->father_nik,
+                    'father_phone' => $candidate->father_phone,
+                    'father_job' => $candidate->father_job,
+                    'father_education' => $candidate->father_education,
+                    'mother_name' => $candidate->mother_name,
+                    'mother_nik' => $candidate->mother_nik,
+                    'mother_phone' => $candidate->mother_phone,
+                    'mother_job' => $candidate->mother_job,
+                    'mother_education' => $candidate->mother_education,
+                    'guardian_name' => $candidate->guardian_name,
+                    'guardian_phone' => $candidate->guardian_phone,
+                    'parent_phone' => $candidate->parent_phone ?: ($candidate->father_phone ?: $candidate->mother_phone),
+                    'parent_email' => $candidate->parent_email,
+                    'student_photo_url' => $candidate->student_photo_url,
+                    'student_type' => $candidate->student_type ?? 'REGULER',
+                    'special_needs_type' => $candidate->special_needs_type,
+                    'spmb_candidate_id' => $candidate->id,
+                    'status' => 'aktif',
+                    'notes' => "Data calon murid diimpor dari SPMB (" . ($candidate->registration_number ?? $candidate->id) . ")",
+                ]);
             }
         }
-        $completenessPercent = round(($filledCount / count($requiredFields)) * 100);
 
-        return response()->json([
-            'success' => true,
-            'student' => $student->load(['gpkTeacher', 'classroom.classLevel', 'academicYear']),
-            'completeness_percent' => $completenessPercent,
-            'formatted_gender' => $student->formatted_gender,
-            'age' => $student->age,
-            'whatsapp_url' => $student->whatsapp_url,
-            'clean_phone' => $student->clean_parent_phone,
-            'classroom_histories' => $student->classroomHistories()->with(['academicYear', 'classroom'])->get(),
-        ]);
+        return view('admin.students.create', compact('student', 'classrooms', 'classLevels', 'academicYears', 'activeAcademicYear', 'teachers'));
     }
 
     /**
-     * Show the form for creating a new student.
+     * Show the standalone page for editing the specified student.
      */
-    public function create()
+    public function edit($id): View
     {
-        return redirect()->route('students.index', ['open_create' => 1]);
-    }
+        $student = Student::with(['classroom.classLevel', 'academicYear', 'gpkTeacher'])->findOrFail($id);
+        $activeAcademicYear = AcademicYear::where('is_active', true)->first();
+        $classLevels = ClassLevel::orderBy('order', 'asc')->get();
+        $classrooms = Classroom::with('classLevel')->where('is_active', true)->get();
+        $academicYears = AcademicYear::orderBy('name', 'desc')->get()->unique('name');
+        $teachers = Employee::whereIn('status', ['Active', 'aktif', 'active', 'Aktif'])->orderBy('name')->get();
 
-    /**
-     * Show the form for editing the specified student.
-     * Redirects to the students index with the student's edit modal triggered.
-     */
-    public function edit($id)
-    {
-        $student = Student::findOrFail($id);
-
-        return redirect()->route('students.index', [
-            'search' => $student->nis ?: $student->full_name,
-            'edit_student_id' => $student->id,
-            'academic_year_id' => $student->academic_year_id,
-        ]);
+        return view('admin.students.edit', compact('student', 'classrooms', 'classLevels', 'academicYears', 'activeAcademicYear', 'teachers'));
     }
 
     /**
@@ -689,6 +1290,7 @@ class StudentController extends Controller
 
             // 3. Alamat & Domisili
             'address' => 'nullable|string',
+            'dusun' => 'nullable|string|max:100',
             'rt' => 'nullable|string|max:20',
             'rw' => 'nullable|string|max:20',
             'village' => 'nullable|string|max:100',
@@ -698,8 +1300,16 @@ class StudentController extends Controller
             'province' => 'nullable|string|max:100',
             'postal_code' => 'nullable|string|max:20',
             'residence_status' => 'nullable|string|max:100',
-            'distance_to_school' => 'nullable|string|max:50',
+            'living_with' => 'nullable|string|max:255',
+            'distance_to_school' => 'nullable|string|max:100',
+            'transportation' => 'nullable|string|max:255',
+            'travel_time_minutes' => 'nullable|integer',
             'home_phone' => 'nullable|string|max:50',
+
+            // Kontak Darurat
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:100',
+            'emergency_contact_relation' => 'nullable|string|max:150',
 
             // 4. Keluarga & Saudara
             'child_number' => 'nullable|integer',
@@ -707,16 +1317,22 @@ class StudentController extends Controller
             'step_siblings_count' => 'nullable|integer',
             'adoptive_siblings_count' => 'nullable|integer',
             'home_language' => 'nullable|string|max:100',
+            'ethnic_group' => 'nullable|string|max:100',
 
             // 5. Kesehatan & UKS
             'weight' => 'nullable|string|max:20',
             'height' => 'nullable|string|max:20',
             'blood_type' => 'nullable|string|max:10',
+            'skin_color' => 'nullable|string|max:50',
+            'hair_type' => 'nullable|string|max:50',
+            'hair_color' => 'nullable|string|max:50',
             'severe_disease_history' => 'nullable|string',
             'frequent_disease' => 'nullable|string',
 
             // 6. Orang Tua & Wali
+            'father_title_prefix' => 'nullable|string|max:50',
             'father_name' => 'nullable|string|max:255',
+            'father_title_suffix' => 'nullable|string|max:50',
             'father_nik' => 'nullable|string|max:50',
             'father_birth_place' => 'nullable|string|max:100',
             'father_birth_date' => 'nullable|date',
@@ -725,10 +1341,16 @@ class StudentController extends Controller
             'father_education' => 'nullable|string|max:100',
             'father_job' => 'nullable|string|max:100',
             'father_company' => 'nullable|string|max:255',
+            'father_company_address' => 'nullable|string',
+            'father_company_phone' => 'nullable|string|max:50',
             'father_income' => 'nullable|string|max:100',
             'father_email' => 'nullable|email|max:100',
+            'father_address' => 'nullable|string',
+            'father_social_media' => 'nullable|string|max:255',
 
+            'mother_title_prefix' => 'nullable|string|max:50',
             'mother_name' => 'nullable|string|max:255',
+            'mother_title_suffix' => 'nullable|string|max:50',
             'mother_nik' => 'nullable|string|max:50',
             'mother_birth_place' => 'nullable|string|max:100',
             'mother_birth_date' => 'nullable|date',
@@ -737,24 +1359,60 @@ class StudentController extends Controller
             'mother_education' => 'nullable|string|max:100',
             'mother_job' => 'nullable|string|max:100',
             'mother_company' => 'nullable|string|max:255',
+            'mother_company_address' => 'nullable|string',
+            'mother_company_phone' => 'nullable|string|max:50',
             'mother_income' => 'nullable|string|max:100',
             'mother_email' => 'nullable|email|max:100',
+            'mother_address' => 'nullable|string',
+            'mother_social_media' => 'nullable|string|max:255',
 
+            'guardian_title_prefix' => 'nullable|string|max:50',
             'guardian_name' => 'nullable|string|max:255',
+            'guardian_title_suffix' => 'nullable|string|max:50',
+            'guardian_nik' => 'nullable|string|max:50',
             'guardian_relation' => 'nullable|string|max:100',
+            'is_accompanied_by_guardian' => 'nullable|boolean',
+            'guardian_birth_place' => 'nullable|string|max:100',
+            'guardian_birth_date' => 'nullable|date',
+            'guardian_religion' => 'nullable|string|max:50',
             'guardian_phone' => 'nullable|string|max:50',
+            'guardian_education' => 'nullable|string|max:100',
             'guardian_job' => 'nullable|string|max:100',
+            'guardian_company' => 'nullable|string|max:255',
+            'guardian_company_address' => 'nullable|string',
+            'guardian_company_phone' => 'nullable|string|max:50',
+            'guardian_income' => 'nullable|string|max:100',
+            'guardian_email' => 'nullable|email|max:100',
+            'guardian_social_media' => 'nullable|string|max:255',
             'guardian_address' => 'nullable|string',
 
             'parent_phone' => 'nullable|string|max:50',
             'parent_email' => 'nullable|email|max:100',
 
-            // 7. Riwayat Asal Sekolah & Dokumen
+            // 7. Cita-cita, Hobi, Harapan & Pesan Ortu
+            'student_hobby' => 'nullable|string',
+            'student_aspiration' => 'nullable|string',
+            'parent_aspiration' => 'nullable|string',
+            'planned_school_after' => 'nullable|string',
+            'parent_message' => 'nullable|string',
+            'parent_suggestion' => 'nullable|string',
+
+            // 8. Riwayat Asal Sekolah & Dokumen
             'previous_school' => 'nullable|string|max:255',
             'origin_category' => 'nullable|string|max:100',
             'previous_school_address' => 'nullable|string',
             'sttb_number_date' => 'nullable|string|max:255',
+            'diploma_number' => 'nullable|string|max:100',
             'checklist_documents' => 'nullable|array',
+            'student_photo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
+            'document_files' => 'nullable|array',
+            'document_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:10240',
+            'documents' => 'nullable|array',
+
+            // 9. Hybrid JSON Fields
+            'family_data' => 'nullable|array',
+            'health_habits' => 'nullable|array',
+            'development_psychology' => 'nullable|array',
 
             // Penempatan Kelas & Status
             'classroom_id' => 'nullable|exists:classrooms,id',
@@ -792,6 +1450,29 @@ class StudentController extends Controller
             $validated['gpk_employee_id'] = null;
         }
 
+        // File Optimizer for Photo & Documents
+        if ($request->hasFile('student_photo')) {
+            $optimizer = app(FileOptimizerService::class);
+            $validated['student_photo'] = $optimizer->optimizeAndStore(
+                $request->file('student_photo'),
+                'students/photos'
+            );
+        }
+
+        if ($request->hasFile('document_files')) {
+            $optimizer = app(FileOptimizerService::class);
+            $existingDocs = $validated['documents'] ?? [];
+            foreach ($request->file('document_files') as $docKey => $file) {
+                if ($file && $file->isValid()) {
+                    $existingDocs[$docKey] = $optimizer->optimizeAndStore(
+                        $file,
+                        'students/documents/' . $docKey
+                    );
+                }
+            }
+            $validated['documents'] = $existingDocs;
+        }
+
         $student = Student::create($validated);
 
         // Catat riwayat kelas awal (Lifecycle History)
@@ -814,11 +1495,18 @@ class StudentController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => "Data siswa {$student->full_name} berhasil ditambahkan.",
-            'student' => $student->load('gpkTeacher'),
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Data siswa {$student->full_name} berhasil ditambahkan.",
+                'student' => $student->load('gpkTeacher'),
+                'student_id' => $student->id,
+                'redirect_url' => route('students.show', $student->id),
+            ]);
+        }
+
+        return redirect()->route('students.show', $student->id)
+            ->with('success', "Data siswa {$student->full_name} berhasil ditambahkan.");
     }
 
     /**
@@ -851,6 +1539,7 @@ class StudentController extends Controller
 
             // 3. Alamat & Domisili
             'address' => 'nullable|string',
+            'dusun' => 'nullable|string|max:100',
             'rt' => 'nullable|string|max:20',
             'rw' => 'nullable|string|max:20',
             'village' => 'nullable|string|max:100',
@@ -860,8 +1549,16 @@ class StudentController extends Controller
             'province' => 'nullable|string|max:100',
             'postal_code' => 'nullable|string|max:20',
             'residence_status' => 'nullable|string|max:100',
-            'distance_to_school' => 'nullable|string|max:50',
+            'living_with' => 'nullable|string|max:255',
+            'distance_to_school' => 'nullable|string|max:100',
+            'transportation' => 'nullable|string|max:255',
+            'travel_time_minutes' => 'nullable|integer',
             'home_phone' => 'nullable|string|max:50',
+
+            // Kontak Darurat
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:100',
+            'emergency_contact_relation' => 'nullable|string|max:150',
 
             // 4. Keluarga & Saudara
             'child_number' => 'nullable|integer',
@@ -869,16 +1566,22 @@ class StudentController extends Controller
             'step_siblings_count' => 'nullable|integer',
             'adoptive_siblings_count' => 'nullable|integer',
             'home_language' => 'nullable|string|max:100',
+            'ethnic_group' => 'nullable|string|max:100',
 
             // 5. Kesehatan & UKS
             'weight' => 'nullable|string|max:20',
             'height' => 'nullable|string|max:20',
             'blood_type' => 'nullable|string|max:10',
+            'skin_color' => 'nullable|string|max:50',
+            'hair_type' => 'nullable|string|max:50',
+            'hair_color' => 'nullable|string|max:50',
             'severe_disease_history' => 'nullable|string',
             'frequent_disease' => 'nullable|string',
 
             // 6. Orang Tua & Wali
+            'father_title_prefix' => 'nullable|string|max:50',
             'father_name' => 'nullable|string|max:255',
+            'father_title_suffix' => 'nullable|string|max:50',
             'father_nik' => 'nullable|string|max:50',
             'father_birth_place' => 'nullable|string|max:100',
             'father_birth_date' => 'nullable|date',
@@ -887,10 +1590,16 @@ class StudentController extends Controller
             'father_education' => 'nullable|string|max:100',
             'father_job' => 'nullable|string|max:100',
             'father_company' => 'nullable|string|max:255',
+            'father_company_address' => 'nullable|string',
+            'father_company_phone' => 'nullable|string|max:50',
             'father_income' => 'nullable|string|max:100',
             'father_email' => 'nullable|email|max:100',
+            'father_address' => 'nullable|string',
+            'father_social_media' => 'nullable|string|max:255',
 
+            'mother_title_prefix' => 'nullable|string|max:50',
             'mother_name' => 'nullable|string|max:255',
+            'mother_title_suffix' => 'nullable|string|max:50',
             'mother_nik' => 'nullable|string|max:50',
             'mother_birth_place' => 'nullable|string|max:100',
             'mother_birth_date' => 'nullable|date',
@@ -899,24 +1608,60 @@ class StudentController extends Controller
             'mother_education' => 'nullable|string|max:100',
             'mother_job' => 'nullable|string|max:100',
             'mother_company' => 'nullable|string|max:255',
+            'mother_company_address' => 'nullable|string',
+            'mother_company_phone' => 'nullable|string|max:50',
             'mother_income' => 'nullable|string|max:100',
             'mother_email' => 'nullable|email|max:100',
+            'mother_address' => 'nullable|string',
+            'mother_social_media' => 'nullable|string|max:255',
 
+            'guardian_title_prefix' => 'nullable|string|max:50',
             'guardian_name' => 'nullable|string|max:255',
+            'guardian_title_suffix' => 'nullable|string|max:50',
+            'guardian_nik' => 'nullable|string|max:50',
             'guardian_relation' => 'nullable|string|max:100',
+            'is_accompanied_by_guardian' => 'nullable|boolean',
+            'guardian_birth_place' => 'nullable|string|max:100',
+            'guardian_birth_date' => 'nullable|date',
+            'guardian_religion' => 'nullable|string|max:50',
             'guardian_phone' => 'nullable|string|max:50',
+            'guardian_education' => 'nullable|string|max:100',
             'guardian_job' => 'nullable|string|max:100',
+            'guardian_company' => 'nullable|string|max:255',
+            'guardian_company_address' => 'nullable|string',
+            'guardian_company_phone' => 'nullable|string|max:50',
+            'guardian_income' => 'nullable|string|max:100',
+            'guardian_email' => 'nullable|email|max:100',
+            'guardian_social_media' => 'nullable|string|max:255',
             'guardian_address' => 'nullable|string',
 
             'parent_phone' => 'nullable|string|max:50',
             'parent_email' => 'nullable|email|max:100',
 
-            // 7. Riwayat Asal Sekolah & Dokumen
+            // 7. Cita-cita, Hobi, Harapan & Pesan Ortu
+            'student_hobby' => 'nullable|string',
+            'student_aspiration' => 'nullable|string',
+            'parent_aspiration' => 'nullable|string',
+            'planned_school_after' => 'nullable|string',
+            'parent_message' => 'nullable|string',
+            'parent_suggestion' => 'nullable|string',
+
+            // 8. Riwayat Asal Sekolah & Dokumen
             'previous_school' => 'nullable|string|max:255',
             'origin_category' => 'nullable|string|max:100',
             'previous_school_address' => 'nullable|string',
             'sttb_number_date' => 'nullable|string|max:255',
+            'diploma_number' => 'nullable|string|max:100',
             'checklist_documents' => 'nullable|array',
+            'student_photo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
+            'document_files' => 'nullable|array',
+            'document_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:10240',
+            'documents' => 'nullable|array',
+
+            // 9. Hybrid JSON Fields
+            'family_data' => 'nullable|array',
+            'health_habits' => 'nullable|array',
+            'development_psychology' => 'nullable|array',
 
             // Penempatan Kelas & Status
             'classroom_id' => 'nullable|exists:classrooms,id',
@@ -942,6 +1687,29 @@ class StudentController extends Controller
             $validated['gpk_employee_id'] = null;
         }
 
+        // File Optimizer for Photo & Documents
+        if ($request->hasFile('student_photo')) {
+            $optimizer = app(FileOptimizerService::class);
+            $validated['student_photo'] = $optimizer->optimizeAndStore(
+                $request->file('student_photo'),
+                'students/photos'
+            );
+        }
+
+        if ($request->hasFile('document_files')) {
+            $optimizer = app(FileOptimizerService::class);
+            $existingDocs = is_array($student->documents) ? $student->documents : [];
+            foreach ($request->file('document_files') as $docKey => $file) {
+                if ($file && $file->isValid()) {
+                    $existingDocs[$docKey] = $optimizer->optimizeAndStore(
+                        $file,
+                        'students/documents/' . $docKey
+                    );
+                }
+            }
+            $validated['documents'] = $existingDocs;
+        }
+
         $student->update($validated);
 
         // Update / create history record for current academic year & classroom with snapshots
@@ -962,11 +1730,18 @@ class StudentController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => "Data siswa {$student->full_name} berhasil diperbarui.",
-            'student' => $student,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Data siswa {$student->full_name} berhasil diperbarui.",
+                'student' => $student,
+                'student_id' => $student->id,
+                'redirect_url' => route('students.show', $student->id),
+            ]);
+        }
+
+        return redirect()->route('students.show', $student->id)
+            ->with('success', "Data siswa {$student->full_name} berhasil diperbarui.");
     }
 
     /**
@@ -1012,7 +1787,7 @@ class StudentController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Data Siswa');
 
-        // Comprehensive Headers (All 7 Categories + Rombel/Tapel)
+        // Comprehensive Headers (All Categories + Ledger, UKS, Parents & Survey)
         $headers = [
             // 1. Identitas & Legalitas
             'NIS (Wajib)',
@@ -1033,15 +1808,16 @@ class StudentController extends Controller
             'Jenis Kebutuhan Khusus',
             'Catatan Kebutuhan Khusus',
 
-            // 3. Penempatan Rombel & Tapel
+            // 3. Penempatan Rombel & Tahun Ajaran
             'Kelas / Grade (e.g. 1A)',
-            'Nama Kelas (e.g. Berlian)',
-            'Tahun Pelajaran (e.g. 2026/2027)',
+            'Nama Kelas (e.g. Samudra Pasai)',
+            'Tahun Ajaran (e.g. 2026/2027)',
             'Tanggal Diterima (YYYY-MM-DD)',
             'Status Siswa (aktif/lulus/mutasi/keluar)',
 
             // 4. Alamat & Domisili
             'Alamat Rumah',
+            'Dusun / Lingkungan',
             'RT',
             'RW',
             'Kelurahan / Desa',
@@ -1051,12 +1827,18 @@ class StudentController extends Controller
             'Provinsi',
             'Kode Pos',
             'Status Tempat Tinggal',
-            'Jarak ke Sekolah',
+            'Tinggal Bersama',
+            'Jarak ke Sekolah (km)',
+            'Transportasi ke Sekolah',
+            'Waktu Tempuh (menit)',
             'Telepon Rumah',
 
-            // 5. Kontak Utama
+            // 5. Kontak Utama & Darurat
             'No WhatsApp Utama Ortu',
             'Email Utama Ortu',
+            'Kontak Darurat (Nama)',
+            'No Kontak Darurat',
+            'Hubungan Kontak Darurat',
 
             // 6. Keluarga & Saudara
             'Anak Ke',
@@ -1064,16 +1846,22 @@ class StudentController extends Controller
             'Jumlah Saudara Tiri',
             'Jumlah Saudara Angkat',
             'Bahasa Sehari-hari',
+            'Suku Bangsa',
 
             // 7. Kesehatan & Fisik (UKS)
             'Golongan Darah (A/B/AB/O)',
             'Tinggi Badan (cm)',
             'Berat Badan (kg)',
+            'Warna Kulit',
+            'Jenis Rambut',
+            'Warna Rambut',
             'Riwayat Penyakit Berat',
             'Penyakit Sering Diderita',
 
             // 8. Data Ayah
+            'Gelar Depan Ayah',
             'Nama Ayah',
+            'Gelar Belakang Ayah',
             'NIK Ayah',
             'Tempat Lahir Ayah',
             'Tanggal Lahir Ayah (YYYY-MM-DD)',
@@ -1086,9 +1874,13 @@ class StudentController extends Controller
             'Telp Kantor Ayah',
             'Penghasilan Ayah',
             'Email Ayah',
+            'Alamat Rumah Ayah',
+            'Media Sosial Ayah',
 
             // 9. Data Ibu
+            'Gelar Depan Ibu',
             'Nama Ibu',
+            'Gelar Belakang Ibu',
             'NIK Ibu',
             'Tempat Lahir Ibu',
             'Tanggal Lahir Ibu (YYYY-MM-DD)',
@@ -1101,9 +1893,14 @@ class StudentController extends Controller
             'Telp Kantor Ibu',
             'Penghasilan Ibu',
             'Email Ibu',
+            'Alamat Rumah Ibu',
+            'Media Sosial Ibu',
 
             // 10. Data Wali
+            'Gelar Depan Wali',
             'Nama Wali',
+            'Gelar Belakang Wali',
+            'NIK Wali',
             'Hubungan Wali',
             'Tempat Lahir Wali',
             'Tanggal Lahir Wali (YYYY-MM-DD)',
@@ -1111,29 +1908,43 @@ class StudentController extends Controller
             'No HP Wali',
             'Pendidikan Wali',
             'Pekerjaan Wali',
-            'Alamat Wali',
+            'Instansi / Kantor Wali',
+            'Alamat Kantor Wali',
+            'Telp Kantor Wali',
+            'Penghasilan Wali',
+            'Email Wali',
+            'Media Sosial Wali',
+            'Alamat Rumah Wali',
 
-            // 11. Riwayat Asal Sekolah & Catatan
-            'Kategori Asal (TK/PAUD/Pindahan)',
+            // 11. Riwayat Asal Sekolah
+            'Kategori Asal (SD/MI/Pindahan)',
             'Nama Asal Sekolah',
             'Alamat Asal Sekolah',
             'Nomor & Tanggal STTB',
+
+            // 12. Harapan, Cita-cita & Catatan Ortu
+            'Hobi Murid',
+            'Cita-cita Murid',
+            'Harapan / Cita-cita Orang Tua',
+            'Rencana Sekolah Lanjutan (SMA/SMK)',
+            'Pesan Orang Tua kepada Sekolah',
+            'Saran Orang Tua kepada Sekolah',
             'Catatan Tambahan',
         ];
 
         // Sample Data Row (Carefully formatted strings to demonstrate correct data formats)
         $example = [
             // Identitas
-            '26.SD.001',
-            'Muhammad Fauzi Pratama',
-            'Fauzi',
+            '26.SMP.001',
+            'Ahmad Danial Pratama',
+            'Danial',
             'L',
             'Malang',
-            '2019-05-12',
+            '2014-05-12',
             '0123456789',
-            '3573010101190001',
-            '3573010101180001',
-            '12345/DIS/2019',
+            '3573010101140001',
+            '3573010101140001',
+            '12345/DIS/2014',
             'Islam',
             'WNI',
 
@@ -1142,15 +1953,16 @@ class StudentController extends Controller
             '',
             '',
 
-            // Rombel & Tapel
+            // Rombel & TA
             '1A',
-            'Berlian',
+            'Samudra Pasai',
             '2026/2027',
             '2026-07-15',
             'aktif',
 
             // Alamat
             'Jl. Soekarno Hatta No. 45, RT 02 RW 05',
+            'Mojolangu Indah',
             '02',
             '05',
             'Mojolangu',
@@ -1159,13 +1971,19 @@ class StudentController extends Controller
             'Kota Malang',
             'Jawa Timur',
             '65142',
-            'Bersama Orang Tua',
+            'Milik Sendiri',
+            'Orangtua',
             '2.5 km',
+            'Sepeda Motor',
+            '15',
             '0341-412345',
 
-            // Kontak Utama
+            // Kontak Utama & Darurat
             '081234567890',
-            'ortu.fauzi@gmail.com',
+            'ortu.danial@gmail.com',
+            'Budi Santoso',
+            '081234567890',
+            'Ayah Kandung',
 
             // Keluarga
             '1',
@@ -1173,16 +1991,22 @@ class StudentController extends Controller
             '0',
             '0',
             'Bahasa Indonesia',
+            'Jawa',
 
-            // UKS
+            // UKS / Fisik
             'O',
-            '118',
-            '21',
+            '148',
+            '42',
+            'Sawo Matang',
+            'Lurus',
+            'Hitam',
             'Tidak ada',
             'Flu / Batuk ringan',
 
             // Ayah
+            'Ir.',
             'Budi Santoso',
+            'S.T., M.T.',
             '3573010101780001',
             'Malang',
             '1978-03-20',
@@ -1195,9 +2019,13 @@ class StudentController extends Controller
             '0341-362222',
             'Rp 7.000.000 - Rp 10.000.000',
             'budi.santoso@gmail.com',
+            'Jl. Soekarno Hatta No. 45 Malang',
+            '@budisantoso',
 
             // Ibu
+            'Hj.',
             'Siti Aminah',
+            'S.Pd.',
             '3573010101820002',
             'Surabaya',
             '1982-08-14',
@@ -1210,6 +2038,8 @@ class StudentController extends Controller
             '0341-551234',
             'Rp 3.000.000 - Rp 5.000.000',
             'siti.aminah@gmail.com',
+            'Jl. Soekarno Hatta No. 45 Malang',
+            '@sitiaminah',
 
             // Wali
             '',
@@ -1221,13 +2051,30 @@ class StudentController extends Controller
             '',
             '',
             '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
 
             // Asal Sekolah
-            'TK',
-            'TK Anak Saleh',
+            'SD',
+            'SD Anak Saleh Malang',
             'Jl. Candi Panggung No. 20, Malang',
-            '012/TK-AS/2026',
-            'Siswa pindahan atau peserta baru',
+            '012/SD-AS/2026',
+
+            // Harapan & Catatan
+            'Membaca & Robotik',
+            'Insinyur Robotika',
+            'Menjadi anak sholeh dan berprestasi di bidang teknologi',
+            'SMA Negeri 1 Malang',
+            'Mohon bimbingan dan pendampingan dari bapak/ibu guru',
+            'Tingkatkan kegiatan ekstrakurikuler sains dan robotika',
+            'Peserta didik baru tahun ajaran 2026/2027',
         ];
 
         // Put headers in row 1
@@ -1256,12 +2103,12 @@ class StudentController extends Controller
         }
 
         // ==========================================
-        // Sheet 2: Referensi Rombel & Tapel
+        // Sheet 2: Referensi Rombel & Tahun Ajaran
         // ==========================================
         $refSheet = $spreadsheet->createSheet();
-        $refSheet->setTitle('Referensi Rombel & Tapel');
+        $refSheet->setTitle('Referensi Rombel & TA');
 
-        $refHeaders = ['No', 'Tingkat', 'Kelas / Grade', 'Nama Kelas (Julukan)', 'Nama Rombel Resmi', 'Tahun Pelajaran', 'Wali Kelas'];
+        $refHeaders = ['No', 'Tingkat', 'Kelas / Grade', 'Nama Kelas (Julukan)', 'Nama Rombel Resmi', 'Tahun Ajaran', 'Wali Kelas'];
         foreach ($refHeaders as $idx => $rh) {
             $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($idx + 1);
             $refSheet->setCellValue($colLetter . '1', $rh);
@@ -1311,14 +2158,14 @@ class StudentController extends Controller
 
         $guideData = [
             ['NIS', 'Nomor Induk Siswa (Wajib & Unik di sistem)', '26.SD.001'],
-            ['Nama Lengkap', 'Nama lengkap siswa sesuai akta kelahiran (Wajib)', 'Muhammad Fauzi Pratama'],
+            ['Nama Lengkap', 'Nama lengkap siswa sesuai akta kelahiran (Wajib)', 'Ahmad Danial Pratama'],
             ['Jenis Kelamin', 'Ketik "L" untuk Laki-laki atau "P" untuk Perempuan', 'L atau P'],
-            ['Tanggal Lahir / Diterima', 'Format tanggal YYYY-MM-DD atau DD/MM/YYYY atau teks nama bulan', '2019-05-12 atau 12/05/2019'],
-            ['Kelas / Grade & Nama Kelas', 'Sesuaikan dengan data di sheet "Referensi Rombel & Tapel"', 'Grade: 1A, Nama Kelas: Berlian'],
-            ['Tahun Pelajaran', 'Format tahun ajaran sekolah (misal: 2026/2027)', '2026/2027'],
+            ['Tanggal Lahir / Diterima', 'Format tanggal YYYY-MM-DD atau DD/MM/YYYY atau teks nama bulan', '2014-05-12 atau 12/05/2014'],
+            ['Kelas / Grade & Nama Kelas', 'Sesuaikan dengan data di sheet "Referensi Rombel & TA"', 'Grade: 1A, Nama Kelas: Samudra Pasai'],
+            ['Tahun Ajaran', 'Format tahun ajaran sekolah (misal: 2026/2027)', '2026/2027'],
             ['Status Siswa', 'Pilihan: aktif, lulus, mutasi, keluar, nonaktif (default: aktif)', 'aktif'],
             ['Tipe Siswa', 'Pilihan: reguler, pdbk, atau inklusi', 'reguler atau pdbk'],
-            ['Nomor Identitas (NIK/KK/NISN)', 'Disimpan sebagai teks sehingga angka 0 di depan tidak akan hilang', '3573010101190001'],
+            ['Nomor Identitas (NIK/KK/NISN)', 'Disimpan sebagai teks sehingga angka 0 di depan tidak akan hilang', '3573010101140001'],
             ['No Telepon / WhatsApp', 'Nomor HP aktif untuk broadcast WhatsApp pengumuman sekolah', '081234567890'],
         ];
 
@@ -1373,6 +2220,18 @@ class StudentController extends Controller
         $reader->setReadDataOnly(true);
         $spreadsheet = $reader->load($path);
 
+        // Jika file mengandung MASTER dan GF, jalankan sinkronisasi dual-sheet master otomatis
+        if ($spreadsheet->sheetNameExists('MASTER') && $spreadsheet->sheetNameExists('GF')) {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('students:import-database', ['file' => $path]);
+                $count = Student::count();
+                return redirect()->route('students.index')->with('success', "File Master Database & Google Form berhasil diimpor dan disinkronkan sepenuhnya! Total {$count} data siswa tersimpan dalam sistem.");
+            } catch (\Exception $e) {
+                \Log::warning("Artisan import dual-sheet failed: " . $e->getMessage());
+                // Lanjut ke fallback import sheet tunggal
+            }
+        }
+
         // Select MASTER sheet if exists (like in TU files), otherwise use first sheet
         $sheet = $spreadsheet->getSheetByName('MASTER') ?: ($spreadsheet->getSheetByName('Data Siswa') ?: $spreadsheet->getActiveSheet());
         $rows = $sheet->toArray();
@@ -1405,11 +2264,7 @@ class StudentController extends Controller
             // Extract Identitas Wajib
             $nis = isset($map['nis']) && !empty($row[$map['nis']]) ? trim((string)$row[$map['nis']]) : null;
             $fullName = isset($map['full_name']) && !empty($row[$map['full_name']]) ? trim((string)$row[$map['full_name']]) : null;
-
-            if (empty($nis)) {
-                $errors[] = "Baris {$rowNumber}: NIS wajib diisi.";
-                continue;
-            }
+            $nik = isset($map['nik']) && !empty($row[$map['nik']]) ? trim((string)$row[$map['nik']]) : null;
 
             if (empty($fullName)) {
                 $errors[] = "Baris {$rowNumber}: Nama lengkap wajib diisi.";
@@ -1437,7 +2292,6 @@ class StudentController extends Controller
             $birthPlace = $getVal('birth_place');
             $birthDateRaw = $getVal('birth_date');
             $nisn = $getVal('nisn');
-            $nik = $getVal('nik');
             $noKk = $getVal('no_kk');
             $birthCertNo = $getVal('birth_certificate_no');
             $religion = $getVal('religion') ?: 'Islam';
@@ -1453,7 +2307,7 @@ class StudentController extends Controller
             $specialNeedsType = $getVal('special_needs_type');
             $specialNeedsNotes = $getVal('special_needs_notes');
 
-            // 3. Rombel & Tapel Resolusi
+            // 3. Rombel & TA Resolusi
             $gradeCode = $getVal('code');
             $className = $getVal('class_name');
             $combinedRombel = $getVal('rombel_combined');
@@ -1463,6 +2317,7 @@ class StudentController extends Controller
 
             // 4. Alamat & Domisili
             $address = $getVal('address');
+            $dusun = $getVal('dusun');
             $rt = $getVal('rt');
             $rw = $getVal('rw');
             $village = $getVal('village');
@@ -1472,12 +2327,18 @@ class StudentController extends Controller
             $province = $getVal('province');
             $postalCode = $getVal('postal_code');
             $residenceStatus = $getVal('residence_status');
+            $livingWith = $getVal('living_with');
             $distanceToSchool = $getVal('distance_to_school');
+            $transportation = $getVal('transportation');
+            $travelTimeMinutes = $getInt('travel_time_minutes');
             $homePhone = $getVal('home_phone');
 
-            // 5. Kontak Utama
+            // 5. Kontak Utama & Darurat
             $parentPhone = $getVal('parent_phone');
             $parentEmail = $getVal('parent_email');
+            $emergencyContactName = $getVal('emergency_contact_name');
+            $emergencyContactPhone = $getVal('emergency_contact_phone');
+            $emergencyContactRelation = $getVal('emergency_contact_relation');
 
             // 6. Keluarga & Saudara
             $childNumber = $getInt('child_number');
@@ -1485,16 +2346,22 @@ class StudentController extends Controller
             $stepSiblingsCount = $getInt('step_siblings_count');
             $adoptiveSiblingsCount = $getInt('adoptive_siblings_count');
             $homeLanguage = $getVal('home_language');
+            $ethnicGroup = $getVal('ethnic_group');
 
-            // 7. Kesehatan & UKS
+            // 7. Kesehatan & UKS (Fisik)
             $bloodType = $getVal('blood_type');
             $height = $getVal('height');
             $weight = $getVal('weight');
+            $skinColor = $getVal('skin_color');
+            $hairType = $getVal('hair_type');
+            $hairColor = $getVal('hair_color');
             $severeDisease = $getVal('severe_disease_history');
             $frequentDisease = $getVal('frequent_disease');
 
             // 8. Data Ayah
+            $fatherTitlePrefix = $getVal('father_title_prefix');
             $fatherName = $getVal('father_name');
+            $fatherTitleSuffix = $getVal('father_title_suffix');
             $fatherNik = $getVal('father_nik');
             $fatherBirthPlace = $getVal('father_birth_place');
             $fatherBirthDateRaw = $getVal('father_birth_date');
@@ -1507,9 +2374,13 @@ class StudentController extends Controller
             $fatherCompanyPhone = $getVal('father_company_phone');
             $fatherIncome = $getVal('father_income');
             $fatherEmail = $getVal('father_email');
+            $fatherAddress = $getVal('father_address');
+            $fatherSocialMedia = $getVal('father_social_media');
 
             // 9. Data Ibu
+            $motherTitlePrefix = $getVal('mother_title_prefix');
             $motherName = $getVal('mother_name');
+            $motherTitleSuffix = $getVal('mother_title_suffix');
             $motherNik = $getVal('mother_nik');
             $motherBirthPlace = $getVal('mother_birth_place');
             $motherBirthDateRaw = $getVal('mother_birth_date');
@@ -1522,23 +2393,43 @@ class StudentController extends Controller
             $motherCompanyPhone = $getVal('mother_company_phone');
             $motherIncome = $getVal('mother_income');
             $motherEmail = $getVal('mother_email');
+            $motherAddress = $getVal('mother_address');
+            $motherSocialMedia = $getVal('mother_social_media');
 
             // 10. Data Wali
+            $guardianTitlePrefix = $getVal('guardian_title_prefix');
             $guardianName = $getVal('guardian_name');
+            $guardianTitleSuffix = $getVal('guardian_title_suffix');
+            $guardianNik = $getVal('guardian_nik');
             $guardianRelation = $getVal('guardian_relation');
+            $isAccompaniedByGuardian = $getVal('is_accompanied_by_guardian');
             $guardianBirthPlace = $getVal('guardian_birth_place');
             $guardianBirthDateRaw = $getVal('guardian_birth_date');
             $guardianReligion = $getVal('guardian_religion');
             $guardianPhone = $getVal('guardian_phone');
             $guardianEducation = $getVal('guardian_education');
             $guardianJob = $getVal('guardian_job');
+            $guardianCompany = $getVal('guardian_company');
+            $guardianCompanyAddress = $getVal('guardian_company_address');
+            $guardianCompanyPhone = $getVal('guardian_company_phone');
+            $guardianIncome = $getVal('guardian_income');
+            $guardianEmail = $getVal('guardian_email');
+            $guardianSocialMedia = $getVal('guardian_social_media');
             $guardianAddress = $getVal('guardian_address');
 
-            // 11. Riwayat Asal Sekolah & Catatan
+            // 11. Riwayat Asal Sekolah
             $originCategory = $getVal('origin_category');
             $previousSchool = $getVal('previous_school');
             $previousSchoolAddress = $getVal('previous_school_address');
             $sttbNumberDate = $getVal('sttb_number_date');
+
+            // 12. Harapan, Cita-cita & Catatan Ortu
+            $studentHobby = $getVal('student_hobby');
+            $studentAspiration = $getVal('student_aspiration');
+            $parentAspiration = $getVal('parent_aspiration');
+            $plannedSchoolAfter = $getVal('planned_school_after');
+            $parentMessage = $getVal('parent_message');
+            $parentSuggestion = $getVal('parent_suggestion');
             $notes = $getVal('notes');
 
             // Normalisasi Gender
@@ -1690,7 +2581,7 @@ class StudentController extends Controller
                 'special_needs_type' => $specialNeedsType,
                 'special_needs_notes' => $specialNeedsNotes,
 
-                // Rombel & Tapel
+                // Rombel & TA
                 'classroom_id' => $classroomId,
                 'academic_year_id' => $academicYearId,
                 'status' => $status,
@@ -1698,6 +2589,7 @@ class StudentController extends Controller
 
                 // Alamat & Domisili
                 'address' => $address,
+                'dusun' => $dusun,
                 'rt' => $rt,
                 'rw' => $rw,
                 'village' => $village,
@@ -1707,12 +2599,18 @@ class StudentController extends Controller
                 'province' => $province,
                 'postal_code' => $postalCode,
                 'residence_status' => $residenceStatus,
+                'living_with' => $livingWith,
                 'distance_to_school' => $distanceToSchool,
+                'transportation' => $transportation,
+                'travel_time_minutes' => $travelTimeMinutes,
                 'home_phone' => $homePhone,
 
-                // Kontak Utama
+                // Kontak Utama & Darurat
                 'parent_phone' => $parentPhone,
                 'parent_email' => $parentEmail,
+                'emergency_contact_name' => $emergencyContactName,
+                'emergency_contact_phone' => $emergencyContactPhone,
+                'emergency_contact_relation' => $emergencyContactRelation,
 
                 // Keluarga & Saudara
                 'child_number' => $childNumber,
@@ -1720,16 +2618,22 @@ class StudentController extends Controller
                 'step_siblings_count' => $stepSiblingsCount,
                 'adoptive_siblings_count' => $adoptiveSiblingsCount,
                 'home_language' => $homeLanguage,
+                'ethnic_group' => $ethnicGroup,
 
-                // Kesehatan & UKS
+                // Kesehatan & UKS (Fisik)
                 'blood_type' => $bloodType,
                 'height' => $height,
                 'weight' => $weight,
+                'skin_color' => $skinColor,
+                'hair_type' => $hairType,
+                'hair_color' => $hairColor,
                 'severe_disease_history' => $severeDisease,
                 'frequent_disease' => $frequentDisease,
 
                 // Data Ayah
+                'father_title_prefix' => $fatherTitlePrefix,
                 'father_name' => $fatherName,
+                'father_title_suffix' => $fatherTitleSuffix,
                 'father_nik' => $fatherNik,
                 'father_birth_place' => $fatherBirthPlace,
                 'father_birth_date' => $fatherBirthDate,
@@ -1742,9 +2646,13 @@ class StudentController extends Controller
                 'father_company_phone' => $fatherCompanyPhone,
                 'father_income' => $fatherIncome,
                 'father_email' => $fatherEmail,
+                'father_address' => $fatherAddress,
+                'father_social_media' => $fatherSocialMedia,
 
                 // Data Ibu
+                'mother_title_prefix' => $motherTitlePrefix,
                 'mother_name' => $motherName,
+                'mother_title_suffix' => $motherTitleSuffix,
                 'mother_nik' => $motherNik,
                 'mother_birth_place' => $motherBirthPlace,
                 'mother_birth_date' => $motherBirthDate,
@@ -1757,28 +2665,57 @@ class StudentController extends Controller
                 'mother_company_phone' => $motherCompanyPhone,
                 'mother_income' => $motherIncome,
                 'mother_email' => $motherEmail,
+                'mother_address' => $motherAddress,
+                'mother_social_media' => $motherSocialMedia,
 
                 // Data Wali
+                'guardian_title_prefix' => $guardianTitlePrefix,
                 'guardian_name' => $guardianName,
+                'guardian_title_suffix' => $guardianTitleSuffix,
+                'guardian_nik' => $guardianNik,
                 'guardian_relation' => $guardianRelation,
+                'is_accompanied_by_guardian' => $isAccompaniedByGuardian ? (bool)$isAccompaniedByGuardian : null,
                 'guardian_birth_place' => $guardianBirthPlace,
                 'guardian_birth_date' => $guardianBirthDate,
                 'guardian_religion' => $guardianReligion,
                 'guardian_phone' => $guardianPhone,
                 'guardian_education' => $guardianEducation,
                 'guardian_job' => $guardianJob,
+                'guardian_company' => $guardianCompany,
+                'guardian_company_address' => $guardianCompanyAddress,
+                'guardian_company_phone' => $guardianCompanyPhone,
+                'guardian_income' => $guardianIncome,
+                'guardian_email' => $guardianEmail,
+                'guardian_social_media' => $guardianSocialMedia,
                 'guardian_address' => $guardianAddress,
 
-                // Asal Sekolah & Catatan
+                // Asal Sekolah
                 'origin_category' => $originCategory,
                 'previous_school' => $previousSchool,
                 'previous_school_address' => $previousSchoolAddress,
                 'sttb_number_date' => $sttbNumberDate,
+
+                // Harapan, Cita-cita & Catatan Ortu
+                'student_hobby' => $studentHobby,
+                'student_aspiration' => $studentAspiration,
+                'parent_aspiration' => $parentAspiration,
+                'planned_school_after' => $plannedSchoolAfter,
+                'parent_message' => $parentMessage,
+                'parent_suggestion' => $parentSuggestion,
                 'notes' => $notes,
             ];
 
-            // Filter null values if updating to avoid overwriting existing data with blanks
-            $student = Student::where('nis', $nis)->first();
+            // Pencarian siswa existing (berdasarkan NIS, NIK, atau Nama Lengkap)
+            $student = null;
+            if (!empty($nis)) {
+                $student = Student::where('nis', $nis)->first();
+            }
+            if (!$student && !empty($nik)) {
+                $student = Student::where('nik', $nik)->first();
+            }
+            if (!$student && !empty($fullName)) {
+                $student = Student::where('full_name', $fullName)->first();
+            }
 
             if ($student) {
                 $filteredData = array_filter($dataToSave, fn($v) => !is_null($v));
@@ -1883,7 +2820,11 @@ class StudentController extends Controller
 
             // --- 1. DATA AYAH ---
             if (str_contains($clean, 'ayah')) {
-                if (str_contains($clean, 'nik') || str_contains($clean, 'ktp')) {
+                if (str_contains($clean, 'gelar depan') || str_contains($clean, 'prefix')) {
+                    $map['father_title_prefix'] = $cIdx;
+                } elseif (str_contains($clean, 'gelar belakang') || str_contains($clean, 'suffix')) {
+                    $map['father_title_suffix'] = $cIdx;
+                } elseif (str_contains($clean, 'nik') || str_contains($clean, 'ktp')) {
                     $map['father_nik'] = $cIdx;
                 } elseif (str_contains($clean, 'tempat lahir') || (str_contains($clean, 'tempat') && !str_contains($clean, 'bekerja'))) {
                     $map['father_birth_place'] = $cIdx;
@@ -1893,11 +2834,15 @@ class StudentController extends Controller
                     $map['father_religion'] = $cIdx;
                 } elseif (str_contains($clean, 'alamat') && (str_contains($clean, 'instansi') || str_contains($clean, 'kantor'))) {
                     $map['father_company_address'] = $cIdx;
+                } elseif (str_contains($clean, 'alamat')) {
+                    $map['father_address'] = $cIdx;
+                } elseif (str_contains($clean, 'sosial media') || str_contains($clean, 'sosmed') || str_contains($clean, 'medsos') || str_contains($clean, 'ig') || str_contains($clean, 'instagram')) {
+                    $map['father_social_media'] = $cIdx;
                 } elseif ((str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'hp')) && (str_contains($clean, 'instansi') || str_contains($clean, 'kantor'))) {
                     $map['father_company_phone'] = $cIdx;
                 } elseif (str_contains($clean, 'instansi') || str_contains($clean, 'tempat bekerja') || str_contains($clean, 'perusahaan')) {
                     $map['father_company'] = $cIdx;
-                } elseif (str_contains($clean, 'handphone') || str_contains($clean, 'hp') || str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'wa') || str_contains($clean, 'ponsel')) {
+                } elseif (str_contains($clean, 'handphone') || str_contains($clean, 'hp') || str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'whatsapp') || preg_match('/\bwa\b/', $clean) || str_contains($clean, 'ponsel')) {
                     $map['father_phone'] = $cIdx;
                 } elseif (str_contains($clean, 'pendidikan') || str_contains($clean, 'lulusan')) {
                     $map['father_education'] = $cIdx;
@@ -1915,7 +2860,11 @@ class StudentController extends Controller
 
             // --- 2. DATA IBU ---
             if (str_contains($clean, 'ibu')) {
-                if (str_contains($clean, 'nik') || str_contains($clean, 'ktp')) {
+                if (str_contains($clean, 'gelar depan') || str_contains($clean, 'prefix')) {
+                    $map['mother_title_prefix'] = $cIdx;
+                } elseif (str_contains($clean, 'gelar belakang') || str_contains($clean, 'suffix')) {
+                    $map['mother_title_suffix'] = $cIdx;
+                } elseif (str_contains($clean, 'nik') || str_contains($clean, 'ktp')) {
                     $map['mother_nik'] = $cIdx;
                 } elseif (str_contains($clean, 'tempat lahir') || (str_contains($clean, 'tempat') && !str_contains($clean, 'bekerja'))) {
                     $map['mother_birth_place'] = $cIdx;
@@ -1925,11 +2874,15 @@ class StudentController extends Controller
                     $map['mother_religion'] = $cIdx;
                 } elseif (str_contains($clean, 'alamat') && (str_contains($clean, 'instansi') || str_contains($clean, 'kantor'))) {
                     $map['mother_company_address'] = $cIdx;
+                } elseif (str_contains($clean, 'alamat')) {
+                    $map['mother_address'] = $cIdx;
+                } elseif (str_contains($clean, 'sosial media') || str_contains($clean, 'sosmed') || str_contains($clean, 'medsos') || str_contains($clean, 'ig') || str_contains($clean, 'instagram')) {
+                    $map['mother_social_media'] = $cIdx;
                 } elseif ((str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'hp')) && (str_contains($clean, 'instansi') || str_contains($clean, 'kantor'))) {
                     $map['mother_company_phone'] = $cIdx;
                 } elseif (str_contains($clean, 'instansi') || str_contains($clean, 'tempat bekerja') || str_contains($clean, 'perusahaan')) {
                     $map['mother_company'] = $cIdx;
-                } elseif (str_contains($clean, 'handphone') || str_contains($clean, 'hp') || str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'wa') || str_contains($clean, 'ponsel')) {
+                } elseif (str_contains($clean, 'handphone') || str_contains($clean, 'hp') || str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'whatsapp') || preg_match('/\bwa\b/', $clean) || str_contains($clean, 'ponsel')) {
                     $map['mother_phone'] = $cIdx;
                 } elseif (str_contains($clean, 'pendidikan') || str_contains($clean, 'lulusan')) {
                     $map['mother_education'] = $cIdx;
@@ -1947,7 +2900,15 @@ class StudentController extends Controller
 
             // --- 3. DATA WALI ---
             if (str_contains($clean, 'wali')) {
-                if (str_contains($clean, 'hubungan')) {
+                if (str_contains($clean, 'gelar depan') || str_contains($clean, 'prefix')) {
+                    $map['guardian_title_prefix'] = $cIdx;
+                } elseif (str_contains($clean, 'gelar belakang') || str_contains($clean, 'suffix')) {
+                    $map['guardian_title_suffix'] = $cIdx;
+                } elseif (str_contains($clean, 'didampingi') || str_contains($clean, 'bersama wali')) {
+                    $map['is_accompanied_by_guardian'] = $cIdx;
+                } elseif (str_contains($clean, 'nik') || str_contains($clean, 'ktp')) {
+                    $map['guardian_nik'] = $cIdx;
+                } elseif (str_contains($clean, 'hubungan')) {
                     $map['guardian_relation'] = $cIdx;
                 } elseif (str_contains($clean, 'tempat lahir') || (str_contains($clean, 'tempat') && !str_contains($clean, 'tinggal'))) {
                     $map['guardian_birth_place'] = $cIdx;
@@ -1955,17 +2916,67 @@ class StudentController extends Controller
                     $map['guardian_birth_date'] = $cIdx;
                 } elseif (str_contains($clean, 'agama')) {
                     $map['guardian_religion'] = $cIdx;
+                } elseif (str_contains($clean, 'alamat') && (str_contains($clean, 'instansi') || str_contains($clean, 'kantor'))) {
+                    $map['guardian_company_address'] = $cIdx;
                 } elseif (str_contains($clean, 'alamat')) {
                     $map['guardian_address'] = $cIdx;
-                } elseif (str_contains($clean, 'handphone') || str_contains($clean, 'hp') || str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'wa') || str_contains($clean, 'ponsel')) {
+                } elseif (str_contains($clean, 'sosial media') || str_contains($clean, 'sosmed') || str_contains($clean, 'medsos') || str_contains($clean, 'ig') || str_contains($clean, 'instagram')) {
+                    $map['guardian_social_media'] = $cIdx;
+                } elseif ((str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'hp')) && (str_contains($clean, 'instansi') || str_contains($clean, 'kantor'))) {
+                    $map['guardian_company_phone'] = $cIdx;
+                } elseif (str_contains($clean, 'instansi') || str_contains($clean, 'tempat bekerja') || str_contains($clean, 'perusahaan')) {
+                    $map['guardian_company'] = $cIdx;
+                } elseif (str_contains($clean, 'handphone') || str_contains($clean, 'hp') || str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'whatsapp') || preg_match('/\bwa\b/', $clean) || str_contains($clean, 'ponsel')) {
                     $map['guardian_phone'] = $cIdx;
                 } elseif (str_contains($clean, 'pendidikan') || str_contains($clean, 'lulusan')) {
                     $map['guardian_education'] = $cIdx;
+                } elseif (str_contains($clean, 'penghasilan') || str_contains($clean, 'gaji') || str_contains($clean, 'pendapatan')) {
+                    $map['guardian_income'] = $cIdx;
+                } elseif (str_contains($clean, 'email')) {
+                    $map['guardian_email'] = $cIdx;
                 } elseif (str_contains($clean, 'pekerjaan') || str_contains($clean, 'profesi') || str_contains($clean, 'kerja')) {
                     $map['guardian_job'] = $cIdx;
                 } elseif (str_contains($clean, 'nama')) {
                     $map['guardian_name'] = $cIdx;
                 }
+                continue;
+            }
+
+            // --- KONTAK DARURAT ---
+            if (str_contains($clean, 'darurat') || str_contains($clean, 'emergency')) {
+                if (str_contains($clean, 'hubungan') || str_contains($clean, 'status') || str_contains($clean, 'relasi')) {
+                    $map['emergency_contact_relation'] = $cIdx;
+                } elseif (str_contains($clean, 'telepon') || str_contains($clean, 'telp') || str_contains($clean, 'hp') || str_contains($clean, 'wa') || str_contains($clean, 'nomor') || str_contains($clean, 'no')) {
+                    $map['emergency_contact_phone'] = $cIdx;
+                } elseif (str_contains($clean, 'nama')) {
+                    $map['emergency_contact_name'] = $cIdx;
+                }
+                continue;
+            }
+
+            // --- HARAPAN, HOBI, CITA-CITA & PESAN ORTU ---
+            if (str_contains($clean, 'hobi') || str_contains($clean, 'kegemaran')) {
+                $map['student_hobby'] = $cIdx;
+                continue;
+            }
+            if (str_contains($clean, 'cita-cita') || str_contains($clean, 'cita cita') || str_contains($clean, 'harapan')) {
+                if (str_contains($clean, 'ortu') || str_contains($clean, 'orang tua') || str_contains($clean, 'ayah') || str_contains($clean, 'ibu')) {
+                    $map['parent_aspiration'] = $cIdx;
+                } else {
+                    $map['student_aspiration'] = $cIdx;
+                }
+                continue;
+            }
+            if (str_contains($clean, 'sekolah lanjutan') || str_contains($clean, 'rencana sekolah') || str_contains($clean, 'sma') || str_contains($clean, 'smk')) {
+                $map['planned_school_after'] = $cIdx;
+                continue;
+            }
+            if (str_contains($clean, 'pesan') && (str_contains($clean, 'ortu') || str_contains($clean, 'orang tua') || str_contains($clean, 'sekolah'))) {
+                $map['parent_message'] = $cIdx;
+                continue;
+            }
+            if (str_contains($clean, 'saran') && (str_contains($clean, 'ortu') || str_contains($clean, 'orang tua') || str_contains($clean, 'sekolah'))) {
+                $map['parent_suggestion'] = $cIdx;
                 continue;
             }
 
@@ -2005,7 +3016,7 @@ class StudentController extends Controller
                 $map['student_type'] = $cIdx;
             }
 
-            // --- 6. ROMBEL & TAPEL ---
+            // --- 6. ROMBEL & TA ---
             elseif (str_contains($clean, 'grade') || str_contains($clean, 'kode rombel') || str_contains($clean, 'kode kelas') || $clean === 'kelas') {
                 $map['code'] = $cIdx;
                 $hasSeparateRombel = true;
@@ -2021,7 +3032,15 @@ class StudentController extends Controller
             }
 
             // --- 7. ALAMAT & DOMISILI SISWA ---
-            elseif ((str_contains($clean, 'alamat rumah') || str_contains($clean, 'alamat tempat tinggal') || str_contains($clean, 'alamat') || str_contains($clean, 'domisili') || str_contains($clean, 'jalan')) && !str_contains($clean, 'tk') && !str_contains($clean, 'sekolah') && !str_contains($clean, 'kantor')) {
+            elseif (str_contains($clean, 'dusun') || str_contains($clean, 'lingkungan') || str_contains($clean, 'dukuh')) {
+                $map['dusun'] = $cIdx;
+            } elseif (str_contains($clean, 'tinggal bersama') || str_contains($clean, 'bersama siapa')) {
+                $map['living_with'] = $cIdx;
+            } elseif (str_contains($clean, 'transportasi') || str_contains($clean, 'kendaraan') || str_contains($clean, 'berangkat')) {
+                $map['transportation'] = $cIdx;
+            } elseif (str_contains($clean, 'waktu tempuh') || str_contains($clean, 'lama perjalanan')) {
+                $map['travel_time_minutes'] = $cIdx;
+            } elseif ((str_contains($clean, 'alamat rumah') || str_contains($clean, 'alamat tempat tinggal') || str_contains($clean, 'alamat') || str_contains($clean, 'domisili') || str_contains($clean, 'jalan')) && !str_contains($clean, 'tk') && !str_contains($clean, 'sekolah') && !str_contains($clean, 'kantor')) {
                 $map['address'] = $cIdx;
             } elseif (!isset($map['rt']) && ($clean === 'rt' || str_starts_with($clean, 'rt ') || str_ends_with($clean, ' rt'))) {
                 $map['rt'] = $cIdx;
@@ -2039,7 +3058,7 @@ class StudentController extends Controller
                 $map['province'] = $cIdx;
             } elseif (str_contains($clean, 'kode pos') || str_contains($clean, 'kodepos') || str_contains($clean, 'pos')) {
                 $map['postal_code'] = $cIdx;
-            } elseif (str_contains($clean, 'status tempat tinggal') || str_contains($clean, 'tinggal bersama') || str_contains($clean, 'status tinggal')) {
+            } elseif (str_contains($clean, 'status tempat tinggal') || str_contains($clean, 'status tinggal')) {
                 $map['residence_status'] = $cIdx;
             } elseif (str_contains($clean, 'jarak')) {
                 $map['distance_to_school'] = $cIdx;
@@ -2060,15 +3079,23 @@ class StudentController extends Controller
                 $map['siblings_count'] = $cIdx;
             } elseif (str_contains($clean, 'bahasa')) {
                 $map['home_language'] = $cIdx;
+            } elseif (str_contains($clean, 'suku')) {
+                $map['ethnic_group'] = $cIdx;
             }
 
-            // --- 9. KESEHATAN & UKS ---
+            // --- 9. KESEHATAN & FISIK (UKS) ---
             elseif (str_contains($clean, 'gol darah') || str_contains($clean, 'golongan darah') || str_contains($clean, 'darah')) {
                 $map['blood_type'] = $cIdx;
             } elseif ($clean === 'bb' || str_contains($clean, 'berat badan') || str_starts_with($clean, 'berat')) {
                 $map['weight'] = $cIdx;
             } elseif ($clean === 'tb' || str_contains($clean, 'tinggi badan') || str_starts_with($clean, 'tinggi')) {
                 $map['height'] = $cIdx;
+            } elseif (str_contains($clean, 'warna kulit') || str_contains($clean, 'kulit')) {
+                $map['skin_color'] = $cIdx;
+            } elseif (str_contains($clean, 'jenis rambut') || str_contains($clean, 'bentuk rambut')) {
+                $map['hair_type'] = $cIdx;
+            } elseif (str_contains($clean, 'warna rambut')) {
+                $map['hair_color'] = $cIdx;
             } elseif (str_contains($clean, 'penyakit berat') || str_contains($clean, 'riwayat penyakit') || str_contains($clean, 'berat/kronis')) {
                 $map['severe_disease_history'] = $cIdx;
             } elseif (str_contains($clean, 'sering diderita') || str_contains($clean, 'penyakit sering') || str_contains($clean, 'keluhan')) {
