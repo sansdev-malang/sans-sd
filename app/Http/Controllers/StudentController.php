@@ -796,11 +796,21 @@ class StudentController extends Controller
         $cleanYear = str_replace(['/', ' '], '_', $selectedYearName);
         $fileName = 'Data_Siswa_' . str_replace([' ', '.'], '_', $unitName) . '_' . $cleanYear . '.pdf';
 
+        if ($request->filled('download_token')) {
+            @setcookie('download_token', $request->query('download_token'), time() + 60, '/', '', false, false);
+        }
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.students.pdf', $data)
             ->setPaper('a4', 'landscape')
             ->setOption('isRemoteEnabled', true);
 
-        return $pdf->download($fileName);
+        $response = $pdf->download($fileName);
+
+        if ($request->filled('download_token')) {
+            $response->headers->setCookie(cookie('download_token', $request->query('download_token'), 1, '/', null, false, false));
+        }
+
+        return $response;
     }
 
     /**
