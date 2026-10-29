@@ -1,6 +1,45 @@
 @php
     $start = \Carbon\Carbon::parse($startDate);
     $end = \Carbon\Carbon::parse($endDate);
+    $formatAttendanceDuration = function ($minutes) {
+        $minutes = abs((int) $minutes);
+        $hours = intdiv($minutes, 60);
+        $remainingMinutes = $minutes % 60;
+
+        return $hours > 0
+            ? $hours . ' jam' . ($remainingMinutes > 0 ? ' ' . $remainingMinutes . ' menit' : '')
+            : $minutes . ' menit';
+    };
+    $getEarlyCheckoutData = function ($detail, $dateStr) {
+        $isEarly = !empty($detail['is_early_checkout']);
+        $minutes = (int) ($detail['early_checkout_minutes'] ?? 0);
+
+        if (!array_key_exists('is_early_checkout', $detail) || ($isEarly && $minutes === 0)) {
+            $checkOut = !empty($detail['check_out']) ? substr($detail['check_out'], 0, 5) : null;
+            $shiftStart = !empty($detail['shift_start']) ? substr($detail['shift_start'], 0, 5) : null;
+            $shiftEnd = !empty($detail['shift_end']) ? substr($detail['shift_end'], 0, 5) : null;
+
+            if ($checkOut && $checkOut !== '-' && $shiftEnd) {
+                $expectedOut = \Carbon\Carbon::parse($dateStr . ' ' . $shiftEnd);
+                $actualOut = \Carbon\Carbon::parse($dateStr . ' ' . $checkOut);
+                $isNightShift = $shiftStart && $shiftStart > $shiftEnd;
+
+                if ($isNightShift) {
+                    $expectedOut->addDay();
+                    if ($checkOut < $shiftStart) {
+                        $actualOut->addDay();
+                    }
+                }
+
+                if ($actualOut->lessThan($expectedOut)) {
+                    $minutes = (int) $actualOut->diffInMinutes($expectedOut);
+                    $isEarly = true;
+                }
+            }
+        }
+
+        return ['is_early_checkout' => $isEarly, 'early_checkout_minutes' => $minutes];
+    };
     $cycleDateData = [];
     while($start <= $end) {
         $cycleDateData[] = [
@@ -250,6 +289,7 @@
                                         $isRedLate = $hasCheckIn && !empty($detail['is_red_late']);
                                         $lateMnt = $hasCheckIn ? (int) abs($detail['late_minutes'] ?? 0) : 0;
                                         $earlyMnt = $hasCheckIn ? (int) abs($detail['early_minutes'] ?? 0) : 0;
+                                        $earlyCheckout = $getEarlyCheckoutData($detail, $dateStr);
 
                                         if ($isFuture && empty($detail['check_in'])) {
                                             if ($statusName === 'Cuti/Izin') {
@@ -269,15 +309,15 @@
                                             } elseif ($isRedLate) {
                                                 $statusBadge = 'Terlambat Berat';
                                                 $statusColor = 'rose';
-                                                $noteText = 'Terlambat ' . ($lateMnt > 0 ? $lateMnt . ' menit ' : '') . '(melewati batas toleransi).';
+                                                $noteText = 'Terlambat ' . ($lateMnt > 0 ? $formatAttendanceDuration($lateMnt) . ' ' : '') . '(melewati batas toleransi).';
                                             } elseif ($isLate) {
                                                 $statusBadge = 'Terlambat';
                                                 $statusColor = 'amber';
-                                                $noteText = 'Terlambat ' . ($lateMnt > 0 ? $lateMnt . ' menit ' : '') . 'dari batas shift.';
+                                                $noteText = 'Terlambat ' . ($lateMnt > 0 ? $formatAttendanceDuration($lateMnt) . ' ' : '') . 'dari batas shift.';
                                             } else {
                                                 $statusBadge = 'Tepat Waktu';
                                                 $statusColor = 'emerald';
-                                                $noteText = $earlyMnt > 0 ? 'Datang ' . $earlyMnt . ' menit lebih awal.' : 'Tepat waktu sesuai jadwal shift.';
+                                                $noteText = $earlyMnt > 0 ? 'Datang ' . $formatAttendanceDuration($earlyMnt) . ' lebih awal.' : 'Tepat waktu sesuai jadwal shift.';
                                             }
                                         } elseif ($statusName === 'Reward Libur') {
                                             $statusBadge = 'Libur Reward';
@@ -363,6 +403,8 @@
                                             'is_red_late' => $isRedLate,
                                             'late_minutes' => $lateMnt,
                                             'early_minutes' => $earlyMnt,
+                                            'is_early_checkout' => $earlyCheckout['is_early_checkout'],
+                                            'early_checkout_minutes' => $earlyCheckout['early_checkout_minutes'],
                                             'is_reward' => $isReward,
                                             'reward_name' => $detail['reward_name'] ?? null,
                                             'leave_type' => $detail['leave_type'] ?? null,
@@ -455,7 +497,7 @@
                                                         <span class="px-1.5 py-0.5 rounded font-extrabold text-[8px] leading-none uppercase {{ $pColorClass }}">{{ $pCode }}</span>
                                                     </div>
                                                 @endif
-                                                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500">{{ $detail['check_out'] ?? '-' }}</span>
+                                                <span class="text-[10px] font-bold {{ !empty($earlyCheckout['is_early_checkout']) ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500' }}">{{ $detail['check_out'] ?? '-' }}</span>
                                             </div>
                                         @elseif($detail['status'] === 'Reward Libur')
                                             <div class="mx-auto w-full h-full min-h-[28px] flex flex-col items-center justify-center bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded px-0.5 py-1">
@@ -518,7 +560,7 @@
                                                     <div class="w-full flex justify-center scale-90">
                                                         <span class="px-1.5 py-0.5 rounded font-extrabold text-[8px] leading-none uppercase {{ $colorClass }}">{{ $leaveCode }}</span>
                                                     </div>
-                                                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500">{{ $detail['check_out'] }}</span>
+                                                    <span class="text-[10px] font-bold {{ !empty($earlyCheckout['is_early_checkout']) ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500' }}">{{ $detail['check_out'] }}</span>
                                                 </div>
                                             @elseif(!empty($detail['check_in']) && empty($detail['check_out']))
                                                 <!-- Only Check-In -->
@@ -536,7 +578,7 @@
                                                     <div class="w-full flex justify-center scale-90">
                                                         <span class="px-1.5 py-0.5 rounded font-extrabold text-[8px] leading-none uppercase {{ $colorClass }}">{{ $leaveCode }}</span>
                                                     </div>
-                                                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500">{{ $detail['check_out'] }}</span>
+                                                    <span class="text-[10px] font-bold {{ !empty($earlyCheckout['is_early_checkout']) ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500' }}">{{ $detail['check_out'] }}</span>
                                                 </div>
                                             @elseif($isPending)
                                                 <!-- Pending and Neither Check-In nor Check-Out -->
@@ -781,7 +823,7 @@
                                                                 <span class="text-[7.5px] font-black text-emerald-600 dark:text-emerald-400">OFF</span>
                                                             </div>
                                                         </template>
-                                                        <span class="text-[10px] font-semibold text-slate-400 dark:text-slate-400" x-text="selectedReport.daily_details[day.dateStr].check_out || '-'"></span>
+                                                        <span class="text-[10px] font-semibold" :class="selectedReport.daily_details[day.dateStr].is_early_checkout ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-400'" x-text="selectedReport.daily_details[day.dateStr].check_out || '-'"></span>
                                                     </div>
                                                 </template>
 
@@ -816,7 +858,7 @@
                                                                 <div class="w-full py-0.5 text-center rounded text-[9px] font-extrabold"
                                                                      :class="getClassForLeave(selectedReport.daily_details[day.dateStr])"
                                                                      x-text="selectedReport.daily_details[day.dateStr].leave_code"></div>
-                                                                <span class="text-[10px] text-slate-400 dark:text-slate-400" x-text="selectedReport.daily_details[day.dateStr].check_out"></span>
+                                                                <span class="text-[10px]" :class="selectedReport.daily_details[day.dateStr].is_early_checkout ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-400'" x-text="selectedReport.daily_details[day.dateStr].check_out"></span>
                                                             </div>
                                                         </template>
                                                         
@@ -984,17 +1026,17 @@
                         </span>
                         <template x-if="matrixTooltip.data?.check_in && matrixTooltip.data?.check_in !== '-' && matrixTooltip.data?.is_red_late">
                             <span class="text-[8px] font-bold text-rose-700 bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 px-1.5 py-0.5 rounded-md mt-1 mx-auto leading-none"
-                                  x-text="'Telat ' + (matrixTooltip.data?.late_minutes || '') + ' mnt'">
+                                  x-text="'Telat ' + formatDuration(matrixTooltip.data?.late_minutes)">
                             </span>
                         </template>
                         <template x-if="matrixTooltip.data?.check_in && matrixTooltip.data?.check_in !== '-' && !matrixTooltip.data?.is_red_late && matrixTooltip.data?.is_late && matrixTooltip.data?.late_minutes > 0">
                             <span class="text-[8px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 px-1.5 py-0.5 rounded-md mt-1 mx-auto leading-none"
-                                  x-text="'Telat ' + (matrixTooltip.data?.late_minutes || '') + ' mnt'">
+                                  x-text="'Telat ' + formatDuration(matrixTooltip.data?.late_minutes)">
                             </span>
                         </template>
                         <template x-if="matrixTooltip.data?.check_in && matrixTooltip.data?.check_in !== '-' && !matrixTooltip.data?.is_late && matrixTooltip.data?.early_minutes > 0">
                             <span class="text-[8px] font-bold text-emerald-700 bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 px-1.5 py-0.5 rounded-md mt-1 mx-auto leading-none"
-                                  x-text="'Awal ' + matrixTooltip.data?.early_minutes + ' mnt'">
+                                  x-text="'Awal ' + formatDuration(matrixTooltip.data?.early_minutes)">
                             </span>
                         </template>
                         <template x-if="matrixTooltip.data?.check_in && matrixTooltip.data?.check_in !== '-' && matrixTooltip.data?.check_in !== 'Tidak Hadir' && !matrixTooltip.data?.is_late && (!matrixTooltip.data?.early_minutes || matrixTooltip.data?.early_minutes <= 0)">
@@ -1007,10 +1049,16 @@
                     <!-- PULANG -->
                     <div class="flex flex-col bg-slate-50 dark:bg-slate-800/50 rounded-xl p-2 border border-slate-100 dark:border-slate-800 text-center">
                         <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Pulang</span>
-                        <span class="font-extrabold text-[13px] tracking-tight text-slate-800 dark:text-slate-100"
+                        <span class="font-extrabold text-[13px] tracking-tight"
+                              :class="matrixTooltip.data?.is_early_checkout ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-100'"
                               x-text="matrixTooltip.data?.check_out || '-'">
                         </span>
-                        <template x-if="matrixTooltip.data?.check_out && matrixTooltip.data?.check_out !== '-'">
+                        <template x-if="matrixTooltip.data?.check_out && matrixTooltip.data?.check_out !== '-' && matrixTooltip.data?.is_early_checkout">
+                            <span class="text-[8px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 px-1.5 py-0.5 rounded-md mt-1 mx-auto leading-none"
+                                  x-text="'Pulang awal ' + formatDuration(matrixTooltip.data?.early_checkout_minutes)">
+                            </span>
+                        </template>
+                        <template x-if="matrixTooltip.data?.check_out && matrixTooltip.data?.check_out !== '-' && !matrixTooltip.data?.is_early_checkout">
                             <span class="text-[8px] font-medium text-slate-400 dark:text-slate-500 mt-1 leading-none">
                                 Tap Pulang
                             </span>
@@ -1092,6 +1140,46 @@
                 arrowOffset: 0,
                 data: null,
                 activeCell: '',
+            },
+            formatDuration(minutes) {
+                const totalMinutes = Math.abs(Number(minutes) || 0);
+                const hours = Math.floor(totalMinutes / 60);
+                const remainingMinutes = totalMinutes % 60;
+
+                return hours > 0
+                    ? `${hours} jam${remainingMinutes > 0 ? ` ${remainingMinutes} menit` : ''}`
+                    : `${totalMinutes} menit`;
+            },
+            getEarlyCheckoutData(detail) {
+                let isEarly = !!detail.is_early_checkout;
+                let minutes = Number(detail.early_checkout_minutes || 0);
+
+                if (!Object.prototype.hasOwnProperty.call(detail, 'is_early_checkout') || (isEarly && minutes === 0)) {
+                    const checkOut = detail.check_out ? detail.check_out.substring(0, 5) : '';
+                    const shiftStart = detail.shift_start ? detail.shift_start.substring(0, 5) : '';
+                    const shiftEnd = detail.shift_end ? detail.shift_end.substring(0, 5) : '';
+
+                    if (checkOut && checkOut !== '-' && shiftEnd) {
+                        const toMinutes = (time) => {
+                            const [hours, mins] = time.split(':').map(Number);
+                            return hours * 60 + mins;
+                        };
+                        let expectedOut = toMinutes(shiftEnd);
+                        let actualOut = toMinutes(checkOut);
+                        const isNightShift = shiftStart && shiftStart > shiftEnd;
+
+                        if (isNightShift) {
+                            expectedOut += 24 * 60;
+                            if (checkOut < shiftStart) actualOut += 24 * 60;
+                        }
+                        if (actualOut < expectedOut) {
+                            isEarly = true;
+                            minutes = expectedOut - actualOut;
+                        }
+                    }
+                }
+
+                return { is_early_checkout: isEarly, early_checkout_minutes: minutes };
             },
             showMatrixTooltip(e, data) {
                 if (!data) return;
@@ -1187,7 +1275,7 @@
 
                     let statusBadge = 'Tepat Waktu';
                     let statusColor = 'emerald';
-                    let noteText = earlyMnt > 0 ? `Datang ${earlyMnt} menit lebih awal.` : 'Tepat waktu sesuai jadwal.';
+                    let noteText = earlyMnt > 0 ? `Datang ${this.formatDuration(earlyMnt)} lebih awal.` : 'Tepat waktu sesuai jadwal.';
 
                     if (isFuture && !detail.check_in) {
                         if (statusName === 'Cuti/Izin') {
@@ -1207,15 +1295,15 @@
                         } else if (isRedLate) {
                             statusBadge = 'Terlambat Berat';
                             statusColor = 'rose';
-                            noteText = 'Terlambat ' + (lateMnt > 0 ? lateMnt + ' menit ' : '') + '(melewati batas toleransi).';
+                            noteText = 'Terlambat ' + (lateMnt > 0 ? this.formatDuration(lateMnt) + ' ' : '') + '(melewati batas toleransi).';
                         } else if (isLate) {
                             statusBadge = 'Terlambat';
                             statusColor = 'amber';
-                            noteText = 'Terlambat ' + (lateMnt > 0 ? lateMnt + ' menit ' : '') + 'dari batas shift.';
+                            noteText = 'Terlambat ' + (lateMnt > 0 ? this.formatDuration(lateMnt) + ' ' : '') + 'dari batas shift.';
                         } else {
                             statusBadge = 'Tepat Waktu';
                             statusColor = 'emerald';
-                            noteText = earlyMnt > 0 ? `Datang ${earlyMnt} menit lebih awal.` : 'Tepat waktu sesuai jadwal.';
+                            noteText = earlyMnt > 0 ? `Datang ${this.formatDuration(earlyMnt)} lebih awal.` : 'Tepat waktu sesuai jadwal.';
                         }
                     } else if (statusName === 'Reward Libur') {
                         statusBadge = 'Libur Reward';
@@ -1255,6 +1343,7 @@
                     const shiftStart = detail.shift_start ? detail.shift_start.substring(0, 5) : '';
                     const shiftEnd = detail.shift_end ? detail.shift_end.substring(0, 5) : '';
                     const jadwalStr = shiftStart ? (shiftEnd ? `${shiftStart} - ${shiftEnd}` : shiftStart) : (isOff ? 'OFF' : '-');
+                    const earlyCheckout = this.getEarlyCheckoutData(detail);
 
                     modalData = {
                         employee: { name: empName, unit: unitName, position: position },
@@ -1274,6 +1363,8 @@
                         is_red_late: isRedLate,
                         late_minutes: lateMnt,
                         early_minutes: earlyMnt,
+                        is_early_checkout: earlyCheckout.is_early_checkout,
+                        early_checkout_minutes: earlyCheckout.early_checkout_minutes,
                         is_reward: isReward,
                         reward_name: detail.reward_name || null,
                         leave_type: detail.leave_type || null,
@@ -1336,7 +1427,11 @@
                        day.leave_code === 'H' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30' : '';
             },
             openCalendarModal(report) {
-                this.selectedReport = report;
+                const dailyDetails = Object.fromEntries(Object.entries(report.daily_details || {}).map(([date, detail]) => [
+                    date,
+                    { ...detail, ...this.getEarlyCheckoutData(detail) },
+                ]));
+                this.selectedReport = { ...report, daily_details: dailyDetails };
                 this.calendarDays = this.buildCutOffCalendar(this.cycleDates);
                 this.stats = this.calculateStats(report);
                 this.showCalendarModal = true;
