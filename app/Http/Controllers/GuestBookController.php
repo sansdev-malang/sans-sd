@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\GuestBook;
+use App\Models\GuestBookCategory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -63,6 +64,11 @@ class GuestBookController extends Controller
         $monthQuery = GuestBook::whereYear('date', $selectedYear)->whereMonth('date', $selectedMonth);
         $allMonthGuests = (clone $monthQuery)->get();
 
+        // Kategori dinamis dari database
+        $allCategories = GuestBookCategory::orderBy('order', 'asc')->orderBy('id', 'asc')->get();
+        $activeCategories = $allCategories->where('is_active', true)->values();
+        $categories = $activeCategories;
+
         $stats = [
             'total' => $allMonthGuests->count(),
             'spmb' => $allMonthGuests->where('category', 'SPMB')->count(),
@@ -70,6 +76,14 @@ class GuestBookController extends Controller
             'puskesmas' => $allMonthGuests->filter(fn($g) => in_array($g->category, ['Puskesmas/Dinkes', 'Puskesmas', 'Dinkes']))->count(),
             'umum' => $allMonthGuests->where('category', 'Umum')->count(),
         ];
+
+        foreach ($activeCategories as $c) {
+            if (in_array($c->name, ['Puskesmas/Dinkes', 'Puskesmas', 'Dinkes'])) {
+                $stats[$c->name] = $allMonthGuests->filter(fn($g) => in_array($g->category, ['Puskesmas/Dinkes', 'Puskesmas', 'Dinkes']))->count();
+            } else {
+                $stats[$c->name] = $allMonthGuests->where('category', $c->name)->count();
+            }
+        }
 
         // Month Names
         $monthNames = [
@@ -81,7 +95,9 @@ class GuestBookController extends Controller
         // Rentang Tahun: 2026 sampai 2030
         $yearsList = range(2026, 2030);
 
-        $categories = ['Umum', 'Dinas', 'Puskesmas/Dinkes', 'SPMB'];
+        $formTypes = GuestBookCategory::formTypes();
+        $colorOptions = GuestBookCategory::colors();
+        $popularIcons = GuestBookCategory::popularIcons();
 
         return view('admin.guest-books.index', compact(
             'guests',
@@ -93,6 +109,10 @@ class GuestBookController extends Controller
             'monthNames',
             'yearsList',
             'categories',
+            'allCategories',
+            'formTypes',
+            'colorOptions',
+            'popularIcons',
             'perPage'
         ));
     }
@@ -187,7 +207,7 @@ class GuestBookController extends Controller
      */
     public function publicForm()
     {
-        $categories = ['Umum', 'Dinas', 'Puskesmas/Dinkes', 'SPMB'];
+        $categories = GuestBookCategory::active()->get();
         return view('guest-book-public', compact('categories'));
     }
 
@@ -536,48 +556,66 @@ class GuestBookController extends Controller
     private function validateGuestBook(Request $request): array
     {
         $category = $request->input('category', 'Umum');
+        $categoryModel = GuestBookCategory::where('name', $category)->first();
+        $formType = $categoryModel?->form_type ?? match($category) {
+            'SPMB' => 'spmb',
+            'Dinas' => 'dinas',
+            'Puskesmas/Dinkes', 'Puskesmas', 'Dinkes' => 'puskesmas',
+            'Offering/Marketing', 'Offering', 'Marketing' => 'offering',
+            'Penelitian/Observasi', 'Penelitian', 'Observasi' => 'penelitian',
+            'Magang' => 'magang',
+            'Studi Banding/Studi Tiru', 'Studi Banding', 'Studi Tiru' => 'studi_banding',
+            default => 'umum',
+        };
 
         $rules = [
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:30',
-            'category' => 'required|in:Umum,Dinas,Puskesmas/Dinkes,SPMB',
+            'category' => 'required|string|max:100',
             'institution' => 'nullable|string|max:255',
             'position' => 'nullable|string|max:255',
             'occupation' => 'nullable|string|max:255',
             'address' => 'nullable|string',
             'city' => 'nullable|string|max:100',
             'province' => 'nullable|string|max:100',
-            'purpose' => $category === 'SPMB' ? 'nullable|string' : 'required|string',
+            'purpose' => $formType === 'spmb' ? 'nullable|string' : 'required|string',
             'host_recipient' => 'nullable|string|max:255',
             'feedback' => 'nullable|string',
             'date' => 'required|date',
             'time' => 'nullable|string|max:10',
 
             // Fields khusus SPMB
-            'student_name' => $category === 'SPMB' ? 'required|string|max:255' : 'nullable|string|max:255',
+            'student_name' => $formType === 'spmb' ? 'required|string|max:255' : 'nullable|string|max:255',
             'student_birth_date' => 'nullable|date',
             'therapy_history' => 'nullable|string|in:Ya,Tidak',
-            'therapy_diagnosis' => ($category === 'SPMB' && $request->input('therapy_history') === 'Ya') ? 'required|string|max:255' : 'nullable|string|max:255',
+            'therapy_diagnosis' => ($formType === 'spmb' && $request->input('therapy_history') === 'Ya') ? 'required|string|max:255' : 'nullable|string|max:255',
         ];
 
         $messages = [
-            'name.required' => match($category) {
-                'SPMB' => 'Nama Orang Tua / Wali wajib diisi.',
-                'Dinas' => 'Nama Pejabat / Tamu wajib diisi.',
-                'Puskesmas/Dinkes' => 'Nama Petugas Kesehatan wajib diisi.',
+            'name.required' => match($formType) {
+                'spmb' => 'Nama Orang Tua / Wali wajib diisi.',
+                'dinas' => 'Nama Pejabat / Tamu wajib diisi.',
+                'puskesmas' => 'Nama Petugas Kesehatan wajib diisi.',
+                'offering' => 'Nama Sales / Marketing / Perwakilan wajib diisi.',
+                'penelitian' => 'Nama Peneliti / Tamu wajib diisi.',
+                'magang' => 'Nama Mahasiswa / Siswa Magang wajib diisi.',
+                'studi_banding' => 'Nama Ketua / Pimpinan Rombongan wajib diisi.',
                 default => 'Nama lengkap tamu wajib diisi.',
             },
             'phone.required' => 'Nomor Handphone / WhatsApp wajib diisi.',
             'category.required' => 'Kategori kunjungan wajib dipilih.',
-            'category.in' => 'Kategori kunjungan yang dipilih tidak valid.',
             'date.required' => 'Tanggal kunjungan wajib diisi.',
             'date.date' => 'Format tanggal kunjungan tidak valid.',
             'student_name.required' => 'Nama calon murid wajib diisi untuk kategori SPMB.',
             'student_birth_date.date' => 'Format tanggal lahir calon murid tidak valid.',
             'therapy_diagnosis.required' => 'Diagnosa terapi wajib diisi jika anak pernah menjalani terapi.',
-            'purpose.required' => match($category) {
-                'Puskesmas/Dinkes' => 'Kegiatan pelayanan kesehatan wajib diisi.',
-                'Dinas' => 'Keperluan / agenda kedinasan wajib diisi.',
+            'purpose.required' => match($formType) {
+                'puskesmas' => 'Kegiatan pelayanan kesehatan wajib diisi.',
+                'dinas' => 'Keperluan / agenda kedinasan wajib diisi.',
+                'offering' => 'Produk atau penawaran kerja sama wajib diisi.',
+                'penelitian' => 'Judul atau fokus penelitian wajib diisi.',
+                'magang' => 'Keperluan / program magang wajib diisi.',
+                'studi_banding' => 'Fokus studi tiru / perihal kunjungan wajib diisi.',
                 default => 'Keperluan kunjungan wajib diisi.',
             },
         ];
@@ -590,13 +628,13 @@ class GuestBookController extends Controller
         }
 
         // Jika SPMB dan purpose kosong, isi otomatis agar konsisten
-        if ($category === 'SPMB' && empty($validated['purpose'])) {
+        if ($formType === 'spmb' && empty($validated['purpose'])) {
             $childInfo = !empty($validated['student_name']) ? " (Anak: {$validated['student_name']})" : "";
             $validated['purpose'] = "Konsultasi SPMB / Calon Murid{$childInfo}";
         }
 
         // Data hygiene berdasarkan kategori yang dipilih
-        if ($category !== 'SPMB') {
+        if ($formType !== 'spmb') {
             $validated['student_name'] = null;
             $validated['student_birth_date'] = null;
             $validated['therapy_history'] = null;

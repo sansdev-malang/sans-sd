@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -40,6 +40,20 @@
         function kioskApp() {
             return {
                 category: @json(old('category', 'Umum')),
+                categoriesMap: @json($categories->pluck('form_type', 'name')),
+                get currentFormType() {
+                    if (this.categoriesMap && this.categoriesMap[this.category]) {
+                        return this.categoriesMap[this.category];
+                    }
+                    if (this.category === 'SPMB') return 'spmb';
+                    if (this.category === 'Dinas') return 'dinas';
+                    if (['Puskesmas/Dinkes', 'Puskesmas', 'Dinkes'].includes(this.category)) return 'puskesmas';
+                    if (['Offering/Marketing', 'Offering', 'Marketing'].includes(this.category)) return 'offering';
+                    if (['Penelitian/Observasi', 'Penelitian', 'Observasi'].includes(this.category)) return 'penelitian';
+                    if (this.category === 'Magang') return 'magang';
+                    if (['Studi Banding/Studi Tiru', 'Studi Banding', 'Studi Tiru'].includes(this.category)) return 'studi_banding';
+                    return 'umum';
+                },
                 therapy_history: @json(old('therapy_history', 'Tidak')),
                 formData: {
                     name: @json(old('name', '')),
@@ -97,7 +111,7 @@
             @endif
             <div>
                 <h1 class="font-extrabold text-sm sm:text-base text-slate-900 leading-tight">
-                    {{ setting('unit_name', setting('app_name', 'SMP Islam Terpadu Anak Saleh')) }}
+                    {{ setting('unit_name', setting('app_name', 'SD Anak Saleh Malang')) }}
                 </h1>
                 <p class="text-[11px] sm:text-xs text-teal-700 dark:text-teal-600 font-semibold tracking-wide">
                     Buku Tamu & Kunjungan
@@ -196,44 +210,58 @@
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                         @foreach($categories as $cat)
                             @php
-                                $iconName = match($cat) {
+                                $catName = is_object($cat) ? $cat->name : $cat;
+                                $iconName = is_object($cat) ? ($cat->icon ?: 'briefcase') : match($cat) {
                                     'SPMB' => 'user-plus',
                                     'Dinas' => 'landmark',
                                     'Puskesmas/Dinkes' => 'activity',
-                                    default => 'briefcase',
+                                    'Offering/Marketing' => 'briefcase',
+                                    'Penelitian/Observasi' => 'graduation-cap',
+                                    'Magang' => 'user-check',
+                                    'Studi Banding/Studi Tiru' => 'building-2',
+                                    default => 'users',
                                 };
-                                $catSub = match($cat) {
+                                $catSub = is_object($cat) ? ($cat->sub_label ?: $cat->name) : match($cat) {
                                     'SPMB' => 'Calon Murid',
                                     'Dinas' => 'Kedinasan',
                                     'Puskesmas/Dinkes' => 'Puskesmas',
+                                    'Offering/Marketing' => 'Vendor / Penawaran',
+                                    'Penelitian/Observasi' => 'Riset & Observasi',
+                                    'Magang' => 'PKL / PPL / Magang',
+                                    'Studi Banding/Studi Tiru' => 'Studi Tiru',
                                     default => 'Umum / Mitra',
                                 };
-                                $colorStyle = match($cat) {
+                                $colorStyle = is_object($cat) ? $cat->text_color : match($cat) {
                                     'SPMB' => 'text-amber-600',
                                     'Dinas' => 'text-indigo-600',
                                     'Puskesmas/Dinkes' => 'text-emerald-600',
+                                    'Offering/Marketing' => 'text-violet-600',
+                                    'Penelitian/Observasi' => 'text-cyan-600',
+                                    'Magang' => 'text-rose-600',
+                                    'Studi Banding/Studi Tiru' => 'text-sky-600',
                                     default => 'text-teal-600',
                                 };
-                                $isSelected = old('category', 'Umum') === $cat;
+                                $borderActive = is_object($cat) ? $cat->border_active_class : 'border-teal-600 bg-teal-50/70 shadow-sm ring-2 ring-teal-500/20';
+                                $isSelected = old('category', 'Umum') === $catName;
                             @endphp
                             <label class="cursor-pointer relative flex flex-col items-center text-center p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border transition-all duration-150 select-none active:scale-[0.98]"
-                                :class="category === '{{ $cat }}' 
-                                    ? 'border-teal-600 bg-teal-50/70 shadow-sm ring-2 ring-teal-500/20' 
+                                :class="category === '{{ $catName }}' 
+                                    ? '{{ $borderActive }}' 
                                     : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80'">
-                                <input type="radio" name="category" value="{{ $cat }}" x-model="category" {{ $isSelected ? 'checked' : '' }} class="sr-only">
+                                <input type="radio" name="category" value="{{ $catName }}" x-model="category" {{ $isSelected ? 'checked' : '' }} class="sr-only">
                                 
                                 <!-- Active Check Badge -->
-                                <span x-show="category === '{{ $cat }}'" x-cloak
+                                <span x-show="category === '{{ $catName }}'" x-cloak
                                     class="absolute top-2 right-2 w-4 h-4 rounded-full bg-teal-600 text-white flex items-center justify-center shadow-xs">
                                     <i data-lucide="check" class="w-2.5 h-2.5 stroke-[3]"></i>
                                 </span>
 
                                 <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mb-1.5 transition-colors"
-                                    :class="category === '{{ $cat }}' ? 'bg-white shadow-xs {{ $colorStyle }}' : 'bg-slate-100 text-slate-500'">
+                                    :class="category === '{{ $catName }}' ? 'bg-white shadow-xs {{ $colorStyle }}' : 'bg-slate-100 text-slate-500'">
                                     <i data-lucide="{{ $iconName }}" class="w-5 h-5"></i>
                                 </div>
-                                <span class="text-xs font-bold text-slate-900">{{ $cat }}</span>
-                                <span class="text-[10px] text-slate-400 font-medium mt-0.5">{{ $catSub }}</span>
+                                <span class="text-xs font-bold text-slate-900 truncate max-w-full" title="{{ $catName }}">{{ $catName }}</span>
+                                <span class="text-[10px] text-slate-400 font-medium mt-0.5 truncate max-w-full">{{ $catSub }}</span>
                             </label>
                         @endforeach
                     </div>
@@ -269,7 +297,7 @@
                 <!-- ========================================================================= -->
 
                 <!-- FORM 1: SPMB (CALON WALI MURID) -->
-                <div x-show="category === 'SPMB'" style="{{ old('category', 'Umum') === 'SPMB' ? '' : 'display: none;' }}" class="space-y-4 pt-1">
+                <div x-show="currentFormType === 'spmb'" style="{{ old('category', 'Umum') === 'SPMB' ? '' : 'display: none;' }}" class="space-y-4 pt-1">
                     <div class="border-b border-slate-100 pb-2">
                         <h3 class="text-xs sm:text-sm font-bold text-slate-800">Data Orang Tua & Calon Murid</h3>
                     </div>
@@ -281,8 +309,8 @@
                             </label>
                             <input type="text" name="name" x-model="formData.name" value="{{ old('name') }}"
                                 {{ old('category', 'Umum') !== 'SPMB' ? 'disabled' : '' }}
-                                :disabled="category !== 'SPMB'"
-                                :required="category === 'SPMB'"
+                                :disabled="currentFormType !== 'spmb'"
+                                :required="currentFormType === 'spmb'"
                                 placeholder="Contoh: Kiki Gustinasari"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border {{ ($errors ?? null)?->has('name') ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/20' : 'border-slate-200' }} rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                             @error('name')
@@ -299,8 +327,8 @@
                             </label>
                             <input type="tel" name="phone" x-model="formData.phone" value="{{ old('phone') }}" inputmode="tel"
                                 {{ old('category', 'Umum') !== 'SPMB' ? 'disabled' : '' }}
-                                :disabled="category !== 'SPMB'"
-                                :required="category === 'SPMB'"
+                                :disabled="currentFormType !== 'spmb'"
+                                :required="currentFormType === 'spmb'"
                                 placeholder="Contoh: 082232370123"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border {{ ($errors ?? null)?->has('phone') ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/20' : 'border-slate-200' }} rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all font-mono">
                             @error('phone')
@@ -319,8 +347,8 @@
                             </label>
                             <input type="text" name="student_name" x-model="formData.student_name" value="{{ old('student_name') }}"
                                 {{ old('category', 'Umum') !== 'SPMB' ? 'disabled' : '' }}
-                                :disabled="category !== 'SPMB'"
-                                :required="category === 'SPMB'"
+                                :disabled="currentFormType !== 'spmb'"
+                                :required="currentFormType === 'spmb'"
                                 placeholder="Contoh: Muhammad Ihsan Ammando Saqi"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border {{ ($errors ?? null)?->has('student_name') ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/20' : 'border-slate-200' }} rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                             @error('student_name')
@@ -337,7 +365,7 @@
                             </label>
                             <input type="date" name="student_birth_date" x-model="formData.student_birth_date" value="{{ old('student_birth_date') }}"
                                 {{ old('category', 'Umum') !== 'SPMB' ? 'disabled' : '' }}
-                                :disabled="category !== 'SPMB'"
+                                :disabled="currentFormType !== 'spmb'"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border {{ ($errors ?? null)?->has('student_birth_date') ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-200' }} rounded-xl text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                             @error('student_birth_date')
                                 <p class="text-rose-600 text-[11px] font-semibold mt-1 flex items-center gap-1">
@@ -368,7 +396,7 @@
                                     <span>Ya, Pernah</span>
                                 </button>
                             </div>
-                            <input type="hidden" name="therapy_history" :value="therapy_history" value="{{ old('therapy_history', 'Tidak') }}" {{ old('category', 'Umum') !== 'SPMB' ? 'disabled' : '' }} :disabled="category !== 'SPMB'">
+                            <input type="hidden" name="therapy_history" :value="therapy_history" value="{{ old('therapy_history', 'Tidak') }}" {{ old('category', 'Umum') !== 'SPMB' ? 'disabled' : '' }} :disabled="currentFormType !== 'spmb'">
                         </div>
 
                         <!-- Smooth reveal when Ya -->
@@ -378,8 +406,8 @@
                             </label>
                             <input type="text" name="therapy_diagnosis" x-model="formData.therapy_diagnosis" value="{{ old('therapy_diagnosis') }}"
                                 {{ (old('category', 'Umum') !== 'SPMB' || old('therapy_history', 'Tidak') !== 'Ya') ? 'disabled' : '' }}
-                                :disabled="category !== 'SPMB' || therapy_history !== 'Ya'"
-                                :required="category === 'SPMB' && therapy_history === 'Ya'"
+                                :disabled="currentFormType !== 'spmb' || therapy_history !== 'Ya'"
+                                :required="currentFormType === 'spmb' && therapy_history === 'Ya'"
                                 placeholder="Contoh: Terapi Wicara / Speech delay, Okupasi, Sensori Integrasi"
                                 class="w-full h-11 px-3.5 bg-white border {{ ($errors ?? null)?->has('therapy_diagnosis') ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/20' : 'border-slate-200' }} rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                             @error('therapy_diagnosis')
@@ -397,7 +425,7 @@
                         </label>
                         <input type="text" name="address" x-model="formData.address" value="{{ old('address') }}"
                             {{ old('category', 'Umum') !== 'SPMB' ? 'disabled' : '' }}
-                            :disabled="category !== 'SPMB'"
+                            :disabled="currentFormType !== 'spmb'"
                             placeholder="Contoh: Perum La Tansa Cluster, A11, Merjosari, Lowokwaru"
                             class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                     </div>
@@ -408,14 +436,14 @@
                         </label>
                         <input type="text" name="host_recipient" x-model="formData.host_recipient" value="{{ old('host_recipient') }}"
                             {{ old('category', 'Umum') !== 'SPMB' ? 'disabled' : '' }}
-                            :disabled="category !== 'SPMB'"
+                            :disabled="currentFormType !== 'spmb'"
                             placeholder="Contoh: Kepala Sekolah / Tim Panitia SPMB"
                             class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                     </div>
                 </div>
 
                 <!-- FORM 2: PUSKESMAS / DINKES -->
-                <div x-show="category === 'Puskesmas/Dinkes'" style="{{ old('category', 'Umum') === 'Puskesmas/Dinkes' ? '' : 'display: none;' }}" class="space-y-4 pt-1">
+                <div x-show="currentFormType === 'puskesmas'" style="{{ old('category', 'Umum') === 'Puskesmas/Dinkes' ? '' : 'display: none;' }}" class="space-y-4 pt-1">
                     <div class="border-b border-slate-100 pb-2">
                         <h3 class="text-xs sm:text-sm font-bold text-slate-800">Identitas Petugas Kesehatan & Faskes</h3>
                     </div>
@@ -426,9 +454,8 @@
                                 Nama Petugas / Tamu <span class="text-rose-500">*</span>
                             </label>
                             <input type="text" name="name" x-model="formData.name" value="{{ old('name') }}"
-                                {{ old('category', 'Umum') !== 'Puskesmas/Dinkes' ? 'disabled' : '' }}
-                                :disabled="category !== 'Puskesmas/Dinkes'"
-                                :required="category === 'Puskesmas/Dinkes'"
+                                :disabled="currentFormType !== 'puskesmas'"
+                                :required="currentFormType === 'puskesmas'"
                                 placeholder="Contoh: Mariana DN"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border {{ ($errors ?? null)?->has('name') ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/20' : 'border-slate-200' }} rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                             @error('name')
@@ -444,9 +471,8 @@
                                 No. Handphone / WhatsApp <span class="text-rose-500">*</span>
                             </label>
                             <input type="tel" name="phone" x-model="formData.phone" value="{{ old('phone') }}" inputmode="tel"
-                                {{ old('category', 'Umum') !== 'Puskesmas/Dinkes' ? 'disabled' : '' }}
-                                :disabled="category !== 'Puskesmas/Dinkes'"
-                                :required="category === 'Puskesmas/Dinkes'"
+                                :disabled="currentFormType !== 'puskesmas'"
+                                :required="currentFormType === 'puskesmas'"
                                 placeholder="Contoh: 089601662496"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border {{ ($errors ?? null)?->has('phone') ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/20' : 'border-slate-200' }} rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all font-mono">
                             @error('phone')
@@ -462,8 +488,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Institusi / Faskes</label>
                             <input type="text" name="institution" x-model="formData.institution" value="{{ old('institution') }}"
-                                {{ old('category', 'Umum') !== 'Puskesmas/Dinkes' ? 'disabled' : '' }}
-                                :disabled="category !== 'Puskesmas/Dinkes'"
+                                :disabled="currentFormType !== 'puskesmas'"
                                 placeholder="Contoh: Puskesmas Mojolangu"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                         </div>
@@ -471,8 +496,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Jabatan</label>
                             <input type="text" name="position" x-model="formData.position" value="{{ old('position') }}"
-                                {{ old('category', 'Umum') !== 'Puskesmas/Dinkes' ? 'disabled' : '' }}
-                                :disabled="category !== 'Puskesmas/Dinkes'"
+                                :disabled="currentFormType !== 'puskesmas'"
                                 placeholder="Contoh: Bidan / Dokter / Perawat"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                         </div>
@@ -480,8 +504,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Pekerjaan</label>
                             <input type="text" name="occupation" x-model="formData.occupation" value="{{ old('occupation') }}"
-                                {{ old('category', 'Umum') !== 'Puskesmas/Dinkes' ? 'disabled' : '' }}
-                                :disabled="category !== 'Puskesmas/Dinkes'"
+                                :disabled="currentFormType !== 'puskesmas'"
                                 placeholder="Contoh: PNS / Tenaga Medis"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                         </div>
@@ -492,9 +515,8 @@
                             Kegiatan Pelayanan Kesehatan <span class="text-rose-500">*</span>
                         </label>
                         <textarea name="purpose" x-model="formData.purpose" rows="2"
-                            {{ old('category', 'Umum') !== 'Puskesmas/Dinkes' ? 'disabled' : '' }}
-                            :disabled="category !== 'Puskesmas/Dinkes'"
-                            :required="category === 'Puskesmas/Dinkes'"
+                            :disabled="currentFormType !== 'puskesmas'"
+                            :required="currentFormType === 'puskesmas'"
                             placeholder="Contoh: Screening DDTK, kusta prambusia, pemeriksaan gigi, mata, dan GDS anak"
                             class="w-full p-3.5 bg-slate-50/70 border {{ ($errors ?? null)?->has('purpose') ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/20' : 'border-slate-200' }} rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 leading-relaxed transition-all">{{ old('purpose') }}</textarea>
                         @error('purpose')
@@ -508,15 +530,14 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Penerima Tamu</label>
                         <input type="text" name="host_recipient" x-model="formData.host_recipient" value="{{ old('host_recipient') }}"
-                            {{ old('category', 'Umum') !== 'Puskesmas/Dinkes' ? 'disabled' : '' }}
-                            :disabled="category !== 'Puskesmas/Dinkes'"
+                            :disabled="currentFormType !== 'puskesmas'"
                             placeholder="Contoh: Bu Guru / Petugas UKS / Tata Usaha"
                             class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                     </div>
                 </div>
 
                 <!-- FORM 3: DINAS (KEDINASAN) -->
-                <div x-show="category === 'Dinas'" style="{{ old('category', 'Umum') === 'Dinas' ? '' : 'display: none;' }}" class="space-y-4 pt-1">
+                <div x-show="currentFormType === 'dinas'" style="{{ old('category', 'Umum') === 'Dinas' ? '' : 'display: none;' }}" class="space-y-4 pt-1">
                     <div class="border-b border-slate-100 pb-2">
                         <h3 class="text-xs sm:text-sm font-bold text-slate-800">Identitas Pejabat Kedinasan</h3>
                     </div>
@@ -527,9 +548,8 @@
                                 Nama Pejabat / Tamu <span class="text-rose-500">*</span>
                             </label>
                             <input type="text" name="name" x-model="formData.name" value="{{ old('name') }}"
-                                {{ old('category', 'Umum') !== 'Dinas' ? 'disabled' : '' }}
-                                :disabled="category !== 'Dinas'"
-                                :required="category === 'Dinas'"
+                                :disabled="currentFormType !== 'dinas'"
+                                :required="currentFormType === 'dinas'"
                                 placeholder="Contoh: Drs. H. Achmad Fauzi, M.Si"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border {{ ($errors ?? null)?->has('name') ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/20' : 'border-slate-200' }} rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                             @error('name')
@@ -545,9 +565,8 @@
                                 No. Handphone / WhatsApp <span class="text-rose-500">*</span>
                             </label>
                             <input type="tel" name="phone" x-model="formData.phone" value="{{ old('phone') }}" inputmode="tel"
-                                {{ old('category', 'Umum') !== 'Dinas' ? 'disabled' : '' }}
-                                :disabled="category !== 'Dinas'"
-                                :required="category === 'Dinas'"
+                                :disabled="currentFormType !== 'dinas'"
+                                :required="currentFormType === 'dinas'"
                                 placeholder="Contoh: 081234567890"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border {{ ($errors ?? null)?->has('phone') ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/20' : 'border-slate-200' }} rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all font-mono">
                             @error('phone')
@@ -563,8 +582,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Institusi Kedinasan</label>
                             <input type="text" name="institution" x-model="formData.institution" value="{{ old('institution') }}"
-                                {{ old('category', 'Umum') !== 'Dinas' ? 'disabled' : '' }}
-                                :disabled="category !== 'Dinas'"
+                                :disabled="currentFormType !== 'dinas'"
                                 placeholder="Contoh: Dinas Pendidikan Kota Malang"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                         </div>
@@ -572,8 +590,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Jabatan</label>
                             <input type="text" name="position" x-model="formData.position" value="{{ old('position') }}"
-                                {{ old('category', 'Umum') !== 'Dinas' ? 'disabled' : '' }}
-                                :disabled="category !== 'Dinas'"
+                                :disabled="currentFormType !== 'dinas'"
                                 placeholder="Contoh: Pengawas Sekolah / Dinas Pendidikan"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                         </div>
@@ -581,8 +598,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Pekerjaan</label>
                             <input type="text" name="occupation" x-model="formData.occupation" value="{{ old('occupation') }}"
-                                {{ old('category', 'Umum') !== 'Dinas' ? 'disabled' : '' }}
-                                :disabled="category !== 'Dinas'"
+                                :disabled="currentFormType !== 'dinas'"
                                 placeholder="Contoh: ASN / PNS"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                         </div>
@@ -593,9 +609,8 @@
                             Keperluan / Agenda Kedinasan <span class="text-rose-500">*</span>
                         </label>
                         <textarea name="purpose" x-model="formData.purpose" rows="2"
-                            {{ old('category', 'Umum') !== 'Dinas' ? 'disabled' : '' }}
-                            :disabled="category !== 'Dinas'"
-                            :required="category === 'Dinas'"
+                            :disabled="currentFormType !== 'dinas'"
+                            :required="currentFormType === 'dinas'"
                             placeholder="Contoh: Monitoring dan Evaluasi BOSP / Supervisi"
                             class="w-full p-3.5 bg-slate-50/70 border {{ ($errors ?? null)?->has('purpose') ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/20' : 'border-slate-200' }} rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 leading-relaxed transition-all">{{ old('purpose') }}</textarea>
                         @error('purpose')
@@ -609,8 +624,7 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Penerima Tamu</label>
                         <input type="text" name="host_recipient" x-model="formData.host_recipient" value="{{ old('host_recipient') }}"
-                            {{ old('category', 'Umum') !== 'Dinas' ? 'disabled' : '' }}
-                            :disabled="category !== 'Dinas'"
+                            :disabled="currentFormType !== 'dinas'"
                             placeholder="Contoh: Kepala Sekolah"
                             class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                     </div>
@@ -618,15 +632,342 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Kesan & Pesan / Saran <span class="text-slate-400 font-normal">(Opsional)</span></label>
                         <textarea name="feedback" x-model="formData.feedback" rows="2"
-                            {{ old('category', 'Umum') !== 'Dinas' ? 'disabled' : '' }}
-                            :disabled="category !== 'Dinas'"
+                            :disabled="currentFormType !== 'dinas'"
                             placeholder="Tuliskan kesan atau catatan tindak lanjut..."
                             class="w-full p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 leading-relaxed transition-all">{{ old('feedback') }}</textarea>
                     </div>
                 </div>
 
-                <!-- FORM 4: UMUM (TAMU UMUM / MITRA) -->
-                <div x-show="category === 'Umum' || !['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)" style="{{ (old('category', 'Umum') === 'Umum' || !in_array(old('category', 'Umum'), ['SPMB', 'Puskesmas/Dinkes', 'Dinas'])) ? '' : 'display: none;' }}" class="space-y-4 pt-1">
+                <!-- FORM 4: OFFERING / MARKETING (VENDOR & PENAWARAN) -->
+                <div x-show="currentFormType === 'offering'" style="{{ old('category', 'Umum') === 'Offering/Marketing' ? '' : 'display: none;' }}" class="space-y-4 pt-1">
+                    <div class="border-b border-slate-100 pb-2">
+                        <h3 class="text-xs sm:text-sm font-bold text-slate-800">Identitas Perusahaan / Vendor & Penawaran</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">
+                                Nama Sales / Marketing / Tamu <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="text" name="name" x-model="formData.name" value="{{ old('name') }}"
+                                :disabled="currentFormType !== 'offering'"
+                                :required="currentFormType === 'offering'"
+                                placeholder="Contoh: Rian Pratama"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">
+                                No. Handphone / WhatsApp <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="tel" name="phone" x-model="formData.phone" value="{{ old('phone') }}" inputmode="tel"
+                                :disabled="currentFormType !== 'offering'"
+                                :required="currentFormType === 'offering'"
+                                placeholder="Contoh: 081234567890"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all font-mono">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Nama Perusahaan / Vendor <span class="text-rose-500">*</span></label>
+                            <input type="text" name="institution" x-model="formData.institution" value="{{ old('institution') }}"
+                                :disabled="currentFormType !== 'offering'"
+                                placeholder="Contoh: CV. Bintang Edukasi / Penerbit Erlangga"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Jabatan / Posisi</label>
+                            <input type="text" name="position" x-model="formData.position" value="{{ old('position') }}"
+                                :disabled="currentFormType !== 'offering'"
+                                placeholder="Contoh: Sales Executive / Marketing"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Bidang Usaha</label>
+                            <input type="text" name="occupation" x-model="formData.occupation" value="{{ old('occupation') }}"
+                                :disabled="currentFormType !== 'offering'"
+                                placeholder="Contoh: Pengadaan Buku / IT / Seragam"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">
+                            Produk / Layanan yang Ditawarkan <span class="text-rose-500">*</span>
+                        </label>
+                        <textarea name="purpose" x-model="formData.purpose" rows="2"
+                            :disabled="currentFormType !== 'offering'"
+                            :required="currentFormType === 'offering'"
+                            placeholder="Contoh: Penawaran buku pendamping kurikulum merdeka & sampel buku ajar"
+                            class="w-full p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 leading-relaxed transition-all">{{ old('purpose') }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Penerima Tamu / Yang Ditemui</label>
+                        <input type="text" name="host_recipient" x-model="formData.host_recipient" value="{{ old('host_recipient') }}"
+                            :disabled="currentFormType !== 'offering'"
+                            placeholder="Contoh: Waka Sarpras / Koordinator Kurikulum / Kepala Sekolah"
+                            class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Catatan Tindak Lanjut / Kesan <span class="text-slate-400 font-normal">(Opsional)</span></label>
+                        <textarea name="feedback" x-model="formData.feedback" rows="2"
+                            :disabled="currentFormType !== 'offering'"
+                            placeholder="Contoh: Menunggu konfirmasi presentasi produk lanjutan"
+                            class="w-full p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 leading-relaxed transition-all">{{ old('feedback') }}</textarea>
+                    </div>
+                </div>
+
+                <!-- FORM 5: PENELITIAN / OBSERVASI -->
+                <div x-show="currentFormType === 'penelitian'" style="{{ old('category', 'Umum') === 'Penelitian/Observasi' ? '' : 'display: none;' }}" class="space-y-4 pt-1">
+                    <div class="border-b border-slate-100 pb-2">
+                        <h3 class="text-xs sm:text-sm font-bold text-slate-800">Identitas Peneliti & Fokus Riset / Observasi</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">
+                                Nama Peneliti / Tamu <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="text" name="name" x-model="formData.name" value="{{ old('name') }}"
+                                :disabled="currentFormType !== 'penelitian'"
+                                :required="currentFormType === 'penelitian'"
+                                placeholder="Contoh: Nurul Hidayati, S.Pd"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">
+                                No. Handphone / WhatsApp <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="tel" name="phone" x-model="formData.phone" value="{{ old('phone') }}" inputmode="tel"
+                                :disabled="currentFormType !== 'penelitian'"
+                                :required="currentFormType === 'penelitian'"
+                                placeholder="Contoh: 085712345678"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all font-mono">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Asal Kampus / Lembaga <span class="text-rose-500">*</span></label>
+                            <input type="text" name="institution" x-model="formData.institution" value="{{ old('institution') }}"
+                                :disabled="currentFormType !== 'penelitian'"
+                                placeholder="Contoh: Universitas Negeri Malang (UM)"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Jurusan / Program Studi</label>
+                            <input type="text" name="position" x-model="formData.position" value="{{ old('position') }}"
+                                :disabled="currentFormType !== 'penelitian'"
+                                placeholder="Contoh: Pendidikan Matematika / PGSD"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Status Peneliti</label>
+                            <input type="text" name="occupation" x-model="formData.occupation" value="{{ old('occupation') }}"
+                                :disabled="currentFormType !== 'penelitian'"
+                                placeholder="Contoh: Mahasiswa S1 / Mahasiswa S2 / Dosen"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">
+                            Judul / Topik Penelitian & Observasi <span class="text-rose-500">*</span>
+                        </label>
+                        <textarea name="purpose" x-model="formData.purpose" rows="2"
+                            :disabled="currentFormType !== 'penelitian'"
+                            :required="currentFormType === 'penelitian'"
+                            placeholder="Contoh: Analisis implementasi Panca Karakter dalam pembelajaran di SD Anak Saleh"
+                            class="w-full p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 leading-relaxed transition-all">{{ old('purpose') }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Guru Pamong / Dosen / Penerima Tamu</label>
+                        <input type="text" name="host_recipient" x-model="formData.host_recipient" value="{{ old('host_recipient') }}"
+                            :disabled="currentFormType !== 'penelitian'"
+                            placeholder="Contoh: Guru Pamong / Waka Kurikulum"
+                            class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Kesan & Pesan / Saran <span class="text-slate-400 font-normal">(Opsional)</span></label>
+                        <textarea name="feedback" x-model="formData.feedback" rows="2"
+                            :disabled="currentFormType !== 'penelitian'"
+                            placeholder="Kesan terhadap proses observasi dan pembelajaran..."
+                            class="w-full p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 leading-relaxed transition-all">{{ old('feedback') }}</textarea>
+                    </div>
+                </div>
+
+                <!-- FORM 6: MAGANG (PKL / PPL / PLP) -->
+                <div x-show="currentFormType === 'magang'" style="{{ old('category', 'Umum') === 'Magang' ? '' : 'display: none;' }}" class="space-y-4 pt-1">
+                    <div class="border-b border-slate-100 pb-2">
+                        <h3 class="text-xs sm:text-sm font-bold text-slate-800">Identitas Siswa / Mahasiswa Magang (PKL / PPL)</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">
+                                Nama Mahasiswa / Siswa Magang <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="text" name="name" x-model="formData.name" value="{{ old('name') }}"
+                                :disabled="currentFormType !== 'magang'"
+                                :required="currentFormType === 'magang'"
+                                placeholder="Contoh: Ahmad Rizki Maulana"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">
+                                No. Handphone / WhatsApp <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="tel" name="phone" x-model="formData.phone" value="{{ old('phone') }}" inputmode="tel"
+                                :disabled="currentFormType !== 'magang'"
+                                :required="currentFormType === 'magang'"
+                                placeholder="Contoh: 081987654321"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all font-mono">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Asal Kampus / Sekolah <span class="text-rose-500">*</span></label>
+                            <input type="text" name="institution" x-model="formData.institution" value="{{ old('institution') }}"
+                                :disabled="currentFormType !== 'magang'"
+                                placeholder="Contoh: UIN Maulana Malik Ibrahim Malang"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Jurusan / Program Studi</label>
+                            <input type="text" name="position" x-model="formData.position" value="{{ old('position') }}"
+                                :disabled="currentFormType !== 'magang'"
+                                placeholder="Contoh: Pendidikan Agama Islam / Bimbingan Konseling"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Jenjang / Kategori</label>
+                            <input type="text" name="occupation" x-model="formData.occupation" value="{{ old('occupation') }}"
+                                :disabled="currentFormType !== 'magang'"
+                                placeholder="Contoh: PPL Mahasiswa / PKL SMK"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">
+                            Keperluan / Periode & Agenda Magang <span class="text-rose-500">*</span>
+                        </label>
+                        <textarea name="purpose" x-model="formData.purpose" rows="2"
+                            :disabled="currentFormType !== 'magang'"
+                            :required="currentFormType === 'magang'"
+                            placeholder="Contoh: Penyerahan mahasiswa PPL semester gasal / Laporan kegiatan harian"
+                            class="w-full p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 leading-relaxed transition-all">{{ old('purpose') }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Guru Pamong / Pembimbing Lapangan</label>
+                        <input type="text" name="host_recipient" x-model="formData.host_recipient" value="{{ old('host_recipient') }}"
+                            :disabled="currentFormType !== 'magang'"
+                            placeholder="Contoh: Koordinator Guru Pamong / Waka Humas"
+                            class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                    </div>
+                </div>
+
+                <!-- FORM 7: STUDI BANDING / STUDI TIRU -->
+                <div x-show="currentFormType === 'studi_banding'" style="{{ old('category', 'Umum') === 'Studi Banding/Studi Tiru' ? '' : 'display: none;' }}" class="space-y-4 pt-1">
+                    <div class="border-b border-slate-100 pb-2">
+                        <h3 class="text-xs sm:text-sm font-bold text-slate-800">Identitas Rombongan Studi Tiru / Studi Banding</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">
+                                Nama Ketua / Pimpinan Rombongan <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="text" name="name" x-model="formData.name" value="{{ old('name') }}"
+                                :disabled="currentFormType !== 'studi_banding'"
+                                :required="currentFormType === 'studi_banding'"
+                                placeholder="Contoh: Dr. H. Subagyo, M.Pd"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">
+                                No. Handphone / WhatsApp <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="tel" name="phone" x-model="formData.phone" value="{{ old('phone') }}" inputmode="tel"
+                                :disabled="currentFormType !== 'studi_banding'"
+                                :required="currentFormType === 'studi_banding'"
+                                placeholder="Contoh: 081223344556"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all font-mono">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Asal Sekolah / Lembaga / Yayasan <span class="text-rose-500">*</span></label>
+                            <input type="text" name="institution" x-model="formData.institution" value="{{ old('institution') }}"
+                                :disabled="currentFormType !== 'studi_banding'"
+                                placeholder="Contoh: SD Islam Al-Azhar Surabaya"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Jabatan Pimpinan</label>
+                            <input type="text" name="position" x-model="formData.position" value="{{ old('position') }}"
+                                :disabled="currentFormType !== 'studi_banding'"
+                                placeholder="Contoh: Kepala Sekolah / Ketua Yayasan"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Jumlah Rombongan</label>
+                            <input type="text" name="occupation" x-model="formData.occupation" value="{{ old('occupation') }}"
+                                :disabled="currentFormType !== 'studi_banding'"
+                                placeholder="Contoh: 12 Orang Guru & Staff"
+                                class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">
+                            Fokus & Topik Studi Tiru / Keperluan <span class="text-rose-500">*</span>
+                        </label>
+                        <textarea name="purpose" x-model="formData.purpose" rows="2"
+                            :disabled="currentFormType !== 'studi_banding'"
+                            :required="currentFormType === 'studi_banding'"
+                            placeholder="Contoh: Studi tiru manajemen kurikulum digital, sistem penjaminan mutu, dan Panca Karakter"
+                            class="w-full p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 leading-relaxed transition-all">{{ old('purpose') }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Penerima Tamu</label>
+                        <input type="text" name="host_recipient" x-model="formData.host_recipient" value="{{ old('host_recipient') }}"
+                            :disabled="currentFormType !== 'studi_banding'"
+                            placeholder="Contoh: Kepala Sekolah & Tim Manajemen SD"
+                            class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Kesan & Pesan Rombongan <span class="text-slate-400 font-normal">(Opsional)</span></label>
+                        <textarea name="feedback" x-model="formData.feedback" rows="2"
+                            :disabled="currentFormType !== 'studi_banding'"
+                            placeholder="Tuliskan kesan atau apresiasi rombongan..."
+                            class="w-full p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 leading-relaxed transition-all">{{ old('feedback') }}</textarea>
+                    </div>
+                </div>
+
+                <!-- FORM 8: UMUM (TAMU UMUM / MITRA / LAINNYA) -->
+                <div x-show="currentFormType === 'umum' || !['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)" style="{{ (old('category', 'Umum') === 'Umum' || !in_array(old('category', 'Umum'), ['SPMB', 'Puskesmas/Dinkes', 'Dinas', 'Offering/Marketing', 'Penelitian/Observasi', 'Magang', 'Studi Banding/Studi Tiru'])) ? '' : 'display: none;' }}" class="space-y-4 pt-1">
                     <div class="border-b border-slate-100 pb-2">
                         <h3 class="text-xs sm:text-sm font-bold text-slate-800">Identitas Diri & Asal Instansi</h3>
                     </div>
@@ -637,9 +978,8 @@
                                 Nama Lengkap Tamu <span class="text-rose-500">*</span>
                             </label>
                             <input type="text" name="name" x-model="formData.name" value="{{ old('name') }}"
-                                {{ in_array(old('category', 'Umum'), ['SPMB', 'Puskesmas/Dinkes', 'Dinas']) ? 'disabled' : '' }}
-                                :disabled="category !== 'Umum' && ['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)"
-                                :required="category === 'Umum' || !['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)"
+                                :disabled="currentFormType !== 'umum' && ['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)"
+                                :required="currentFormType === 'umum' || !['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)"
                                 placeholder="Contoh: Mohammad Choirul Anam"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border {{ ($errors ?? null)?->has('name') ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/20' : 'border-slate-200' }} rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                             @error('name')
@@ -655,9 +995,8 @@
                                 No. Handphone / WhatsApp <span class="text-rose-500">*</span>
                             </label>
                             <input type="tel" name="phone" x-model="formData.phone" value="{{ old('phone') }}" inputmode="tel"
-                                {{ in_array(old('category', 'Umum'), ['SPMB', 'Puskesmas/Dinkes', 'Dinas']) ? 'disabled' : '' }}
-                                :disabled="category !== 'Umum' && ['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)"
-                                :required="category === 'Umum' || !['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)"
+                                :disabled="currentFormType !== 'umum' && ['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)"
+                                :required="currentFormType === 'umum' || !['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)"
                                 placeholder="Contoh: 0895613444125"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border {{ ($errors ?? null)?->has('phone') ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/20' : 'border-slate-200' }} rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all font-mono">
                             @error('phone')
@@ -673,8 +1012,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Institusi / Lembaga</label>
                             <input type="text" name="institution" x-model="formData.institution" value="{{ old('institution') }}"
-                                {{ in_array(old('category', 'Umum'), ['SPMB', 'Puskesmas/Dinkes', 'Dinas']) ? 'disabled' : '' }}
-                                :disabled="category !== 'Umum' && ['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)"
+                                :disabled="currentFormType !== 'umum' && ['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)"
                                 placeholder="Contoh: MI Khadijah Malang"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                         </div>
@@ -682,8 +1020,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Jabatan</label>
                             <input type="text" name="position" x-model="formData.position" value="{{ old('position') }}"
-                                {{ in_array(old('category', 'Umum'), ['SPMB', 'Puskesmas/Dinkes', 'Dinas']) ? 'disabled' : '' }}
-                                :disabled="category !== 'Umum' && ['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)"
+                                :disabled="currentFormType !== 'umum' && ['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)"
                                 placeholder="Contoh: Guru / Staff"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                         </div>
@@ -691,8 +1028,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Pekerjaan</label>
                             <input type="text" name="occupation" x-model="formData.occupation" value="{{ old('occupation') }}"
-                                {{ in_array(old('category', 'Umum'), ['SPMB', 'Puskesmas/Dinkes', 'Dinas']) ? 'disabled' : '' }}
-                                :disabled="category !== 'Umum' && ['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)"
+                                :disabled="currentFormType !== 'umum' && ['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)"
                                 placeholder="Contoh: Pendidik / Wiraswasta"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                         </div>
@@ -702,8 +1038,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Kota / Kabupaten</label>
                             <input type="text" name="city" x-model="formData.city" value="{{ old('city', 'Kota Malang') }}"
-                                {{ in_array(old('category', 'Umum'), ['SPMB', 'Puskesmas/Dinkes', 'Dinas']) ? 'disabled' : '' }}
-                                :disabled="category !== 'Umum' && ['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)"
+                                :disabled="currentFormType !== 'umum' && ['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)"
                                 placeholder="Contoh: Kota Malang"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                         </div>
@@ -711,8 +1046,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Provinsi</label>
                             <input type="text" name="province" x-model="formData.province" value="{{ old('province', 'Jawa Timur') }}"
-                                {{ in_array(old('category', 'Umum'), ['SPMB', 'Puskesmas/Dinkes', 'Dinas']) ? 'disabled' : '' }}
-                                :disabled="category !== 'Umum' && ['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)"
+                                :disabled="currentFormType !== 'umum' && ['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)"
                                 placeholder="Contoh: Jawa Timur"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                         </div>
@@ -720,8 +1054,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Alamat</label>
                             <input type="text" name="address" x-model="formData.address" value="{{ old('address') }}"
-                                {{ in_array(old('category', 'Umum'), ['SPMB', 'Puskesmas/Dinkes', 'Dinas']) ? 'disabled' : '' }}
-                                :disabled="category !== 'Umum' && ['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)"
+                                :disabled="currentFormType !== 'umum' && ['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)"
                                 placeholder="Contoh: Jl. Arjuno No. 12"
                                 class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                         </div>
@@ -732,9 +1065,8 @@
                             Keperluan Kunjungan <span class="text-rose-500">*</span>
                         </label>
                         <textarea name="purpose" x-model="formData.purpose" rows="2"
-                            {{ in_array(old('category', 'Umum'), ['SPMB', 'Puskesmas/Dinkes', 'Dinas']) ? 'disabled' : '' }}
-                            :disabled="category !== 'Umum' && ['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)"
-                            :required="category === 'Umum' || !['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)"
+                            :disabled="currentFormType !== 'umum' && ['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)"
+                            :required="currentFormType === 'umum' || !['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)"
                             placeholder="Contoh: Sosialisasi program, brosur lomba, kunjungan silaturahmi"
                             class="w-full p-3.5 bg-slate-50/70 border {{ ($errors ?? null)?->has('purpose') ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/20' : 'border-slate-200' }} rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 leading-relaxed transition-all">{{ old('purpose') }}</textarea>
                         @error('purpose')
@@ -748,8 +1080,7 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Penerima Tamu</label>
                         <input type="text" name="host_recipient" x-model="formData.host_recipient" value="{{ old('host_recipient') }}"
-                            {{ in_array(old('category', 'Umum'), ['SPMB', 'Puskesmas/Dinkes', 'Dinas']) ? 'disabled' : '' }}
-                            :disabled="category !== 'Umum' && ['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)"
+                            :disabled="currentFormType !== 'umum' && ['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)"
                             placeholder="Contoh: Admin / Staff Tata Usaha"
                             class="w-full h-11 px-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all">
                     </div>
@@ -757,8 +1088,7 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Kesan & Pesan / Saran <span class="text-slate-400 font-normal">(Opsional)</span></label>
                         <textarea name="feedback" x-model="formData.feedback" rows="2"
-                            {{ in_array(old('category', 'Umum'), ['SPMB', 'Puskesmas/Dinkes', 'Dinas']) ? 'disabled' : '' }}
-                            :disabled="category !== 'Umum' && ['SPMB', 'Puskesmas/Dinkes', 'Dinas'].includes(category)"
+                            :disabled="currentFormType !== 'umum' && ['spmb', 'puskesmas', 'dinas', 'offering', 'penelitian', 'magang', 'studi_banding'].includes(currentFormType)"
                             placeholder="Contoh: Pelayanan ramah, tempat bersih dan nyaman"
                             class="w-full p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 leading-relaxed transition-all">{{ old('feedback') }}</textarea>
                     </div>
@@ -786,7 +1116,7 @@
 
     <!-- Footer -->
     <footer class="max-w-3xl w-full mx-auto text-center pt-5 sm:pt-7 text-[11px] sm:text-xs text-slate-400">
-        <p>&copy; {{ date('Y') }} {{ setting('unit_name', setting('app_name', 'SMP Islam Terpadu Anak Saleh Malang')) }}. Hak Cipta Dilindungi.</p>
+        <p>&copy; {{ date('Y') }} {{ setting('unit_name', setting('app_name', 'SD Anak Saleh Malang')) }}. Hak Cipta Dilindungi.</p>
     </footer>
 
     <!-- Kiosk Clock & Lucide Script -->

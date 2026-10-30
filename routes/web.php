@@ -120,6 +120,12 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
     Route::get('guest-books/export/excel', [\App\Http\Controllers\GuestBookController::class, 'exportExcel'])->name('guest-books.export.excel');
     Route::get('guest-books/download-pdf', [\App\Http\Controllers\GuestBookController::class, 'downloadPdf'])->name('guest-books.download.pdf');
     Route::get('guest-books/print', [\App\Http\Controllers\GuestBookController::class, 'print'])->name('guest-books.print');
+
+    // Kelola Kategori Buku Tamu
+    Route::post('guest-books/categories', [\App\Http\Controllers\GuestBookCategoryController::class, 'store'])->name('guest-books.categories.store');
+    Route::put('guest-books/categories/{id}', [\App\Http\Controllers\GuestBookCategoryController::class, 'update'])->name('guest-books.categories.update');
+    Route::delete('guest-books/categories/{id}', [\App\Http\Controllers\GuestBookCategoryController::class, 'destroy'])->name('guest-books.categories.destroy');
+    Route::post('guest-books/categories/{id}/toggle', [\App\Http\Controllers\GuestBookCategoryController::class, 'toggleActive'])->name('guest-books.categories.toggle');
 });
 
 
