@@ -181,3 +181,4 @@ class GuestBookCategory extends Model
         ];
     }
 }
+

@@ -143,3 +143,4 @@ class GuestBookCategoryController extends Controller
         }
     }
 }
+
