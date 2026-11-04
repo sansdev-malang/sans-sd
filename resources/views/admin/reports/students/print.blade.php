@@ -340,8 +340,7 @@
             <thead>
                 <tr>
                     <th style="width: 25px;">No</th>
-                    <th style="width: 120px;">Nama Kelas</th>
-                    <th style="width: 45px;">Kode</th>
+                    <th style="width: 150px;">Nama Rombel</th>
                     <th style="width: 55px;">L</th>
                     <th style="width: 55px;">P</th>
                     <th style="width: 65px;">Jml Siswa</th>
@@ -356,7 +355,7 @@
                     @if(count($lvl['classrooms']) > 0)
                         <!-- LEVEL HEADER -->
                         <tr class="level-header">
-                            <td colspan="9" style="padding-left: 8px;">
+                            <td colspan="8" style="padding-left: 8px;">
                                 {{ strtoupper($lvl['level']->name) }}
                             </td>
                         </tr>
@@ -365,8 +364,7 @@
                         @foreach($lvl['classrooms'] as $cr)
                             <tr>
                                 <td class="text-center font-mono">{{ $no++ }}</td>
-                                <td class="font-bold">{{ $cr['name'] }}</td>
-                                <td class="text-center font-mono font-bold">{{ $cr['code'] }}</td>
+                                <td class="font-bold">{{ $cr['full_name'] ?? ($cr['code'] . ' ' . $cr['name']) }}</td>
                                 <td class="text-center font-mono">{{ $cr['male'] }}</td>
                                 <td class="text-center font-mono">{{ $cr['female'] }}</td>
                                 <td class="text-center font-mono font-bold">{{ $cr['total'] }}</td>
@@ -386,7 +384,7 @@
 
                         <!-- SUBTOTAL -->
                         <tr class="subtotal-row">
-                            <td colspan="3" class="text-right" style="font-size: 9.5px;">
+                            <td colspan="2" class="text-right" style="font-size: 9.5px;">
                                 Jml Siswa @ {{ $lvl['level']->name }}:
                             </td>
                             <td class="text-center font-mono">{{ $lvl['subtotal_male'] }}</td>
@@ -403,7 +401,7 @@
                 <!-- SISWA AKTIF BELUM MEMILIKI ROMBEL (JIKA ADA) -->
                 @if(!empty($unassignedStudents) && $unassignedTotal > 0)
                     <tr class="level-header" style="background-color: #fef3c7; color: #92400e;">
-                        <td colspan="9" style="padding-left: 8px;">
+                        <td colspan="8" style="padding-left: 8px;">
                             SISWA BELUM MEMILIKI ROMBEL (PERLU PENEMPATAN KELAS)
                         </td>
                     </tr>
@@ -416,8 +414,7 @@
                         @endphp
                         <tr style="background-color: #fffbeb;">
                             <td class="text-center font-mono">{{ $no++ }}</td>
-                            <td class="font-bold">{{ $us->full_name }} (NIS: {{ $us->nis ?: '-' }})</td>
-                            <td class="text-center font-mono font-bold" style="color: #b45309;">Tanpa Rombel</td>
+                            <td class="font-bold">{{ $us->full_name }} (NIS: {{ $us->nis ?: '-' }}) [Tanpa Rombel]</td>
                             <td class="text-center font-mono">{{ $isUsMale ? 1 : 0 }}</td>
                             <td class="text-center font-mono">{{ $isUsFemale ? 1 : 0 }}</td>
                             <td class="text-center font-mono font-bold">1</td>
@@ -431,7 +428,7 @@
 
                     <!-- SUBTOTAL UNASSIGNED -->
                     <tr class="subtotal-row" style="background-color: #fde68a;">
-                        <td colspan="3" class="text-right" style="font-size: 9.5px; color: #78350f;">
+                        <td colspan="2" class="text-right" style="font-size: 9.5px; color: #78350f;">
                             Subtotal Belum Ada Rombel:
                         </td>
                         <td class="text-center font-mono">{{ $unassignedMale }}</td>
@@ -446,7 +443,7 @@
 
                 <!-- GRAND TOTAL -->
                 <tr class="grand-total-row">
-                    <td colspan="3" class="text-right" style="padding: 7px 10px;">
+                    <td colspan="2" class="text-right" style="padding: 7px 10px;">
                         JUMLAH PESERTA DIDIK KESELURUHAN:
                     </td>
                     <td class="text-center font-mono">{{ $grandTotalMale }}</td>

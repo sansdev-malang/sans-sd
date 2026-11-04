@@ -61,6 +61,10 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
     Route::resource('students', StudentController::class);
     Route::get('/siswa', fn() => redirect()->route('students.index'))->name('siswa');
 
+    // Master Mata Pelajaran (Subjects)
+    Route::post('subjects/{id}/toggle-status', [\App\Http\Controllers\SubjectController::class, 'toggleStatus'])->name('subjects.toggle-status');
+    Route::resource('subjects', \App\Http\Controllers\SubjectController::class);
+
     // Homeroom & Teacher Assignments (Penugasan Wali Kelas & Formasi Guru)
     Route::post('homeroom-assignments/{id}/toggle-status', [\App\Http\Controllers\HomeroomAssignmentController::class, 'toggleStatus'])->name('homeroom-assignments.toggle-status');
     Route::resource('homeroom-assignments', \App\Http\Controllers\HomeroomAssignmentController::class);
@@ -83,14 +87,6 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
     Route::get('alumni/{id}/print', [\App\Http\Controllers\AlumniController::class, 'print'])->name('alumni.print');
     Route::put('alumni/{id}', [\App\Http\Controllers\AlumniController::class, 'update'])->name('alumni.update');
 
-    // Presensi Siswa (Student Attendance)
-    Route::get('student-attendances', [\App\Http\Controllers\StudentAttendanceController::class, 'index'])->name('student-attendances.index');
-    Route::post('student-attendances', [\App\Http\Controllers\StudentAttendanceController::class, 'store'])->name('student-attendances.store');
-    Route::get('student-attendances/export/excel', [\App\Http\Controllers\StudentAttendanceController::class, 'exportMonthlyExcel'])->name('student-attendances.export.excel');
-    Route::get('student-attendances/print', [\App\Http\Controllers\StudentAttendanceController::class, 'printMonthly'])->name('student-attendances.print');
-    Route::get('/absensi-murid', fn() => redirect()->route('student-attendances.index'))->name('absensi-murid');
-    Route::get('/presensi-siswa', fn() => redirect()->route('student-attendances.index'))->name('presensi-siswa');
-
     // Arsip Dokumen Siswa (Student Archives)
     Route::get('student-archives', [\App\Http\Controllers\StudentArchiveController::class, 'index'])->name('student-archives.index');
     Route::post('student-archives', [\App\Http\Controllers\StudentArchiveController::class, 'store'])->name('student-archives.store');
@@ -100,17 +96,6 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
     Route::get('student-archives/print', [\App\Http\Controllers\StudentArchiveController::class, 'print'])->name('student-archives.print');
     Route::get('/arsip-siswa', fn() => redirect()->route('student-archives.index'))->name('arsip-siswa');
     Route::get('/arsip-murid', fn() => redirect()->route('student-archives.index'))->name('arsip-murid');
-
-    // Berkas Dokumen Guru & Pendidik (Teacher Documents)
-    Route::get('teacher-documents', [\App\Http\Controllers\TeacherDocumentController::class, 'index'])->name('teacher-documents.index');
-    Route::post('teacher-documents', [\App\Http\Controllers\TeacherDocumentController::class, 'store'])->name('teacher-documents.store');
-    Route::put('teacher-documents/{id}', [\App\Http\Controllers\TeacherDocumentController::class, 'update'])->name('teacher-documents.update');
-    Route::patch('teacher-documents/{id}/status', [\App\Http\Controllers\TeacherDocumentController::class, 'updateStatus'])->name('teacher-documents.update-status');
-    Route::delete('teacher-documents/{id}', [\App\Http\Controllers\TeacherDocumentController::class, 'destroy'])->name('teacher-documents.destroy');
-    Route::get('teacher-documents/{id}/download', [\App\Http\Controllers\TeacherDocumentController::class, 'download'])->name('teacher-documents.download');
-    Route::get('teacher-documents/export/excel', [\App\Http\Controllers\TeacherDocumentController::class, 'exportMatrixExcel'])->name('teacher-documents.export.excel');
-    Route::get('teacher-documents/print', [\App\Http\Controllers\TeacherDocumentController::class, 'printMatrix'])->name('teacher-documents.print');
-    Route::get('/berkas-guru', fn() => redirect()->route('teacher-documents.index'))->name('berkas-guru');
 
     // Buku Tamu Admin (Guest Books)
     Route::get('guest-books', [\App\Http\Controllers\GuestBookController::class, 'index'])->name('guest-books.index');
@@ -126,6 +111,28 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
     Route::put('guest-books/categories/{id}', [\App\Http\Controllers\GuestBookCategoryController::class, 'update'])->name('guest-books.categories.update');
     Route::delete('guest-books/categories/{id}', [\App\Http\Controllers\GuestBookCategoryController::class, 'destroy'])->name('guest-books.categories.destroy');
     Route::post('guest-books/categories/{id}/toggle', [\App\Http\Controllers\GuestBookCategoryController::class, 'toggleActive'])->name('guest-books.categories.toggle');
+});
+
+// Presensi Siswa & Berkas Dokumen Guru (Dapat Diakses Tenaga Pendidik & Admin)
+Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,admin_smp,kepala_sekolah,waka,employee'])->group(function () {
+    // Presensi Siswa (Student Attendance)
+    Route::get('student-attendances', [\App\Http\Controllers\StudentAttendanceController::class, 'index'])->name('student-attendances.index');
+    Route::post('student-attendances', [\App\Http\Controllers\StudentAttendanceController::class, 'store'])->name('student-attendances.store');
+    Route::get('student-attendances/export/excel', [\App\Http\Controllers\StudentAttendanceController::class, 'exportMonthlyExcel'])->name('student-attendances.export.excel');
+    Route::get('student-attendances/print', [\App\Http\Controllers\StudentAttendanceController::class, 'printMonthly'])->name('student-attendances.print');
+    Route::get('/absensi-murid', fn() => redirect()->route('student-attendances.index'))->name('absensi-murid');
+    Route::get('/presensi-siswa', fn() => redirect()->route('student-attendances.index'))->name('presensi-siswa');
+
+    // Berkas Dokumen Guru & Pendidik (Teacher Documents)
+    Route::get('teacher-documents', [\App\Http\Controllers\TeacherDocumentController::class, 'index'])->name('teacher-documents.index');
+    Route::post('teacher-documents', [\App\Http\Controllers\TeacherDocumentController::class, 'store'])->name('teacher-documents.store');
+    Route::put('teacher-documents/{id}', [\App\Http\Controllers\TeacherDocumentController::class, 'update'])->name('teacher-documents.update');
+    Route::patch('teacher-documents/{id}/status', [\App\Http\Controllers\TeacherDocumentController::class, 'updateStatus'])->name('teacher-documents.update-status');
+    Route::delete('teacher-documents/{id}', [\App\Http\Controllers\TeacherDocumentController::class, 'destroy'])->name('teacher-documents.destroy');
+    Route::get('teacher-documents/{id}/download', [\App\Http\Controllers\TeacherDocumentController::class, 'download'])->name('teacher-documents.download');
+    Route::get('teacher-documents/export/excel', [\App\Http\Controllers\TeacherDocumentController::class, 'exportMatrixExcel'])->name('teacher-documents.export.excel');
+    Route::get('teacher-documents/print', [\App\Http\Controllers\TeacherDocumentController::class, 'printMatrix'])->name('teacher-documents.print');
+    Route::get('/berkas-guru', fn() => redirect()->route('teacher-documents.index'))->name('berkas-guru');
 });
 
 
@@ -154,6 +161,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $ssoRole = 'kepala_sekolah';
         } elseif ($curUser->isActiveHomeroomTeacher()) {
             $ssoRole = 'wali_kelas';
+        } elseif ($curUser->employee_id) {
+            $assignments = \App\Models\HomeroomAssignment::where('employee_id', $curUser->employee_id)
+                ->where('is_active', true)
+                ->get();
+            if ($assignments->contains('role', 'wali_kelas')) {
+                $ssoRole = 'wali_kelas';
+            } elseif ($assignments->contains('role', 'gpq')) {
+                $ssoRole = 'gpq';
+            } elseif ($assignments->contains('role', 'gpk')) {
+                $ssoRole = 'gpk';
+            } elseif ($assignments->contains('role', 'guru_kelas')) {
+                $ssoRole = 'guru_kelas';
+            } elseif ($assignments->contains('role', 'guru_mapel')) {
+                $ssoRole = 'guru_mapel';
+            } elseif ($assignments->isNotEmpty()) {
+                $ssoRole = $assignments->first()->role;
+            }
         }
 
         $ssoPayload = base64_encode(json_encode([
@@ -161,7 +185,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'name' => $curUser->name,
             'email' => $curUser->email,
             'employee_id' => $curUser->employee_id,
-            'role' => $ssoRole ?? ($isAdmin ? 'super_admin' : 'wali_kelas'),
+            'role' => $ssoRole ?? ($isAdmin ? 'super_admin' : 'guru'),
             'unit' => 'sd',
             'timestamp' => time(),
         ]));

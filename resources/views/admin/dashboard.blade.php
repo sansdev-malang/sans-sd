@@ -8,7 +8,7 @@
                 @if($isAdmin)
                     <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">Selamat datang kembali! Aktivitas sekolah terpantau kondusif.</p>
                 @else
-                    <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">Selamat datang kembali, {{ auth()->user()->name }}! Pantau performa kehadiran harian Anda disini.</p>
+                    <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">Selamat datang kembali, {{ auth()->user()->name }} ({{ auth()->user()->getRoleDisplayName() }})! Pantau tugas pembelajaran dan kehadiran harian Anda di sini.</p>
                 @endif
             </div>
         </section>
@@ -943,6 +943,35 @@
                 <div class="p-4 sm:p-5 flex-1 flex flex-col justify-center">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         
+                        @if(auth()->user()?->canAccessRapor())
+                        <!-- E-Rapor SSO Quick Link -->
+                        <a href="{{ route('report-cards.index') }}" target="_blank" class="group flex items-start gap-3 p-3.5 rounded-xl border border-emerald-200/80 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-950/30 hover:bg-emerald-100/50 dark:hover:bg-emerald-900/40 hover:border-emerald-300 dark:hover:border-emerald-700/60 transition-all duration-200 shadow-2xs hover:shadow-xs">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                                <i data-lucide="book-open-check" class="w-5 h-5"></i>
+                            </div>
+                            <div class="min-w-0 text-left">
+                                <div class="flex items-center gap-1.5">
+                                    <h4 class="text-xs sm:text-sm font-bold text-emerald-800 dark:text-emerald-300 group-hover:text-emerald-700 dark:group-hover:text-emerald-200 transition-colors leading-tight">E-Rapor</h4>
+                                    <i data-lucide="external-link" class="w-3 h-3 text-emerald-500 opacity-60"></i>
+                                </div>
+                                <p class="text-[10px] sm:text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-1 line-clamp-1">Input nilai rapor siswa (SSO)</p>
+                            </div>
+                        </a>
+                        @endif
+
+                        @if(auth()->user()?->isTeacher() || auth()->user()?->hasActiveTeachingAssignment())
+                        <!-- Presensi Siswa -->
+                        <a href="{{ route('student-attendances.index') }}" class="group flex items-start gap-3 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 hover:bg-blue-50/60 dark:hover:bg-blue-950/30 hover:border-blue-200 dark:hover:border-blue-900/50 transition-all duration-200 shadow-2xs hover:shadow-xs">
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-800/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+                            </div>
+                            <div class="min-w-0 text-left">
+                                <h4 class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight">Presensi Siswa</h4>
+                                <p class="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 mt-1 line-clamp-1">Absensi harian murid kelas</p>
+                            </div>
+                        </a>
+                        @endif
+
                         <!-- 1. Ajukan Izin / Cuti -->
                         <a href="{{ route('my-leaves.index') }}" class="group flex items-start gap-3 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 hover:bg-indigo-50/60 dark:hover:bg-indigo-950/30 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all duration-200 shadow-2xs hover:shadow-xs">
                             <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-indigo-600 group-hover:text-white transition-all">

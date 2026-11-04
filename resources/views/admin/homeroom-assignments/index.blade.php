@@ -2,19 +2,12 @@
     <div class="p-4 sm:p-5 lg:p-6 space-y-4 lg:space-y-5" x-data="homeroomApp()">
 
         <!-- HEADER / PAGE TITLE -->
-        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3.5 w-full text-left">
+        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 sm:gap-3 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <div class="flex items-center gap-2.5">
-                    <div class="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl border border-indigo-500/20">
-                        <i data-lucide="user-check" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                            Wali Kelas & Formasi Guru
-                        </h2>
-                        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pengelolaan dan riwayat penugasan Wali Kelas, Guru Kelas, GPK, GPQ, dan Koordinator Jenjang per Tahun Ajaran.</p>
-                    </div>
-                </div>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                    Wali Kelas & Formasi Guru
+                </h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Pengelolaan dan riwayat penugasan Wali Kelas, Guru Kelas, GPK, GPQ, dan Koordinator Jenjang per Tahun Ajaran.</p>
             </div>
 
             <!-- ACTION CONTROLS -->
@@ -33,8 +26,25 @@
             </div>
         </section>
 
+        @if(session('success'))
+            <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-700 dark:text-emerald-300 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
+                    <span>{{ session('success') }}</span>
+                </div>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-700 dark:text-rose-300 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="alert-circle" class="w-4 h-4 text-rose-600"></i>
+                    <span>{{ session('error') }}</span>
+                </div>
+            </div>
+        @endif
+
         <!-- STATS CARDS GRID (Compact) -->
-        <section class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-3.5">
+        <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-3.5">
             <!-- Stat Card 1: Total Penugasan -->
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40">
@@ -68,24 +78,41 @@
                 </div>
             </a>
 
-            <!-- Stat Card 3: GPK Inklusi -->
-            <a href="{{ route('homeroom-assignments.index', array_merge(request()->except(['page', 'role']), ['role' => request('role') === 'gpk' ? 'all' : 'gpk'])) }}"
-                class="bg-white dark:bg-slate-900 border {{ request('role') === 'gpk' ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-700' }} rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-all cursor-pointer group">
+            <!-- Stat Card 3: Guru Mapel -->
+            <a href="{{ route('homeroom-assignments.index', array_merge(request()->except(['page', 'role']), ['role' => request('role') === 'guru_mapel' ? 'all' : 'guru_mapel'])) }}"
+                class="bg-white dark:bg-slate-900 border {{ request('role') === 'guru_mapel' ? 'border-teal-500 ring-2 ring-teal-500/20' : 'border-slate-200 dark:border-slate-800 hover:border-teal-300 dark:hover:border-teal-700' }} rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-all cursor-pointer group">
+                <div class="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 border border-teal-100 dark:border-teal-900/40 group-hover:scale-105 transition-transform">
+                    <i data-lucide="book-marked" class="w-5 h-5"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Guru Mapel</p>
+                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                        <h3 class="text-xl font-bold tracking-tight text-teal-600 dark:text-teal-400 font-mono">
+                            {{ number_format($stats['total_mapel'] ?? 0) }}
+                        </h3>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Pengampu</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Stat Card 4: GPQ & GPK -->
+            <a href="{{ route('homeroom-assignments.index', array_merge(request()->except(['page', 'role']), ['role' => in_array(request('role'), ['gpq', 'gpk']) ? 'all' : 'gpq'])) }}"
+                class="bg-white dark:bg-slate-900 border {{ in_array(request('role'), ['gpq', 'gpk']) ? 'border-purple-500 ring-2 ring-purple-500/20' : 'border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-700' }} rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-all cursor-pointer group">
                 <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-100 dark:border-purple-900/40 group-hover:scale-105 transition-transform">
                     <i data-lucide="heart-handshake" class="w-5 h-5"></i>
                 </div>
                 <div class="min-w-0">
-                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">GPK (Inklusi)</p>
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">GPQ & GPK</p>
                     <div class="flex items-baseline gap-1.5 mt-0.5">
                         <h3 class="text-xl font-bold tracking-tight text-purple-700 dark:text-purple-300 font-mono">
-                            {{ number_format($stats['total_gpk'] ?? 0) }}
+                            {{ number_format(($stats['total_gpq'] ?? 0) + ($stats['total_gpk'] ?? 0)) }}
                         </h3>
                         <span class="text-[10px] text-slate-400 font-medium truncate">Guru</span>
                     </div>
                 </div>
             </a>
 
-            <!-- Stat Card 4: Total Pendidik Terlibat -->
+            <!-- Stat Card 5: Total Pendidik Terlibat -->
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
                 <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40">
                     <i data-lucide="graduation-cap" class="w-5 h-5"></i>
@@ -167,6 +194,17 @@
                         <option value="pendamping_tingkat" {{ request('role') == 'pendamping_tingkat' ? 'selected' : '' }}>Pendamping Tingkat</option>
                     </select>
 
+                    <!-- Mata Pelajaran -->
+                    <select name="subject_id" onchange="this.form.submit()"
+                        class="h-8.5 px-2.5 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer shadow-xs max-w-[150px] truncate">
+                        <option value="all">Semua Mapel</option>
+                        @foreach($subjects as $sub)
+                            <option value="{{ $sub->id }}" {{ request('subject_id') == $sub->id ? 'selected' : '' }}>
+                                {{ $sub->code }} - {{ $sub->name }}
+                            </option>
+                        @endforeach
+                    </select>
+
                     <!-- Per Page -->
                     <select name="per_page" onchange="this.form.submit()"
                         class="h-8.5 px-2.5 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer shadow-xs">
@@ -177,7 +215,7 @@
                         <option value="all" {{ request('per_page') === 'all' ? 'selected' : '' }}>Semua Baris</option>
                     </select>
 
-                    @if(request()->hasAny(['search', 'class_level_id', 'classroom_id', 'role']) || (request('academic_year_id') && request('academic_year_id') != ($activeAcademicYear?->id ?? '')) || (request('per_page') && request('per_page') != 15))
+                    @if(request()->hasAny(['search', 'class_level_id', 'classroom_id', 'subject_id', 'role']) || (request('academic_year_id') && request('academic_year_id') != ($activeAcademicYear?->id ?? '')) || (request('per_page') && request('per_page') != 15))
                         <a href="{{ route('homeroom-assignments.index', ['academic_year_id' => $activeAcademicYear?->id]) }}" 
                             class="h-8.5 px-2.5 inline-flex items-center justify-center text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors"
                             title="Reset Filter">
@@ -211,19 +249,23 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-3">
-                                        @if($item->teacher?->photo)
-                                            <img src="{{ asset('storage/' . $item->teacher->photo) }}" alt="{{ $item->teacher->name }}" class="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700 shrink-0">
-                                        @else
-                                            <div class="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0">
+                                        <div class="relative w-8 h-8 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0">
+                                            <span class="font-bold text-[11px] text-slate-600 dark:text-slate-300">
                                                 {{ strtoupper(substr($item->teacher?->raw_name ?? $item->teacher?->name ?? 'G', 0, 2)) }}
-                                            </div>
-                                        @endif
-                                        <div class="flex flex-col">
-                                            <span class="font-bold text-slate-900 dark:text-slate-100 text-xs tracking-tight">
+                                            </span>
+                                            @if($item->teacher?->photo)
+                                                <img src="{{ asset('storage/' . $item->teacher->photo) }}" 
+                                                     alt="" 
+                                                     onerror="this.remove()" 
+                                                     class="absolute inset-0 w-full h-full object-cover">
+                                            @endif
+                                        </div>
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="font-bold text-slate-900 dark:text-slate-100 text-xs tracking-tight truncate">
                                                 {{ $item->teacher?->name ?? 'Tidak Diketahui' }}
                                             </span>
                                             <div class="flex items-center gap-2 text-[10.5px] text-slate-400 mt-0.5">
-                                                <span>{{ $item->teacher?->nuptk ? 'NUPTK: '.$item->teacher->nuptk : ($item->teacher?->nik ? 'NIK: '.$item->teacher->nik : 'Pendidik SD') }}</span>
+                                                <span>NIY: {{ $item->teacher?->niy ?: '-' }}</span>
                                                 @if($item->notes)
                                                     <span class="text-slate-300 dark:text-slate-600">•</span>
                                                     <span class="italic truncate max-w-[140px]">{{ $item->notes }}</span>
@@ -233,19 +275,19 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-3">
-                                    @php
-                                        $badgeClass = match($item->role) {
-                                            'wali_kelas' => 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
-                                            'guru_kelas' => 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-                                            'gpk' => 'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border-purple-200 dark:border-purple-800',
-                                            'gpq' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
-                                            'koordinator_tingkat', 'pendamping_tingkat' => 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800',
-                                            default => 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                                        };
-                                    @endphp
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold border {{ $badgeClass }}">
-                                        {{ $item->role_label }}
-                                    </span>
+                                    <div class="flex flex-col">
+                                        <span class="font-semibold text-slate-800 dark:text-slate-200 text-xs">
+                                            {{ $item->role_label }}
+                                        </span>
+                                        @if($item->subject && $item->role === 'guru_mapel')
+                                            <span class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                                Mapel: {{ $item->subject->name }}
+                                                @if($item->semester && $item->semester !== 'all')
+                                                    <span class="text-[10px] text-slate-400">({{ ucfirst($item->semester) }})</span>
+                                                @endif
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-4 py-3">
                                     @if($item->classroom)
@@ -272,14 +314,17 @@
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     <button type="button" @click="toggleStatus({{ $item->id }}, $event)"
-                                        class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer {{ $item->is_active ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700' }}">
-                                        <span class="w-1.5 h-1.5 rounded-full {{ $item->is_active ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400' }}"></span>
-                                        <span>{{ $item->is_active ? 'Aktif' : 'Nonaktif' }}</span>
+                                        class="inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity"
+                                        title="Klik untuk ubah status">
+                                        <span class="w-2 h-2 rounded-full {{ $item->is_active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600' }}"></span>
+                                        <span class="{{ $item->is_active ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-slate-400' }}">
+                                            {{ $item->is_active ? 'Aktif' : 'Nonaktif' }}
+                                        </span>
                                     </button>
                                 </td>
                                 <td class="px-4 py-3 text-right">
                                     <div class="inline-flex items-center gap-1.5">
-                                        <button type="button" @click="openEditModal({{ json_encode($item) }})"
+                                        <button type="button" @click='openEditModal(@json($item))'
                                             class="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 transition-colors"
                                             title="Ubah Penugasan">
                                             <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
@@ -325,16 +370,14 @@
         </section>
 
         <!-- CREATE / EDIT MODAL -->
-        <div x-show="modalOpen" x-cloak
+        <div x-show="modalOpen" x-cloak @keydown.escape.window="modalOpen = false"
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
             <div @click.outside="modalOpen = false"
                 class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden text-left transform transition-all">
                 
                 <form :action="isEditing ? '{{ url('homeroom-assignments') }}/' + editId : '{{ route('homeroom-assignments.store') }}'" method="POST">
                     @csrf
-                    <template x-if="isEditing">
-                        <input type="hidden" name="_method" value="PUT">
-                    </template>
+                    <input type="hidden" name="_method" :value="isEditing ? 'PUT' : 'POST'">
 
                     <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                         <div class="flex items-center gap-2.5">
@@ -387,11 +430,41 @@
                             </select>
                         </div>
 
+                        <!-- Mata Pelajaran & Semester (Khusus Guru Mapel & GPQ) -->
+                        <div x-show="formData.role === 'guru_mapel' || formData.role === 'gpq'"
+                            class="p-3 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 rounded-xl space-y-3">
+                            <div>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Mata Pelajaran <span class="text-rose-500" x-show="formData.role === 'guru_mapel'">*</span>
+                                </label>
+                                <select name="subject_id" x-model="formData.subject_id" :required="formData.role === 'guru_mapel'"
+                                    :disabled="formData.role !== 'guru_mapel' && formData.role !== 'gpq'"
+                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                                    <option value="">-- Pilih Mata Pelajaran --</option>
+                                    @foreach($subjects as $sub)
+                                        <option value="{{ $sub->id }}">{{ $sub->code }} - {{ $sub->name }} ({{ $sub->group_label }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Semester Berlaku</label>
+                                <select name="semester" x-model="formData.semester"
+                                    :disabled="formData.role !== 'guru_mapel' && formData.role !== 'gpq'"
+                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                                    <option value="all">Sepanjang Tahun (Ganjil & Genap)</option>
+                                    <option value="ganjil">Semester Ganjil Saja</option>
+                                    <option value="genap">Semester Genap Saja</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <!-- Tingkat & Rombel Selection -->
                         <div class="grid grid-cols-2 gap-3" x-show="formData.role !== 'koordinator_tingkat' && formData.role !== 'pendamping_tingkat'">
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tingkat Kelas</label>
                                 <select name="class_level_id" x-model="formData.class_level_id"
+                                    @change="formData.classroom_id = ''"
+                                    :disabled="formData.role === 'koordinator_tingkat' || formData.role === 'pendamping_tingkat'"
                                     class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                                     <option value="">-- Pilih Tingkat --</option>
                                     @foreach($classLevels as $lvl)
@@ -403,10 +476,12 @@
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Rombel Target</label>
                                 <select name="classroom_id" x-model="formData.classroom_id"
+                                    @change="if ($event.target.selectedOptions[0]?.dataset?.levelId) formData.class_level_id = $event.target.selectedOptions[0].dataset.levelId"
+                                    :disabled="formData.role === 'koordinator_tingkat' || formData.role === 'pendamping_tingkat'"
                                     class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                                     <option value="">-- Pilih Rombel --</option>
                                     @foreach($classrooms as $cr)
-                                        <option value="{{ $cr->id }}" :hidden="formData.class_level_id && formData.class_level_id != '{{ $cr->class_level_id }}'">
+                                        <option value="{{ $cr->id }}" data-level-id="{{ $cr->class_level_id }}" :hidden="formData.class_level_id && formData.class_level_id != '{{ $cr->class_level_id }}'">
                                             {{ $cr->full_name }}
                                         </option>
                                     @endforeach
@@ -418,7 +493,9 @@
                         <div x-show="formData.role === 'koordinator_tingkat' || formData.role === 'pendamping_tingkat'">
                             <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Tingkat yang Dikoordinasikan <span class="text-rose-500">*</span></label>
                             <select name="class_level_id" x-model="formData.class_level_id"
+                                :disabled="formData.role !== 'koordinator_tingkat' && formData.role !== 'pendamping_tingkat'"
                                 class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                                <option value="">-- Pilih Jenjang / Tingkat --</option>
                                 @foreach($classLevels as $lvl)
                                     <option value="{{ $lvl->id }}">Jenjang {{ $lvl->name }} (Kelas {{ $lvl->order }})</option>
                                 @endforeach
@@ -472,6 +549,8 @@
                     role: 'wali_kelas',
                     class_level_id: '',
                     classroom_id: '',
+                    subject_id: '',
+                    semester: 'all',
                     is_active: '1',
                     notes: '',
                 },
@@ -484,10 +563,13 @@
                         role: 'wali_kelas',
                         class_level_id: '',
                         classroom_id: '',
+                        subject_id: '',
+                        semester: 'all',
                         is_active: '1',
                         notes: '',
                     };
                     this.modalOpen = true;
+                    this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
                 },
                 openEditModal(item) {
                     this.isEditing = true;
@@ -498,10 +580,13 @@
                         role: item.role,
                         class_level_id: item.class_level_id || '',
                         classroom_id: item.classroom_id || '',
-                        is_active: item.is_active ? '1' : '0',
+                        subject_id: item.subject_id || '',
+                        semester: item.semester || 'all',
+                        is_active: (item.is_active == 1 || item.is_active === true) ? '1' : '0',
                         notes: item.notes || '',
                     };
                     this.modalOpen = true;
+                    this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
                 },
                 toggleStatus(id, event) {
                     fetch(`{{ url('homeroom-assignments') }}/${id}/toggle-status`, {
@@ -515,7 +600,9 @@
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            if (window.showToast) window.showToast('Sukses', data.message, 'success');
+                            if (window.showToastNotification) {
+                                window.showToastNotification(data.message, 'success');
+                            }
                             window.location.reload();
                         }
                     })

@@ -1,19 +1,12 @@
 <x-admin-layout>
-    <div class="p-4 sm:p-5 lg:p-6 space-y-4 lg:space-y-5" x-data="{ exportDropdownOpen: false, activeReportTab: 'rekap' }">
+    <div class="p-4 sm:p-5 lg:p-6 space-y-4 lg:space-y-5" x-data="{ exportDropdownOpen: false, activeReportTab: 'rekap', selectedLevelFilter: 'all' }">
         <!-- GREETING / PAGE TITLE -->
-        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3.5 w-full text-left">
+        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 sm:gap-3 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <div class="flex items-center gap-2.5">
-                    <div class="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl border border-indigo-500/20">
-                        <i data-lucide="file-bar-chart-2" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                            Rekapitulasi Rombel
-                        </h2>
-                        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Laporan komprehensif distribusi peserta didik, rasio gender, PDBK, dan penugasan wali kelas {{ function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh' }}.</p>
-                    </div>
-                </div>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                    Rekapitulasi Rombel
+                </h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Laporan komprehensif distribusi peserta didik, rasio gender, PDBK, dan penugasan wali kelas {{ function_exists('setting') ? setting('unit_name', 'SD Anak Saleh') : 'SD Anak Saleh' }}.</p>
             </div>
 
             <!-- ACTION CONTROLS & FILTER -->
@@ -220,34 +213,33 @@
                     </span>
                 </div>
 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto relative">
                     <table class="w-full text-xs border-collapse">
                         <thead>
-                            <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">
-                                <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider w-12">No</th>
-                                <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider min-w-[140px]">Nama Kelas</th>
-                                <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider w-20">Kode</th>
-                                <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider w-24 text-blue-600 dark:text-blue-400">Laki-Laki</th>
-                                <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider w-24 text-pink-600 dark:text-pink-400">Perempuan</th>
-                                <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider w-28 text-slate-900 dark:text-slate-100">Jml Siswa</th>
-                                <th class="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider w-28 text-purple-600 dark:text-purple-400">PDBK</th>
-                                <th class="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider min-w-[200px]">Wali Kelas</th>
+                            <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-100/90 dark:bg-slate-800/75 text-slate-700 dark:text-slate-200">
+                                <th class="px-2.5 py-3 text-center text-[11px] font-bold uppercase tracking-wider w-10 sticky left-0 z-20 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700">No</th>
+                                <th class="px-3.5 py-3 text-left text-[11px] font-bold uppercase tracking-wider min-w-[150px] sticky left-10 z-20 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 shadow-[2px_0_6px_-2px_rgba(0,0,0,0.08)]">Nama Rombel</th>
+                                <th class="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider w-24 text-blue-600 dark:text-blue-400">Laki-Laki</th>
+                                <th class="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider w-24 text-pink-600 dark:text-pink-400">Perempuan</th>
+                                <th class="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider w-28 text-slate-900 dark:text-slate-100">Jml Siswa</th>
+                                <th class="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider w-28 text-purple-600 dark:text-purple-400">PDBK</th>
+                                <th class="px-3.5 py-3 text-left text-[11px] font-bold uppercase tracking-wider min-w-[200px]">Wali Kelas</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
                             @php $rowCounter = 1; @endphp
                             @forelse($levelReports as $lvl)
                                 <!-- LEVEL SECTION HEADER -->
-                                <tr class="bg-slate-50 dark:bg-slate-800/40 border-t-2 border-b border-slate-200 dark:border-slate-700/80">
-                                    <td colspan="8" class="px-3 py-2">
-                                        <div class="flex items-center justify-between">
+                                <tr class="bg-slate-50 dark:bg-slate-800/50 border-t-2 border-b border-slate-200 dark:border-slate-700/80">
+                                    <td colspan="7" class="px-3.5 py-2.5">
+                                        <div class="flex items-center justify-between text-xs">
                                             <div class="flex items-center gap-2">
                                                 <span class="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400"></span>
-                                                <span class="font-bold text-xs uppercase tracking-wide text-slate-800 dark:text-slate-200">
+                                                <span class="font-bold uppercase tracking-wide text-slate-800 dark:text-slate-200">
                                                     {{ $lvl['level']->name }}
                                                 </span>
-                                                <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-200/80 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-semibold font-mono">
-                                                    {{ count($lvl['classrooms']) }} Rombel
+                                                <span class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                                                    ({{ count($lvl['classrooms']) }} Rombel)
                                                 </span>
                                             </div>
                                             @if(count($lvl['classrooms']) > 0)
@@ -262,18 +254,11 @@
                                 <!-- CLASSROOM ROWS -->
                                 @forelse($lvl['classrooms'] as $cr)
                                     <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/30 transition-colors group">
-                                        <td class="px-3 py-2.5 text-center text-slate-400 font-mono text-[11px]">
+                                        <td class="px-2.5 py-2.5 text-center text-slate-400 font-mono text-[11px] sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/70 border-r border-slate-100 dark:border-slate-800/80 transition-colors">
                                             {{ $rowCounter++ }}
                                         </td>
-                                        <td class="px-3 py-2.5 font-bold text-slate-900 dark:text-slate-100 text-xs">
-                                            <div class="flex items-center gap-1.5">
-                                                <span>{{ $cr['name'] }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="px-3 py-2.5 text-center font-mono font-semibold text-xs text-indigo-600 dark:text-indigo-400">
-                                            <span class="px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50">
-                                                {{ $cr['code'] }}
-                                            </span>
+                                        <td class="px-3.5 py-2.5 font-bold text-slate-900 dark:text-slate-100 text-xs whitespace-nowrap sticky left-10 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/70 border-r border-slate-200 dark:border-slate-800 shadow-[2px_0_6px_-2px_rgba(0,0,0,0.06)] transition-colors">
+                                            {{ $cr['full_name'] ?? ($cr['code'] . ' ' . $cr['name']) }}
                                         </td>
                                         <td class="px-3 py-2.5 text-center font-mono font-bold text-blue-600 dark:text-blue-400">
                                             {{ $cr['male'] }}
@@ -282,37 +267,24 @@
                                             {{ $cr['female'] }}
                                         </td>
                                         <td class="px-3 py-2.5 text-center font-mono font-bold text-slate-900 dark:text-slate-100 bg-slate-50/50 dark:bg-slate-800/20">
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs {{ $cr['total'] > 0 ? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200' : 'text-slate-400' }}">
-                                                {{ $cr['total'] }}
-                                            </span>
+                                            {{ $cr['total'] }}
                                         </td>
-                                        <td class="px-3 py-2.5 text-center font-mono font-bold">
-                                            @if($cr['pdbk'] > 0)
-                                                <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                                                    {{ $cr['pdbk'] }}
+                                        <td class="px-3 py-2.5 text-center font-mono {{ $cr['pdbk'] > 0 ? 'font-bold text-purple-700 dark:text-purple-300' : 'text-slate-400' }}">
+                                            {{ $cr['pdbk'] > 0 ? $cr['pdbk'] : '-' }}
+                                        </td>
+                                        <td class="px-3.5 py-2.5">
+                                            @if($cr['homeroom_teacher'] && $cr['homeroom_teacher'] !== '-')
+                                                <span class="font-semibold text-slate-800 dark:text-slate-200">
+                                                    {{ $cr['homeroom_teacher'] }}
                                                 </span>
                                             @else
-                                                <span class="text-slate-300 dark:text-slate-600 font-normal">0</span>
-                                            @endif
-                                        </td>
-                                        <td class="px-3 py-2.5">
-                                            @if($cr['homeroom_teacher'] && $cr['homeroom_teacher'] !== '-')
-                                                <div class="flex items-center gap-2">
-                                                    <div class="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-[10px] shrink-0 border border-indigo-100 dark:border-indigo-900/50">
-                                                        <i data-lucide="user-check" class="w-3 h-3"></i>
-                                                    </div>
-                                                    <span class="font-medium text-slate-800 dark:text-slate-200">
-                                                        {{ $cr['homeroom_teacher'] }}
-                                                    </span>
-                                                </div>
-                                            @else
-                                                <span class="text-slate-400 italic text-[11px]">Belum Ditentukan</span>
+                                                <span class="text-slate-400 italic text-[11px]">-</span>
                                             @endif
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="px-3 py-3 text-center text-slate-400 italic text-[11px]">
+                                        <td colspan="7" class="px-3 py-3 text-center text-slate-400 italic text-[11px]">
                                             Tidak ada rombongan belajar aktif pada {{ $lvl['level']->name }} untuk tahun ajaran ini.
                                         </td>
                                     </tr>
@@ -321,7 +293,7 @@
                                 <!-- SUBTOTAL PER LEVEL ROW -->
                                 @if(count($lvl['classrooms']) > 0)
                                     <tr class="bg-indigo-50/50 dark:bg-indigo-950/30 font-bold border-t border-indigo-100 dark:border-indigo-900/40 text-slate-800 dark:text-slate-200">
-                                        <td colspan="3" class="px-3 py-2 text-right uppercase tracking-wider text-[11px] text-indigo-900 dark:text-indigo-200">
+                                        <td colspan="2" class="px-3.5 py-2 text-right uppercase tracking-wider text-[11px] text-indigo-900 dark:text-indigo-200 sticky left-0 z-10 bg-indigo-50/90 dark:bg-indigo-950/80 border-r border-indigo-200 dark:border-indigo-800 shadow-[2px_0_6px_-2px_rgba(0,0,0,0.06)]">
                                             Subtotal {{ $lvl['level']->name }}:
                                         </td>
                                         <td class="px-3 py-2 text-center font-mono text-blue-600 dark:text-blue-400">
@@ -343,7 +315,7 @@
                                 @endif
                             @empty
                                 <tr>
-                                    <td colspan="8" class="px-3 py-8 text-center text-slate-400">
+                                    <td colspan="7" class="px-3 py-8 text-center text-slate-400">
                                         Belum ada data tingkat kelas atau rombel yang terkonfigurasi.
                                     </td>
                                 </tr>
@@ -352,7 +324,7 @@
                             <!-- SISWA AKTIF BELUM MEMILIKI ROMBEL (JIKA ADA) -->
                             @if(!empty($unassignedStudents) && $unassignedTotal > 0)
                                 <tr class="bg-amber-50/80 dark:bg-amber-950/40 border-t-2 border-b border-amber-200 dark:border-amber-800/80">
-                                    <td colspan="8" class="px-3 py-2">
+                                    <td colspan="7" class="px-3 py-2">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center gap-2">
                                                 <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
@@ -384,12 +356,10 @@
                                             <div class="flex items-center gap-2">
                                                 <span>{{ $us->full_name }}</span>
                                                 <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400">(NIS: {{ $us->nis ?: '-' }})</span>
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200 border border-amber-200 dark:border-amber-800">
+                                                    Tanpa Rombel
+                                                </span>
                                             </div>
-                                        </td>
-                                        <td class="px-3 py-2.5 text-center font-mono font-semibold text-xs">
-                                            <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200 border border-amber-200 dark:border-amber-800">
-                                                Tanpa Rombel
-                                            </span>
                                         </td>
                                         <td class="px-3 py-2.5 text-center font-mono font-bold text-blue-600 dark:text-blue-400">
                                             {{ $isUsMale ? 1 : 0 }}
@@ -422,7 +392,7 @@
 
                                 <!-- SUBTOTAL UNASSIGNED -->
                                 <tr class="bg-amber-100/50 dark:bg-amber-950/40 font-bold border-t border-amber-200 dark:border-amber-800 text-slate-800 dark:text-slate-200">
-                                    <td colspan="3" class="px-3 py-2 text-right uppercase tracking-wider text-[11px] text-amber-900 dark:text-amber-200">
+                                    <td colspan="2" class="px-3.5 py-2 text-right uppercase tracking-wider text-[11px] text-amber-900 dark:text-amber-200 sticky left-0 z-10 bg-amber-100/90 dark:bg-amber-950/80 border-r border-amber-200 dark:border-amber-800 shadow-[2px_0_6px_-2px_rgba(0,0,0,0.06)]">
                                         Subtotal Belum Ada Rombel:
                                     </td>
                                     <td class="px-3 py-2 text-center font-mono text-blue-600 dark:text-blue-400">
@@ -437,7 +407,7 @@
                                     <td class="px-3 py-2 text-center font-mono text-purple-700 dark:text-purple-300">
                                         {{ $unassignedPdbk }}
                                     </td>
-                                    <td class="px-3 py-2 text-amber-700 dark:text-amber-400 font-normal italic text-[10px]">
+                                    <td class="px-3.5 py-2 text-amber-700 dark:text-amber-400 font-normal italic text-[10px]">
                                         Siswa aktif menunggu penempatan kelas oleh Admin
                                     </td>
                                 </tr>
@@ -445,7 +415,7 @@
 
                             <!-- GRAND TOTAL FOOTER ROW -->
                             <tr class="bg-slate-900 text-white font-bold border-t-2 border-indigo-500 shadow-inner">
-                                <td colspan="3" class="px-4 py-3.5 text-right uppercase tracking-wider text-xs font-bold text-slate-200">
+                                <td colspan="2" class="px-4 py-3.5 text-right uppercase tracking-wider text-xs font-bold text-slate-200 sticky left-0 z-10 bg-slate-900 border-r border-slate-800 shadow-[2px_0_6px_-2px_rgba(0,0,0,0.35)]">
                                     JUMLAH PESERTA DIDIK KESELURUHAN:
                                 </td>
                                 <td class="px-3 py-3.5 text-center font-mono text-sm text-blue-300">
@@ -479,29 +449,29 @@
         <!-- ========================================================================= -->
         <div x-show="activeReportTab === 'sheet_report'" class="space-y-4 lg:space-y-5" style="display: none;">
             
-            <!-- INFO CARD KETENAGAAN -->
-            <div class="p-4 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
-                        <i data-lucide="award" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-bold text-indigo-950 dark:text-indigo-100">
-                            Matriks Distribusi Pendidik & Tenaga Kependidikan per Rombel
-                        </h3>
-                        <p class="text-xs text-indigo-700/80 dark:text-indigo-300/80 mt-0.5">
-                            Menampilkan alokasi Wali Kelas, Guru Kelas, Guru Pendamping Khusus (GPK), Guru Al-Qur'an (GPQ), serta Koordinator Tingkat sesuai format resmi Sheet REPORT Tata Usaha.
-                        </p>
-                    </div>
+            <!-- FILTER TINGKAT CEPAT & INFO BAR -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:px-4 sm:py-3 shadow-xs">
+                <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                    <span class="text-slate-500 dark:text-slate-400 font-semibold mr-1">Tingkat Kelas:</span>
+                    <button type="button" @click="selectedLevelFilter = 'all'"
+                        :class="selectedLevelFilter === 'all' ? 'bg-indigo-600 text-white font-bold shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'"
+                        class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">
+                        Semua Tingkat
+                    </button>
+                    @foreach($levelReports as $lvl)
+                        <button type="button" @click="selectedLevelFilter = '{{ $lvl['level']->id }}'"
+                            :class="selectedLevelFilter === '{{ $lvl['level']->id }}' ? 'bg-indigo-600 text-white font-bold shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'"
+                            class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">
+                            {{ $lvl['level']->name }}
+                        </button>
+                    @endforeach
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                    <span class="text-xs px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800 font-bold font-mono text-indigo-700 dark:text-indigo-300 shadow-xs">
-                        6 Level • 24 Rombel
-                    </span>
+                <div class="text-[11px] text-slate-400 dark:text-slate-500 font-mono hidden md:block">
+                    ↔ Geser tabel ke samping (Nama Rombel tetap terkunci di kiri)
                 </div>
             </div>
 
-            <!-- SHEET REPORT TABLE (11 KOLOM LENGKAP) -->
+            <!-- SHEET REPORT TABLE (RESPONSIF DENGAN STICKY KOLOM & BEBAS BADGE MENUMPUK) -->
             <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden w-full">
                 <!-- Table Header Info Bar -->
                 <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
@@ -516,56 +486,64 @@
                     </span>
                 </div>
 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto relative">
                     <table class="w-full text-xs border-collapse">
                         <thead>
-                            <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-900 text-white font-bold">
-                                <th class="px-2.5 py-2.5 text-center text-[10px] font-bold uppercase tracking-wider w-10">No</th>
-                                <th class="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider min-w-[120px]">Nama Kelas</th>
-                                <th class="px-2.5 py-2.5 text-center text-[10px] font-bold uppercase tracking-wider w-16">Kode</th>
-                                <th class="px-2.5 py-2.5 text-center text-[10px] font-bold uppercase tracking-wider w-14 text-blue-300">Laki-Laki</th>
-                                <th class="px-2.5 py-2.5 text-center text-[10px] font-bold uppercase tracking-wider w-14 text-pink-300">Perempuan</th>
-                                <th class="px-2.5 py-2.5 text-center text-[10px] font-bold uppercase tracking-wider w-16 text-emerald-300">Jml Siswa</th>
-                                <th class="px-2.5 py-2.5 text-center text-[10px] font-bold uppercase tracking-wider w-16 text-purple-300">Inklusi</th>
-                                <th class="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider min-w-[170px] text-indigo-300">Wali Kelas</th>
-                                <th class="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider min-w-[160px] text-teal-300">Guru Kelas</th>
-                                <th class="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider min-w-[200px] text-amber-300">GPK (Inklusi)</th>
-                                <th class="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider min-w-[160px] text-rose-300">GPQ (Al-Qur'an)</th>
+                            <!-- ROW 1: KELOMPOK HEADER (GROUPED) -->
+                            <tr class="bg-slate-900 text-white font-bold border-b border-slate-800">
+                                <th rowspan="2" class="px-2.5 py-3 text-center text-[10px] uppercase tracking-wider w-10 sticky left-0 z-30 bg-slate-900 border-r border-slate-800">No</th>
+                                <th rowspan="2" class="px-3.5 py-3 text-left text-[10px] uppercase tracking-wider min-w-[140px] sticky left-10 z-30 bg-slate-900 border-r border-slate-700 shadow-[2px_0_6px_-2px_rgba(0,0,0,0.35)]">Nama Rombel</th>
+                                <th colspan="4" class="px-3 py-1.5 text-center text-[10px] uppercase tracking-wider bg-slate-800 text-slate-200 border-r border-slate-700">
+                                    Data Peserta Didik
+                                </th>
+                                <th colspan="5" class="px-3 py-1.5 text-center text-[10px] uppercase tracking-wider bg-slate-800 text-slate-200">
+                                    Formasi Guru & Tenaga Pendidik
+                                </th>
+                            </tr>
+                            <!-- ROW 2: SUBHEADER DETAIL -->
+                            <tr class="bg-slate-900 text-white font-bold border-b border-slate-800">
+                                <th class="px-2 py-2 text-center text-[10px] uppercase tracking-wider w-10 text-blue-300">L</th>
+                                <th class="px-2 py-2 text-center text-[10px] uppercase tracking-wider w-10 text-pink-300">P</th>
+                                <th class="px-2 py-2 text-center text-[10px] uppercase tracking-wider w-12 text-emerald-300">Total</th>
+                                <th class="px-2 py-2 text-center text-[10px] uppercase tracking-wider w-12 text-purple-300 border-r border-slate-800">PDBK</th>
+                                <th class="px-3 py-2 text-left text-[10px] uppercase tracking-wider min-w-[150px] text-slate-200">Wali Kelas</th>
+                                <th class="px-3 py-2 text-left text-[10px] uppercase tracking-wider min-w-[150px] text-slate-200">Guru Kelas</th>
+                                <th class="px-3 py-2 text-left text-[10px] uppercase tracking-wider min-w-[150px] text-slate-200">GPK (Inklusi)</th>
+                                <th class="px-3 py-2 text-left text-[10px] uppercase tracking-wider min-w-[140px] text-slate-200">GPQ (Al-Qur'an)</th>
+                                <th class="px-3 py-2 text-left text-[10px] uppercase tracking-wider min-w-[190px] text-slate-200">Guru Mapel</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
-                            @php $sheetRowCounter = 1; @endphp
-                            @foreach($levelReports as $lvl)
+
+                        @php $sheetRowCounter = 1; @endphp
+                        @foreach($levelReports as $lvl)
+                            <tbody x-show="selectedLevelFilter === 'all' || selectedLevelFilter === '{{ $lvl['level']->id }}'" class="divide-y divide-slate-100 dark:divide-slate-800/80">
                                 <!-- LEVEL SECTION WITH COORDINATOR HEADER -->
-                                <tr class="bg-indigo-50/70 dark:bg-indigo-950/40 border-t-2 border-b border-indigo-200 dark:border-indigo-800">
-                                    <td colspan="11" class="px-3.5 py-2.5">
-                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-                                            <div class="flex items-center gap-2">
+                                <tr class="bg-slate-100/90 dark:bg-slate-800/60 border-t-2 border-b border-slate-200 dark:border-slate-700/80">
+                                    <td colspan="11" class="px-3.5 py-2">
+                                        <div class="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs">
+                                            <!-- Level Title (Kiri) -->
+                                            <div class="flex items-center gap-2 shrink-0">
                                                 <span class="w-2.5 h-2.5 rounded-full bg-indigo-600 dark:bg-indigo-400"></span>
-                                                <span class="font-extrabold text-xs uppercase tracking-wide text-indigo-950 dark:text-indigo-100">
+                                                <span class="font-extrabold uppercase tracking-wide text-slate-900 dark:text-slate-100 text-xs">
                                                     {{ $lvl['level']->name }}
                                                 </span>
-                                                <span class="text-[10px] px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 font-bold font-mono">
-                                                    {{ count($lvl['classrooms']) }} Rombel
+                                                <span class="text-slate-500 dark:text-slate-400 font-mono text-[11px]">
+                                                    ({{ count($lvl['classrooms']) }} Rombel)
                                                 </span>
                                             </div>
 
-                                            <!-- Koordinator & Pendamping Jenjang Badge -->
-                                            <div class="flex flex-wrap items-center gap-2 text-xs">
-                                                <div class="flex items-center gap-1.5">
-                                                    <span class="text-slate-500 dark:text-slate-400 font-semibold text-[11px]">Koordinator:</span>
-                                                    <span class="px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800 text-indigo-800 dark:text-indigo-200 font-bold text-xs shadow-xs">
-                                                        {{ $lvl['coordinator'] ?? 'Koordinator ' . $lvl['level']->name }}
-                                                    </span>
+                                            <span class="text-slate-300 dark:text-slate-600 hidden sm:inline">|</span>
+
+                                            <!-- Koordinator & Pendamping Jenjang (Rapi di Kiri Tanpa Melebar ke Kanan) -->
+                                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
+                                                <div>
+                                                    <span class="text-slate-500 dark:text-slate-400">Koordinator:</span>
+                                                    <span class="font-semibold text-slate-900 dark:text-slate-100 ml-1">{{ $lvl['coordinator'] ?? '-' }}</span>
                                                 </div>
                                                 @if(!empty($lvl['assistants']))
-                                                    <div class="flex items-center gap-1.5">
-                                                        <span class="text-slate-500 dark:text-slate-400 font-semibold text-[11px]">Pendamping:</span>
-                                                        @foreach($lvl['assistants'] as $ast)
-                                                            <span class="px-2 py-0.5 rounded-full bg-indigo-100/70 dark:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-medium text-[11px]">
-                                                                {{ $ast }}
-                                                            </span>
-                                                        @endforeach
+                                                    <div>
+                                                        <span class="text-slate-500 dark:text-slate-400">Pendamping:</span>
+                                                        <span class="font-semibold text-slate-900 dark:text-slate-100 ml-1">{{ implode(', ', $lvl['assistants']) }}</span>
                                                     </div>
                                                 @endif
                                             </div>
@@ -576,46 +554,31 @@
                                 <!-- CLASSROOM ROWS -->
                                 @foreach($lvl['classrooms'] as $cr)
                                     <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/30 transition-colors group">
-                                        <td class="px-2.5 py-2.5 text-center text-slate-400 font-mono text-[11px]">
+                                        <!-- No (Sticky) -->
+                                        <td class="px-2.5 py-2.5 text-center text-slate-400 font-mono text-[11px] sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/70 border-r border-slate-100 dark:border-slate-800/80 transition-colors">
                                             {{ $sheetRowCounter++ }}
                                         </td>
-                                        <td class="px-3 py-2.5 font-bold text-slate-900 dark:text-slate-100 text-xs">
-                                            <span>{{ strtoupper($cr['name']) }}</span>
+                                        <!-- Nama Rombel (Sticky dengan bayangan halus) -->
+                                        <td class="px-3.5 py-2.5 font-bold text-slate-900 dark:text-slate-100 text-xs whitespace-nowrap sticky left-10 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/70 border-r border-slate-200 dark:border-slate-800 shadow-[2px_0_6px_-2px_rgba(0,0,0,0.06)] transition-colors">
+                                            {{ $cr['full_name'] ?? ($cr['code'] . ' ' . $cr['name']) }}
                                         </td>
-                                        <td class="px-2.5 py-2.5 text-center font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">
-                                            <span class="px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/50">
-                                                {{ $cr['code'] }}
-                                            </span>
-                                        </td>
-                                        <td class="px-2.5 py-2.5 text-center font-mono font-bold text-blue-600 dark:text-blue-400">
+                                        <!-- Data Siswa (Angka Bersih Tanpa Badge) -->
+                                        <td class="px-2.5 py-2.5 text-center font-mono text-slate-700 dark:text-slate-300">
                                             {{ $cr['male'] }}
                                         </td>
-                                        <td class="px-2.5 py-2.5 text-center font-mono font-bold text-pink-600 dark:text-pink-400">
+                                        <td class="px-2.5 py-2.5 text-center font-mono text-slate-700 dark:text-slate-300">
                                             {{ $cr['female'] }}
                                         </td>
                                         <td class="px-2.5 py-2.5 text-center font-mono font-bold text-slate-900 dark:text-slate-100 bg-slate-50/50 dark:bg-slate-800/20">
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold {{ $cr['total'] > 0 ? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200' : 'text-slate-400' }}">
-                                                {{ $cr['total'] }}
-                                            </span>
+                                            {{ $cr['total'] }}
                                         </td>
-                                        <td class="px-2.5 py-2.5 text-center font-mono font-bold">
-                                            @if($cr['pdbk'] > 0)
-                                                <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                                                    {{ $cr['pdbk'] }}
-                                                </span>
-                                            @else
-                                                <span class="text-slate-300 dark:text-slate-600 font-normal">0</span>
-                                            @endif
+                                        <td class="px-2.5 py-2.5 text-center font-mono border-r border-slate-100 dark:border-slate-800 {{ $cr['pdbk'] > 0 ? 'font-bold text-purple-700 dark:text-purple-300' : 'text-slate-400' }}">
+                                            {{ $cr['pdbk'] > 0 ? $cr['pdbk'] : '-' }}
                                         </td>
                                         <!-- Wali Kelas -->
                                         <td class="px-3 py-2.5">
                                             @if($cr['homeroom_teacher'] && $cr['homeroom_teacher'] !== '-')
-                                                <div class="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200">
-                                                    <div class="w-5 h-5 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-[10px] shrink-0 font-bold">
-                                                        <i data-lucide="user-check" class="w-3 h-3"></i>
-                                                    </div>
-                                                    <span>{{ $cr['homeroom_teacher'] }}</span>
-                                                </div>
+                                                <span class="font-semibold text-slate-900 dark:text-slate-100 block">{{ $cr['homeroom_teacher'] }}</span>
                                             @else
                                                 <span class="text-slate-400 italic text-[11px]">-</span>
                                             @endif
@@ -623,51 +586,53 @@
                                         <!-- Guru Kelas -->
                                         <td class="px-3 py-2.5">
                                             @if(!empty($cr['class_teacher']) && $cr['class_teacher'] !== '-')
-                                                <div class="flex items-center gap-1.5 text-teal-800 dark:text-teal-300 font-medium">
-                                                    <div class="w-5 h-5 rounded-full bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center text-[10px] shrink-0 font-bold">
-                                                        <i data-lucide="user" class="w-3 h-3"></i>
-                                                    </div>
-                                                    <span>{{ $cr['class_teacher'] }}</span>
-                                                </div>
+                                                <span class="text-slate-800 dark:text-slate-200 block">{{ $cr['class_teacher'] }}</span>
                                             @else
-                                                <span class="text-slate-300 dark:text-slate-600">-</span>
+                                                <span class="text-slate-400 italic text-[11px]">-</span>
                                             @endif
                                         </td>
                                         <!-- GPK -->
                                         <td class="px-3 py-2.5">
                                             @if(!empty($cr['gpk_teachers']))
-                                                <div class="flex flex-wrap gap-1">
+                                                <div class="space-y-0.5 text-slate-800 dark:text-slate-200 leading-tight">
                                                     @foreach($cr['gpk_teachers'] as $gpk)
-                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
-                                                            <i data-lucide="heart-handshake" class="w-2.5 h-2.5 text-amber-600 dark:text-amber-400 shrink-0"></i>
-                                                            <span>{{ $gpk }}</span>
-                                                        </span>
+                                                        <div>{{ $gpk }}</div>
                                                     @endforeach
                                                 </div>
                                             @else
-                                                <span class="text-slate-300 dark:text-slate-600">-</span>
+                                                <span class="text-slate-400 italic text-[11px]">-</span>
                                             @endif
                                         </td>
                                         <!-- GPQ -->
                                         <td class="px-3 py-2.5">
                                             @if(!empty($cr['gpq']) && $cr['gpq'] !== '-')
-                                                <div class="flex items-center gap-1.5 text-rose-800 dark:text-rose-300 font-medium">
-                                                    <div class="w-5 h-5 rounded-full bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center text-[10px] shrink-0 font-bold">
-                                                        <i data-lucide="book-open" class="w-3 h-3"></i>
-                                                    </div>
-                                                    <span>{{ $cr['gpq'] }}</span>
+                                                <span class="text-slate-800 dark:text-slate-200 block">{{ $cr['gpq'] }}</span>
+                                            @else
+                                                <span class="text-slate-400 italic text-[11px]">-</span>
+                                            @endif
+                                        </td>
+                                        <!-- Guru Mapel (Teks Rapi Tanpa Truncate) -->
+                                        <td class="px-3 py-2.5">
+                                            @if(!empty($cr['mapel_teachers']))
+                                                <div class="space-y-1 text-slate-800 dark:text-slate-200 leading-tight">
+                                                    @foreach($cr['mapel_teachers'] as $gm)
+                                                        <div class="break-words">
+                                                            <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $gm['subject_code'] ?? $gm['subject'] }}:</span>
+                                                            <span>{{ $gm['teacher'] }}</span>
+                                                        </div>
+                                                    @endforeach
                                                 </div>
                                             @else
-                                                <span class="text-slate-300 dark:text-slate-600">-</span>
+                                                <span class="text-slate-400 italic text-[11px]">-</span>
                                             @endif
                                         </td>
                                     </tr>
                                 @endforeach
 
                                 <!-- SUBTOTAL LEVEL ROW -->
-                                <tr class="bg-indigo-50/50 dark:bg-indigo-950/30 font-bold border-t border-indigo-100 dark:border-indigo-900/40 text-slate-800 dark:text-slate-200">
-                                    <td colspan="3" class="px-3 py-2 text-right uppercase tracking-wider text-[11px] text-indigo-900 dark:text-indigo-200">
-                                        Jml Siswa @ {{ $lvl['level']->name }}:
+                                <tr class="bg-slate-50/70 dark:bg-slate-800/40 font-bold border-t border-slate-200 dark:border-slate-700/60 text-slate-800 dark:text-slate-200">
+                                    <td colspan="2" class="px-3 py-2 text-right uppercase tracking-wider text-[11px] text-slate-700 dark:text-slate-300 sticky left-0 z-10 bg-slate-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700">
+                                        Subtotal {{ $lvl['level']->name }}:
                                     </td>
                                     <td class="px-2.5 py-2 text-center font-mono text-blue-600 dark:text-blue-400">
                                         {{ $lvl['subtotal_male'] }}
@@ -675,21 +640,23 @@
                                     <td class="px-2.5 py-2 text-center font-mono text-pink-600 dark:text-pink-400">
                                         {{ $lvl['subtotal_female'] }}
                                     </td>
-                                    <td class="px-2.5 py-2 text-center font-mono text-indigo-700 dark:text-indigo-300 bg-indigo-100/50 dark:bg-indigo-900/40">
+                                    <td class="px-2.5 py-2 text-center font-mono font-bold text-slate-900 dark:text-slate-100">
                                         {{ $lvl['subtotal_students'] }}
                                     </td>
-                                    <td class="px-2.5 py-2 text-center font-mono text-purple-700 dark:text-purple-300">
-                                        {{ $lvl['subtotal_pdbk'] }}
+                                    <td class="px-2.5 py-2 text-center font-mono text-purple-700 dark:text-purple-300 border-r border-slate-200 dark:border-slate-700">
+                                        {{ $lvl['subtotal_pdbk'] ?: '-' }}
                                     </td>
-                                    <td colspan="4" class="px-3 py-2 text-slate-500 dark:text-slate-400 font-normal italic text-[10px]">
+                                    <td colspan="5" class="px-3 py-2 text-slate-500 dark:text-slate-400 font-normal italic text-[10px]">
                                         Total {{ count($lvl['classrooms']) }} rombel pada jenjang ini
                                     </td>
                                 </tr>
-                            @endforeach
+                            </tbody>
+                        @endforeach
 
-                            <!-- GRAND TOTAL FOOTER -->
+                        <!-- GRAND TOTAL FOOTER (Hanya tampil saat mode Semua Tingkat) -->
+                        <tbody x-show="selectedLevelFilter === 'all'">
                             <tr class="bg-slate-900 text-white font-bold border-t-2 border-indigo-500 shadow-inner">
-                                <td colspan="3" class="px-4 py-3.5 text-right uppercase tracking-wider text-xs font-bold text-slate-200">
+                                <td colspan="2" class="px-4 py-3.5 text-right uppercase tracking-wider text-xs font-bold text-slate-200 sticky left-0 z-10 bg-slate-900 border-r border-slate-800">
                                     JUMLAH PESERTA DIDIK KESELURUHAN:
                                 </td>
                                 <td class="px-2.5 py-3.5 text-center font-mono text-sm text-blue-300">
@@ -701,10 +668,10 @@
                                 <td class="px-2.5 py-3.5 text-center font-mono text-base text-white bg-indigo-700/80">
                                     {{ $grandTotalStudents }}
                                 </td>
-                                <td class="px-2.5 py-3.5 text-center font-mono text-sm text-purple-300">
-                                    {{ $grandTotalPdbk }}
+                                <td class="px-2.5 py-3.5 text-center font-mono text-sm text-purple-300 border-r border-slate-800">
+                                    {{ $grandTotalPdbk ?: '-' }}
                                 </td>
-                                <td colspan="4" class="px-4 py-3.5 text-slate-300 font-normal text-xs">
+                                <td colspan="5" class="px-4 py-3.5 text-slate-300 font-normal text-xs">
                                     <span class="inline-flex items-center gap-2">
                                         <span>Rasio: <strong class="font-mono text-white">{{ $malePercent }}% L</strong> / <strong class="font-mono text-white">{{ $femalePercent }}% P</strong></span>
                                         <span>•</span>

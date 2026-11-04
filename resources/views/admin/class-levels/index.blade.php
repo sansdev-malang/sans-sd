@@ -34,7 +34,7 @@
                         <h3 class="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 font-mono">
                             {{ number_format($stats['total_levels']) }}
                         </h3>
-                        <span class="text-[10px] text-slate-400 font-medium truncate">Jenjang SD</span>
+                        <span class="text-[10px] text-slate-400 font-medium truncate">Tingkat SD</span>
                     </div>
                 </div>
             </div>
@@ -55,13 +55,13 @@
                 </div>
             </div>
 
-            <!-- Stat 3: Total Kapasitas Kursi -->
+            <!-- Stat 3: Total Kapasitas -->
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 shadow-xs flex items-center gap-3 transition-colors">
                 <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-900/40">
                     <i data-lucide="door-open" class="w-5 h-5"></i>
                 </div>
                 <div class="min-w-0">
-                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Kapasitas Kursi</p>
+                    <p class="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Kapasitas</p>
                     <div class="flex items-baseline gap-1.5 mt-0.5">
                         <h3 class="text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
                             {{ number_format($stats['total_capacity']) }}
@@ -94,14 +94,8 @@
                 <div class="flex items-center gap-2.5">
                     <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                         <i data-lucide="list-ordered" class="w-4 h-4 text-indigo-600"></i>
-                        Daftar Tingkat & Jenjang Kelas
+                        Daftar Tingkat Kelas
                     </h3>
-                    @if($selectedYear)
-                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $selectedYear->is_active ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700' }}">
-                            <i data-lucide="calendar" class="w-3 h-3"></i>
-                            TA {{ $selectedYear->name }} {{ $selectedYear->is_active ? '(Aktif)' : '' }}
-                        </span>
-                    @endif
                 </div>
 
                 <!-- Filter Tahun Ajaran (TA) -->
@@ -123,9 +117,8 @@
                         <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/50">
                             <th class="px-5 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-16">Urutan</th>
                             <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Tingkat Kelas</th>
-                            <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">Kode</th>
                             <th class="px-5 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rombel Terdaftar</th>
-                            <th class="px-5 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">Siswa Aktif</th>
+                            <th class="px-5 py-3.5 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap w-28">Siswa Aktif</th>
                             <th class="px-5 py-3.5 text-right text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">Aksi</th>
                         </tr>
                     </thead>
@@ -153,14 +146,9 @@
                                     </div>
                                 </td>
                                 <td class="px-5 py-3.5">
-                                    <span class="px-2.5 py-1 rounded-md text-[11px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                                        {{ $lvl->code }}
-                                    </span>
-                                </td>
-                                <td class="px-5 py-3.5">
                                     <div class="flex flex-wrap gap-1.5">
                                         @forelse($lvl->classrooms as $rombel)
-                                            <a href="{{ route('classrooms.index', ['academic_year_id' => $selectedYearId, 'class_level_id' => $lvl->id]) }}"
+                                             <a href="{{ route('classrooms.index', ['academic_year_id' => $selectedYearId, 'class_level_id' => $lvl->id]) }}"
                                                 class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50 transition-colors"
                                                 title="Lihat Rombel {{ $rombel->full_name }}">
                                                 {{ $rombel->full_name }}
@@ -191,7 +179,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                                <td colspan="5" class="px-6 py-12 text-center text-slate-400">
                                     Belum ada data Tingkat Kelas.
                                 </td>
                             </tr>

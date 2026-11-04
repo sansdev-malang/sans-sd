@@ -19,10 +19,23 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 class StudentAttendanceController extends Controller
 {
     /**
+     * Check if current user is authorized to manage student attendances.
+     */
+    private function authorizeAttendanceAccess(): void
+    {
+        $user = auth()->user();
+        if (!$user || (!$user->isAdmin() && !$user->isTeacher() && !$user->hasActiveTeachingAssignment())) {
+            abort(403, 'Akses ditolak: Presensi Siswa hanya dapat diakses oleh Tenaga Pendidik dan Administrator.');
+        }
+    }
+
+    /**
      * Display the Student Attendance dashboard (Daily input & Monthly recap).
      */
     public function index(Request $request)
     {
+        $this->authorizeAttendanceAccess();
+
         $activeYear = AcademicYear::where('is_active', true)->first();
 
         $classrooms = Classroom::with(['homeroomTeacher', 'classLevel'])
@@ -39,6 +52,14 @@ class StudentAttendanceController extends Controller
             $assignedClass = $classrooms->firstWhere('homeroom_teacher_id', $user->employee_id);
             if ($assignedClass) {
                 $defaultClassroomId = $assignedClass->id;
+            } else {
+                $teachingClassId = \App\Models\HomeroomAssignment::where('employee_id', $user->employee_id)
+                    ->where('is_active', true)
+                    ->whereNotNull('classroom_id')
+                    ->value('classroom_id');
+                if ($teachingClassId) {
+                    $defaultClassroomId = $teachingClassId;
+                }
             }
         }
         if (!$defaultClassroomId && $classrooms->isNotEmpty()) {
@@ -208,6 +229,7 @@ class StudentAttendanceController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorizeAttendanceAccess();
         $validated = $request->validate([
             'classroom_id' => 'required|exists:classrooms,id',
             'date' => 'required|date',
@@ -278,6 +300,7 @@ class StudentAttendanceController extends Controller
      */
     public function exportMonthlyExcel(Request $request)
     {
+        $this->authorizeAttendanceAccess();
         $classroomId = $request->get('classroom_id');
         $month = (int) $request->get('month', Carbon::now()->month);
         $year = (int) $request->get('year', Carbon::now()->year);
@@ -450,6 +473,7 @@ class StudentAttendanceController extends Controller
      */
     public function printMonthly(Request $request)
     {
+        $this->authorizeAttendanceAccess();
         $classroomId = $request->get('classroom_id');
         $month = (int) $request->get('month', Carbon::now()->month);
         $year = (int) $request->get('year', Carbon::now()->year);

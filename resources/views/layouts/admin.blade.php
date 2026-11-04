@@ -366,7 +366,7 @@
                             </span>
                             <span class="text-slate-950 font-extrabold uppercase tracking-wide text-[11px] bg-amber-600/40 px-2 py-0.5 rounded">Mode Impersonasi</span>
                             <span class="text-slate-900">
-                                Anda sedang masuk sebagai <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->email }} &bull; Role: <span class="uppercase font-mono font-bold">{{ auth()->user()->role }}</span>)
+                                Anda sedang masuk sebagai <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->email }} &bull; Peran: <span class="bg-black/15 text-slate-950 px-2 py-0.5 rounded font-mono font-bold">{{ auth()->user()->getRoleDisplayName() }}</span>)
                             </span>
                         </div>
                         <form method="POST" action="{{ route('impersonate.leave') }}" class="m-0 inline">
@@ -535,6 +535,13 @@
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
                     window.showToast('Perhatian!', @json(session('error')), 'error');
+                });
+            </script>
+        @endif
+        @if($errors->any())
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    window.showToast('Gagal Validasi!', @json(implode(' ', $errors->all())), 'error');
                 });
             </script>
         @endif
@@ -973,5 +980,6 @@
                 });
             }
         </script>
+        @stack('scripts')
     </body>
 </html>

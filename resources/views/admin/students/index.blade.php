@@ -104,20 +104,8 @@
                     </div>
                 </div>
             </div>
-            <!-- ACTION CONTROLS: INFO TAHUN AJARAN AKTIF & ACTION BUTTONS -->
+            <!-- ACTION CONTROLS: ACTION BUTTONS -->
             <div class="flex flex-wrap items-center gap-2 shrink-0">
-                <!-- Info Badge Tahun Ajaran Aktif -->
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 rounded-xl text-xs shadow-xs shrink-0">
-                    <span class="flex h-2 w-2 relative shrink-0">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <span class="text-slate-500 dark:text-slate-400 font-medium">Tahun Ajaran Aktif:</span>
-                    <span class="font-bold text-indigo-700 dark:text-indigo-300">
-                        {{ $activeAcademicYear ? $activeAcademicYear->name : '2026/2027' }}
-                    </span>
-                </div>
-
                 <button type="button" @click="importModalOpen = true"
                     class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-800 shadow-xs transition-colors cursor-pointer shrink-0">
                     <i data-lucide="upload" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0"></i>

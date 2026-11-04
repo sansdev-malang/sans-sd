@@ -48,7 +48,7 @@ class AcademicMasterSeeder extends Seeder
                 [
                     'name' => "Kelas {$i}",
                     'order' => $i,
-                    'description' => "Jenjang Pendidikan SD Kelas {$i}",
+                    'description' => "Tingkat Pendidikan SD Kelas {$i}",
                 ]
             );
         }

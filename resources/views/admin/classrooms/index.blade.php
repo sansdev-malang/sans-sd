@@ -2,19 +2,12 @@
     <div class="p-6 space-y-6" x-data="rombelApp()">
 
         <!-- GREETING / PAGE TITLE -->
-        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left">
+        <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 sm:gap-3 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <div class="flex items-center gap-2.5">
-                    <div class="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/20">
-                        <i data-lucide="university" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                            Rombongan Belajar
-                        </h2>
-                        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kelola rombongan belajar, alokasi wali kelas, dan kuota kapasitas kelas SD.</p>
-                    </div>
-                </div>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                    Rombongan Belajar
+                </h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">Kelola rombongan belajar, alokasi wali kelas, dan kuota kapasitas kelas SD.</p>
             </div>
             <div class="flex items-center gap-2.5 shrink-0">
                 <a href="{{ route('student-reports.index') }}"
@@ -152,12 +145,6 @@
                         <i data-lucide="layers" class="w-4 h-4 text-emerald-600"></i>
                         Daftar Rombongan Belajar (Rombel)
                     </h3>
-                    @if($selectedYear)
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $selectedYear->is_active ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800' : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700' }}">
-                            <i data-lucide="calendar" class="w-3 h-3"></i>
-                            {{ $selectedYear->name }} {{ $selectedYear->is_active ? '(Aktif)' : '' }}
-                        </span>
-                    @endif
                 </div>
                 <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">
                     Total: <strong class="text-slate-800 dark:text-slate-200">{{ $classrooms->count() }}</strong> rombel
@@ -168,7 +155,6 @@
                     <thead>
                         <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/50">
                             <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-12 whitespace-nowrap">No</th>
-                            <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28 whitespace-nowrap">Tingkat</th>
                             <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Nama Rombel</th>
                             <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-44 whitespace-nowrap">Tahun Ajaran</th>
                             <th class="px-4 py-3.5 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">Wali Kelas</th>
@@ -189,19 +175,13 @@
                                     {{ $index + 1 }}
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                                        {{ $c->classLevel->name ?? '-' }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 whitespace-nowrap">
                                     <span class="font-bold text-slate-900 dark:text-slate-100 text-xs tracking-tight">
                                         {{ $c->full_name }}
                                     </span>
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold bg-indigo-50/70 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-400 border border-indigo-200/80 dark:border-indigo-800 whitespace-nowrap">
-                                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-500 shrink-0"></i>
-                                        <span>{{ $c->academicYear->name ?? '-' }}</span>
+                                    <span class="font-mono text-xs font-medium text-slate-700 dark:text-slate-300">
+                                        {{ $c->academicYear->name ?? '-' }}
                                     </span>
                                 </td>
                                 <td class="px-4 py-3">
@@ -269,7 +249,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-4 py-12 text-center">
+                                <td colspan="7" class="px-4 py-12 text-center">
                                     <div class="max-w-sm mx-auto flex flex-col items-center justify-center">
                                         <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-emerald-500 mb-3 border border-emerald-100 dark:border-emerald-900/50">
                                             <i data-lucide="university" class="w-6 h-6"></i>
@@ -404,11 +384,11 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                    Tingkat / Level <span class="text-rose-500">*</span>
+                                    Tingkat Kelas <span class="text-rose-500">*</span>
                                 </label>
                                 <select x-model="formData.class_level_id" required
                                     class="w-full h-10 px-3.5 text-xs bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-100 cursor-pointer transition-all">
-                                    <option value="">Pilih Level...</option>
+                                    <option value="">Pilih Tingkat Kelas...</option>
                                     @foreach($classLevels as $lvl)
                                         <option value="{{ $lvl->id }}">{{ $lvl->name }}</option>
                                     @endforeach
@@ -429,11 +409,11 @@
                             </div>
                         </div>
 
-                        <!-- Grid 2: Kode Kelas (Dapodik) & Nama Kelas / Julukan -->
+                        <!-- Grid 2: Kode Kelas (Dapodik) & Nama / Julukan Rombel -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                    Kelas / Grade <span class="text-rose-500">*</span>
+                                    Kode Kelas <span class="text-rose-500">*</span>
                                 </label>
                                 <input type="text" x-model="formData.code" required placeholder="Contoh: 1A, 2B, 6D"
                                     class="w-full h-10 px-3.5 text-xs bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-100 font-mono uppercase tracking-wider transition-all">
@@ -441,7 +421,7 @@
 
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                    Nama Kelas / Julukan <span class="text-rose-500">*</span>
+                                    Nama / Julukan Rombel <span class="text-rose-500">*</span>
                                 </label>
                                 <input type="text" x-model="formData.name" required placeholder="Contoh: Berlian, Mutiara, Ibnu Sina"
                                     class="w-full h-10 px-3.5 text-xs bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-100 transition-all">
@@ -586,14 +566,14 @@
                                 </div>
                             </div>
 
-                            <!-- Kapasitas Kuota -->
+                            <!-- Kapasitas -->
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                    Kapasitas Kuota (Siswa) <span class="text-rose-500">*</span>
+                                    Kapasitas <span class="text-rose-500">*</span>
                                 </label>
                                 <input type="number" x-model.number="formData.capacity" min="1" max="100" required
                                     class="w-full h-10 px-3.5 text-xs bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-900 dark:text-slate-100 transition-all">
-                                <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Standar kuota SD: 32 siswa per rombel</p>
+                                <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Standar kapasitas SD: 28 - 32 siswa per rombel</p>
                             </div>
                         </div>
 
