@@ -589,10 +589,7 @@
                     <h4 class="text-xs font-semibold text-slate-900 dark:text-slate-50 truncate leading-none">
                         {{ Auth::user()->name }}
                     </h4>
-                    <p class="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 truncate mt-1">
-                        {{ Auth::user()->getRoleDisplayName() }}
-                    </p>
-                    <p class="text-[10px] text-slate-400 dark:text-slate-500 truncate leading-tight">{{ Auth::user()->email }}</p>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 truncate leading-tight mt-1">{{ Auth::user()->email }}</p>
                 </div>
             </div>
             <i data-lucide="chevrons-up-down" class="chevron-icon w-4 h-4 text-slate-400 shrink-0 ml-1"></i>
