@@ -39,6 +39,10 @@
                     'employees.index' => 'Data Pegawai',
                     'announcements.index' => 'Pengumuman',
                     'zkteco-devices.index' => 'Mesin Absensi',
+                    'academic-years.index' => 'Tahun Ajaran & Semester',
+                    'class-levels.index' => 'Tingkat Kelas',
+                    'classrooms.index' => 'Rombongan Belajar',
+                    'students.index' => 'Data Siswa',
                 ];
                 $title = $routeTitles[$routeName] ?? 'Dashboard';
             }
