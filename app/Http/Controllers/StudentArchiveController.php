@@ -295,7 +295,10 @@ class StudentArchiveController extends Controller
 
         $sheet->getStyle("A{$startRow}:{$lastCol}" . ($currentRow - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FFCBD5E1'));
 
-        foreach (range(1, count($headers)) as $colIndex) {
+        // Kolom A (No): Lebar tetap kompak (width: 6) agar tidak melar akibat teks judul di baris 1-3
+        $sheet->getColumnDimension('A')->setAutoSize(false)->setWidth(6);
+
+        foreach (range(2, count($headers)) as $colIndex) {
             $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($colIndex))->setAutoSize(true);
         }
 
