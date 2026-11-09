@@ -71,6 +71,11 @@
                 box-shadow: 0 0 10px #4f46e5, 0 0 5px #4f46e5 !important;
             }
 
+            /* Alpine.js x-cloak to prevent DOM flash/flicker */
+            [x-cloak] {
+                display: none !important;
+            }
+
             /* Global Search Container Hover and Button Styles */
             .search-container button[type="submit"]:hover {
                 background-color: #0f172a !important; /* bg-slate-900 */

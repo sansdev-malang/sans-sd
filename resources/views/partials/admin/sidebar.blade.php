@@ -26,7 +26,7 @@
     $curUser = auth()->user();
 @endphp
 <aside id="sidebar"
-    class="fixed inset-y-0 left-0 z-[60] md:z-20 flex flex-col w-64 h-full md:h-screen max-h-screen bg-white dark:bg-[#09090b] border-r border-slate-200 dark:border-slate-800 p-3 shrink-0 transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative shadow-sm md:shadow-none overflow-hidden">
+    class="fixed inset-y-0 left-0 z-[60] md:z-20 flex flex-col w-64 h-full md:h-screen max-h-screen bg-white dark:bg-[#09090b] border-r border-slate-200 dark:border-slate-800 p-3 shrink-0 transition-transform duration-300 md:transition-none -translate-x-full md:translate-x-0 md:relative shadow-sm md:shadow-none overflow-hidden">
 
     <style>
         .sidebar-collapsed .sidebar-dropdown-content {
@@ -96,13 +96,14 @@
                     <span class="menu-text">Akademik</span>
                 </div>
                 <i data-lucide="chevron-right" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200 shrink-0"
-                    :style="openAcademic ? 'transform: rotate(90deg);' : ''"></i>
+                    :style="openAcademic ? 'transform: rotate(90deg);' : ''" @if($isAcademicActive) style="transform: rotate(90deg);" @endif></i>
                 <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
                     Akademik & Pembelajaran
                 </span>
             </button>
 
             <div x-show="openAcademic" x-collapse
+                @if(!$isAcademicActive) style="display: none;" x-cloak @endif
                 class="sidebar-dropdown-content mt-1 ml-4 pl-2.5 border-l border-slate-200 dark:border-slate-800 space-y-0.5">
                 @if(!$isExecutive)
                 <a href="{{ route('academic-years.index') }}"
@@ -166,13 +167,14 @@
                     <span class="menu-text">Kesiswaan</span>
                 </div>
                 <i data-lucide="chevron-right" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200 shrink-0"
-                    :style="openStudent ? 'transform: rotate(90deg);' : ''"></i>
+                    :style="openStudent ? 'transform: rotate(90deg);' : ''" @if($isStudentActive) style="transform: rotate(90deg);" @endif></i>
                 <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
                     Kesiswaan
                 </span>
             </button>
 
             <div x-show="openStudent" x-collapse
+                @if(!$isStudentActive) style="display: none;" x-cloak @endif
                 class="sidebar-dropdown-content mt-1 ml-4 pl-2.5 border-l border-slate-200 dark:border-slate-800 space-y-0.5">
                 <a href="{{ route('students.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('students.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
@@ -222,13 +224,14 @@
                     <span class="menu-text">Manajemen Guru</span>
                 </div>
                 <i data-lucide="chevron-right" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200 shrink-0"
-                    :style="openTeacherMgmt ? 'transform: rotate(90deg);' : ''"></i>
+                    :style="openTeacherMgmt ? 'transform: rotate(90deg);' : ''" @if($isTeacherMgmtActive) style="transform: rotate(90deg);" @endif></i>
                 <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
                     Manajemen Guru & Pendidik
                 </span>
             </button>
 
             <div x-show="openTeacherMgmt" x-collapse
+                @if(!$isTeacherMgmtActive) style="display: none;" x-cloak @endif
                 class="sidebar-dropdown-content mt-1 ml-4 pl-2.5 border-l border-slate-200 dark:border-slate-800 space-y-0.5">
                 <a href="{{ route('homeroom-assignments.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('homeroom-assignments.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
@@ -267,13 +270,14 @@
                     <span class="menu-text">Kepegawaian (SDM)</span>
                 </div>
                 <i data-lucide="chevron-right" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200 shrink-0"
-                    :style="openHrd ? 'transform: rotate(90deg);' : ''"></i>
+                    :style="openHrd ? 'transform: rotate(90deg);' : ''" @if($isHrdActive) style="transform: rotate(90deg);" @endif></i>
                 <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
                     Kepegawaian & SDM
                 </span>
             </button>
 
             <div x-show="openHrd" x-collapse
+                @if(!$isHrdActive) style="display: none;" x-cloak @endif
                 class="sidebar-dropdown-content mt-1 ml-4 pl-2.5 border-l border-slate-200 dark:border-slate-800 space-y-0.5">
                 <a href="{{ route('employees.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('employees.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
@@ -326,13 +330,14 @@
                     <span class="menu-text">Layanan & Informasi</span>
                 </div>
                 <i data-lucide="chevron-right" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200 shrink-0"
-                    :style="openServices ? 'transform: rotate(90deg);' : ''"></i>
+                    :style="openServices ? 'transform: rotate(90deg);' : ''" @if($isServicesActive) style="transform: rotate(90deg);" @endif></i>
                 <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
                     Layanan & Informasi Sekolah
                 </span>
             </button>
 
             <div x-show="openServices" x-collapse
+                @if(!$isServicesActive) style="display: none;" x-cloak @endif
                 class="sidebar-dropdown-content mt-1 ml-4 pl-2.5 border-l border-slate-200 dark:border-slate-800 space-y-0.5">
                 <a href="{{ route('guest-books.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('guest-books.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
@@ -360,13 +365,14 @@
                     <span class="menu-text">Pembelajaran</span>
                 </div>
                 <i data-lucide="chevron-right" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200 shrink-0"
-                    :style="openTeacherPortal ? 'transform: rotate(90deg);' : ''"></i>
+                    :style="openTeacherPortal ? 'transform: rotate(90deg);' : ''" @if($isTeacherPortalActive) style="transform: rotate(90deg);" @endif></i>
                 <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
                     Pembelajaran
                 </span>
             </button>
 
             <div x-show="openTeacherPortal" x-collapse
+                @if(!$isTeacherPortalActive) style="display: none;" x-cloak @endif
                 class="sidebar-dropdown-content mt-1 ml-4 pl-2.5 border-l border-slate-200 dark:border-slate-800 space-y-0.5">
                 <a href="{{ route('student-attendances.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('student-attendances.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
@@ -421,13 +427,14 @@
                     <span class="menu-text">Akses Pribadi Saya</span>
                 </div>
                 <i data-lucide="chevron-right" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200 shrink-0"
-                    :style="openPersonal ? 'transform: rotate(90deg);' : ''"></i>
+                    :style="openPersonal ? 'transform: rotate(90deg);' : ''" @if($isPersonalActive) style="transform: rotate(90deg);" @endif></i>
                 <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
                     Akses Pribadi & Pengajuan
                 </span>
             </button>
 
             <div x-show="openPersonal" x-collapse
+                @if(!$isPersonalActive) style="display: none;" x-cloak @endif
                 class="sidebar-dropdown-content mt-1 ml-4 pl-2.5 border-l border-slate-200 dark:border-slate-800 space-y-0.5">
                 
                 {{-- Presensi Mandiri hanya untuk staf/guru non-admin (Admin SD sudah punya di Kepegawaian) --}}
@@ -487,13 +494,14 @@
                     <span class="menu-text">Pengaturan Sistem</span>
                 </div>
                 <i data-lucide="chevron-right" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200 shrink-0"
-                    :style="openSystem ? 'transform: rotate(90deg);' : ''"></i>
+                    :style="openSystem ? 'transform: rotate(90deg);' : ''" @if($isSystemActive) style="transform: rotate(90deg);" @endif></i>
                 <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
                     Pengaturan Sistem & Hak Akses
                 </span>
             </button>
 
             <div x-show="openSystem" x-collapse
+                @if(!$isSystemActive) style="display: none;" x-cloak @endif
                 class="sidebar-dropdown-content mt-1 ml-4 pl-2.5 border-l border-slate-200 dark:border-slate-800 space-y-0.5">
                 <a href="{{ route('users.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('users.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
@@ -597,4 +605,22 @@
         </div>
     </div>
 
+    <!-- Preserve Sidebar Scroll Position across page navigations -->
+    <script>
+        (function() {
+            const nav = document.getElementById('sidebar-nav-container');
+            if (!nav) return;
+            const savedScroll = sessionStorage.getItem('sans_sidebar_scroll');
+            if (savedScroll !== null) {
+                nav.scrollTop = parseInt(savedScroll, 10);
+            }
+            let scrollTimer;
+            nav.addEventListener('scroll', function() {
+                clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(() => {
+                    sessionStorage.setItem('sans_sidebar_scroll', nav.scrollTop);
+                }, 50);
+            }, { passive: true });
+        })();
+    </script>
 </aside>
