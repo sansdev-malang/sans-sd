@@ -52,10 +52,18 @@
                     <div class="flex flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-2">
                         <!-- Search Box -->
                         <div class="relative flex-1 max-w-md">
-                            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.3-4.3"></path>
+                                </svg>
+                            </span>
                             <input type="text" x-model="search" placeholder="Cari nama pegawai, NIY, atau jabatan..." class="w-full h-9 pl-9 pr-8 text-xs bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors">
-                            <button type="button" x-show="search.trim() !== ''" @click="search = ''" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                            <button type="button" x-show="search.trim() !== ''" @click="search = ''" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer bg-transparent border-0" title="Bersihkan pencarian">
+                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 6 6 18"></path>
+                                    <path d="m6 6 12 12"></path>
+                                </svg>
                             </button>
                         </div>
 

@@ -353,19 +353,31 @@
                 <form method="GET" action="{{ route('attendance-percentage-reports.index') }}" id="attendance-filter-form" data-no-loader="true">
                     
                     <div class="flex flex-col lg:flex-row items-stretch lg:items-end gap-3 w-full">
-                        <!-- Search Input -->
+                        <!-- Search Input (Live Search) -->
                         <div class="flex-grow min-w-0">
                             <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">Cari Pegawai</label>
-                            <div x-data="{ searchVal: '{{ request('search') }}' }" class="w-full flex items-center bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-inner focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500">
-                                <div class="pl-3 text-slate-450 dark:text-slate-500">
-                                    <i data-lucide="search" class="w-4 h-4"></i>
-                                </div>
-                                <input type="text" name="search" x-model="searchVal" x-ref="searchInput" placeholder="Cari nama atau NIP pegawai..."
-                                    style="border: none !important; outline: none !important; box-shadow: none !important;"
-                                    class="w-full h-10 px-2.5 text-xs bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-550 focus:ring-0">
-                                
-                                <button type="button" x-show="searchVal.trim() !== ''" @click="searchVal = ''; $refs.searchInput.focus();" class="h-10 px-2.5 text-slate-400 hover:text-slate-650 dark:hover:text-slate-250 transition-colors cursor-pointer bg-transparent border-0 flex items-center justify-center">
-                                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                            <div x-data="liveSearchBox('attendance-reports-table-container', '{{ request('search') }}')" class="relative w-full">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg x-show="isSearching" x-cloak class="animate-spin w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                    </svg>
+                                    <svg x-show="!isSearching" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <path d="m21 21-4.3-4.3"></path>
+                                    </svg>
+                                </span>
+
+                                <input type="text" name="search" x-model="searchVal" @input="onInput()" @keydown.enter.prevent="performSearch()" placeholder="Cari nama atau NIP pegawai..."
+                                    class="w-full h-10 pl-9 pr-8 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-550 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors shadow-inner">
+
+                                <button type="button" x-show="searchVal && searchVal.trim() !== ''" @click="clear()"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-650 dark:hover:text-slate-250 cursor-pointer bg-transparent border-0"
+                                    title="Bersihkan pencarian">
+                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 6 6 18"></path>
+                                        <path d="m6 6 12 12"></path>
+                                    </svg>
                                 </button>
                             </div>
                         </div>
@@ -466,7 +478,7 @@
             </section>
 
             <!-- TABLE SECTION -->
-            <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full text-left">
+            <section id="attendance-reports-table-container" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden w-full text-left">
                 <!-- Table Header Legend -->
                 <div class="px-6 py-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-500/5 dark:bg-slate-900/50 flex flex-wrap items-center justify-between gap-3 text-[11px] font-semibold text-slate-500">
                     <span class="font-bold text-slate-900 dark:text-slate-200 flex items-center gap-2">

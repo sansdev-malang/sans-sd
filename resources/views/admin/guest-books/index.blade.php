@@ -86,20 +86,29 @@
             <div class="p-2 sm:px-3 sm:py-2.5 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2.5">
                 <form method="GET" action="{{ route('guest-books.index') }}" id="guestFilterForm" class="flex items-center gap-1.5 flex-wrap shrink-0">
 
-                    <!-- Search Input -->
-                    <div x-data="{ searchVal: '{{ $search }}' }" class="flex items-center w-48 sm:w-64 search-container bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-lg overflow-hidden focus-within:ring-1 focus-within:ring-teal-500 focus-within:border-teal-500 shrink-0">
-                        <input type="text" name="search" x-model="searchVal" placeholder="Cari nama, kontak, instansi..."
-                            style="border: none !important; outline: none !important; box-shadow: none !important;"
-                            class="w-full h-8 pl-2.5 pr-1 text-xs bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:ring-0">
-                        
-                        <button type="button" x-show="searchVal.trim() !== ''" @click="searchVal = ''; $el.closest('.search-container').querySelector('input').focus();" class="h-8 px-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer bg-transparent border-0 flex items-center justify-center" title="Bersihkan pencarian">
-                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                        </button>
+                    <!-- Search Input (Live Search) -->
+                    <div x-data="liveSearchBox('guest-books-table-container', '{{ $search }}')" class="relative w-48 sm:w-64 shrink-0">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none">
+                            <svg x-show="isSearching" x-cloak class="animate-spin w-3.5 h-3.5 text-teal-600 dark:text-teal-400" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                            <svg x-show="!isSearching" class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.3-4.3"></path>
+                            </svg>
+                        </span>
 
-                        <button type="submit" 
-                            :class="searchVal.trim() !== '' ? 'bg-teal-600 text-white dark:bg-teal-500 dark:text-white' : 'bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300'"
-                            class="h-8 px-2 font-bold text-xs transition-all duration-150 cursor-pointer flex items-center justify-center border-l border-slate-200 dark:border-slate-700">
-                            <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                        <input type="text" name="search" x-model="searchVal" @input="onInput()" @keydown.enter.prevent="performSearch()" placeholder="Cari nama, kontak, instansi..."
+                            class="w-full h-8 pl-8 pr-7 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-colors">
+
+                        <button type="button" x-show="searchVal && searchVal.trim() !== ''" @click="clear()"
+                            class="absolute inset-y-0 right-0 flex items-center pr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer bg-transparent border-0"
+                            title="Bersihkan pencarian">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 6 6 18"></path>
+                                <path d="m6 6 12 12"></path>
+                            </svg>
                         </button>
                     </div>
 
@@ -171,6 +180,7 @@
             </div>
 
             <!-- Table Container with Horizontal Scroll -->
+            <div id="guest-books-table-container">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
                     @if($selectedCategory === 'SPMB')
@@ -839,6 +849,7 @@
                     @endif
                 </div>
             @endif
+            </div> <!-- #guest-books-table-container -->
         </section>
 
         <!-- ========================================================================= -->

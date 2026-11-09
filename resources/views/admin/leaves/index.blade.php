@@ -85,20 +85,30 @@
             <form method="GET" action="{{ route('leaves.index') }}" class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
                 <!-- Left Side: Search & Filters -->
                 <div class="flex flex-wrap items-center gap-2 flex-1">
-                    <!-- Search Box -->
-                    <div x-data="{ searchVal: '{{ request('search') }}' }" class="flex items-center w-full md:w-60 h-9 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden transition-all focus-within:ring-2 focus-within:ring-slate-100 dark:focus-within:ring-slate-800/60 focus-within:border-slate-400 dark:focus-within:border-slate-600 shadow-inner search-container">
-                        <input type="text" name="search" x-model="searchVal" placeholder="Cari pegawai..."
-                            class="w-full h-full px-3 text-xs bg-transparent border-none outline-none focus:ring-0 text-slate-900 dark:text-slate-55 placeholder-slate-400 dark:placeholder-slate-500">
-                        
-                        <!-- Clear Button (x) -->
-                        <button type="button" x-show="searchVal.trim() !== ''" @click="searchVal = ''; $el.closest('.search-container').querySelector('input').focus();" class="h-full px-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer bg-transparent border-0 flex items-center justify-center" title="Bersihkan pencarian">
-                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                        </button>
+                    <!-- Search Box (Live Search) -->
+                    <div x-data="liveSearchBox('leaves-table-container', '{{ request('search') }}')" class="relative w-full md:w-60">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg x-show="isSearching" x-cloak class="animate-spin w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                            <svg x-show="!isSearching" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.3-4.3"></path>
+                            </svg>
+                        </span>
 
-                        <button type="submit" 
-                            :class="searchVal.trim() !== '' ? 'bg-indigo-600 text-white dark:bg-indigo-500 dark:text-white border-indigo-700' : 'bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300'"
-                            class="h-full px-4 font-bold text-xs transition-all duration-150 cursor-pointer whitespace-nowrap flex items-center justify-center border-l border-slate-200 dark:border-slate-800">
-                            Cari
+                        <input type="text" name="search" x-model="searchVal" @input="onInput()" @keydown.enter.prevent="performSearch()" placeholder="Cari pegawai..."
+                            style="padding-left: 2.25rem;"
+                            class="w-full h-9 pr-8 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-colors shadow-inner">
+
+                        <button type="button" x-show="searchVal && searchVal.trim() !== ''" @click="clear()"
+                            class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer bg-transparent border-0"
+                            title="Bersihkan pencarian">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 6 6 18"></path>
+                                <path d="m6 6 12 12"></path>
+                            </svg>
                         </button>
                     </div>
 
@@ -145,7 +155,7 @@
         </section>
 
         <!-- TABLE LIST -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden text-left w-full flex flex-col justify-between">
+        <div id="leaves-table-container" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden text-left w-full flex flex-col justify-between">
             <div class="p-5 border-b border-slate-100 dark:border-slate-900 flex justify-between items-center flex-wrap gap-2 bg-white dark:bg-slate-900">
                 <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200">
                     Daftar Riwayat Izin

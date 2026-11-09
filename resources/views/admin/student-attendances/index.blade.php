@@ -13,12 +13,7 @@
         <!-- HEADER SECTION -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                        <i data-lucide="clipboard-check" class="w-5 h-5"></i>
-                    </span>
-                    <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Presensi Siswa</h2>
-                </div>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Presensi Siswa</h2>
                 <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
                     Pencatatan presensi harian per rombel dan laporan rekapitulasi kehadiran bulanan siswa SMP.
                 </p>

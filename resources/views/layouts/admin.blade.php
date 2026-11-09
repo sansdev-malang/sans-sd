@@ -203,6 +203,87 @@
             } else {
                 document.documentElement.classList.add('dark');
             }
+
+            // Global Reusable Live Search Box Component for Alpine.js
+            window.liveSearchBox = function(tableContainerId, initialValue = '', statsContainerId = null) {
+                return {
+                    searchVal: initialValue || '',
+                    isSearching: false,
+                    timer: null,
+
+                    onInput() {
+                        this.isSearching = true;
+                        clearTimeout(this.timer);
+                        this.timer = setTimeout(() => {
+                            this.performSearch();
+                        }, 350);
+                    },
+
+                    clear() {
+                        this.searchVal = '';
+                        this.performSearch();
+                        this.$nextTick(() => {
+                            const input = this.$el.querySelector('input[name="search"]');
+                            if (input) input.focus();
+                        });
+                    },
+
+                    performSearch() {
+                        const form = this.$el.closest('form');
+                        if (!form) return;
+
+                        const formData = new FormData(form);
+                        formData.set('search', this.searchVal);
+                        const params = new URLSearchParams(formData);
+
+                        for (const [key, value] of [...params.entries()]) {
+                            if (!value && value !== '0') params.delete(key);
+                        }
+
+                        const actionUrl = form.getAttribute('action') || window.location.pathname;
+                        const url = `${actionUrl}?${params.toString()}`;
+                        this.isSearching = true;
+
+                        fetch(url, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(res => res.text())
+                        .then(html => {
+                            this.isSearching = false;
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+
+                            const newTable = doc.getElementById(tableContainerId);
+                            const currentTable = document.getElementById(tableContainerId);
+                            if (newTable && currentTable) {
+                                currentTable.innerHTML = newTable.innerHTML;
+                                if (window.lucide) {
+                                    lucide.createIcons({ root: currentTable });
+                                }
+                            }
+
+                            if (statsContainerId) {
+                                const newStats = doc.getElementById(statsContainerId);
+                                const currentStats = document.getElementById(statsContainerId);
+                                if (newStats && currentStats) {
+                                    currentStats.innerHTML = newStats.innerHTML;
+                                    if (window.lucide) {
+                                        lucide.createIcons({ root: currentStats });
+                                    }
+                                }
+                            }
+
+                            window.history.replaceState({}, '', url);
+                        })
+                        .catch(err => {
+                            this.isSearching = false;
+                            console.error('Live search error:', err);
+                        });
+                    }
+                };
+            };
         </script>
 
         <style>

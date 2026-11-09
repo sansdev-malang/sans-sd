@@ -4,17 +4,10 @@
         <!-- GREETING / PAGE TITLE -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <div class="flex items-center gap-2.5">
-                    <div class="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl border border-indigo-500/20">
-                        <i data-lucide="arrow-up-circle" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                            Kenaikan & Kelulusan Kelas
-                        </h2>
-                        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pindahkan rombel siswa secara massal, kelola siswa tinggal kelas, dan proses kelulusan angkatan kelas 6.</p>
-                    </div>
-                </div>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                    Kenaikan & Kelulusan Kelas
+                </h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pindahkan rombel siswa secara massal, kelola siswa tinggal kelas, dan proses kelulusan angkatan kelas 6.</p>
             </div>
             <!-- ACTION CONTROLS -->
             <div class="flex items-center gap-2.5">

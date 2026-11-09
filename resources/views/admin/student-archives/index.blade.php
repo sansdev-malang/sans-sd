@@ -6,12 +6,7 @@
         <!-- ========================================================================= -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center justify-center p-1.5 rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-800">
-                        <i data-lucide="archive" class="w-5 h-5"></i>
-                    </span>
-                    <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Arsip Murid</h2>
-                </div>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Arsip Murid</h2>
                 <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
                     Pusat rekapitulasi kelengkapan dokumen legalitas (Akta, KK, KTP, KIA) yang otomatis tersinkronisasi dari Data Murid & SPMB.
                 </p>
@@ -174,16 +169,34 @@
                         </select>
                     </div>
 
-                    <!-- Pencarian -->
+                    <!-- Pencarian (Live Search) -->
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
                             Cari Murid
                         </label>
-                        <div class="relative">
-                            <input type="text" name="search" value="{{ $search }}"
-                                placeholder="Nama, NIS, atau NIK..."
-                                class="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
-                            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none"></i>
+                        <div x-data="liveSearchBox('archives-table-container', '{{ $search }}')" class="relative w-full sm:w-60">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none">
+                                <svg x-show="isSearching" x-cloak class="animate-spin w-3.5 h-3.5 text-teal-600 dark:text-teal-400" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                </svg>
+                                <svg x-show="!isSearching" class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.3-4.3"></path>
+                                </svg>
+                            </span>
+
+                            <input type="text" name="search" x-model="searchVal" @input="onInput()" @keydown.enter.prevent="performSearch()" placeholder="Nama, NIS, atau NIK..."
+                                class="w-full h-8 pl-8 pr-7 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-colors">
+
+                            <button type="button" x-show="searchVal && searchVal.trim() !== ''" @click="clear()"
+                                class="absolute inset-y-0 right-0 flex items-center pr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer bg-transparent border-0"
+                                title="Bersihkan pencarian">
+                                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 6 6 18"></path>
+                                    <path d="m6 6 12 12"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -207,7 +220,7 @@
         <!-- ========================================================================= -->
         <!-- TABLE OF STUDENT ARCHIVES & CHECKLIST                                     -->
         <!-- ========================================================================= -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
+        <div id="archives-table-container" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>

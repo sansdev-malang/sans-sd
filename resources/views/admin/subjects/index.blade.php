@@ -4,19 +4,12 @@
         <!-- HEADER / PAGE TITLE -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3.5 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <div class="flex items-center gap-2.5">
-                    <div class="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl border border-indigo-500/20">
-                        <i data-lucide="book-open" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                            Master Mata Pelajaran
-                        </h2>
-                        <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                            Pengelolaan daftar mata pelajaran resmi unit sekolah sebagai dasar penugasan guru mengajar dan rapor.
-                        </p>
-                    </div>
-                </div>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                    Master Mata Pelajaran
+                </h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Pengelolaan daftar mata pelajaran resmi unit sekolah sebagai dasar penugasan guru mengajar dan rapor.
+                </p>
             </div>
 
             <!-- ACTION CONTROLS -->
@@ -118,11 +111,30 @@
                         </select>
                     </div>
 
-                    <!-- Search -->
-                    <div class="relative flex-1 min-w-[200px]">
-                        <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari nama atau kode mapel..."
-                            class="w-full text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-700 dark:text-slate-200 py-1.5 pl-8 pr-2.5 focus:ring-1 focus:ring-indigo-500">
-                        <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400"></i>
+                    <!-- Search (Live Search) -->
+                    <div x-data="liveSearchBox('subjects-table-container', '{{ $search ?? '' }}')" class="relative flex-1 min-w-[200px]">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none">
+                            <svg x-show="isSearching" x-cloak class="animate-spin w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                            <svg x-show="!isSearching" class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.3-4.3"></path>
+                            </svg>
+                        </span>
+
+                        <input type="text" name="search" x-model="searchVal" @input="onInput()" @keydown.enter.prevent="performSearch()" placeholder="Cari nama atau kode mapel..."
+                            class="w-full text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-700 dark:text-slate-200 py-1.5 pl-8 pr-7 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors">
+
+                        <button type="button" x-show="searchVal && searchVal.trim() !== ''" @click="clear()"
+                            class="absolute inset-y-0 right-0 flex items-center pr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer bg-transparent border-0"
+                            title="Bersihkan pencarian">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 6 6 18"></path>
+                                <path d="m6 6 12 12"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
@@ -140,7 +152,7 @@
         </section>
 
         <!-- TABLE -->
-        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden">
+        <section id="subjects-table-container" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-xs text-left border-collapse">
                     <thead>
