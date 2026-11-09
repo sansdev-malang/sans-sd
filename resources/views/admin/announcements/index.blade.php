@@ -28,9 +28,12 @@
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                 <!-- Search Box -->
                 <div class="relative flex-1 max-w-md">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
-                        <i data-lucide="search" class="w-4 h-4"></i>
-                    </div>
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.3-4.3"></path>
+                        </svg>
+                    </span>
                     <input 
                         type="text" 
                         x-model="searchQuery"
@@ -41,10 +44,14 @@
                         type="button"
                         x-show="searchQuery.length > 0" 
                         @click="searchQuery = ''" 
-                        class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                        class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer bg-transparent border-0"
                         style="display: none;"
+                        title="Bersihkan pencarian"
                     >
-                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6 6 18"></path>
+                            <path d="m6 6 12 12"></path>
+                        </svg>
                     </button>
                 </div>
 
