@@ -253,7 +253,9 @@
 
                         fetch(url, {
                             headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'text/html',
+                                'X-Live-Search': 'true'
                             }
                         })
                         .then(res => res.text())
@@ -268,6 +270,9 @@
                                 currentTable.innerHTML = newTable.innerHTML;
                                 if (window.lucide) {
                                     lucide.createIcons({ root: currentTable });
+                                }
+                                if (window.Alpine) {
+                                    window.Alpine.initTree(currentTable);
                                 }
                             }
 

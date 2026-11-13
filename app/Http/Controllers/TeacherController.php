@@ -45,8 +45,12 @@ class TeacherController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('nik', 'like', "%{$search}%")->orWhere('nuptk', 'like', "%{$search}%")
-                  ->orWhere('position', 'like', "%{$search}%");
+                  ->orWhere('nik', 'like', "%{$search}%")
+                  ->orWhere('niy', 'like', "%{$search}%")
+                  ->orWhere('nuptk', 'like', "%{$search}%")
+                  ->orWhere('position', 'like', "%{$search}%")
+                  ->orWhere('additional_position', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
