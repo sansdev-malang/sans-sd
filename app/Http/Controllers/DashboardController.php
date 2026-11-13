@@ -648,15 +648,48 @@ class DashboardController extends Controller
             foreach ($dailyDetails as $dateStr => $det) {
                 $dateCarbon = \Carbon\Carbon::parse($dateStr);
                 $shiftName = $det['shift_name'] ?? null;
+                $status = $det['status'] ?? '';
                 $shortLabel = '-';
                 $type = 'default';
 
-                if ($shiftName) {
-                    // 1. Prioritaskan short_code langsung dari HRD API atau mapping active_shifts
-                    $code = $det['short_code'] ?? $det['shift_code'] ?? ($shiftCodeMap[$shiftName] ?? null);
+                $statusLower = strtolower(trim($status));
+                $shiftNameLower = strtolower(trim($shiftName ?? ''));
+                $codeRaw = $det['short_code'] ?? $det['shift_code'] ?? ($shiftName ? ($shiftCodeMap[$shiftName] ?? null) : null);
+                $codeLower = strtolower(trim($codeRaw ?? ''));
+
+                // 1. Deteksi apakah hari ini adalah hari Libur / OFF (Jadwal Roster/Batch Libur, Hari Libur Nasional/Yayasan, Day-Off)
+                $isOffDay = false;
+                if (
+                    in_array($statusLower, ['off', 'libur', 'day off', 'holiday', 'reward libur', 'libur resmi', 'libur nasional', 'libur mingguan']) ||
+                    !empty($det['is_off']) ||
+                    !empty($det['is_holiday']) ||
+                    in_array($shiftNameLower, ['off', 'libur', 'day off', 'libur mingguan', 'libur roster']) ||
+                    in_array($codeLower, ['off', 'lib', 'lbr', 'l'])
+                ) {
+                    $isOffDay = true;
+                }
+
+                // Cek apakah pegawai memiliki catatan jam masuk (kehadiran nyata)
+                $hasAttended = !empty($det['check_in']) && $det['check_in'] !== '-' && in_array($status, ['Hadir', 'Present', 'Late']);
+
+                if ($isOffDay && !$hasAttended) {
+                    $shortLabel = 'OFF';
+                    $type = 'off';
+                } elseif (in_array($statusLower, ['sakit', 'sick']) || stripos($statusLower, 'sakit') !== false) {
+                    $shortLabel = 'Skt';
+                    $type = 'sakit';
+                } elseif (in_array($statusLower, ['izin', 'permit']) || stripos($statusLower, 'izin') !== false) {
+                    $shortLabel = 'Izn';
+                    $type = 'izin';
+                } elseif (in_array($statusLower, ['cuti', 'leave']) || stripos($statusLower, 'cuti') !== false) {
+                    $shortLabel = 'Cti';
+                    $type = 'cuti';
+                } elseif ($shiftName && !$isOffDay) {
+                    // Prioritaskan short_code langsung dari HRD API atau mapping active_shifts
+                    $code = $codeRaw;
 
                     if (!$code) {
-                        // 2. Pattern matching cerdas jika belum ada short_code dari cache lama
+                        // Pattern matching cerdas jika belum ada short_code dari cache lama
                         if (preg_match('/pagi\s+shift\s+(\d+)\s*([a-z]?)/i', $shiftName, $m)) {
                             $code = 'PS-' . $m[1] . strtoupper($m[2]);
                         } elseif (preg_match('/siang\s+shift\s+(\d+)\s*([a-z]?)/i', $shiftName, $m)) {
@@ -671,6 +704,8 @@ class DashboardController extends Controller
                             $code = 'P';
                         } elseif (stripos($shiftName, 'siang') !== false) {
                             $code = 'S';
+                        } elseif (stripos($shiftName, 'libur') !== false || stripos($shiftName, 'off') !== false) {
+                            $code = 'OFF';
                         } else {
                             $code = strtoupper(substr($shiftName, 0, 3));
                         }
@@ -679,7 +714,10 @@ class DashboardController extends Controller
                     $shortLabel = $code;
                     $codeUpper = strtoupper($code);
 
-                    if ($codeUpper === 'PS-1' || $codeUpper === 'SP1') {
+                    if ($codeUpper === 'OFF' || $codeUpper === 'LIB' || $codeUpper === 'LBR') {
+                        $shortLabel = 'OFF';
+                        $type = 'off';
+                    } elseif ($codeUpper === 'PS-1' || $codeUpper === 'SP1') {
                         $type = 'ps1';
                     } elseif ($codeUpper === 'PS-1B') {
                         $type = 'ps1b';
@@ -697,21 +735,12 @@ class DashboardController extends Controller
                         $type = 'other';
                     }
                 } else {
-                    $status = $det['status'] ?? '';
-                    if ($status === 'Off' || $status === 'Libur') {
-                        $shortLabel = 'Off';
+                    if ($dateCarbon->isSunday() || ($statusLower === 'off' || $statusLower === 'libur')) {
+                        $shortLabel = 'OFF';
                         $type = 'off';
-                    } elseif ($status === 'Sakit') {
-                        $shortLabel = 'Skt';
-                        $type = 'sakit';
-                    } elseif ($status === 'Izin') {
-                        $shortLabel = 'Izn';
-                        $type = 'izin';
-                    } elseif (stripos($status, 'Cuti') !== false) {
-                        $shortLabel = 'Cti';
-                        $type = 'cuti';
                     } else {
                         $shortLabel = '-';
+                        $type = 'default';
                     }
                 }
 

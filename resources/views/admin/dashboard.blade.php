@@ -290,6 +290,8 @@
                                                                     $scBadge = 'bg-purple-600 text-white';
                                                                 } elseif (stripos($shift['name'], 'malam') !== false || stripos($scUpper, 'M') === 0 || $scUpper === 'SP3') {
                                                                     $scBadge = 'bg-indigo-800 text-white';
+                                                                } elseif ($scUpper === 'OFF' || stripos($shift['name'], 'libur') !== false || stripos($shift['name'], 'off') !== false) {
+                                                                    $scBadge = 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800';
                                                                 } elseif (stripos($shift['name'], 'siang') !== false || stripos($scUpper, 'S') === 0) {
                                                                     $scBadge = 'bg-amber-500 text-white';
                                                                 }
@@ -463,9 +465,9 @@
                                                                         $labelClass = 'text-white font-black';
                                                                         break;
                                                                     case 'off':
-                                                                        $cellClass = 'bg-slate-100 hover:bg-slate-200/70 dark:bg-slate-800/60 dark:hover:bg-slate-800 border-slate-200/70 dark:border-slate-800 text-slate-400 dark:text-slate-500';
-                                                                        $numClass = 'text-slate-400 dark:text-slate-500';
-                                                                        $labelClass = 'text-slate-400 dark:text-slate-400 font-bold';
+                                                                        $cellClass = 'bg-rose-50/80 hover:bg-rose-100/90 dark:bg-rose-950/30 dark:hover:bg-rose-950/50 border-rose-200/90 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 shadow-2xs';
+                                                                        $numClass = 'text-rose-400 dark:text-rose-500 font-bold';
+                                                                        $labelClass = 'text-rose-600 dark:text-rose-400 font-black tracking-wider';
                                                                         break;
                                                                     case 'sakit':
                                                                         $cellClass = 'bg-rose-600 hover:bg-rose-700 text-white border-rose-700 shadow-xs';
@@ -517,11 +519,11 @@
                                                                         <div class="font-semibold border-b border-slate-200 dark:border-slate-800/50 pb-0.5 mb-1 flex justify-between">
                                                                             <span class="text-slate-950 dark:text-white">{{ \Carbon\Carbon::parse($day['date'])->translatedFormat('d M Y') }}</span>
                                                                         </div>
-                                                                        @if($day['shift_name'])
+                                                                        @if($day['shift_name'] && $day['type'] !== 'off')
                                                                             <div class="font-semibold text-indigo-600 dark:text-indigo-400">{{ $day['shift_name'] }}</div>
                                                                             <div class="text-[8px] text-slate-500 dark:text-slate-400">Jam: {{ $day['shift_start'] }} - {{ $day['shift_end'] }}</div>
                                                                         @else
-                                                                            <div class="text-slate-400 dark:text-slate-500">Libur / Off</div>
+                                                                            <div class="font-bold text-rose-600 dark:text-rose-400">Libur / Off</div>
                                                                         @endif
 
                                                                         @if(!empty($day['is_picket']))
@@ -553,12 +555,18 @@
                                                 <i data-lucide="info" class="w-3 h-3 text-amber-500 shrink-0"></i>
                                                 <span><strong>Catatan:</strong> Pengajuan tukar shift minimal dilakukan 1 hari sebelumnya.</span>
                                             </div>
-                                            @if(isset($myPicketSchedules) && $myPicketSchedules->isNotEmpty())
-                                                <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/50 text-amber-700 dark:text-amber-300 font-semibold shrink-0">
-                                                    <span class="w-2 h-2 rounded-full bg-amber-400 border border-white dark:border-slate-900 shadow-xs animate-pulse"></span>
-                                                    <span>Jadwal Piket</span>
+                                            <div class="flex items-center gap-2">
+                                                <div class="flex items-center gap-1 px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 font-bold shrink-0">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                                    <span>OFF (Libur)</span>
                                                 </div>
-                                            @endif
+                                                @if(isset($myPicketSchedules) && $myPicketSchedules->isNotEmpty())
+                                                    <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/50 text-amber-700 dark:text-amber-300 font-semibold shrink-0">
+                                                        <span class="w-2 h-2 rounded-full bg-amber-400 border border-white dark:border-slate-900 shadow-xs animate-pulse"></span>
+                                                        <span>Jadwal Piket</span>
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 @endif
