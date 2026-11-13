@@ -351,12 +351,10 @@ class HomeroomAssignmentController extends Controller
     public function syncFromClassrooms(Request $request)
     {
         $selectedYearId = $request->get('academic_year_id');
-        $activeTapel = AcademicYear::where('is_active', true)->first();
-        $targetYearId = $selectedYearId ?: ($activeTapel?->id ?? null);
 
         $query = Classroom::whereNotNull('homeroom_teacher_id');
-        if ($targetYearId && $targetYearId !== 'all') {
-            $query->where('academic_year_id', $targetYearId);
+        if ($selectedYearId && $selectedYearId !== 'all') {
+            $query->where('academic_year_id', $selectedYearId);
         }
 
         $classrooms = $query->get();
