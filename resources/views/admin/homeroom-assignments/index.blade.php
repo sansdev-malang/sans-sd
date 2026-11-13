@@ -18,7 +18,7 @@
                     Lihat Rekap Matriks Rombel
                 </a>
 
-                <form action="{{ route('homeroom-assignments.sync-classrooms') }}" method="POST" class="inline" onsubmit="return confirm('Sinkronkan penugasan wali kelas secara otomatis dari data rombel?')">
+                <form action="{{ route('homeroom-assignments.sync-classrooms') }}" method="POST" class="inline">
                     @csrf
                     <input type="hidden" name="academic_year_id" value="{{ $selectedYearId }}">
                     <button type="submit"
@@ -36,23 +36,6 @@
                 </button>
             </div>
         </section>
-
-        @if(session('success'))
-            <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-700 dark:text-emerald-300 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
-                    <span>{{ session('success') }}</span>
-                </div>
-            </div>
-        @endif
-        @if(session('error'))
-            <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-700 dark:text-rose-300 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="alert-circle" class="w-4 h-4 text-rose-600"></i>
-                    <span>{{ session('error') }}</span>
-                </div>
-            </div>
-        @endif
 
         <!-- STATS CARDS GRID (Compact) -->
         <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-3.5">
@@ -620,7 +603,11 @@
                     })
                     .catch(err => {
                         console.error(err);
-                        alert('Gagal mengubah status.');
+                        if (window.showToast) {
+                            window.showToast('Gagal!', 'Gagal mengubah status penugasan.', 'error');
+                        } else if (window.showToastNotification) {
+                            window.showToastNotification('Gagal mengubah status penugasan.', 'error');
+                        }
                     });
                 }
             }
