@@ -211,16 +211,6 @@
                         <option value="pendamping_tingkat" {{ request('role') == 'pendamping_tingkat' ? 'selected' : '' }}>Pendamping Tingkat</option>
                     </select>
 
-                    <!-- Mata Pelajaran -->
-                    <select name="subject_id" onchange="this.form.submit()"
-                        class="h-8.5 px-2.5 text-xs font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer shadow-xs max-w-[150px] truncate">
-                        <option value="all">Semua Mapel</option>
-                        @foreach($subjects as $sub)
-                            <option value="{{ $sub->id }}" {{ request('subject_id') == $sub->id ? 'selected' : '' }}>
-                                {{ $sub->code }} - {{ $sub->name }}
-                            </option>
-                        @endforeach
-                    </select>
 
                     <!-- Per Page -->
                     <select name="per_page" onchange="this.form.submit()"
@@ -232,7 +222,7 @@
                         <option value="all" {{ request('per_page') === 'all' ? 'selected' : '' }}>Semua Baris</option>
                     </select>
 
-                    @if(request()->hasAny(['search', 'class_level_id', 'classroom_id', 'subject_id', 'role']) || (request('academic_year_id') && request('academic_year_id') != ($activeAcademicYear?->id ?? '')) || (request('per_page') && request('per_page') != 15))
+                    @if(request()->hasAny(['search', 'class_level_id', 'classroom_id', 'role']) || (request('academic_year_id') && request('academic_year_id') != ($activeAcademicYear?->id ?? '')) || (request('per_page') && request('per_page') != 15))
                         <a href="{{ route('homeroom-assignments.index', ['academic_year_id' => $activeAcademicYear?->id]) }}" 
                             class="h-8.5 px-2.5 inline-flex items-center justify-center text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors"
                             title="Reset Filter">
