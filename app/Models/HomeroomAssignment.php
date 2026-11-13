@@ -14,7 +14,6 @@ class HomeroomAssignment extends Model
         'academic_year_id',
         'class_level_id',
         'classroom_id',
-        'subject_id',
         'employee_id',
         'role',
         'semester',
@@ -50,13 +49,6 @@ class HomeroomAssignment extends Model
         return $this->belongsTo(Classroom::class);
     }
 
-    /**
-     * Relationship to Subject (Mata Pelajaran).
-     */
-    public function subject(): BelongsTo
-    {
-        return $this->belongsTo(Subject::class);
-    }
 
     /**
      * Relationship to Employee.

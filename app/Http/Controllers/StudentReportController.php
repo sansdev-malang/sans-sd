@@ -300,7 +300,7 @@ class StudentReportController extends Controller
         $grandTotalClassrooms = 0;
 
         // Load dynamic assignments from database per selected academic year
-        $dbAssignments = \App\Models\HomeroomAssignment::with(['employee', 'subject'])
+        $dbAssignments = \App\Models\HomeroomAssignment::with(['employee'])
             ->when(!empty($matchingYearIds), function($q) use ($matchingYearIds) {
                 $q->whereIn('academic_year_id', $matchingYearIds);
             })
@@ -344,15 +344,14 @@ class StudentReportController extends Controller
                 $dbGpq = $crAssignments->where('role', 'gpq')->first()?->employee?->name;
                 $gpq = $dbGpq ?: '-';
 
-                // Guru Mapel list with subjects from database
+                // Guru Mapel list from database
                 $dbMapelList = $crAssignments->where('role', 'guru_mapel')->map(function($a) {
-                    $subjName = $a->subject ? $a->subject->name : 'Mapel';
                     $teacherName = $a->employee?->name ?? '-';
                     return [
-                        'subject' => $subjName,
-                        'subject_code' => $a->subject?->code ?: 'MAPEL',
+                        'subject' => 'Guru Mapel',
+                        'subject_code' => 'MAPEL',
                         'teacher' => $teacherName,
-                        'label' => "{$subjName}: {$teacherName}",
+                        'label' => "Guru Mapel: {$teacherName}",
                     ];
                 })->values()->all();
 

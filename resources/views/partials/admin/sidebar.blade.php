@@ -86,7 +86,7 @@
              ========================================== -->
         @php
             $isMasterAcademicActive = Request::routeIs(
-                'academic-years.*', 'semesters.*', 'class-levels.*', 'classrooms.*', 'subjects.*'
+                'academic-years.*', 'semesters.*', 'class-levels.*', 'classrooms.*'
             );
             $isAcademicActive = Request::routeIs(
                 'promotions.*', 'student-reports.*'
@@ -172,10 +172,6 @@
                         <a href="{{ route('classrooms.index') }}"
                             class="flex items-center justify-between gap-2 px-2 py-1 rounded-md text-[11.5px] font-medium transition-colors {{ Request::routeIs('classrooms.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
                             <span>Rombongan Belajar</span>
-                        </a>
-                        <a href="{{ route('subjects.index') }}"
-                            class="flex items-center justify-between gap-2 px-2 py-1 rounded-md text-[11.5px] font-medium transition-colors {{ Request::routeIs('subjects.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                            <span>Mata Pelajaran</span>
                         </a>
                     </div>
                 </div>

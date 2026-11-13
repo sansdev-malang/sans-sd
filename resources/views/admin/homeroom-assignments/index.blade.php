@@ -279,12 +279,9 @@
                                         <span class="font-semibold text-slate-800 dark:text-slate-200 text-xs">
                                             {{ $item->role_label }}
                                         </span>
-                                        @if($item->subject && $item->role === 'guru_mapel')
+                                        @if($item->semester && $item->semester !== 'all' && ($item->role === 'guru_mapel' || $item->role === 'gpq'))
                                             <span class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                                                Mapel: {{ $item->subject->name }}
-                                                @if($item->semester && $item->semester !== 'all')
-                                                    <span class="text-[10px] text-slate-400">({{ ucfirst($item->semester) }})</span>
-                                                @endif
+                                                <span class="text-[10px] text-slate-400">({{ ucfirst($item->semester) }})</span>
                                             </span>
                                         @endif
                                     </div>
@@ -425,22 +422,9 @@
                             </select>
                         </div>
 
-                        <!-- Mata Pelajaran & Semester (Khusus Guru Mapel & GPQ) -->
+                        <!-- Semester (Khusus Guru Mapel & GPQ) -->
                         <div x-show="formData.role === 'guru_mapel' || formData.role === 'gpq'"
                             class="p-3 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 rounded-xl space-y-3">
-                            <div>
-                                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                                    Mata Pelajaran <span class="text-rose-500" x-show="formData.role === 'guru_mapel'">*</span>
-                                </label>
-                                <select name="subject_id" x-model="formData.subject_id" :required="formData.role === 'guru_mapel'"
-                                    :disabled="formData.role !== 'guru_mapel' && formData.role !== 'gpq'"
-                                    class="w-full h-9 px-3 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
-                                    <option value="">-- Pilih Mata Pelajaran --</option>
-                                    @foreach($subjects as $sub)
-                                        <option value="{{ $sub->id }}">{{ $sub->code }} - {{ $sub->name }} ({{ $sub->group_label }})</option>
-                                    @endforeach
-                                </select>
-                            </div>
                             <div>
                                 <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Semester Berlaku</label>
                                 <select name="semester" x-model="formData.semester"
@@ -544,7 +528,6 @@
                     role: 'wali_kelas',
                     class_level_id: '',
                     classroom_id: '',
-                    subject_id: '',
                     semester: 'all',
                     is_active: '1',
                     notes: '',
@@ -558,7 +541,6 @@
                         role: 'wali_kelas',
                         class_level_id: '',
                         classroom_id: '',
-                        subject_id: '',
                         semester: 'all',
                         is_active: '1',
                         notes: '',
@@ -575,7 +557,6 @@
                         role: item.role,
                         class_level_id: item.class_level_id || '',
                         classroom_id: item.classroom_id || '',
-                        subject_id: item.subject_id || '',
                         semester: item.semester || 'all',
                         is_active: (item.is_active == 1 || item.is_active === true) ? '1' : '0',
                         notes: item.notes || '',
