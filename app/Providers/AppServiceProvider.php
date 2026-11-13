@@ -53,9 +53,17 @@ class AppServiceProvider extends ServiceProvider
             if (Auth::check()) {
                 $user = Auth::user();
                 $schoolUnit = config('app.school_unit');
+                $userSettingKey = 'read_leave_ids_' . $user->id;
                 
+                $readIds = \Illuminate\Support\Facades\Cache::get($userSettingKey);
+                if ($readIds === null) {
+                    $settingVal = \App\Models\Setting::get($userSettingKey);
+                    $readIds = $settingVal ? json_decode($settingVal, true) : [];
+                    \Illuminate\Support\Facades\Cache::forever($userSettingKey, $readIds);
+                }
+                if (!is_array($readIds)) $readIds = [];
+
                 if (in_array($user->role, ['super_admin', 'admin_sd', 'admin_paud', 'admin_smp', 'kepala_sekolah', 'waka'])) {
-                    $readIds = \Illuminate\Support\Facades\Cache::get('read_leave_ids_' . $user->id, []);
                     $pendingLeavesQuery = \App\Models\LeaveRequest::with('employee')
                         ->where('created_at', '>=', now()->subDays(3))
                         ->whereNotIn('id', $readIds);
@@ -69,7 +77,6 @@ class AppServiceProvider extends ServiceProvider
                     
                     $view->with(compact('pendingLeaves', 'pendingLeavesCount'));
                 } else {
-                    $readIds = \Illuminate\Support\Facades\Cache::get('read_leave_ids_' . $user->id, []);
                     $myNotificationsQuery = \App\Models\LeaveRequest::where('employee_id', $user->employee_id)
                         ->where('created_at', '>=', now()->subDays(3))
                         ->whereNotIn('id', $readIds);

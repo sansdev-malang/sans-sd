@@ -85,6 +85,15 @@
                         @if(auth()->user() && auth()->user()->unreadNotifications->count() > 0)
                             @foreach(auth()->user()->unreadNotifications as $notification)
                                 @php
+                                    // Bersihkan otomatis notifikasi pengumuman jika pengumuman aslinya sudah terhapus
+                                    if (str_contains($notification->type, 'NewAnnouncementNotification')) {
+                                        $annId = $notification->data['id'] ?? null;
+                                        if (!$annId || !\App\Models\Announcement::where('id', $annId)->exists()) {
+                                            $notification->delete();
+                                            continue;
+                                        }
+                                    }
+
                                     $icon = 'megaphone';
                                     $iconBg = 'bg-indigo-50/60 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border-indigo-100/40 dark:border-indigo-900/20';
                                     if (str_contains($notification->type, 'LeaveDecisionNotification')) {
@@ -142,12 +151,7 @@
                 </div>
                 @if($totalNotifs > 0)
                     <div id="clear-all-notifs-container" class="px-4 py-2 border-t border-slate-100 dark:border-slate-800 text-center bg-slate-50/30 dark:bg-slate-900/10">
-                        @php
-                            $clearRoute = (auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin_sd') || auth()->user()->hasRole('admin_paud') || auth()->user()->hasRole('admin_smp') || auth()->user()->hasRole('kepala_sekolah') || auth()->user()->hasRole('waka'))
-                                ? route('leaves.index', ['clear_all' => 1])
-                                : route('my-leaves.index', ['clear_all' => 1]);
-                        @endphp
-                        <a href="javascript:void(0)" onclick="clearAllNotifications('{{ $clearRoute }}')" class="text-[10px] text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-bold hover:underline">
+                        <a href="javascript:void(0)" onclick="clearAllNotifications('{{ route('notifications.mark-all-read') }}')" class="text-[10px] text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-bold hover:underline">
                             Tandai Semua Sudah Dibaca
                         </a>
                     </div>

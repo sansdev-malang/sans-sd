@@ -637,7 +637,10 @@ class HrdApiController extends Controller
         }
 
         if ($action === 'delete') {
-            \App\Models\Announcement::where('central_id', $centralId)->delete();
+            $announcements = \App\Models\Announcement::where('central_id', $centralId)->get();
+            foreach ($announcements as $ann) {
+                $ann->delete();
+            }
             return response()->json(['success' => true, 'message' => 'Announcement deleted successfully.']);
         }
 

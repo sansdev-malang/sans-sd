@@ -89,10 +89,10 @@ class DashboardController extends Controller
 
             $cacheKey = 'hrd_matrix_unit_' . $schoolUnitId . '_' . $today;
 
-            // Live Fetch with 4s Timeout and Stale Cache Fallback
+            // Live Fetch with 8s Timeout and Stale Cache Fallback
             $reports = [];
             try {
-                $response = Http::timeout(4.0)->withHeaders([
+                $response = Http::timeout(8.0)->withHeaders([
                     'X-API-TOKEN' => config('app.hrd_api_token')
                 ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
                     'school_unit_id' => $schoolUnitId,
@@ -327,34 +327,55 @@ class DashboardController extends Controller
                     $matrixCacheKey = 'hrd_att_matrix_' . $schoolUnitId . '_' . $month;
 
                     $cachedBonus = Cache::get($bonusCacheKey) ?? Cache::get($bonusCacheKey . '_stale') ?? [];
-                    if (!empty($cachedBonus['start_date']) && !empty($cachedBonus['end_date'])) {
-                        $cycleStart = \Carbon\Carbon::parse($cachedBonus['start_date'])->startOfDay();
-                        $cycleEnd = \Carbon\Carbon::parse($cachedBonus['end_date'])->endOfDay();
-                    }
+                    $matrixCache = Cache::get($matrixCacheKey) ?? Cache::get($matrixCacheKey . '_stale') ?? [];
 
-                    $reports = is_array($cachedBonus) && isset($cachedBonus['data']) ? $cachedBonus['data'] : $cachedBonus;
+                    $reports = is_array($cachedBonus) && isset($cachedBonus['data']) ? $cachedBonus['data'] : (is_array($cachedBonus) ? $cachedBonus : []);
 
-                    if (empty($reports)) {
+                    // Jika salah satu cache kosong, lakukan penarikan live secara paralel dengan timeout 8s
+                    if (empty($reports) || empty($matrixCache)) {
                         try {
-                            $response = Http::timeout(3.0)->withHeaders([
-                                'X-API-TOKEN' => config('app.hrd_api_token')
-                            ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
-                                'school_unit_id' => $schoolUnitId,
-                                'unit_id' => strtolower(config('app.school_unit', 'sd')),
-                                'month' => $month
-                            ]);
-                            if ($response->successful()) {
-                                $json = $response->json();
-                                $reports = $json['data'] ?? [];
-                                if (!empty($json['start_date']) && !empty($json['end_date'])) {
-                                    $cycleStart = \Carbon\Carbon::parse($json['start_date'])->startOfDay();
-                                    $cycleEnd = \Carbon\Carbon::parse($json['end_date'])->endOfDay();
-                                }
-                                Cache::put($bonusCacheKey . '_stale', $json, 604800); // 7 days stale cache
+                            $poolResponses = Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($hrdUrl, $schoolUnitId, $month) {
+                                return [
+                                    'bonus' => $pool->as('bonus')->timeout(8.0)->withHeaders([
+                                        'X-API-TOKEN' => config('app.hrd_api_token')
+                                    ])->get(rtrim($hrdUrl, '/') . '/api/bonus-reports', [
+                                        'school_unit_id' => $schoolUnitId,
+                                        'unit_id' => strtolower(config('app.school_unit', 'sd')),
+                                        'month' => $month
+                                    ]),
+                                    'matrix' => $pool->as('matrix')->timeout(8.0)->withHeaders([
+                                        'X-API-TOKEN' => config('app.hrd_api_token')
+                                    ])->get(rtrim($hrdUrl, '/') . '/api/attendance-matrix', [
+                                        'school_unit_id' => $schoolUnitId,
+                                        'unit_id' => strtolower(config('app.school_unit', 'sd')),
+                                        'month' => $month
+                                    ]),
+                                ];
+                            });
+
+                            if (isset($poolResponses['bonus']) && $poolResponses['bonus'] instanceof \Illuminate\Http\Client\Response && $poolResponses['bonus']->successful()) {
+                                $bonusJson = $poolResponses['bonus']->json();
+                                $reports = $bonusJson['data'] ?? [];
+                                $cachedBonus = $bonusJson;
+                                Cache::put($bonusCacheKey . '_stale', $bonusJson, 604800); // 7 days stale cache
+                            }
+
+                            if (isset($poolResponses['matrix']) && $poolResponses['matrix'] instanceof \Illuminate\Http\Client\Response && $poolResponses['matrix']->successful()) {
+                                $matrixJson = $poolResponses['matrix']->json();
+                                $matrixCache = $matrixJson;
+                                Cache::put($matrixCacheKey . '_stale', $matrixJson, 604800); // 7 days stale cache
                             }
                         } catch (\Exception $e) {
                             // Ignore error
                         }
+                    }
+
+                    if (!empty($cachedBonus['start_date']) && !empty($cachedBonus['end_date'])) {
+                        $cycleStart = \Carbon\Carbon::parse($cachedBonus['start_date'])->startOfDay();
+                        $cycleEnd = \Carbon\Carbon::parse($cachedBonus['end_date'])->endOfDay();
+                    } elseif (!empty($matrixCache['start_date']) && !empty($matrixCache['end_date'])) {
+                        $cycleStart = \Carbon\Carbon::parse($matrixCache['start_date'])->startOfDay();
+                        $cycleEnd = \Carbon\Carbon::parse($matrixCache['end_date'])->endOfDay();
                     }
 
                     if (!empty($reports)) {
@@ -366,11 +387,6 @@ class DashboardController extends Controller
 
                     // Also merge matrix cache daily details if available
                     if ($myReport) {
-                        $matrixCache = Cache::get($matrixCacheKey) ?? Cache::get($matrixCacheKey . '_stale') ?? [];
-                        if (!$cycleStart && !empty($matrixCache['start_date']) && !empty($matrixCache['end_date'])) {
-                            $cycleStart = \Carbon\Carbon::parse($matrixCache['start_date'])->startOfDay();
-                            $cycleEnd = \Carbon\Carbon::parse($matrixCache['end_date'])->endOfDay();
-                        }
                         $matrixData = is_array($matrixCache) && isset($matrixCache['data']) ? $matrixCache['data'] : (is_array($matrixCache) ? $matrixCache : []);
                         $matrixEmp = collect($matrixData)->first(function ($item) use ($employee) {
                             return ($item['employee']['id'] ?? 0) == $employee->id;
