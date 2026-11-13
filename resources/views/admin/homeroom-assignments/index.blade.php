@@ -145,7 +145,7 @@
                         </svg>
                     </span>
 
-                    <input type="text" name="search" x-model="searchVal" @input="onInput()" @keydown.enter.prevent="performSearch()" placeholder="Cari nama guru, rombel, NIP..."
+                    <input type="text" name="search" x-model="searchVal" @input="onInput()" @keydown.enter.prevent="performSearch()" placeholder="Cari..."
                         style="padding-left: 2.25rem;"
                         class="w-full h-8.5 pr-8 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900 dark:text-slate-50 placeholder-slate-400 shadow-inner transition-colors">
 
@@ -243,7 +243,6 @@
                             <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pendidik / Guru</th>
                             <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-40">Peran Guru</th>
                             <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider min-w-[180px]">Tingkat & Rombel</th>
-                            <th class="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">Tahun Ajaran</th>
                             <th class="px-4 py-3 text-center text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-24">Status</th>
                             <th class="px-4 py-3 text-right text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-28">Aksi</th>
                         </tr>
@@ -314,11 +313,6 @@
                                         <span class="text-slate-400 italic text-xs">-</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3">
-                                    <span class="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                        {{ $item->academicYear?->name ?? '-' }}
-                                    </span>
-                                </td>
                                 <td class="px-4 py-3 text-center">
                                     <button type="button" @click="toggleStatus({{ $item->id }}, $event)"
                                         class="inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity"
@@ -351,7 +345,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-4 py-12 text-center text-slate-400">
+                                <td colspan="6" class="px-4 py-12 text-center text-slate-400">
                                     <div class="flex flex-col items-center justify-center gap-2">
                                         <i data-lucide="user-x" class="w-8 h-8 text-slate-300 dark:text-slate-600"></i>
                                         <p class="text-xs font-medium">Belum ada data penugasan guru pada tahun ajaran yang dipilih.</p>
