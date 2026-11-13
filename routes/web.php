@@ -70,6 +70,7 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
     Route::resource('subjects', \App\Http\Controllers\SubjectController::class);
 
     // Homeroom & Teacher Assignments (Penugasan Wali Kelas & Formasi Guru)
+    Route::post('homeroom-assignments/sync-classrooms', [\App\Http\Controllers\HomeroomAssignmentController::class, 'syncFromClassrooms'])->name('homeroom-assignments.sync-classrooms');
     Route::post('homeroom-assignments/{id}/toggle-status', [\App\Http\Controllers\HomeroomAssignmentController::class, 'toggleStatus'])->name('homeroom-assignments.toggle-status');
     Route::resource('homeroom-assignments', \App\Http\Controllers\HomeroomAssignmentController::class);
     Route::get('/wali-kelas', fn() => redirect()->route('homeroom-assignments.index'))->name('wali-kelas');

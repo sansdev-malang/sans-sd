@@ -192,6 +192,12 @@ class HomeroomAssignmentController extends Controller
 
         // If Wali Kelas, synchronize with classroom.homeroom_teacher_id
         if ($assignment->role === 'wali_kelas' && $assignment->classroom_id && $assignment->is_active) {
+            HomeroomAssignment::where('academic_year_id', $assignment->academic_year_id)
+                ->where('classroom_id', $assignment->classroom_id)
+                ->where('role', 'wali_kelas')
+                ->where('id', '!=', $assignment->id)
+                ->update(['is_active' => false]);
+
             Classroom::where('id', $assignment->classroom_id)->update([
                 'homeroom_teacher_id' => $assignment->employee_id,
             ]);
@@ -256,6 +262,12 @@ class HomeroomAssignmentController extends Controller
 
         if ($assignment->role === 'wali_kelas' && $assignment->classroom_id) {
             if ($assignment->is_active) {
+                HomeroomAssignment::where('academic_year_id', $assignment->academic_year_id)
+                    ->where('classroom_id', $assignment->classroom_id)
+                    ->where('role', 'wali_kelas')
+                    ->where('id', '!=', $assignment->id)
+                    ->update(['is_active' => false]);
+
                 Classroom::where('id', $assignment->classroom_id)->update([
                     'homeroom_teacher_id' => $assignment->employee_id,
                 ]);
@@ -289,6 +301,12 @@ class HomeroomAssignmentController extends Controller
 
         if ($assignment->role === 'wali_kelas' && $assignment->classroom_id) {
             if ($assignment->is_active) {
+                HomeroomAssignment::where('academic_year_id', $assignment->academic_year_id)
+                    ->where('classroom_id', $assignment->classroom_id)
+                    ->where('role', 'wali_kelas')
+                    ->where('id', '!=', $assignment->id)
+                    ->update(['is_active' => false]);
+
                 Classroom::where('id', $assignment->classroom_id)->update([
                     'homeroom_teacher_id' => $assignment->employee_id,
                 ]);
@@ -325,5 +343,58 @@ class HomeroomAssignmentController extends Controller
 
         return redirect()->route('homeroom-assignments.index', ['academic_year_id' => $yearId])
             ->with('success', 'Penugasan guru berhasil dihapus.');
+    }
+
+    /**
+     * Synchronize wali kelas assignments from existing active classrooms.
+     */
+    public function syncFromClassrooms(Request $request)
+    {
+        $selectedYearId = $request->get('academic_year_id');
+        $activeTapel = AcademicYear::where('is_active', true)->first();
+        $targetYearId = $selectedYearId ?: ($activeTapel?->id ?? null);
+
+        $query = Classroom::whereNotNull('homeroom_teacher_id');
+        if ($targetYearId && $targetYearId !== 'all') {
+            $query->where('academic_year_id', $targetYearId);
+        }
+
+        $classrooms = $query->get();
+        $syncedCount = 0;
+
+        foreach ($classrooms as $c) {
+            $assignment = HomeroomAssignment::updateOrCreate(
+                [
+                    'academic_year_id' => $c->academic_year_id,
+                    'classroom_id' => $c->id,
+                    'role' => 'wali_kelas',
+                ],
+                [
+                    'class_level_id' => $c->class_level_id,
+                    'employee_id' => $c->homeroom_teacher_id,
+                    'is_active' => true,
+                    'semester' => 'all',
+                ]
+            );
+
+            // Deactivate any other wali_kelas assignment for this room
+            HomeroomAssignment::where('academic_year_id', $c->academic_year_id)
+                ->where('classroom_id', $c->id)
+                ->where('role', 'wali_kelas')
+                ->where('id', '!=', $assignment->id)
+                ->update(['is_active' => false]);
+
+            $syncedCount++;
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil menyinkronkan {$syncedCount} penugasan wali kelas dari data rombel.",
+                'count' => $syncedCount,
+            ]);
+        }
+
+        return redirect()->back()->with('success', "Berhasil menyinkronkan {$syncedCount} penugasan wali kelas dari data rombel.");
     }
 }

@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\ClassLevel;
 use App\Models\Classroom;
 use App\Models\Employee;
+use App\Models\HomeroomAssignment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -136,6 +137,7 @@ class ClassroomController extends Controller
         $validated['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : true;
 
         $classroom = Classroom::create($validated);
+        $this->syncHomeroomAssignment($classroom);
 
         return response()->json([
             'success' => true,
@@ -178,6 +180,7 @@ class ClassroomController extends Controller
         $validated['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : $classroom->is_active;
 
         $classroom->update($validated);
+        $this->syncHomeroomAssignment($classroom);
 
         return response()->json([
             'success' => true,
@@ -201,6 +204,9 @@ class ClassroomController extends Controller
             ], 422);
         }
 
+        // Clean up linked homeroom assignments
+        HomeroomAssignment::where('classroom_id', $classroom->id)->delete();
+
         $name = $classroom->full_name;
         $classroom->delete();
 
@@ -208,5 +214,41 @@ class ClassroomController extends Controller
             'success' => true,
             'message' => "Rombongan Belajar {$name} berhasil dihapus.",
         ]);
+    }
+
+    /**
+     * Synchronize classroom homeroom teacher with HomeroomAssignment table.
+     */
+    protected function syncHomeroomAssignment(Classroom $classroom): void
+    {
+        if (!empty($classroom->homeroom_teacher_id)) {
+            // Update or create active wali_kelas assignment for this classroom & academic year
+            $assignment = HomeroomAssignment::updateOrCreate(
+                [
+                    'academic_year_id' => $classroom->academic_year_id,
+                    'classroom_id' => $classroom->id,
+                    'role' => 'wali_kelas',
+                ],
+                [
+                    'class_level_id' => $classroom->class_level_id,
+                    'employee_id' => $classroom->homeroom_teacher_id,
+                    'is_active' => true,
+                    'semester' => 'all',
+                ]
+            );
+
+            // Ensure no other teacher is simultaneously active as wali_kelas for this classroom
+            HomeroomAssignment::where('academic_year_id', $classroom->academic_year_id)
+                ->where('classroom_id', $classroom->id)
+                ->where('role', 'wali_kelas')
+                ->where('id', '!=', $assignment->id)
+                ->update(['is_active' => false]);
+        } else {
+            // Teacher cleared: remove active wali_kelas assignment
+            HomeroomAssignment::where('academic_year_id', $classroom->academic_year_id)
+                ->where('classroom_id', $classroom->id)
+                ->where('role', 'wali_kelas')
+                ->delete();
+        }
     }
 }
