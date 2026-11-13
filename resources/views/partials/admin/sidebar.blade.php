@@ -21,6 +21,8 @@
     // Integrasi Rapor & CBT
     $canAccessRapor = $isSuperAdmin || $isExecutive || (auth()->user()?->canAccessRapor() ?? false);
     $canAccessCbt = auth()->user()?->canAccessCbt();
+    $isTeacher = auth()->user()?->isTeacher() ?? false;
+    $isHomeroom = auth()->user()?->isActiveHomeroomTeacher() ?? false;
     $raporLink = route('report-cards.index');
     $cbtLink = route('cbt.launcher');
     $curUser = auth()->user();
@@ -83,10 +85,12 @@
              1. KATEGORI: AKADEMIK
              ========================================== -->
         @php
-            $isAcademicActive = Request::routeIs(
-                'academic-years.*', 'semesters.*', 'class-levels.*', 'classrooms.*', 
-                'subjects.*', 'student-reports.*'
+            $isMasterAcademicActive = Request::routeIs(
+                'academic-years.*', 'semesters.*', 'class-levels.*', 'classrooms.*', 'subjects.*'
             );
+            $isAcademicActive = Request::routeIs(
+                'promotions.*', 'student-reports.*'
+            ) || $isMasterAcademicActive;
         @endphp
         <div x-data="{ openAcademic: {{ $isAcademicActive ? 'true' : 'false' }} }">
             <button @click="openAcademic = !openAcademic"
@@ -98,36 +102,27 @@
                 <i data-lucide="chevron-right" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200 shrink-0"
                     :style="openAcademic ? 'transform: rotate(90deg);' : ''" @if($isAcademicActive) style="transform: rotate(90deg);" @endif></i>
                 <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
-                    Akademik & Pembelajaran
+                    Akademik & Pembelajaran SD
                 </span>
             </button>
 
             <div x-show="openAcademic" x-collapse
                 @if(!$isAcademicActive) style="display: none;" x-cloak @endif
                 class="sidebar-dropdown-content mt-1 ml-4 pl-2.5 border-l border-slate-200 dark:border-slate-800 space-y-0.5">
-                @if(!$isExecutive)
-                <a href="{{ route('academic-years.index') }}"
-                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('academic-years.*', 'semesters.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Tahun Ajaran & Semester</span>
+                
+                <!-- 1. Kenaikan & Kelulusan -->
+                <a href="{{ route('promotions.index') }}"
+                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('promotions.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
+                    <span>Kenaikan & Kelulusan</span>
                 </a>
-                <a href="{{ route('class-levels.index') }}"
-                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('class-levels.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Tingkat Kelas</span>
-                </a>
-                @endif
-                <a href="{{ route('classrooms.index') }}"
-                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('classrooms.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Rombongan Belajar</span>
-                </a>
-                <a href="{{ route('subjects.index') }}"
-                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('subjects.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Mata Pelajaran</span>
-                </a>
+
+                <!-- 2. Rekapitulasi Rombel -->
                 <a href="{{ route('student-reports.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('student-reports.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
                     <span>Rekapitulasi Rombel</span>
                 </a>
 
+                <!-- 3. E-Rapor -->
                 @if($canAccessRapor)
                 <a href="{{ $raporLink }}" target="_blank"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors group/link">
@@ -138,6 +133,7 @@
                 </a>
                 @endif
 
+                <!-- 4. CBT -->
                 @if($canAccessCbt)
                 <a href="{{ $cbtLink }}" target="_blank"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors group/link">
@@ -147,16 +143,53 @@
                     </span>
                 </a>
                 @endif
+
+                <!-- 5. SUB-DROPDOWN: MASTER AKADEMIK -->
+                <div x-data="{ openMasterAcademic: {{ $isMasterAcademicActive ? 'true' : 'false' }} }" class="pt-0.5">
+                    <button type="button" @click="openMasterAcademic = !openMasterAcademic"
+                        class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer {{ $isMasterAcademicActive ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
+                        <span class="flex items-center gap-1.5">
+                            <i data-lucide="layers" class="w-3.5 h-3.5 text-slate-400"></i>
+                            <span>Master Akademik</span>
+                        </span>
+                        <i data-lucide="chevron-right" class="w-3 h-3 transition-transform duration-200 shrink-0"
+                            :style="openMasterAcademic ? 'transform: rotate(90deg);' : ''" @if($isMasterAcademicActive) style="transform: rotate(90deg);" @endif></i>
+                    </button>
+
+                    <div x-show="openMasterAcademic" x-collapse
+                        @if(!$isMasterAcademicActive) style="display: none;" x-cloak @endif
+                        class="mt-0.5 ml-3 pl-2.5 border-l border-slate-200 dark:border-slate-800 space-y-0.5">
+                        @if(!$isExecutive)
+                        <a href="{{ route('academic-years.index') }}"
+                            class="flex items-center justify-between gap-2 px-2 py-1 rounded-md text-[11.5px] font-medium transition-colors {{ Request::routeIs('academic-years.*', 'semesters.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
+                            <span>Tahun Ajaran & Semester</span>
+                        </a>
+                        <a href="{{ route('class-levels.index') }}"
+                            class="flex items-center justify-between gap-2 px-2 py-1 rounded-md text-[11.5px] font-medium transition-colors {{ Request::routeIs('class-levels.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
+                            <span>Tingkat Kelas</span>
+                        </a>
+                        @endif
+                        <a href="{{ route('classrooms.index') }}"
+                            class="flex items-center justify-between gap-2 px-2 py-1 rounded-md text-[11.5px] font-medium transition-colors {{ Request::routeIs('classrooms.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
+                            <span>Rombongan Belajar</span>
+                        </a>
+                        <a href="{{ route('subjects.index') }}"
+                            class="flex items-center justify-between gap-2 px-2 py-1 rounded-md text-[11.5px] font-medium transition-colors {{ Request::routeIs('subjects.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
+                            <span>Mata Pelajaran</span>
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </div>
 
         <!-- ==========================================
-             2. KATEGORI: KESISWAAN
+             2. KATEGORI: MANAJEMEN SISWA
              ========================================== -->
         @php
             $isStudentActive = Request::routeIs(
-                'students.*', 'student-attendances.*', 'promotions.*', 
-                'alumni.*', 'student-archives.*', 'spmb.candidates.*'
+                'students.*', 'student-attendances.*', 'alumni.*', 
+                'student-archives.*', 'spmb.candidates.*'
             );
         @endphp
         <div x-data="{ openStudent: {{ $isStudentActive ? 'true' : 'false' }} }">
@@ -164,40 +197,20 @@
                 class="menu-item w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-xs font-medium relative group cursor-pointer {{ $isStudentActive ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}">
                 <div class="flex items-center gap-3">
                     <i data-lucide="users" class="menu-icon w-4 h-4 shrink-0 {{ $isStudentActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-blue-500/80 dark:text-blue-400' }}"></i>
-                    <span class="menu-text">Kesiswaan</span>
+                    <span class="menu-text">Manajemen Siswa</span>
                 </div>
                 <i data-lucide="chevron-right" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200 shrink-0"
                     :style="openStudent ? 'transform: rotate(90deg);' : ''" @if($isStudentActive) style="transform: rotate(90deg);" @endif></i>
                 <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
-                    Kesiswaan
+                    Manajemen Siswa
                 </span>
             </button>
 
             <div x-show="openStudent" x-collapse
                 @if(!$isStudentActive) style="display: none;" x-cloak @endif
                 class="sidebar-dropdown-content mt-1 ml-4 pl-2.5 border-l border-slate-200 dark:border-slate-800 space-y-0.5">
-                <a href="{{ route('students.index') }}"
-                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('students.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Data Siswa Aktif</span>
-                </a>
-                <a href="{{ route('student-attendances.index') }}"
-                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('student-attendances.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Presensi Siswa</span>
-                </a>
-                <a href="{{ route('promotions.index') }}"
-                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('promotions.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Kenaikan & Kelulusan</span>
-                </a>
-                <a href="{{ route('alumni.index') }}"
-                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('alumni.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Buku Induk Alumni</span>
-                </a>
-                @if(!$isExecutive)
-                <a href="{{ route('student-archives.index') }}"
-                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('student-archives.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Arsip Dokumen Siswa</span>
-                </a>
-                @endif
+                
+                <!-- 1. Pendaftar SPMB -->
                 <a href="{{ route('spmb.candidates.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('spmb.candidates.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
                     <span class="flex items-center gap-1.5">
@@ -205,6 +218,32 @@
                     </span>
                     <span class="text-[9px] uppercase tracking-wider font-semibold px-1 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 leading-none">Baru</span>
                 </a>
+
+                <!-- 2. Data Siswa Aktif -->
+                <a href="{{ route('students.index') }}"
+                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('students.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
+                    <span>Data Siswa</span>
+                </a>
+
+                <!-- 3. Presensi Siswa -->
+                <a href="{{ route('student-attendances.index') }}"
+                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('student-attendances.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
+                    <span>Presensi Siswa</span>
+                </a>
+
+                <!-- 4. Buku Induk Alumni -->
+                <a href="{{ route('alumni.index') }}"
+                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('alumni.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
+                    <span>Buku Induk Alumni</span>
+                </a>
+
+                <!-- 5. Arsip Dokumen Siswa -->
+                @if(!$isExecutive)
+                <a href="{{ route('student-archives.index') }}"
+                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('student-archives.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
+                    <span>Arsip Dokumen Siswa</span>
+                </a>
+                @endif
             </div>
         </div>
 
@@ -213,7 +252,7 @@
              ========================================== -->
         @php
             $isTeacherMgmtActive = Request::routeIs(
-                'homeroom-assignments.*', 'teacher-documents.*', 'teachers.*', 'picket-schedules.admin'
+                'homeroom-assignments.*', 'teachers.*', 'teacher-documents.*', 'picket-schedules.admin'
             );
         @endphp
         <div x-data="{ openTeacherMgmt: {{ $isTeacherMgmtActive ? 'true' : 'false' }} }">
@@ -237,13 +276,13 @@
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('homeroom-assignments.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
                     <span>Penugasan Guru (Formasi)</span>
                 </a>
-                <a href="{{ route('teacher-documents.index') }}"
-                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('teacher-documents.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Berkas Dokumen Guru</span>
-                </a>
                 <a href="{{ route('teachers.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('teachers.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
                     <span>Kualifikasi Guru</span>
+                </a>
+                <a href="{{ route('teacher-documents.index') }}"
+                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('teacher-documents.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
+                    <span>Berkas Dokumen Guru</span>
                 </a>
                 <a href="{{ route('picket-schedules.admin') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('picket-schedules.admin') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
@@ -350,40 +389,47 @@
             </div>
         </div>
 
-        @elseif($curUser && $curUser->isTeacher())
+        @elseif($curUser && ($isTeacher || $isHomeroom))
         <!-- ==========================================
              PORTAL PEMBELAJARAN (NON-ADMIN GURU / WALI KELAS)
              ========================================== -->
         @php
-            $isTeacherPortalActive = Request::routeIs('student-attendances.*', 'teacher-documents.*');
+            $isTeacherPortalActive = Request::routeIs(
+                'students.*', 'student-attendances.*', 'promotions.*', 
+                'teacher-documents.*'
+            );
         @endphp
         <div x-data="{ openTeacherPortal: {{ $isTeacherPortalActive ? 'true' : 'false' }} }">
             <button @click="openTeacherPortal = !openTeacherPortal"
                 class="menu-item w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-xs font-medium relative group cursor-pointer {{ $isTeacherPortalActive ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/50' }}">
                 <div class="flex items-center gap-3">
                     <i data-lucide="graduation-cap" class="menu-icon w-4 h-4 shrink-0 {{ $isTeacherPortalActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-indigo-500/80 dark:text-indigo-400' }}"></i>
-                    <span class="menu-text">Pembelajaran</span>
+                    <span class="menu-text">Pembelajaran & Kelas</span>
                 </div>
                 <i data-lucide="chevron-right" class="chevron-icon w-3.5 h-3.5 transition-transform duration-200 shrink-0"
                     :style="openTeacherPortal ? 'transform: rotate(90deg);' : ''" @if($isTeacherPortalActive) style="transform: rotate(90deg);" @endif></i>
                 <span class="sidebar-tooltip absolute left-full ml-3 px-2 py-1 bg-slate-900 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-50 dark:text-slate-100 text-xs font-semibold rounded-md shadow-md opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all origin-left duration-100 pointer-events-none whitespace-nowrap z-50">
-                    Pembelajaran
+                    Pembelajaran & Aktivitas Kelas
                 </span>
             </button>
 
             <div x-show="openTeacherPortal" x-collapse
                 @if(!$isTeacherPortalActive) style="display: none;" x-cloak @endif
                 class="sidebar-dropdown-content mt-1 ml-4 pl-2.5 border-l border-slate-200 dark:border-slate-800 space-y-0.5">
+                
+                <!-- 1. Data Siswa -->
+                <a href="{{ route('students.index') }}"
+                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('students.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
+                    <span>Data Siswa</span>
+                </a>
+
+                <!-- 2. Presensi Siswa -->
                 <a href="{{ route('student-attendances.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('student-attendances.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
                     <span>Presensi Siswa</span>
                 </a>
 
-                <a href="{{ route('teacher-documents.index') }}"
-                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('teacher-documents.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Berkas Dokumen Guru</span>
-                </a>
-
+                <!-- 3. E-Rapor -->
                 @if($canAccessRapor)
                 <a href="{{ $raporLink }}" target="_blank"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors group/link">
@@ -394,6 +440,7 @@
                 </a>
                 @endif
 
+                <!-- 4. CBT -->
                 @if($canAccessCbt)
                 <a href="{{ $cbtLink }}" target="_blank"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors group/link">
@@ -403,6 +450,20 @@
                     </span>
                 </a>
                 @endif
+
+                <!-- 5. Kenaikan & Kelulusan (Khusus Wali Kelas) -->
+                @if($isHomeroom)
+                <a href="{{ route('promotions.index') }}"
+                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('promotions.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
+                    <span>Kenaikan & Kelulusan</span>
+                </a>
+                @endif
+
+                <!-- 6. Berkas Dokumen Guru -->
+                <a href="{{ route('teacher-documents.index') }}"
+                    class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('teacher-documents.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
+                    <span>Berkas Dokumen Guru</span>
+                </a>
             </div>
         </div>
         @endif

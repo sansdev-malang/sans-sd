@@ -47,6 +47,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is executive leadership (Kepala Sekolah or Waka).
+     */
+    public function isExecutive(): bool
+    {
+        return in_array($this->role, ['kepala_sekolah', 'waka']);
+    }
+
+    /**
      * Get a descriptive, human-friendly role name for display in UI, impersonation banner, and profile cards.
      */
     public function getRoleDisplayName(): string

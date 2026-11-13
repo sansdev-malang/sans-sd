@@ -14,10 +14,57 @@ use Illuminate\Support\Facades\DB;
 class ClassPromotionController extends Controller
 {
     /**
+     * Verify authorization: Super Admin, School Leadership (Kepala Sekolah, Waka), Admin SD, or Active Homeroom Teacher.
+     */
+    private function checkAccess(): void
+    {
+        $user = auth()->user();
+        if (!$user) {
+            abort(401);
+        }
+        if ($user->isAdmin() || $user->isExecutive() || $user->hasRole('kepala_sekolah') || $user->hasRole('waka')) {
+            return;
+        }
+        if (!$user->isActiveHomeroomTeacher()) {
+            abort(403, 'Akses menu Kenaikan & Kelulusan hanya untuk Kepala Sekolah, Administrator, dan Wali Kelas aktif.');
+        }
+    }
+
+    /**
+     * Get authorized classroom IDs for current user.
+     * Returns null if user has full access across all classrooms (Kepala Sekolah / Admin).
+     */
+    private function getAuthorizedClassroomIds(): ?array
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return [];
+        }
+        if ($user->isAdmin() || $user->isExecutive() || $user->hasRole('kepala_sekolah') || $user->hasRole('waka')) {
+            return null; // Full access
+        }
+
+        $myClassIds = \App\Models\HomeroomAssignment::where('employee_id', $user->employee_id)
+            ->where('is_active', true)
+            ->pluck('classroom_id')
+            ->toArray();
+
+        if ($user->employee_id) {
+            $directClassIds = Classroom::where('homeroom_teacher_id', $user->employee_id)->pluck('id')->toArray();
+            $myClassIds = array_unique(array_merge($myClassIds, $directClassIds));
+        }
+
+        return $myClassIds;
+    }
+
+    /**
      * Display Class Promotion & Graduation management page.
      */
     public function index(Request $request)
     {
+        $this->checkAccess();
+        $authClassIds = $this->getAuthorizedClassroomIds();
+
         $academicYears = AcademicYear::orderBy('name', 'desc')->orderBy('semester', 'asc')->get();
         $activeAcademicYear = $academicYears->firstWhere('is_active', true) ?? $academicYears->first();
 
@@ -34,15 +81,20 @@ class ClassPromotionController extends Controller
         $matchingSourceIds = $sourceYear ? $academicYears->where('name', $sourceYear->name)->pluck('id') : ($sourceYearId ? [$sourceYearId] : []);
 
         // Classrooms in source academic year
-        $sourceClassrooms = Classroom::with(['classLevel', 'academicYear', 'homeroomTeacher'])
+        $sourceClassroomsQuery = Classroom::with(['classLevel', 'academicYear', 'homeroomTeacher'])
             ->where('classrooms.is_active', true)
             ->whereIn('classrooms.academic_year_id', $matchingSourceIds)
             ->join('class_levels', 'classrooms.class_level_id', '=', 'class_levels.id')
             ->orderBy('class_levels.order', 'asc')
             ->orderBy('classrooms.code', 'asc')
             ->orderBy('classrooms.name', 'asc')
-            ->select('classrooms.*')
-            ->get();
+            ->select('classrooms.*');
+
+        if ($authClassIds !== null) {
+            $sourceClassroomsQuery->whereIn('classrooms.id', $authClassIds);
+        }
+
+        $sourceClassrooms = $sourceClassroomsQuery->get();
 
         // All active classrooms across all academic years for target selection
         $allClassrooms = Classroom::with(['classLevel', 'academicYear', 'homeroomTeacher'])
@@ -80,9 +132,16 @@ class ClassPromotionController extends Controller
      */
     public function getStudents(Request $request): JsonResponse
     {
+        $this->checkAccess();
+        $authClassIds = $this->getAuthorizedClassroomIds();
+
         $classroomId = $request->get('classroom_id');
         if (!$classroomId) {
             return response()->json(['success' => false, 'message' => 'Rombel belum dipilih.', 'students' => []]);
+        }
+
+        if ($authClassIds !== null && !in_array($classroomId, $authClassIds)) {
+            return response()->json(['success' => false, 'message' => 'Anda tidak memiliki hak akses ke rombel ini.'], 403);
         }
 
         $classroom = Classroom::with(['classLevel', 'academicYear', 'homeroomTeacher'])->find($classroomId);
@@ -108,6 +167,9 @@ class ClassPromotionController extends Controller
      */
     public function promote(Request $request): JsonResponse
     {
+        $this->checkAccess();
+        $authClassIds = $this->getAuthorizedClassroomIds();
+
         $request->validate([
             'source_classroom_id' => 'required|exists:classrooms,id',
             'target_academic_year_id' => 'required|exists:academic_years,id',
@@ -117,6 +179,10 @@ class ClassPromotionController extends Controller
             'students.*.action' => 'required|in:promote,stay,transfer_out',
             'students.*.target_classroom_id' => 'nullable|exists:classrooms,id',
         ]);
+
+        if ($authClassIds !== null && !in_array($request->source_classroom_id, $authClassIds)) {
+            return response()->json(['success' => false, 'message' => 'Anda tidak memiliki hak akses untuk memproses kenaikan rombel ini.'], 403);
+        }
 
         $sourceClassroom = Classroom::with(['classLevel', 'academicYear', 'homeroomTeacher'])->findOrFail($request->source_classroom_id);
         $targetAcademicYear = AcademicYear::findOrFail($request->target_academic_year_id);
@@ -253,6 +319,9 @@ class ClassPromotionController extends Controller
      */
     public function graduate(Request $request): JsonResponse
     {
+        $this->checkAccess();
+        $authClassIds = $this->getAuthorizedClassroomIds();
+
         $request->validate([
             'classroom_id' => 'required|exists:classrooms,id',
             'academic_year_id' => 'nullable|exists:academic_years,id',
@@ -261,6 +330,10 @@ class ClassPromotionController extends Controller
             'students.*.student_id' => 'required|exists:students,id',
             'students.*.diploma_number' => 'nullable|string|max:100',
         ]);
+
+        if ($authClassIds !== null && !in_array($request->classroom_id, $authClassIds)) {
+            return response()->json(['success' => false, 'message' => 'Anda tidak memiliki hak akses untuk memproses kelulusan rombel ini.'], 403);
+        }
 
         $classroom = Classroom::with(['academicYear'])->findOrFail($request->classroom_id);
         $academicYearId = $request->academic_year_id ?: $classroom->academic_year_id;

@@ -48,8 +48,10 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
     Route::get('/classrooms/{id}/students', [ClassroomController::class, 'students'])->name('classrooms.students');
     Route::resource('classrooms', ClassroomController::class);
     Route::get('/rombel', fn() => redirect()->route('classrooms.index'))->name('rombel');
+});
 
-    // Students (Data Siswa & Bulk Excel Import)
+// Students (Data Siswa: Admin & Wali Kelas/Guru)
+Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,admin_smp,kepala_sekolah,waka,employee,guru,wali_kelas'])->group(function () {
     Route::get('students/download-template', [StudentController::class, 'downloadTemplate'])->name('students.download-template');
     Route::post('students/import', [StudentController::class, 'import'])->name('students.import');
     Route::get('students/export/excel', [StudentController::class, 'exportExcel'])->name('students.export.excel');
@@ -60,7 +62,9 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
     Route::get('students/{id}/print-dossier', [StudentController::class, 'dossierPrint'])->name('students.dossier.print');
     Route::resource('students', StudentController::class);
     Route::get('/siswa', fn() => redirect()->route('students.index'))->name('siswa');
+});
 
+Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->group(function () {
     // Master Mata Pelajaran (Subjects)
     Route::post('subjects/{id}/toggle-status', [\App\Http\Controllers\SubjectController::class, 'toggleStatus'])->name('subjects.toggle-status');
     Route::resource('subjects', \App\Http\Controllers\SubjectController::class);
@@ -74,13 +78,17 @@ Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,adm
     Route::get('student-reports', [\App\Http\Controllers\StudentReportController::class, 'index'])->name('student-reports.index');
     Route::get('student-reports/print', [\App\Http\Controllers\StudentReportController::class, 'print'])->name('student-reports.print');
     Route::get('student-reports/export', [\App\Http\Controllers\StudentReportController::class, 'export'])->name('student-reports.export');
+});
 
-    // Class Promotions & Graduation (Kenaikan Kelas & Kelulusan)
+// Class Promotions & Graduation (Kenaikan Kelas & Kelulusan: Admin, Kepala Sekolah, dan Wali Kelas)
+Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,admin_smp,kepala_sekolah,waka,wali_kelas,guru,employee'])->group(function () {
     Route::get('class-promotions', [\App\Http\Controllers\ClassPromotionController::class, 'index'])->name('promotions.index');
     Route::get('class-promotions/students', [\App\Http\Controllers\ClassPromotionController::class, 'getStudents'])->name('promotions.students');
     Route::post('class-promotions/process', [\App\Http\Controllers\ClassPromotionController::class, 'promote'])->name('promotions.process');
     Route::post('class-promotions/graduate', [\App\Http\Controllers\ClassPromotionController::class, 'graduate'])->name('promotions.graduate');
+});
 
+Route::middleware(['auth', 'verified', 'role:super_admin,admin_sd,admin_paud,admin_smp,kepala_sekolah,waka'])->group(function () {
     // Alumni & Graduation Ledger
     Route::get('alumni', [\App\Http\Controllers\AlumniController::class, 'index'])->name('alumni.index');
     Route::get('alumni/{id}', [\App\Http\Controllers\AlumniController::class, 'show'])->name('alumni.show');
