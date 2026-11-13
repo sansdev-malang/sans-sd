@@ -43,6 +43,14 @@
                     'class-levels.index' => 'Tingkat Kelas',
                     'classrooms.index' => 'Rombongan Belajar',
                     'students.index' => 'Data Siswa',
+                    'student-attendances.index' => 'Absensi Siswa',
+                    'student-archives.index' => 'Arsip Siswa',
+                    'teacher-documents.index' => 'Berkas Guru',
+                    'promotions.index' => 'Kenaikan & Kelulusan',
+                    'student-reports.index' => 'Rekapitulasi Rombel',
+                    'subjects.index' => 'Mata Pelajaran',
+                    'guest-books.index' => 'Buku Tamu Sekolah',
+                    'alumni.index' => 'Buku Induk Alumni',
                 ];
                 $title = $routeTitles[$routeName] ?? 'Dashboard';
             }

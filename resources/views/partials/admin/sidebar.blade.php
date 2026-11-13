@@ -213,10 +213,7 @@
                 <!-- 1. Pendaftar SPMB -->
                 <a href="{{ route('spmb.candidates.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('spmb.candidates.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span class="flex items-center gap-1.5">
-                        <span>Pendaftar SPMB</span>
-                    </span>
-                    <span class="text-[9px] uppercase tracking-wider font-semibold px-1 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50 leading-none">Baru</span>
+                    <span>Pendaftar SPMB</span>
                 </a>
 
                 <!-- 2. Data Siswa Aktif -->
@@ -225,10 +222,10 @@
                     <span>Data Siswa</span>
                 </a>
 
-                <!-- 3. Presensi Siswa -->
+                <!-- 3. Absensi Siswa -->
                 <a href="{{ route('student-attendances.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('student-attendances.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Presensi Siswa</span>
+                    <span>Absensi Siswa</span>
                 </a>
 
                 <!-- 4. Buku Induk Alumni -->
@@ -237,13 +234,11 @@
                     <span>Buku Induk Alumni</span>
                 </a>
 
-                <!-- 5. Arsip Dokumen Siswa -->
-                @if(!$isExecutive)
+                <!-- 5. Arsip Siswa -->
                 <a href="{{ route('student-archives.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('student-archives.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Arsip Dokumen Siswa</span>
+                    <span>Arsip Siswa</span>
                 </a>
-                @endif
             </div>
         </div>
 
@@ -282,7 +277,7 @@
                 </a>
                 <a href="{{ route('teacher-documents.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('teacher-documents.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Berkas Dokumen Guru</span>
+                    <span>Berkas Guru</span>
                 </a>
                 <a href="{{ route('picket-schedules.admin') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('picket-schedules.admin') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
@@ -423,10 +418,10 @@
                     <span>Data Siswa</span>
                 </a>
 
-                <!-- 2. Presensi Siswa -->
+                <!-- 2. Absensi Siswa -->
                 <a href="{{ route('student-attendances.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('student-attendances.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Presensi Siswa</span>
+                    <span>Absensi Siswa</span>
                 </a>
 
                 <!-- 3. E-Rapor -->
@@ -462,7 +457,7 @@
                 <!-- 6. Berkas Dokumen Guru -->
                 <a href="{{ route('teacher-documents.index') }}"
                     class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors {{ Request::routeIs('teacher-documents.*') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-900/40' }}">
-                    <span>Berkas Dokumen Guru</span>
+                    <span>Berkas Guru</span>
                 </a>
             </div>
         </div>

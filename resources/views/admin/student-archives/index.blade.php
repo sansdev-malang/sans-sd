@@ -6,9 +6,9 @@
         <!-- ========================================================================= -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Arsip Murid</h2>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Arsip Siswa</h2>
                 <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
-                    Pusat rekapitulasi kelengkapan dokumen legalitas (Akta, KK, KTP, KIA) yang otomatis tersinkronisasi dari Data Murid & SPMB.
+                    Pusat rekapitulasi kelengkapan berkas legalitas (Akta, KK, KTP, KIA) yang otomatis tersinkronisasi dari Data Siswa & SPMB.
                 </p>
             </div>
 

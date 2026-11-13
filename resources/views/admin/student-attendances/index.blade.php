@@ -13,9 +13,9 @@
         <!-- HEADER SECTION -->
         <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 w-full text-left">
             <div class="flex flex-col gap-0.5">
-                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Presensi Siswa</h2>
+                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">Absensi Siswa</h2>
                 <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
-                    Pencatatan presensi harian per rombel dan laporan rekapitulasi kehadiran bulanan siswa SMP.
+                    Pencatatan absensi harian per rombel dan laporan rekapitulasi kehadiran bulanan siswa SD.
                 </p>
             </div>
 
@@ -465,8 +465,6 @@
                                                         x-model="notes[{{ $st->id }}]"
                                                         placeholder="Catatan sakit, izin, atau alasan..." 
                                                         class="w-full pl-3 pr-8 py-1.5 text-xs bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
-                                                        placeholder="Catatan sakit, izin, atau alasan..." 
-                                                        class="w-full pl-3 pr-8 py-1.5 text-xs bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:bg-white dark:focus:bg-slate-800 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors">
                                                     
                                                     <!-- Clear student button (absolute inside input, zero layout shift) -->
                                                     <button type="button" @click="clearStudent({{ $st->id }})" title="Kosongkan status & keterangan murid ini"
@@ -818,7 +816,7 @@
                                 <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
                             </span>
                             <div>
-                                <h3 class="text-sm font-bold text-slate-900 dark:text-white">Import Presensi Siswa</h3>
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white">Import Absensi Siswa</h3>
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400">Unggah file spreadsheet (.xlsx, .xls, .csv)</p>
                             </div>
                         </div>
@@ -872,7 +870,7 @@
 
                             <div>
                                 <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1">
-                                    Tanggal Presensi <span class="text-rose-500">*</span>
+                                    Tanggal Absensi <span class="text-rose-500">*</span>
                                 </label>
                                 <input type="date" name="fallback_date" value="{{ $selectedDate }}" required
                                     class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500">
