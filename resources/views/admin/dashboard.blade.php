@@ -143,43 +143,43 @@
                 </div>
             </section>
         @else
-            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
                 <!-- Pegawai Card 1: Kehadiran Bulan Ini -->
-                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
-                    <div class="flex justify-between items-start">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 lg:p-5 shadow-xs flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 min-w-0">
+                    <div class="flex justify-between items-start gap-1.5">
                         <div class="min-w-0 pr-1">
-                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Kehadiran Bulan Ini</p>
-                            <h3 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                                <span>{{ $myReport['total_present'] ?? 0 }}</span> <span class="text-xs sm:text-sm font-medium text-slate-500">Hari</span>
+                            <p class="text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Kehadiran</p>
+                            <h3 class="text-base sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-0.5 sm:mt-1 truncate">
+                                <span>{{ $myReport['total_present'] ?? 0 }}</span> <span class="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Hari</span>
                             </h3>
                         </div>
                         <div class="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg shrink-0">
                             <i data-lucide="calendar" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400"></i>
                         </div>
                     </div>
-                    <div class="mt-2.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                    <div class="mt-2 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate leading-tight">
                         Siklus aktif terhitung hadir
                     </div>
                 </div>
 
                 <!-- Pegawai Card 2: Total Keterlambatan -->
-                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
-                    <div class="flex justify-between items-start">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 lg:p-5 shadow-xs flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 min-w-0">
+                    <div class="flex justify-between items-start gap-1.5">
                         <div class="min-w-0 pr-1">
-                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Keterlambatan</p>
-                            <h3 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                                <span>{{ $totalLateDays ?? 0 }}</span> <span class="text-xs sm:text-sm font-medium text-slate-500">Hari</span>
+                            <p class="text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Keterlambatan</p>
+                            <h3 class="text-base sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-0.5 sm:mt-1 truncate">
+                                <span>{{ $totalLateDays ?? 0 }}</span> <span class="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Hari</span>
                             </h3>
                         </div>
                         <div class="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg shrink-0">
                             <i data-lucide="hourglass" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400"></i>
                         </div>
                     </div>
-                    <div class="mt-2.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                    <div class="mt-2 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate leading-tight">
                         @if(($totalLateDays ?? 0) > 0)
-                            <span class="text-amber-500 font-bold">Terlambat</span> pada siklus aktif
+                            <span class="text-amber-500 font-bold">Terlambat</span>
                         @elseif(($myReport['total_present'] ?? 0) == 0)
-                            <span class="text-slate-400 dark:text-slate-500 font-medium">Belum ada presensi</span>
+                            <span class="text-slate-400 dark:text-slate-500 font-medium">Belum ada</span>
                         @else
                             <span class="text-emerald-600 dark:text-emerald-400 font-bold">Tepat Waktu</span>
                         @endif
@@ -187,29 +187,29 @@
                 </div>
 
                 <!-- Pegawai Card 3: Total Izin & Cuti -->
-                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
-                    <div class="flex justify-between items-start">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 lg:p-5 shadow-xs flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 min-w-0">
+                    <div class="flex justify-between items-start gap-1.5">
                         <div class="min-w-0 pr-1">
-                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Total Izin & Cuti</p>
-                            <h3 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-1">
-                                <span>{{ $totalLeavesThisMonth ?? $totalLeavesThisYear ?? 0 }}</span> <span class="text-xs sm:text-sm font-medium text-slate-500">Hari</span>
+                            <p class="text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Izin & Cuti</p>
+                            <h3 class="text-base sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mt-0.5 sm:mt-1 truncate">
+                                <span>{{ $totalLeavesThisMonth ?? $totalLeavesThisYear ?? 0 }}</span> <span class="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Hari</span>
                             </h3>
                         </div>
                         <div class="p-1.5 sm:p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg shrink-0">
                             <i data-lucide="calendar-days" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400"></i>
                         </div>
                     </div>
-                    <div class="mt-2.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                        Akumulasi persetujuan siklus aktif
+                    <div class="mt-2 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate leading-tight">
+                        Disetujui siklus ini
                     </div>
                 </div>
 
                 <!-- Pegawai Card 4: Estimasi Uang Kehadiran -->
-                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-3.5 lg:p-4 shadow-sm flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
-                    <div class="flex justify-between items-start">
+                <div class="animate-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 lg:p-5 shadow-xs flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 min-w-0">
+                    <div class="flex justify-between items-start gap-1.5">
                         <div class="min-w-0 pr-1">
-                            <p class="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Uang Kehadiran</p>
-                            <h3 class="text-lg sm:text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-1">
+                            <p class="text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Uang Kehadiran</p>
+                            <h3 class="text-sm sm:text-lg lg:text-xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-0.5 sm:mt-1 truncate">
                                 Rp {{ number_format($myReport['bonus_nominal'] ?? 0, 0, ',', '.') }}
                             </h3>
                         </div>
@@ -217,8 +217,8 @@
                             <i data-lucide="banknote" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400"></i>
                         </div>
                     </div>
-                    <div class="mt-2.5 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                        Akumulasi uang kehadiran bulan ini
+                    <div class="mt-2 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate leading-tight">
+                        Akumulasi bulan ini
                     </div>
                 </div>
             @endif
