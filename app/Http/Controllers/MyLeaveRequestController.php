@@ -41,9 +41,17 @@ class MyLeaveRequestController extends Controller
         }
 
         if (request()->has('read_id')) {
-            $readIds = \Illuminate\Support\Facades\Cache::get('read_leave_ids_' . $user->id, []);
+            $userSettingKey = 'read_leave_ids_' . $user->id;
+            $readIds = \Illuminate\Support\Facades\Cache::get($userSettingKey);
+            if ($readIds === null) {
+                $settingVal = \App\Models\Setting::get($userSettingKey);
+                $readIds = $settingVal ? json_decode($settingVal, true) : [];
+            }
+            if (!is_array($readIds)) $readIds = [];
             $readIds[] = (int) request('read_id');
-            \Illuminate\Support\Facades\Cache::forever('read_leave_ids_' . $user->id, array_unique($readIds));
+            $readIds = array_values(array_unique($readIds));
+            \App\Models\Setting::set($userSettingKey, json_encode($readIds));
+            \Illuminate\Support\Facades\Cache::forever($userSettingKey, $readIds);
         }
         $leaves = LeaveRequest::where('employee_id', $user->employee->id)
             ->with(['leaveType', 'processedBy'])
