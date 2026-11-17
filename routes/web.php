@@ -154,7 +154,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/rapor', function () {
         $curUser = auth()->user();
         if (!$curUser || !$curUser->canAccessRapor()) {
-            abort(403, 'Akses terbatas untuk Wali Kelas dan Administrator.');
+            abort(403, 'Akses terbatas untuk Tenaga Pendidik dan Administrator.');
         }
 
         $ssoSecret = \App\Models\Setting::get('rapor_sso_secret', env('SSO_SECRET_KEY', 'sans_rapor_secret_sso_key_2026'));

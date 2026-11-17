@@ -258,6 +258,11 @@ class User extends Authenticatable
             return true;
         }
 
+        // 4. Semua Tenaga Pendidik / Guru
+        if ($this->isTeacher()) {
+            return true;
+        }
+
         if (!$this->employee_id) {
             return false;
         }
