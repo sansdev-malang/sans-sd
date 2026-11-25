@@ -200,6 +200,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return redirect("{$raporUrl}/sso/login?data=" . urlencode($ssoPayload) . "&signature=" . urlencode($ssoSig));
     })->name('report-cards.index');
 
+    // Data & Rekap Rapor Mengaji (Read-Only Portal & Cetak PDF)
+    Route::get('/rekap-rapor-mengaji', [\App\Http\Controllers\RaporMengajiSummaryController::class, 'index'])->name('rekap-rapor-mengaji.index');
+
     Route::get('report-cards', fn() => redirect()->route('report-cards.index'));
     Route::get('report-cards/{any}', fn() => redirect()->route('report-cards.index'))->where('any', '.*');
 

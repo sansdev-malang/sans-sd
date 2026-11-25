@@ -48,6 +48,7 @@
                     'teacher-documents.index' => 'Berkas Guru',
                     'promotions.index' => 'Kenaikan & Kelulusan',
                     'student-reports.index' => 'Rekapitulasi Rombel',
+                    'rekap-rapor-mengaji.index' => 'Data Rapor Mengaji',
                     'guest-books.index' => 'Buku Tamu Sekolah',
                     'alumni.index' => 'Buku Induk Alumni',
                 ];

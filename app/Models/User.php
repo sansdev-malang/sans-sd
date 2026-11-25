@@ -335,6 +335,75 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user can access Data Rapor Mengaji.
+     * Allowed: Admin, Kepala Sekolah, Waka, Koordinator GPQ, Wali Kelas aktif, dan Guru GPQ.
+     */
+    public function canAccessRaporMengaji(): bool
+    {
+        if ($this->isAdmin() || $this->isExecutive() || in_array($this->role, ['super_admin', 'superadmin', 'admin_sd', 'admin_smp', 'admin_paud', 'kepala_sekolah', 'waka'])) {
+            return true;
+        }
+
+        if ($this->isActiveHomeroomTeacher() || $this->role === 'wali_kelas') {
+            return true;
+        }
+
+        return $this->isGpqTeacher();
+    }
+
+    /**
+     * Check if user is a GPQ Teacher or GPQ Coordinator.
+     */
+    public function isGpqTeacher(): bool
+    {
+        if (!$this->employee_id) {
+            return false;
+        }
+
+        $emp = $this->employee;
+        if ($emp) {
+            $pos = strtolower($emp->position ?? '');
+            if (str_contains($pos, 'gpq') || str_contains($pos, 'mengaji') || str_contains($pos, 'al-quran') || str_contains($pos, 'al quran')) {
+                return true;
+            }
+        }
+
+        return \Illuminate\Support\Facades\Cache::remember('user_is_gpq_sd_' . $this->employee_id, 120, function () use ($emp) {
+            try {
+                $hasGroup = \Illuminate\Support\Facades\DB::connection('sans_rapor')
+                    ->table('gpq_group_assignments')
+                    ->where('unit', 'sd')
+                    ->where(function ($q) use ($emp) {
+                        $q->where('teacher_employee_id', $this->employee_id);
+                        if ($emp && $emp->name) {
+                            $cleanName = trim(explode(',', $emp->name)[0]);
+                            $q->orWhere('teacher_name', 'like', "%{$cleanName}%");
+                        }
+                    })
+                    ->exists();
+                if ($hasGroup) return true;
+
+                $isCoord = \Illuminate\Support\Facades\DB::connection('sans_rapor')
+                    ->table('unit_coordinators')
+                    ->where('unit', 'sd')
+                    ->where('type', 'gpq')
+                    ->where(function ($q) use ($emp) {
+                        $q->where('teacher_employee_id', $this->employee_id)
+                          ->orWhere('user_id', $this->id);
+                        if ($emp && $emp->name) {
+                            $cleanName = trim(explode(',', $emp->name)[0]);
+                            $q->orWhere('teacher_name', 'like', "%{$cleanName}%");
+                        }
+                    })
+                    ->exists();
+                return $isCoord;
+            } catch (\Throwable $e) {
+                return false;
+            }
+        });
+    }
+
+    /**
      * Get the employee profile associated with the user.
      */
     public function employee()
